@@ -1,0 +1,16 @@
+{
+    "DocuCards": {
+      "prefix": "card",
+      "body": [
+        "<CardGroup cols={2}>",
+            "<Card title=\"${1:Heading2}\" icon=\"${2:Heading2}\">",
+            "   This is an example of card content with columns.",
+            "</Card>",
+            "<Card title=\"${3:Heading3}\" icon=\"${4:Heading3}\">",
+            "   This is an example of card content with columns.",
+            "</Card>",
+        "</CardGroup>"
+      ],
+      "description": "Create a DocuCards component on markdown."
+    }
+  }

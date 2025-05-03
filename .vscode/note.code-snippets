@@ -1,0 +1,38 @@
+{
+    "DocuNote - General Note": {
+      "prefix": "note",
+      "body": [
+        "<Note type=\"note\" title=\"Note\">",
+        "  ${1:This is a general note to convey information to the user.}",
+        "</Note>"
+      ],
+      "description": "Insert a general note"
+    },
+    "DocuNote - Danger Note": {
+      "prefix": "danger",
+      "body": [
+        "<Note type=\"danger\" title=\"Danger\">",
+        "  ${1:This is a danger alert to notify the user of a critical issue.}",
+        "</Note>"
+      ],
+      "description": "Insert a danger note"
+    },
+    "DocuNote - Warning Note": {
+      "prefix": "warning",
+      "body": [
+        "<Note type=\"warning\" title=\"Warning\">",
+        "  ${1:This is a warning alert for issues that require attention.}",
+        "</Note>"
+      ],
+      "description": "Insert a warning note"
+    },
+    "DocuNote - Success Note": {
+      "prefix": "success",
+      "body": [
+        "<Note type=\"success\" title=\"Success\">",
+        "  ${1:This is a success message to inform the user of successful actions.}",
+        "</Note>"
+      ],
+      "description": "Insert a success note"
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "DocuH2": {
+      "prefix": "h2",
+      "body": [
+        "## Heading 2"
+      ],
+      "description": "Tag Heading 2 for markdown."
+    },
+    "DocuH3": {
+        "prefix": "h3",
+        "body": [
+            "### Heading 3"
+        ],
+        "description": "Tag Heading 3 for markdown."
+    },
+    "DocuText": {
+        "prefix": "text",
+        "body": [
+            "DocuBook is proudly **open-source**! 🎉 We believe in creating an accessible, collaborative platform that thrives on community contributions."
+        ],
+        "description": "Tag Paragraph for markdown."
+    },
+    "Docu-UndorderList": {
+        "prefix": "unorderlist",
+        "body": [
+            "- ${1:**Next.js 14** - The powerful React framework optimized for production.}",
+            "- **Tailwind CSS** - Utility-first styling for quick, clean designs.",
+            "- **Shadcn-UI** - Elegant, accessible components for a polished look.",
+            "- **next-mdx-remote** - Enables MDX support for dynamic, interactive Markdown content."
+        ],
+        "description": "Tag Undorderlist for markdown."
+    },
+}

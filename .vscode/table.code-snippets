@@ -1,0 +1,20 @@
+{
+    "DocuTable": {
+      "prefix": "table",
+      "body": [
+        "| **${1:Feature}**                     | **${2:Description}**                                       |",
+        "| ------------------------------- | ----------------------------------------------------- |",
+        "| ${3:MDX Support}                     | ${4:Write interactive documentation with MDX.}             |",
+        "| Nested Pages                    | Organize content in a nested, hierarchical structure. |",
+        "| Blog Section                    | Include a dedicated blog section.                     |",
+        "| Pagination                      | Split content across multiple pages.                  |",
+        "| Syntax Highlighting             | Highlight code for better readability.                |",
+        "| Code Line Highlighting & Titles | Highlight specific lines with descriptive titles.     |",
+        "| Interactive Code Blocks         | Language-specific and interactive code display.       |",
+        "| Custom Markdown Components      | Embed custom, reusable components in your docs.       |",
+        "| Static Site Generation          | Generate a static, high-performance site.             |",
+        "| SEO-Optimized                   | Structured for optimal search engine indexing.        |"
+      ],
+      "description": "Create a DocuTable component on markdown."
+    }
+  }
