@@ -1,0 +1,115 @@
+/* ocean */
+/* Light Mode */
+.keyword {
+  color: #2563eb;
+  /* Vibrant Blue */
+}
+
+.function {
+  color: #0284c7;
+  /* Deep Sky Blue */
+}
+
+.punctuation {
+  color: #475569;
+  /* Cool Slate Gray */
+}
+
+.comment {
+  color: #64748b;
+  /* Muted Slate */
+}
+
+.string,
+.constant,
+.annotation,
+.boolean,
+.number {
+  color: #0369a1;
+  /* Dark Cyan */
+}
+
+.tag {
+  color: #1e40af;
+  /* Indigo */
+}
+
+.attr-name {
+  color: #0ea5e9;
+  /* Light Sky Blue */
+}
+
+.attr-value {
+  color: #2563eb;
+  /* Bright Blue */
+}
+
+/* Dark Mode */
+.dark .keyword {
+  color: #93c5fd;
+  /* Soft Blue */
+}
+
+.dark .function {
+  color: #38bdf8;
+  /* Sky Blue */
+}
+
+.dark .string,
+.dark .constant,
+.dark .annotation,
+.dark .boolean,
+.dark .number {
+  color: #60a5fa;
+  /* Light Blue */
+}
+
+.dark .tag {
+  color: #3b82f6;
+  /* Bold Blue */
+}
+
+.dark .attr-name {
+  color: #67e8f9;
+  /* Aqua */
+}
+
+.dark .attr-value {
+  color: #93c5fd;
+  /* Frosty Blue */
+}
+
+.youtube {
+  position: relative;
+  padding-bottom: 56.25%; /* Rasio aspek 16:9 */
+  height: 0;
+  overflow: hidden;
+  background: #000; /* Latar belakang hitam untuk memadukan player */
+  border-radius: 8px; /* Sudut melengkung */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Bayangan lembut */
+}
+
+.youtube iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 8px; /* Sudut melengkung pada iframe */
+}
+
+.youtube:hover {
+  transform: scale(1.05); /* Efek hover zoom */
+  transition: transform 0.3s ease;
+}
+
+li#changelog {
+  position: relative;
+  padding-left: 1.5em;
+  text-indent: -1.2rem;
+}
+
+[id^="version-"] {
+    scroll-margin-top: 4rem; /* sesuaikan dengan tinggi navbar */
+}

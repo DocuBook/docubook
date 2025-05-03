@@ -1,0 +1,42 @@
+---
+title: Button
+description: This section previews the Button component.
+date: 14-12-2024
+---
+
+I have implemented the `button` component into markdown which is ready to use.
+
+## Preview
+
+<Button
+  text="Learn More"
+  href="https://learn.example.com"
+  icon="ArrowUpRight"
+  size="md"
+  target="_blank"
+  variation="primary"
+/>
+
+## Props
+
+| Prop        | Type     | Default        | Description                                  |
+| ----------- | -------- | -------------- | -------------------------------------------- |
+| `text`      | `string` | `""`           | The value of text button.                    |
+| `href`      | `string` | `""`           | The value of url button.                     |
+| `icon`      | `string` | `null`         | The value of button icon render from lucide. |
+| `size`      | `string` | `"sm, md, lg"` | The value of size button.                    |
+| `target`    | `string` | `"_blank"`     | By default target `_blank`                   |
+| `variation` | `string` | `"primary"`    | By default variation is **Primary**          |
+
+## Code
+
+```bash
+<Button
+  text="Learn More"
+  href="https://learn.example.com"
+  icon="MoveUpRight"
+  size="md"
+  target="_blank"
+  variation="primary"
+/>
+```

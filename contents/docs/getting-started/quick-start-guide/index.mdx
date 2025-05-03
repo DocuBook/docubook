@@ -1,0 +1,157 @@
+---
+title: Quick Start Guide
+description: This section provides an overview of Quick Start Guide.
+date: 29-11-2024
+---
+
+Follow these simple instructions to set up your project efficiently and begin creating content without delay!:
+
+## Homepage
+
+to change the homepage you can open the app folder.
+
+<Stepper>
+  <StepperItem title="Step 1: App">
+    Open app folder.
+  </StepperItem>
+  <StepperItem title="Step 2: Page.tsx">
+    Edit page.tsx file for home content.
+  </StepperItem>
+</Stepper>
+
+## Docu.json
+Change logo, menu, routes and footer directly in docu.json
+
+<Accordion title="default code">
+```json:docu.json
+{
+    "navbar": {
+      "logo": {
+        "src": "/images/docu.svg",
+        "alt": "DocuBook Logo"
+      },
+      "logoText": "DocuBook",
+      "menu": [
+        { "title": "Docs", "href": "/docs/getting-started/introduction" },
+        { "title": "Changelog", "href": "/changelog" },
+        { "title": "Blog", "href": "/blog" },
+        { "title": "Playground", "href": "/playground" }
+      ]
+    },
+    "footer": {
+      "copyright": "DocuBook",
+      "social": [
+        {
+            "name": "Gitlab",
+            "url": "https://gitlab.com/mywildancloud/docubook",
+            "iconName": "GitlabIcon"
+        },
+        {
+            "name": "Instagram",
+            "url": "https://www.instagram.com/wildan.nrs/",
+            "iconName": "InstagramIcon"
+        },
+        {
+            "name": "Facebook",
+            "url": "https://www.facebook.com/wildan.nrsh",
+            "iconName": "FacebookIcon"
+        },
+        {
+            "name": "Twitter",
+            "url": "https://x.com/wildan_nrss",
+            "iconName": "TwitterIcon"
+        },
+        {
+            "name": "Youtube",
+            "url": "https://www.youtube.com/@wildan.nrs_",
+            "iconName": "YoutubeIcon"
+        }
+      ]
+    },
+    "meta": {
+      "baseURL": "https://docubook.pro",
+      "title": "DocuBook",
+      "description": "DocuBook is a modern documentation platform for building, deploying, and managing your docs with ease.",
+      "favicon": "/favicon.ico"
+    },
+    "repository": {
+      "url": "https://gitlab.com/mywildancloud/docubook",
+      "editPathTemplate": "/blob/main/{filePath}"
+    },
+    "routes": [
+    {
+      "title": "Getting Started",
+      "href": "/getting-started",
+      "noLink": true,
+      "items": [
+        { "title": "Introduction", "href": "/introduction" },
+        { "title": "Installation", "href": "/installation" },
+        { "title": "Quick Start Guide", "href": "/quick-start-guide" },
+        { "title": "Project Structure", "href": "/project-structure" },
+        {
+          "title": "Components",
+          "href": "/components",
+          "items": [
+            { "title": "Stepper", "href": "/stepper" },
+            { "title": "Tabs", "href": "/tabs" },
+            { "title": "Note", "href": "/note" },
+            { "title": "Code Block", "href": "/code-block" },
+            { "title": "Image", "href": "/image" },
+            { "title": "Link", "href": "/link" },
+            { "title": "Youtube", "href": "/youtube" },
+            { "title": "Tooltips", "href": "/tooltips" },
+            { "title": "Cards", "href": "/card" },
+            { "title": "Card Group", "href": "/card-group" },
+            { "title": "Button", "href": "/button" },
+            { "title": "Accordion", "href": "/accordion" },
+            { "title": "Release Note", "href": "/release-note" },
+            { "title": "Custom", "href": "/custom" }
+          ]
+        },
+        { "title": "Customize", "href": "/customize" }
+      ]
+    }
+  ]
+}
+```
+</Accordion>
+
+## Change Logo & Favicon
+
+Save your logo, give it the name docu.svg then for the favicon, save your logo, give it the name favicon.ico
+
+<Stepper>
+  <StepperItem title="Step 1: Public">
+    Open `public` folder then upload your logo save as **favicon.ico**
+  </StepperItem>
+  <StepperItem title="Step 2: Public/images">
+    Open `public` folder --> `images` then upload your logo and save as **docu.svg**
+  </StepperItem>
+</Stepper>
+
+## Contents
+
+Open **contents/docs/getting-started** folder add new folder to add content.
+
+<Stepper>
+  <StepperItem title="Step 1: Add new Folder">
+    for example adding a folder for routes `how-to-install-myplugin`
+  </StepperItem>
+  <StepperItem title="Step 2: Add new File">
+    add `index.mdx` file in that folder
+  </StepperItem>
+  <StepperItem title="Step 3: Writing the Content">
+    To write content, you must first add metadata to the first line.
+    ````plaintext
+    ---
+    title : Title
+    description : Description
+    date : 10-12-2024
+    ---
+    <--- this is where you write the content --->
+    ````
+    <Note type="warning" title="Warning">
+      To write markdown content you can use all the [Components](/docs/getting-started/components)
+    </Note>
+  </StepperItem>
+</Stepper>
