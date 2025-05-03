@@ -1,0 +1,72 @@
+---
+title: Accordion
+description: This section previews the Accordion component.
+date: 22-12-2024
+---
+
+I have implemented the `accordion` component into markdown which is ready to use.
+
+## Preview
+
+### Code Block
+
+<Accordion title="Code Block" defaultOpen={true}>
+    ```javascript:main.js showLineNumbers {3-4}
+    function isRocketAboutToCrash() {
+        // Check if the rocket is stable
+        if (!isStable()) {
+            NoCrash(); // Prevent the crash
+        }
+    }
+    ```
+</Accordion>
+
+### Text with Markdown
+
+<Accordion title="Markdown">
+    this is an example of plain text content from the accordion component and below is markdown ;
+    1. number one
+    2. number two
+    3. number three
+</Accordion>
+
+## Props
+
+| Prop          | Type      | Default        | Description                                                                            |
+| ------------- | --------- | -------------- | -------------------------------------------------------------------------------------- |
+| `title`       | `string`  | `null`         | The value of Accordion title.                                                          |
+| `children`     | `ReactNode`  | `null`         | Flexible content, both HTML elements, markdown componenst and plain text.                                   |
+| `defaultOpen` | `boolean` | `false`        | You can change the value to `true` if you want the content to open when the page loads |
+
+## Code
+
+<Tabs defaultValue="markdown" className="pt-5 pb-1">
+  <TabsList>
+    <TabsTrigger value="markdown">Markdown</TabsTrigger>
+    <TabsTrigger value="codeblock">Code Block</TabsTrigger>
+  </TabsList>
+  <TabsContent value="markdown">
+    ```plaintext
+    <Accordion title="Markdown">
+        this is an example of plain text content from the accordion component and below is markdown ;
+        1. number one
+        2. number two
+        3. number three
+    </Accordion>
+    ```
+  </TabsContent>
+  <TabsContent value="codeblock">
+    ````plaintext
+    <Accordion title="Code Block" defaultOpen={true}>
+        ```javascript:main.js showLineNumbers {3-4}
+        function isRocketAboutToCrash() {
+            // Check if the rocket is stable
+            if (!isStable()) {
+                NoCrash(); // Prevent the crash
+            }
+        }
+        ```
+    </Accordion>
+    ````
+  </TabsContent>
+</Tabs>

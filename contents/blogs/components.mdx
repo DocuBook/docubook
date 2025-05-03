@@ -1,0 +1,133 @@
+---
+title: "Getting Started with DocuBook Components"
+description: "Learn how to leverage the power of DocuBook components to create dynamic and interactive documentation. This guide explores the key components available and how to integrate them into your documentation workflow."
+date: 31-12-2024
+authors:
+  - avatar: "https://ui.shadcn.com/avatars/02.png"
+    handle: mywildancloud
+    username: Wildan nrs
+    handleUrl: "https://github.com/mywildancloud"
+cover: "https://img.freepik.com/free-vector/spring-landscape-scene_23-2148860692.jpg?t=st=1735654206~exp=1735657806~hmac=b65033387b5519b48c72a87333cf1a5d2462de255865104c612500161b248a8a&w=2000"
+---
+
+## Introduction to DocuBook Components
+
+DocuBook provides a robust set of components that enable developers to build dynamic, user-friendly, and visually appealing documentation. These components are designed to enhance the user experience, making it easier for readers to navigate, understand, and interact with the content.
+
+In this guide, we’ll explore the core components available in DocuBook and how you can integrate them into your documentation projects. For a complete list of components, visit the [official documentation](https://www.docubook.pro/docs/getting-started/components).
+
+## Key Components and Their Usage
+
+### 1. **Stepper**
+
+#### Preview
+
+<Stepper>
+  <StepperItem title="Step 1: Clone the DocuBook Repository">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec interdum,
+    felis sed efficitur tincidunt, justo nulla viverra enim, et maximus nunc
+    dolor in lorem.
+  </StepperItem>
+  <StepperItem title="Step 2: Access the Project Directory">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin non neque ut
+    eros auctor accumsan. Mauris a nisl vitae magna ultricies aliquam.
+  </StepperItem>
+  <StepperItem title="Step 3: Install Required Dependencies">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ut
+    ipsum nec nulla ultricies porttitor et non justo.
+  </StepperItem>
+</Stepper>
+
+#### Code
+
+```
+<Stepper>
+  <StepperItem title="Step 1: Clone the DocuBook Repository">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec interdum,
+    felis sed efficitur tincidunt, justo nulla viverra enim, et maximus nunc
+    dolor in lorem.
+  </StepperItem>
+  <StepperItem title="Step 2: Access the Project Directory">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin non neque ut
+    eros auctor accumsan. Mauris a nisl vitae magna ultricies aliquam.
+  </StepperItem>
+  <StepperItem title="Step 3: Install Required Dependencies">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ut
+    ipsum nec nulla ultricies porttitor et non justo.
+  </StepperItem>
+</Stepper>
+```
+
+### 2. **Note**
+
+#### Preview
+
+<Note type="note" title="Note">
+  This is a general note to convey information to the user.
+</Note>
+<Note type="danger" title="Danger">
+  This is a danger alert to notify the user of a critical issue.
+</Note>
+<Note type="warning" title="Warning">
+  This is a warning alert for issues that require attention.
+</Note>
+<Note type="success" title="Success">
+  This is a success message to inform the user of successful actions.
+</Note>
+
+#### Code
+
+```
+<Note type="note" title="Note">
+  This is a general note to convey information to the user.
+</Note>
+<Note type="danger" title="Danger">
+  This is a danger alert to notify the user of a critical issue.
+</Note>
+<Note type="warning" title="Warning">
+  This is a warning alert for issues that require attention.
+</Note>
+<Note type="success" title="Success">
+  This is a success message to inform the user of successful actions.
+</Note>
+```
+
+### 3. **Code Block**
+
+#### Preview
+
+```javascript:main.js showLineNumbers {3-4}
+function isRocketAboutToCrash() {
+    // Check if the rocket is stable
+    if (!isStable()) {
+        NoCrash(); // Prevent the crash
+    }
+}
+```
+
+#### Code
+
+````plaintext
+```javascript:main.js showLineNumbers {3-4}
+function isRocketAboutToCrash() {
+    // Check if the rocket is stable
+    if (!isStable()) {
+        NoCrash(); // Prevent the crash
+    }
+}```
+````
+
+## How to Integrate Components into Your Workflow
+
+1. **Install DocuBook**: Ensure you have DocuBook set up in your project. Refer to the [installation guide](https://www.docubook.pro/docs/getting-started).
+2. **Import Components**: Import the required components into your MDX files.
+3. **Customize**: Tailor the components to fit your documentation needs using props and styles.
+4. **Test and Deploy**: Preview your documentation locally and deploy it to your preferred hosting platform.
+
+## Conclusion
+
+DocuBook components are powerful tools for creating engaging and functional documentation. By incorporating these components, you can provide a seamless and intuitive experience for your users.
+
+Ready to get started? Explore the full range of components in the [DocuBook documentation](https://www.docubook.pro/docs/getting-started/components) and elevate your documentation today!
+
+🚀📚

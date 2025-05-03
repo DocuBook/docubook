@@ -1,0 +1,49 @@
+---
+title: Card Group
+description: This section previews the Card Group component.
+date: 20-02-2025
+---
+
+I have implemented the `card group` component into markdown which is ready to use.
+
+## Preview
+
+<CardGroup cols={2}>
+<Card title="Heading 1" icon="Heading1">
+  This is an example of card content with columns.
+</Card>
+<Card title="Heading 2" icon="Heading2">
+  This is an example of card content with columns.
+</Card>
+<Card title="Grid Card" icon="Grid" horizontal>
+    This is a horizontal card layout.
+</Card>
+<Card title="Horizontal Card" icon="Layout" horizontal>
+    This is a horizontal card layout.
+</Card>
+</CardGroup>
+
+## Props
+
+| Prop          | Type     | Default | Description                                             |
+| ------------- | -------- | ------- | ------------------------------------------------------- |
+| `cols`       | `number` | `{2}`    | By default 2 The number of columns per row                                |
+
+## Code
+
+```markdown
+<CardGroup cols={2}>
+<Card title="Heading 1" icon="Heading1">
+  This is an example of card content with columns.
+</Card>
+<Card title="Heading 2" icon="Heading2">
+  This is an example of card content with columns.
+</Card>
+<Card title="Grid Card" icon="Grid" horizontal>
+    This is a horizontal card layout.
+</Card>
+<Card title="Horizontal Card" icon="Layout" horizontal>
+    This is a horizontal card layout.
+</Card>
+</CardGroup>
+```

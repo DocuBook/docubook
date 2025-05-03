@@ -1,0 +1,57 @@
+/* GitHub-style editor customizations */
+.editor-container {
+  @apply relative font-mono text-sm leading-relaxed;
+  height: 100%;
+  min-height: 600px;
+}
+
+.editor-textarea {
+  @apply w-full h-full min-h-[600px] p-4 pl-14 bg-background resize-none focus:outline-none;
+  line-height: 1.5rem;
+  tab-size: 2;
+  counter-reset: line;
+}
+
+/* Line numbers */
+.editor-line-numbers {
+  @apply absolute left-0 top-0 bottom-0 w-10 bg-muted/30 border-r select-none;
+  padding: 1rem 0;
+  overflow: hidden;
+}
+
+.editor-line-numbers-content {
+  @apply text-right pr-2 text-muted-foreground/70;
+  font-size: 13px;
+  line-height: 1.5rem;
+}
+
+.editor-line-numbers-content > div {
+  height: 1.5rem;
+}
+
+.editor-line-numbers-content > div::before {
+  content: attr(data-line-number);
+  display: block;
+}
+
+/* Selection styling */
+.editor-textarea::selection {
+  @apply bg-primary/20;
+}
+
+.dark .editor-textarea::selection {
+  @apply bg-primary/30;
+}
+
+/* Scrollbar styling */
+.editor-textarea::-webkit-scrollbar {
+  @apply w-2;
+}
+
+.editor-textarea::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.editor-textarea::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/30;
+}
