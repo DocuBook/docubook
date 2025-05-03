@@ -38,8 +38,8 @@ export function Logo() {
 
   return (
     <Link href="/" className="flex items-center gap-1.5">
-      <Image src={navbar.logo.src} alt={navbar.logo.alt} width="42" height="42" />
-      <h2 className="font-bold font-code text-lg">{navbar.logoText}</h2>
+      <Image src={navbar.logo.src} alt={navbar.logo.alt} width="24" height="24" />
+      <h2 className="font-bold font-code text-md">{navbar.logoText}</h2>
     </Link>
   );
 }
