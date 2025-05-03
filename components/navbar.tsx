@@ -25,7 +25,7 @@ export function Navbar() {
             <div className="items-center hidden gap-4 text-sm font-medium lg:flex text-muted-foreground">
               <NavMenu />
             </div>
-            <Separator className="hidden sm:flex my-4 h-9" orientation="vertical" />
+            <Separator className="hidden lg:flex my-4 h-9" orientation="vertical" />
             <Search />
         </div>
       </div>
