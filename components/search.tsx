@@ -96,14 +96,14 @@ export default function Search() {
         }}
       >
         <DialogTrigger asChild>
-          <div className="relative flex-1 cursor-pointer max-w-[160px]">
+          <div className="relative flex-1 cursor-pointer max-w-[140px]">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-500 dark:text-stone-400" />
             <Input
-              className="md:w-full rounded-md dark:bg-background/95 bg-background border h-9 pl-10 pr-0 sm:pr-4 text-sm shadow-sm overflow-ellipsis"
+              className="md:w-full rounded-full dark:bg-background/95 bg-background border h-9 pl-10 pr-0 sm:pr-4 text-sm shadow-sm overflow-ellipsis"
               placeholder="Search"
               type="search"
             />
-            <div className="flex absolute top-1/2 -translate-y-1/2 right-2 text-xs font-medium font-mono items-center gap-0.5 dark:bg-black dark:border dark:border-white/20 bg-stone-200/50 border border-black/40 p-1 rounded-sm">
+            <div className="flex absolute top-1/2 -translate-y-1/2 right-2 text-xs font-medium font-mono items-center gap-0.5 dark:bg-accent bg-accent text-white px-2 py-0.5 rounded-full">
               <CommandIcon className="w-3 h-3" />
               <span>K</span>
             </div>

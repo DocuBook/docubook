@@ -4,7 +4,7 @@
 
 > **Note**: This application is a fork of [AriaDocs](https://github.com/nisabmohd/Aria-Docs), created by [Nisab Mohd](https://github.com/nisabmohd). DocuBook provides an alternative to the documentation solution found on [Mintlify](https://mintlify.com/), utilizing `.mdx` (Markdown + JSX) for content creation and management.
 
-[![Deploy with 
+[![Deploy with
 Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/gitfromwildan/docubook)
 
 ## Features
