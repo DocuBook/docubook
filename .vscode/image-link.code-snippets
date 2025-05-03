@@ -1,0 +1,16 @@
+{
+    "DocuImage": {
+      "prefix": "image",
+      "body": [
+        "![${1:Alt text for the image}](${2:https://via.placeholder.com/150})"
+      ],
+      "description": "Snippet untuk menampilkan image komponen."
+    },
+    "DocuLink": {
+      "prefix": "link",
+      "body": [
+        "[${1:Text Link}](${2:https://www.openai.com})"
+      ],
+      "description": "Snippet untuk menampilkan link komponen."
+    }
+}

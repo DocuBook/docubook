@@ -1,0 +1,33 @@
+{
+    "DocuTabs": {
+      "prefix": "tabs",
+      "body": [
+        "<Tabs defaultValue=\"${1:java}\" className=\"pt-5 pb-1\">",
+        "  <TabsList>",
+        "    <TabsTrigger value=\"${2:java}\">Java</TabsTrigger>",
+        "    <TabsTrigger value=\"${3:typescript}\">TypeScript</TabsTrigger>",
+        "  </TabsList>",
+        "  <TabsContent value=\"${4:java}\">",
+        "    ```java",
+        "    // HelloWorld.java",
+        "    public class HelloWorld {",
+        "        public static void main(String[] args) {",
+        "            System.out.println(\"Hello, World!\");",
+        "        }",
+        "    }",
+        "    ```",
+        "  </TabsContent>",
+        "  <TabsContent value=\"${5:typescript}\">",
+        "    ```typescript",
+        "    // helloWorld.ts",
+        "    function helloWorld(): void {",
+        "        console.log(\"Hello, World!\");",
+        "    }",
+        "    helloWorld();",
+        "    ```",
+        "  </TabsContent>",
+        "</Tabs>"
+      ],
+      "description": "Create a DocuTabs component with Java and TypeScript examples."
+    }
+  }

@@ -1,0 +1,9 @@
+{
+    "DocuVideo": {
+        "prefix": "youtube",
+        "body": [
+            "<Youtube videoId=\"${1:zQnBQ4tB3ZA}\" />"
+        ],
+        "description": "Snippet untuk menampilkan komponen video Youtube."
+    }
+}

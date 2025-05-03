@@ -1,0 +1,16 @@
+{
+    "DocuButton": {
+      "prefix": "button",
+      "body": [
+        "<Button",
+        "    text=\"${1:Learn More}\"",
+        "    href=\"${2:https://learn.example.com}\"",
+        "    icon=\"${3:MoveUpRight}\"",
+        "    size=\"${4:md}\"",
+        "    target=\"${5:_blank}\"",
+        "    variation=\"${6:primary}\"",
+        "/>"
+      ],
+      "description": "Create a DocuButton component on markdown."
+    }
+  }

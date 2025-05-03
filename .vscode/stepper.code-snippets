@@ -1,0 +1,24 @@
+{
+    "DocuStepper": {
+      "prefix": "stepper",
+      "body": [
+        "<Stepper>",
+        "  <StepperItem title=\"${1:Step 1: Clone the DocuBook Repository}\">",
+        "    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec interdum,",
+        "    felis sed efficitur tincidunt, justo nulla viverra enim, et maximus nunc",
+        "    dolor in lorem.",
+        "  </StepperItem>${2:}",
+        "</Stepper>"
+      ],
+      "description": "Snippet untuk menampilkan stepper komponen."
+    },
+    "DocuStepperItem": {
+      "prefix": "item",
+      "body": [
+        "<StepperItem title=\"${1:Step X: Your Step Title}\">",
+        "  ${2:Your step description here.}",
+        "</StepperItem>${3:}"
+      ],
+      "description": "Snippet untuk menambahkan item baru ke dalam Stepper."
+    }
+}

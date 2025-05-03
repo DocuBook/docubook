@@ -1,0 +1,16 @@
+{
+    "DocuCodeBlock": {
+        "prefix": "codeblock",
+        "description": "Checks if the rocket is stable and prevents a crash if it's not.",
+        "body": [
+            "```${1:javascript:main.js} showLineNumbers {${2:3-4}}",
+            "function isRocketAboutToCrash() {",
+            "    // Check if the rocket is stable",
+            "    if (!isStable()) {",
+            "        NoCrash(); // Prevent the crash",
+            "    }",
+            "}",
+            "```",
+        ],
+    }
+}

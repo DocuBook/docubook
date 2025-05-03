@@ -1,0 +1,14 @@
+{
+    "DocuAccordion": {
+      "prefix": "accordion",
+      "body": [
+        "<Accordion title=\"${1:Plain Text}\">",
+        "    this is an example of plain text content from the accordion component and below is markdown ;",
+        "    1. number one",
+        "    2. number two",
+        "    3. number three",
+        "</Accordion>"
+      ],
+      "description": "Create a DocuAccordion component with markdown list."
+    }
+  }

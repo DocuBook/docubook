@@ -1,0 +1,9 @@
+{
+    "DocuTooltips": {
+      "prefix": "tooltips",
+      "body": [
+        "${1:What do you know about }<Tooltip text=\"${2:DocuBook}\" tip=\"${3:npx @docubook/create@latest}\" /> ${4:? Create interactive nested documentations using MDX.}",
+      ],
+      "description": "Create a DocuTooltips component with version examples."
+    }
+  }
