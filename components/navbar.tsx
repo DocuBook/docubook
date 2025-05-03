@@ -16,7 +16,7 @@ export function Navbar() {
         <div className="flex items-center gap-5">
           <SheetLeftbar />
           <div className="flex items-center gap-6">
-            <div className="hidden sm:flex">
+            <div className="hidden lg:flex">
               <Logo />
             </div>
           </div>
