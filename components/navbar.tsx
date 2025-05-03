@@ -5,6 +5,7 @@ import Search from "@/components/search";
 import Anchor from "@/components/anchor";
 import { SheetLeftbar } from "@/components/leftbar";
 import { SheetClose } from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
 import docuConfig from "@/docu.json"; // Import JSON
 
 export function Navbar() {
@@ -18,13 +19,13 @@ export function Navbar() {
             <div className="hidden sm:flex">
               <Logo />
             </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
             <div className="items-center hidden gap-4 text-sm font-medium lg:flex text-muted-foreground">
               <NavMenu />
             </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
+            <Separator className="hidden sm:flex my-4 h-9" orientation="vertical" />
             <Search />
         </div>
       </div>
@@ -36,9 +37,9 @@ export function Logo() {
   const { navbar } = docuConfig; // Extract navbar from JSON
 
   return (
-    <Link href="/" className="flex items-center gap-2.5">
-      <Image src={navbar.logo.src} alt={navbar.logo.alt} width="24" height="24" />
-      <h2 className="font-bold font-code text-md">{navbar.logoText}</h2>
+    <Link href="/" className="flex items-center gap-1.5">
+      <Image src={navbar.logo.src} alt={navbar.logo.alt} width="42" height="42" />
+      <h2 className="font-bold font-code text-lg">{navbar.logoText}</h2>
     </Link>
   );
 }
