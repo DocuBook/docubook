@@ -9,24 +9,22 @@ interface EditThisPageProps {
 
 const EditThisPage: React.FC<EditThisPageProps> = ({ filePath }) => {
   const { repository } = docuConfig;
+
+  if (!repository?.editLink || !repository.url || !repository.editPathTemplate) return null;
+
   const editUrl = `${repository.url}${repository.editPathTemplate.replace("{filePath}", filePath)}`;
 
   return (
-    <div style={{ textAlign: 'right' }}>
+    <div className="text-right">
       <Link
         href={editUrl}
-        target='_blank'
+        target="_blank"
         rel="noopener noreferrer"
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          textDecoration: 'none',
-          fontWeight: 'bold',
-        }}
+        aria-label="Edit this page on Git"
+        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground no-underline"
       >
-        <span className='text-primary text-sm max-[480px]:hidden'>Edit this page</span>
-        <SquarePenIcon className="w-4 h-4 text-primary" />
+        <span className="flex justify-start items-center gap-1">Edit this page
+        <SquarePenIcon className="w-4 h-4" /></span>
       </Link>
     </div>
   );

@@ -87,14 +87,18 @@ export default async function DocsPage({ params: { slug = [] } }: PageProps) {
           <h1 className="text-3xl !-mt-0.5">{title}</h1>
           <p className="-mt-4 text-muted-foreground text-[16.5px]">{description}</p>
           <div>{res.content}</div>
-          <div className="my-8 flex justify-between items-center border-b-2 border-x-muted-foreground">
+          <div
+            className={`my-8 flex items-center border-b-2 border-x-muted-foreground ${
+                docuConfig.repository?.editLink ? "justify-between" : "justify-end"
+            }`}
+            >
+            {docuConfig.repository?.editLink && <EditThisPage filePath={filePath} />}
             {date && (
-              <p className="text-[13px] text-muted-foreground">
+                <p className="text-[13px] text-muted-foreground">
                 Published on {formatDate2(date)}
-              </p>
+                </p>
             )}
-            <EditThisPage filePath={filePath} />
-          </div>
+            </div>
           <Pagination pathname={pathName} />
         </Typography>
         <ScrollToTop />

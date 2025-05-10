@@ -1,3 +1,16 @@
+## [1.8.5] - 2025-05-10
+
+> Add sponsor card on single docs page
+
+### Added
+
+- boolean show/hide `edit on github`
+
+### Improved
+
+- adjusment docu.json
+- adjustment navbar, footer and components
+
 ## [1.8.0] - 2025-03-01
 
 > Now looks more modern and clean which is a big change in layout and design
