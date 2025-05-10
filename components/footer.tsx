@@ -16,7 +16,7 @@ export function Footer() {
                 <FooterButtons />
             </div>
         </div>
-        <div className="flex flex-col items-start justify-center w-full gap-4 mt-4 xl:items-end lg:w-2/5">
+        <div className="flex flex-col items-center justify-center w-full gap-4 mt-4 lg:items-end lg:w-2/5">
             <p className="text-center text-muted-foreground">
                 Copyright © {new Date().getFullYear()} {footer.copyright} - <MadeWith />
             </p>

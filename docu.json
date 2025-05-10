@@ -50,7 +50,8 @@
     },
     "repository": {
       "url": "https://gitlab.com/mywildancloud/docubook",
-      "editPathTemplate": "/blob/main/{filePath}"
+      "editPathTemplate": "/blob/main/{filePath}",
+      "editLink": true
     },
     "routes": [
     {
