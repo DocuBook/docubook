@@ -24,13 +24,13 @@ interface VersionEntryProps {
   isLast?: boolean;
 }
 
-export function VersionEntry({ 
-  version, 
-  date, 
+export function VersionEntry({
+  version,
+  date,
   description,
-  image, 
+  image,
   changes,
-  isLast 
+  isLast
 }: VersionEntryProps) {
   const [expanded, setExpanded] = useState(false);
 
@@ -45,7 +45,7 @@ export function VersionEntry({
               {formatDate2(date)}
             </time>
           </div>
-          
+
           {description && (
             <p className="text-dark text-xl">{description}</p>
           )}
@@ -69,8 +69,8 @@ export function VersionEntry({
         <div className="space-y-6">
           {Object.entries(changes).map(([type, items]) => (
             items && items.length > 0 && (
-              <ChangeGroup 
-                key={type} 
+              <ChangeGroup
+                key={type}
                 type={type as keyof typeof changes}
                 changes={items}
                 expanded={expanded}
@@ -82,10 +82,10 @@ export function VersionEntry({
         {/* Show more/less button */}
         {Object.values(changes).some(items => items && items.length > 5) && (
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={() => setExpanded(!expanded)}
-            className="mt-4 text-muted-foreground hover:text-foreground"
+            className="mt-4 text-muted-foreground hover:bg-transparent hover:text-accent border-none"
           >
             {expanded ? (
               <>

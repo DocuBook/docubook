@@ -30,12 +30,20 @@ export function Footer() {
 }
 
 export function FooterButtons() {
-  const { footer } = docuConfig;
+  const footer = docuConfig?.footer;
+
+  // Jangan render apapun jika tidak ada data sosial
+  if (!footer?.social || !Array.isArray(footer.social) || footer.social.length === 0) {
+    return null;
+  }
 
   return (
     <>
-      {footer.social?.map((item) => {
-        const IconComponent = (LucideIcons[item.iconName as keyof typeof LucideIcons] ?? LucideIcons["Globe"]) as unknown as React.FC<{ className?: string }>;
+      {footer.social.map((item) => {
+        const IconComponent =
+          (LucideIcons[item.iconName as keyof typeof LucideIcons] ??
+            LucideIcons["Globe"]) as React.FC<{ className?: string }>;
+
         return (
           <Link
             key={item.name}
