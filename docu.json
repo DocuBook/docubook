@@ -17,12 +17,12 @@
       "social": [
         {
             "name": "Gitlab",
-            "url": "https://gitlab.com/mywildancloud/docubook",
+            "url": "https://gitlab.com/mywildancloud",
             "iconName": "GitlabIcon"
         },
         {
             "name": "Instagram",
-            "url": "https://www.instagram.com/wildan.nrs/",
+            "url": "https://www.instagram.com/wildan.nrs",
             "iconName": "InstagramIcon"
         },
         {
@@ -52,6 +52,15 @@
       "url": "https://gitlab.com/mywildancloud/docubook",
       "editPathTemplate": "/blob/main/{filePath}",
       "editLink": true
+    },
+    "sponsor": {
+        "title": "Our Sponsor",
+        "item": {
+        "title": "Vercel",
+        "description": "Deploy your Next.js app with zero configuration.",
+        "image": "/images/vercel.png",
+        "url": "https://vercel.com"
+        }
     },
     "routes": [
     {

@@ -1,3 +1,5 @@
+"use client"
+import { useState } from "react";
 import {
   Sheet,
   SheetClose,
@@ -7,7 +9,7 @@ import {
 } from "@/components/ui/sheet";
 import { Logo, NavMenu } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
-import { AlignLeftIcon } from "lucide-react";
+import { AlignLeftIcon, ArrowLeftFromLine, ArrowRightFromLine } from "lucide-react";
 import { FooterButtons } from "@/components/footer";
 import { DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -15,10 +17,32 @@ import DocsMenu from "@/components/docs-menu";
 import { ModeToggle } from "@/components/theme-toggle";
 
 export function Leftbar() {
+  const [collapsed, setCollapsed] = useState(false);
+
   return (
-    <aside className="lg:flex hidden flex-[1.5] min-w-[238px] sticky top-16 flex-col h-[93.75vh] overflow-y-auto">
-      <ScrollArea className="py-4">
-        <DocsMenu />
+    <aside
+      className={`sticky lg:flex hidden top-16 h-[calc(100vh-4rem)] border-r bg-background transition-all duration-300
+      ${collapsed ? "w-[0px]" : "w-[250px]"} flex flex-col pr-2`}
+    >
+      {/* Toggle Button */}
+      <div className="absolute top-0 right-0 py-2 px-0 ml-6 z-10">
+        <Button
+          size="icon"
+          variant="outline"
+          className="hover:bg-transparent hover:text-inherit border-none text-muted-foreground"
+          onClick={() => setCollapsed((prev) => !prev)}
+        >
+          {collapsed ? (
+            <ArrowRightFromLine size={18} />
+          ) : (
+            <ArrowLeftFromLine size={18} />
+          )}
+        </Button>
+      </div>
+
+      {/* Scrollable DocsMenu */}
+      <ScrollArea className="flex-1 px-2 pb-4">
+        {!collapsed && <DocsMenu />}
       </ScrollArea>
     </aside>
   );
@@ -36,7 +60,7 @@ export function SheetLeftbar() {
         <DialogTitle className="sr-only">Menu</DialogTitle>
         <SheetHeader>
           <SheetClose className="px-5" asChild>
-            <Logo />
+            <span className="px-2"><Logo /></span>
           </SheetClose>
         </SheetHeader>
         <div className="flex flex-col gap-4 overflow-y-auto">

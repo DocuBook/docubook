@@ -4,12 +4,27 @@
 
 ### Added
 
+- Expandables Leftbar
+- sponsor badges or ads
 - boolean show/hide `edit on github`
+- with the same code run anywhere (bun or nodejs)
+- add fronmatter (metadata) to playground editor
 
 ### Improved
 
 - adjusment docu.json
 - adjustment navbar, footer and components
+
+### Fixed
+
+- bun compability rename .js to common js
+- cli manage packageManager on package.json
+- inconsistent design moved to better UI/UX
+- error handle render footer.social
+
+### Removed
+
+- remove confused and verbose cli on installer
 
 ## [1.8.0] - 2025-03-01
 

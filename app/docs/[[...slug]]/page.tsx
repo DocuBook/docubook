@@ -88,7 +88,7 @@ export default async function DocsPage({ params: { slug = [] } }: PageProps) {
           <p className="-mt-4 text-muted-foreground text-[16.5px]">{description}</p>
           <div>{res.content}</div>
           <div
-            className={`my-8 flex items-center border-b-2 border-x-muted-foreground ${
+            className={`my-8 flex items-center border-b-2 border-dashed border-x-muted-foreground ${
                 docuConfig.repository?.editLink ? "justify-between" : "justify-end"
             }`}
             >
