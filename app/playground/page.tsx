@@ -187,23 +187,24 @@ export default function PlaygroundPage() {
     }
   };
 
-  const insertAtCursor = (textArea: HTMLTextAreaElement, text: string) => {
+    const insertAtCursor = (textArea: HTMLTextAreaElement, text: string) => {
     const start = textArea.selectionStart;
     const end = textArea.selectionEnd;
     const before = markdown.substring(0, start);
     const after = markdown.substring(end);
 
-    // Menambahkan satu baris kosong sebelum dan sesudah komponen
-    const newText = `${before}${text}\n${after}`;
+    const needsLeadingNewline = before && !before.endsWith('\n\n') ? '\n\n' : '';
+    const needsTrailingNewline = after && !after.startsWith('\n\n') ? '\n\n' : '';
+
+    const newText = `${before}${needsLeadingNewline}${text}${needsTrailingNewline}${after}`;
     setMarkdown(newText);
 
     requestAnimationFrame(() => {
-      textArea.focus();
-      const newPosition = start + text.length + 1;
-      textArea.setSelectionRange(newPosition, newPosition);
+        textArea.focus();
+        const newPosition = before.length + needsLeadingNewline.length + text.length + 1;
+        textArea.setSelectionRange(newPosition, newPosition);
     });
-  };
-
+    };
 
   if (isMobile) {
     return <MobileMessage />;

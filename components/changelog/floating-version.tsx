@@ -51,7 +51,7 @@ export function FloatingVersionToc({ versions }: FloatingVersionTocProps) {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 lg:hidden z-50">
+    <div className="fixed bottom-4 right-4 md:hidden z-50">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button variant="outline" className="rounded-full shadow-lg px-4 py-2 flex items-center gap-2">

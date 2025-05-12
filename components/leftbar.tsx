@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/sheet";
 import { Logo, NavMenu } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
-import { AlignLeftIcon, ArrowLeftFromLine, ArrowRightFromLine } from "lucide-react";
+import { AlignLeftIcon, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { FooterButtons } from "@/components/footer";
 import { DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -22,7 +22,7 @@ export function Leftbar() {
   return (
     <aside
       className={`sticky lg:flex hidden top-16 h-[calc(100vh-4rem)] border-r bg-background transition-all duration-300
-      ${collapsed ? "w-[0px]" : "w-[250px]"} flex flex-col pr-2`}
+      ${collapsed ? "w-[48px]" : "w-[250px]"} flex flex-col pr-2`}
     >
       {/* Toggle Button */}
       <div className="absolute top-0 right-0 py-2 px-0 ml-6 z-10">
@@ -33,9 +33,9 @@ export function Leftbar() {
           onClick={() => setCollapsed((prev) => !prev)}
         >
           {collapsed ? (
-            <ArrowRightFromLine size={18} />
+            <PanelLeftOpen size={18} />
           ) : (
-            <ArrowLeftFromLine size={18} />
+            <PanelLeftClose size={18} />
           )}
         </Button>
       </div>

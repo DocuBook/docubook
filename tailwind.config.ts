@@ -9,6 +9,7 @@ const config = {
     "./src/**/*.{ts,tsx}",
   ],
   prefix: "",
+  safelist: ["line-clamp-3","line-clam-2"],
   theme: {
   	container: {
   		center: true,
