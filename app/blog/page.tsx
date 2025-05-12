@@ -4,6 +4,8 @@ import { formatDate2, stringToDate } from "@/lib/utils";
 import { getMetadata } from "@/app/layout";
 import Image from "next/image";
 import Link from "next/link";
+import { AuroraText } from "@/components/ui/aurora";
+import { ShineBorder } from "@/components/ui/shine-border";
 import docuConfig from "@/docu.json";
 
 export const metadata = getMetadata({
@@ -16,16 +18,17 @@ export default async function BlogIndexPage() {
     (a, b) => stringToDate(b.date).getTime() - stringToDate(a.date).getTime()
   );
   return (
-    <div className="w-full mx-auto flex flex-col gap-1 sm:min-h-[91vh] min-h-[88vh] py-2">
-      <div className="mb-7 flex flex-col gap-2">
-        <h1 className="text-2xl font-extrabold">
-          Blog Posts
+    <div className="flex flex-col items-center justify-center px-2 py-8 text-center sm:py-36">
+      <div className="w-full max-w-[800px] pb-8">
+        <AuroraText className="text-lg"># Stay Informed, Stay Ahead</AuroraText>
+        <h1 className="mb-4 text-2xl font-bold sm:text-5xl">
+            Blog Posts
         </h1>
-        <p className="text-lg text-muted-foreground mt-2">
-          Discover the latest updates, tutorials, and insights on {meta.title}.
+        <p className="mb-8 sm:text-xl text-muted-foreground">
+            Explore updates, tips, and deep dives from the {meta.title}.
         </p>
-      </div>
-      <div className="grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 sm:gap-8 gap-4 mb-5">
+       </div>
+      <div className="text-left grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 sm:gap-8 gap-4 my-6">
         {blogs.map((blog) => (
           <BlogCard {...blog} slug={blog.slug} key={blog.slug} />
         ))}
@@ -45,9 +48,8 @@ function BlogCard({
   return (
     <Link
       href={`/blog/${slug}`}
-      className="flex flex-col gap-2 items-start border rounded-md py-5 px-3 min-h-[400px]"
+      className="flex flex-col gap-2 items-start border rounded-md max-h-[420px] min-h-[420px]"
     >
-      <h3 className="text-md font-semibold -mt-1 pr-7">{title}</h3>
       <div className="w-full">
         <Image
           src={cover}
@@ -55,11 +57,14 @@ function BlogCard({
           width={400}
           height={150}
           quality={80}
-          className="w-full rounded-md object-cover h-[180px] border"
+          className="w-full rounded-md object-cover h-[200px]"
         />
       </div>
-      <p className="text-sm text-muted-foreground">{description}</p>
-      <div className="flex items-center justify-between w-full mt-auto">
+      <div className="flex flex-col items-start px-3 py-3 gap-2 mb-auto">
+        <h3 className="text-md font-semibold line-clamp-2">{title}</h3>
+        <p className="text-sm text-muted-foreground line-clamp-3">{description}</p>
+      </div>
+      <div className="flex items-center justify-between w-full px-3 mb-6">
         <p className="text-[13px] text-muted-foreground">
           Published on {formatDate2(date)}
         </p>
