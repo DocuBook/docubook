@@ -25,7 +25,7 @@ export function Leftbar() {
       ${collapsed ? "w-[48px]" : "w-[250px]"} flex flex-col pr-2`}
     >
       {/* Toggle Button */}
-      <div className="absolute top-0 right-0 py-2 px-0 ml-6 z-10">
+      <div className="absolute top-0 right-0 py-6 px-0 ml-6 z-10 -mt-4">
         <Button
           size="icon"
           variant="outline"
