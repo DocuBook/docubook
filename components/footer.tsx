@@ -1,7 +1,37 @@
 import Link from "next/link";
 import { ModeToggle } from "@/components/theme-toggle";
-import docuConfig from "@/docu.json";
-import * as LucideIcons from "lucide-react"; // Import all icons
+import docuData from "@/docu.json";
+import * as LucideIcons from "lucide-react";
+
+// Define types for docu.json
+interface SocialItem {
+  name: string;
+  url: string;
+  iconName: string;
+}
+
+interface FooterConfig {
+  copyright: string;
+  social?: SocialItem[];
+}
+
+interface MetaConfig {
+  title: string;
+  description: string;
+  baseURL: string;
+  favicon: string;
+}
+
+interface DocuConfig {
+  footer: FooterConfig;
+  meta: MetaConfig;
+  navbar: any;
+  repository: any;
+  routes: any[];
+}
+
+// Type assertion for docu.json
+const docuConfig = docuData as DocuConfig;
 
 export function Footer() {
   const { footer } = docuConfig;
@@ -33,7 +63,7 @@ export function FooterButtons() {
   const footer = docuConfig?.footer;
 
   // Jangan render apapun jika tidak ada data sosial
-  if (!footer?.social || !Array.isArray(footer.social) || footer.social.length === 0) {
+  if (!footer || !Array.isArray(footer.social) || footer.social.length === 0) {
     return null;
   }
 
