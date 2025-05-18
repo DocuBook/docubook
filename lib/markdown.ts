@@ -12,18 +12,18 @@ import matter from "gray-matter";
 
 // custom components imports
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Pre from "@/components/markdown/pre";
-import Note from "@/components/markdown/note";
-import { Stepper, StepperItem } from "@/components/markdown/stepper";
-import Image from "@/components/markdown/image";
-import Link from "@/components/markdown/link";
-import Outlet from "@/components/markdown/outlet";
-import Youtube from "@/components/markdown/youtube";
-import Tooltip from "@/components/markdown/tooltips";
-import Card from "@/components/markdown/card";
-import Button from "@/components/markdown/button";
-import Accordion from "@/components/markdown/accordion";
-import CardGroup from "@/components/markdown/cardgroup";
+import Pre from "@/components/markdown/PreMdx";
+import Note from "@/components/markdown/NoteMdx";
+import { Stepper, StepperItem } from "@/components/markdown/StepperMdx";
+import Image from "@/components/markdown/ImageMdx";
+import Link from "@/components/markdown/LinkMdx";
+import Outlet from "@/components/markdown/OutletMdx";
+import Youtube from "@/components/markdown/YoutubeMdx";
+import Tooltip from "@/components/markdown/TooltipsMdx";
+import Card from "@/components/markdown/CardMdx";
+import Button from "@/components/markdown/ButtonMdx";
+import Accordion from "@/components/markdown/AccordionMdx";
+import CardGroup from "@/components/markdown/CardGroupMdx";
 
 // add custom components
 const components = {

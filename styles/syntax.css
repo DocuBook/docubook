@@ -99,11 +99,6 @@
   border-radius: 8px; /* Sudut melengkung pada iframe */
 }
 
-.youtube:hover {
-  transform: scale(1.05); /* Efek hover zoom */
-  transition: transform 0.3s ease;
-}
-
 li#changelog {
   position: relative;
   padding-left: 1.5em;
