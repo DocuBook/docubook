@@ -8,8 +8,7 @@
       "menu": [
         { "title": "Docs", "href": "/docs/getting-started/introduction" },
         { "title": "Changelog", "href": "/changelog" },
-        { "title": "Blog", "href": "/blog" },
-        { "title": "Playground", "href": "/playground" }
+        { "title": "Blog", "href": "/blog" }
       ]
     },
     "footer": {
