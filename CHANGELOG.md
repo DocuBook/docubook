@@ -1,3 +1,19 @@
+## [1.9.0] - 2025-05-19
+
+> New Keyboard component to show keyboard shortcut on docs page
+
+### Added
+
+- New Keyboard component with props show, type, children
+- Snippet keyboard component
+
+### Improved
+
+- Support custom content
+- Support platform type (mac or window)
+- Support automatic rendering of platform-specific key symbols
+- Rename lowercase to camelCase for markdown component
+
 ## [1.8.5] - 2025-05-10
 
 > Add sponsor card on single docs page

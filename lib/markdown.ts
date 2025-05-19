@@ -24,6 +24,7 @@ import Card from "@/components/markdown/CardMdx";
 import Button from "@/components/markdown/ButtonMdx";
 import Accordion from "@/components/markdown/AccordionMdx";
 import CardGroup from "@/components/markdown/CardGroupMdx";
+import Kbd from "@/components/markdown/KeyboardMdx";
 
 // add custom components
 const components = {
@@ -44,6 +45,7 @@ const components = {
   Button,
   Accordion,
   CardGroup,
+  Kbd,
 };
 
 // can be used for other pages like blogs, Guides etc

@@ -81,6 +81,7 @@
             { "title": "Card Group", "href": "/card-group" },
             { "title": "Code Block", "href": "/code-block" },
             { "title": "Image", "href": "/image" },
+            { "title": "Keyboard", "href": "/keyboard" },
             { "title": "Link", "href": "/link" },
             { "title": "Note", "href": "/note" },
             { "title": "Release Note", "href": "/release-note" },
