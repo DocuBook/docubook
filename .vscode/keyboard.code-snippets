@@ -1,0 +1,23 @@
+{
+    "Keyboard - Mac": {
+        "prefix": "keymac",
+        "body": [
+            "<Kbd show=\"${1:ctrl}\" type=\"mac\" />"
+        ],
+        "description": "Mac keyboard shortcut."
+    },
+    "Keyboard - Windows": {
+        "prefix": "keywin",
+        "body": [
+            "<Kbd show=\"${1:ctrl}\" type=\"windows\" />"
+        ],
+        "description": "Windows keyboard shortcut."
+    },
+    "Keyboard - Custom": {
+        "prefix": "keycustom",
+        "body": [
+            "<Kbd show=\"${1:custom}\">${2:Custom}</Kbd>"
+        ],
+        "description": "Custom keyboard shortcut."
+    }
+}
