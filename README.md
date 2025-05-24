@@ -2,8 +2,6 @@
 
 **DocuBook** is a documentation web project designed to provide a simple and user-friendly interface for accessing various types of documentation. This site is crafted for developers and teams who need quick access to references, guides, and essential documents.
 
-> **Note**: This application is a fork of [AriaDocs](https://github.com/nisabmohd/Aria-Docs), created by [Nisab Mohd](https://github.com/nisabmohd). DocuBook provides an alternative to the documentation solution found on [Mintlify](https://mintlify.com/), utilizing `.mdx` (Markdown + JSX) for content creation and management.
-
 [![Deploy with
 Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/gitfromwildan/docubook)
 

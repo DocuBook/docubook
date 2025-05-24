@@ -34,14 +34,22 @@ export function Navbar() {
 }
 
 export function Logo() {
-  const { navbar } = docuConfig; // Extract navbar from JSON
+    const { navbar } = docuConfig; // Extract navbar from JSON
 
-  return (
-    <Link href="/" className="flex items-center gap-1.5">
-      <Image src={navbar.logo.src} alt={navbar.logo.alt} width="24" height="24" />
-      <h2 className="font-bold font-code text-md">{navbar.logoText}</h2>
-    </Link>
-  );
+    return (
+      <Link href="/" className="flex items-center gap-1.5">
+        <div className="relative w-8 h-8">
+          <Image
+            src={navbar.logo.src}
+            alt={navbar.logo.alt}
+            fill
+            sizes="32px"
+            className="object-contain"
+          />
+        </div>
+        <h2 className="font-bold font-code text-md">{navbar.logoText}</h2>
+      </Link>
+    );
 }
 
 export function NavMenu({ isSheet = false }) {

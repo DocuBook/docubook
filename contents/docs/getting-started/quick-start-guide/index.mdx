@@ -1,157 +1,127 @@
 ---
 title: Quick Start Guide
-description: This section provides an overview of Quick Start Guide.
-date: 29-11-2024
+description: Get up and running with DocuBook in minutes with this comprehensive guide
+date: 20-05-2025
 ---
 
-Follow these simple instructions to set up your project efficiently and begin creating content without delay!:
+Welcome to DocuBook! This guide will help you set up your documentation site quickly and efficiently.
 
-## Homepage
+## Prerequisites
 
-to change the homepage you can open the app folder.
+Before we begin, make sure you have the following installed:
+
+- [Git](https://git-scm.com/)
+- [Node.js 18+](https://nodejs.org/) or [Bun 1.0+](https://bun.sh/)
+- A package manager (npm, yarn, or pnpm)
+
+## Installation
+
+<Note type="note" title="Note">
+  Follow the instructions on the [installation page](/docs/getting-started/installation) to install the required dependencies and set up your project.
+</Note>
+
+## Project Setup
+
+### Customize Branding
 
 <Stepper>
-  <StepperItem title="Step 1: App">
-    Open app folder.
+  <StepperItem title="Step 1: Add Favicon">
+    Place your favicon at `public/favicon.ico`
   </StepperItem>
-  <StepperItem title="Step 2: Page.tsx">
-    Edit page.tsx file for home content.
+  <StepperItem title="Step 2: Add Logo">
+    Place your logo at `public/images/docu.svg` (SVG format recommended)
+  </StepperItem>
+  <StepperItem title="Step 3: Update Site Info">
+    Edit `docu.json` to update site name, description, and other settings
   </StepperItem>
 </Stepper>
 
-## Docu.json
-Change logo, menu, routes and footer directly in docu.json
+## Creating Content
 
-<Accordion title="default code">
-```json:docu.json
-{
-    "navbar": {
-      "logo": {
-        "src": "/images/docu.svg",
-        "alt": "DocuBook Logo"
-      },
-      "logoText": "DocuBook",
-      "menu": [
-        { "title": "Docs", "href": "/docs/getting-started/introduction" },
-        { "title": "Changelog", "href": "/changelog" },
-        { "title": "Blog", "href": "/blog" },
-        { "title": "Playground", "href": "/playground" }
-      ]
-    },
-    "footer": {
-      "copyright": "DocuBook",
-      "social": [
-        {
-            "name": "Gitlab",
-            "url": "https://gitlab.com/mywildancloud/docubook",
-            "iconName": "GitlabIcon"
-        },
-        {
-            "name": "Instagram",
-            "url": "https://www.instagram.com/wildan.nrs/",
-            "iconName": "InstagramIcon"
-        },
-        {
-            "name": "Facebook",
-            "url": "https://www.facebook.com/wildan.nrsh",
-            "iconName": "FacebookIcon"
-        },
-        {
-            "name": "Twitter",
-            "url": "https://x.com/wildan_nrss",
-            "iconName": "TwitterIcon"
-        },
-        {
-            "name": "Youtube",
-            "url": "https://www.youtube.com/@wildan.nrs_",
-            "iconName": "YoutubeIcon"
-        }
-      ]
-    },
-    "meta": {
-      "baseURL": "https://docubook.pro",
-      "title": "DocuBook",
-      "description": "DocuBook is a modern documentation platform for building, deploying, and managing your docs with ease.",
-      "favicon": "/favicon.ico"
-    },
-    "repository": {
-      "url": "https://gitlab.com/mywildancloud/docubook",
-      "editPathTemplate": "/blob/main/{filePath}"
-    },
-    "routes": [
-    {
-      "title": "Getting Started",
-      "href": "/getting-started",
-      "noLink": true,
-      "items": [
-        { "title": "Introduction", "href": "/introduction" },
-        { "title": "Installation", "href": "/installation" },
-        { "title": "Quick Start Guide", "href": "/quick-start-guide" },
-        { "title": "Project Structure", "href": "/project-structure" },
-        {
-          "title": "Components",
-          "href": "/components",
-          "items": [
-            { "title": "Stepper", "href": "/stepper" },
-            { "title": "Tabs", "href": "/tabs" },
-            { "title": "Note", "href": "/note" },
-            { "title": "Code Block", "href": "/code-block" },
-            { "title": "Image", "href": "/image" },
-            { "title": "Link", "href": "/link" },
-            { "title": "Youtube", "href": "/youtube" },
-            { "title": "Tooltips", "href": "/tooltips" },
-            { "title": "Cards", "href": "/card" },
-            { "title": "Card Group", "href": "/card-group" },
-            { "title": "Button", "href": "/button" },
-            { "title": "Accordion", "href": "/accordion" },
-            { "title": "Release Note", "href": "/release-note" },
-            { "title": "Custom", "href": "/custom" }
-          ]
-        },
-        { "title": "Customize", "href": "/customize" }
-      ]
-    }
-  ]
-}
-```
-</Accordion>
+### File Structure
 
-## Change Logo & Favicon
+DocuBook uses the following structure:
 
-Save your logo, give it the name docu.svg then for the favicon, save your logo, give it the name favicon.ico
+````plaintext
+contents/
+  docs/
+    getting-started/
+      quick-start-guide/  <-- You are here
+        index.mdx
+    guides/
+      components/
+        index.mdx
+````
+
+### Adding New Pages
 
 <Stepper>
-  <StepperItem title="Step 1: Public">
-    Open `public` folder then upload your logo save as **favicon.ico**
+  <StepperItem title="Step 1: Create a New Folder">
+    Create a new folder in `contents/docs/getting-started/` for your content section
+    ```bash
+    mkdir -p contents/docs/getting-started/your-page-title
+    ```
   </StepperItem>
-  <StepperItem title="Step 2: Public/images">
-    Open `public` folder --> `images` then upload your logo and save as **docu.svg**
-  </StepperItem>
-</Stepper>
-
-## Contents
-
-Open **contents/docs/getting-started** folder add new folder to add content.
-
-<Stepper>
-  <StepperItem title="Step 1: Add new Folder">
-    for example adding a folder for routes `how-to-install-myplugin`
-  </StepperItem>
-  <StepperItem title="Step 2: Add new File">
-    add `index.mdx` file in that folder
-  </StepperItem>
-  <StepperItem title="Step 3: Writing the Content">
-    To write content, you must first add metadata to the first line.
-    ````plaintext
+  <StepperItem title="Step 2: Add MDX File">
+    Create an `index.mdx` file with frontmatter:
+    ````markdown
     ---
-    title : Title
-    description : Description
-    date : 10-12-2024
+    title: Your Page Title
+    description: Brief description of your page
+    date: 20-05-2025
     ---
-    <--- this is where you write the content --->
+
+    # Your Content Here
+
+    Start writing your documentation using Markdown or MDX components.
     ````
-    <Note type="warning" title="Warning">
-      To write markdown content you can use all the [Components](/docs/getting-started/components)
-    </Note>
+  </StepperItem>
+  <StepperItem title="Step 3: Add to Navigation">
+    Update the navigation in `docu.json`:
+    ```json:docu.json showLineNumbers {8}
+{
+      "routes": [
+        {
+        "title": "Getting Started",
+        "href": "/getting-started",
+        "noLink": true,
+            "items": [
+                { "title": "Your Page Title", "href": "/your-page-title" } // Add your page here separated by comma `,`
+            ]
+        }
+    ]
+}
+    ```
   </StepperItem>
 </Stepper>
+
+## Development
+
+Start the development server:
+
+```bash
+npm run dev
+# or
+bun dev
+```
+
+Visit [http://localhost:3000](http://localhost:3000) to see your site.
+
+## Building for Production
+
+When you're ready to deploy:
+
+```bash
+npm run build
+npm start
+```
+
+## Need Help?
+
+<Note type="info">
+  Check out the [Components Guide](/docs/getting-started/components) to learn about all available components.
+</Note>
+
+<Note type="warning">
+  Make sure to commit your changes to version control before deploying.
+</Note>

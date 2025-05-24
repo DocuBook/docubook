@@ -6,9 +6,9 @@
       },
       "logoText": "DocuBook",
       "menu": [
+        { "title": "Home", "href": "/" },
         { "title": "Docs", "href": "/docs/getting-started/introduction" },
-        { "title": "Changelog", "href": "/changelog" },
-        { "title": "Blog", "href": "/blog" }
+        { "title": "Community", "href": "https://docubook.pro" }
       ]
     },
     "footer": {
@@ -48,17 +48,17 @@
       "favicon": "/favicon.ico"
     },
     "repository": {
-      "url": "https://gitlab.com/mywildancloud/docubook",
+      "url": "https://github.com/gitfromwildan/docubook",
       "editPathTemplate": "/blob/main/{filePath}",
       "editLink": true
     },
     "sponsor": {
-        "title": "Our Sponsor",
+        "title": "Hosted on",
         "item": {
         "title": "Vercel",
-        "description": "Deploy your Next.js app with zero configuration.",
+        "description": "Deploy your DocuBook app with zero configuration.",
         "image": "/images/vercel.png",
-        "url": "https://vercel.com"
+        "url": "https://vercel.com/import/project?template=https://github.com/gitfromwildan/docubook"
         }
     },
     "routes": [
@@ -92,7 +92,8 @@
             { "title": "Custom", "href": "/custom" }
           ]
         },
-        { "title": "Customize", "href": "/customize" }
+        { "title": "Customize", "href": "/customize" },
+        { "title": "Changelog", "href": "/changelog" }
       ]
     }
   ]

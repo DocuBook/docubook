@@ -12,6 +12,7 @@ import {
   DialogTrigger,
   DialogClose,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import Anchor from "./anchor";
 import { advanceSearch, cn } from "@/lib/utils";
@@ -110,16 +111,20 @@ export default function Search() {
           </div>
         </DialogTrigger>
         <DialogContent className="p-0 max-w-[650px] sm:top-[38%] top-[45%] !rounded-md">
-          <DialogTitle className="sr-only">Search</DialogTitle>
           <DialogHeader>
+            <DialogTitle className="sr-only">Search Documentation</DialogTitle>
+          </DialogHeader>
+            <DialogDescription className="sr-only">
+              Search through the documentation
+            </DialogDescription>
             <input
               value={searchedInput}
               onChange={(e) => setSearchedInput(e.target.value)}
               placeholder="Type something to search..."
               autoFocus
-              className="h-14 px-6 bg-transparent border-b text-[14px] outline-none"
+              className="h-14 px-6 bg-transparent border-b text-[14px] outline-none w-full"
+              aria-label="Search documentation"
             />
-          </DialogHeader>
           {filteredResults.length == 0 && searchedInput && (
             <p className="text-muted-foreground mx-auto mt-2 text-sm">
               No results found for{" "}
@@ -149,11 +154,20 @@ export default function Search() {
                         >
                         <div
                             className={cn(
-                            "flex items-center w-fit h-full py-3 gap-1.5 px-2",
+                            "flex items-center w-full h-full py-3 gap-1.5 px-2 justify-between",
                             level > 1 && "border-l pl-4"
                             )}
                         >
-                            <FileTextIcon className="h-[1.1rem] w-[1.1rem] mr-1" /> {item.title}
+                            <div className="flex items-center">
+                              <FileTextIcon className="h-[1.1rem] w-[1.1rem] mr-1" />
+                              <span>{item.title}</span>
+                            </div>
+                            {isActive && (
+                              <div className="hidden md:flex items-center text-xs text-muted-foreground">
+                                <span>Return</span>
+                                <CornerDownLeftIcon className="h-3 w-3 ml-1" />
+                              </div>
+                            )}
                         </div>
                         </Anchor>
                     </DialogClose>

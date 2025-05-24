@@ -4,9 +4,7 @@ description: This section provides an overview of Project Structure.
 date: 29-11-2024
 ---
 
-## Project Structure Overview
-
-### app
+## app
 
 This folder contains the main application code for Next.js, managing layouts, routing, and specific content pages. It is organized to support both the `docs` and `blog` sections, with dedicated pages and layouts for each section.
 
@@ -14,16 +12,12 @@ This folder contains the main application code for Next.js, managing layouts, ro
 app                         // Main Next.js application folder
 ├── page.tsx                // Hero page - the entry point of the app showcasing key content
 ├── layout.tsx              // Main layout file, applies global navigation and footer
-├── blog
-│   ├── page.tsx            // Blog list page, displaying all blog posts with titles, dates, and excerpts
-│   └── [slug]
-│       └── page.tsx        // Dynamic blog post page for viewing individual posts with rich content
 └── docs
     ├── layout.tsx          // Documentation layout with sidebar, providing easy navigation across doc pages
     └── [[...slug]]         // Catch-all route to handle nested documentation pages, allowing flexible doc structure
 ```
 
-### components
+## components
 
 This folder contains all reusable components used throughout the project. It’s structured to categorize components, making it easy to locate and manage UI elements, Markdown customizations, and navigation.
 
@@ -37,7 +31,7 @@ components                    // Reusable components
 └── navbar.tsx                // Main navigation component for the site header, managing links and responsive behavior
 ```
 
-### styles
+## styles
 
 This folder contains global and component-specific CSS files, allowing for project-wide styling consistency and customizations.
 
@@ -48,7 +42,7 @@ styles                        // CSS files
 └── overrides.css             // Additional custom styles that override specific component or plugin defaults
 ```
 
-### contents
+## contents
 
 This folder stores all Markdown content for the documentation and blog sections, with clear organization by content type. Each Markdown file represents a single piece of content, with frontmatter used for metadata.
 
@@ -57,13 +51,10 @@ contents                      // Markdown content for blogs and documentation
 ├── docs                      // Documentation content, structured to support nested sections and pages
 │   ├── getting-started       // Main Folder at the Contents
 │       └─── installation     // Subfolder for tutorial-style content
-│            └── index.mdx    // Step-by-step tutorial on a specific topic
-└── blogs                     // Blog content, organized by post
-    ├── intro-to-project.md   // Blog post introducing the project and its goals
-    └── dev-updates.md        // Post discussing recent development updates and new features
+|            └── index.mdx    // Step-by-step tutorial on a specific topic
 ```
 
-### public
+## public
 
 This folder holds all static assets, such as images, videos, fonts, and icons. These files are directly accessible via URL, so it’s important to avoid sensitive or private content here.
 
@@ -76,18 +67,19 @@ public                        // Publicly accessible assets
 └── videos                    // Video files for media content, if any
 ```
 
-### lib
+## lib
 
 This folder contains helper functions and utilities used across the application, such as Markdown parsing and routing logic. These utilities help keep the codebase clean and organized by separating out common functionality.
 
 ```
 lib                           // Utility or helper functions
+├── changelog.ts              // Change log for the app, used to display recent changes and updates
 ├── markdown.ts               // Markdown parsing logic, converts Markdown to HTML and adds custom components
 ├── routes-config.ts          // Routing configuration for docs, maps URLs to content files for dynamic routing
 └── utils.tsx                 // General utility functions used across the app, such as data formatting and validation helpers
 ```
 
-### Additional
+## Additional
 
 - **`package.json`**: Contains metadata about the project, dependencies, and scripts for building and running the application.
 - **`tailwind.config.ts`**: Configures Tailwind CSS, allowing customization of theme colors, fonts, and responsive breakpoints specific to this project.
