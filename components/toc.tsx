@@ -9,18 +9,18 @@ export default async function Toc({ path }: { path: string }) {
   const tocs = await getDocsTocs(path);
 
   return (
-    <div className="lg:flex hidden toc flex-[1.5] min-w-[238px] py-9 sticky top-16 h-[96.95vh]">
-      <div className="flex flex-col gap-6 w-full pl-2 h-full">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <ListIcon className="w-5 h-5" />
-            <h3 className="font-medium text-sm">On this page</h3>
-          </div>
-          <ScrollArea className="pb-2 pt-0.5 overflow-y-auto">
+    <div className="lg:flex hidden toc flex-[1.5] min-w-[238px] py-9 sticky top-16 h-[calc(100vh-4rem)]">
+      <div className="flex flex-col h-full w-full px-2 gap-2 mb-auto">
+        <div className="flex items-center gap-2">
+          <ListIcon className="w-4 h-4" />
+          <h3 className="font-medium text-sm">On this page</h3>
+        </div>
+        <div className="flex-shrink-0 min-h-0 max-h-[calc(70vh-4rem)]">
+          <ScrollArea className="h-full">
             <TocObserver data={tocs} />
           </ScrollArea>
         </div>
-          <Sponsor />
+        <Sponsor />
       </div>
     </div>
   );

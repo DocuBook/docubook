@@ -8,7 +8,6 @@ import EditThisPage from "@/components/edit-on-github";
 import { formatDate2 } from "@/lib/utils";
 import docuConfig from "@/docu.json";
 import MobToc from "@/components/mob-toc";
-import { ScrollToTop } from "@/components/scroll-to-top";
 
 const { meta } = docuConfig;
 
@@ -78,11 +77,9 @@ export default async function DocsPage({ params: { slug = [] } }: PageProps) {
 
   return (
     <div className="flex items-start gap-10">
-      <div className="flex-[4.5] pt-10">
+      <div className="flex-[4.5] pt-4 lg:pt-10">
+        <MobToc tocs={tocs} />
         <DocsBreadcrumb paths={slug} />
-        <div className="mb-8">
-          <MobToc tocs={tocs} />
-        </div>
         <Typography>
           <h1 className="text-3xl !-mt-0.5">{title}</h1>
           <p className="-mt-4 text-muted-foreground text-[16.5px]">{description}</p>
@@ -101,7 +98,6 @@ export default async function DocsPage({ params: { slug = [] } }: PageProps) {
             </div>
           <Pagination pathname={pathName} />
         </Typography>
-        <ScrollToTop />
       </div>
       <Toc path={pathName} />
     </div>

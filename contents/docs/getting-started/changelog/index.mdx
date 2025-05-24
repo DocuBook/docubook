@@ -1,0 +1,512 @@
+---
+title: Changelog
+description: List of latest changes and updates on DocuBook
+date: 24-05-2025
+---
+
+## Version History
+
+> This changelog contains a list of all the changes made to the DocuBook template. It will be updated with each new release and will include information about new features, bug fixes, and other improvements.
+
+<div className="sr-only">
+### v 1.11.0
+</div>
+
+<Release version="1.11.0" date="2025-05-25" title="New Release Note components support multiple products or multiple changelogs">
+  <Changes type="added">
+    - New ReleaseNote component for structured changelog display
+    - Added support for categorized changes (added, fixed, improved, deprecated, removed)
+    - Integrated Lucide icons for better visual hierarchy
+    - Support for multiple release notes
+  </Changes>
+
+  <Changes type="improved">
+    - Enhanced documentation with comprehensive usage examples
+    - Better component organization and styling
+    - Semantic versioning support
+    - Nested release notes support
+  </Changes>
+
+  <Changes type="removed">
+    - Removed old changelog page in favor of the new ReleaseMdx component
+    - Removed changelog.md
+    - Removed changelog/page.tsx
+    - Removed changelog.ts
+    - Removed components/changelog
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.10.1
+</div>
+
+<Release version="1.10.1" date="2025-05-24" title="Accessibility Improvements and Bug Fixes">
+  <Changes type="fixed">
+    - Added missing DialogDescription components for better accessibility
+    - Fixed image aspect ratio issues in navbar logo
+    - Resolved console warnings for missing image sizes
+    - Improved keyboard navigation in search component
+    - Fixed mobile layout for search result items
+  </Changes>
+
+  <Changes type="improved">
+    - Added proper ARIA labels for screen readers
+    - Enhanced focus management in dialogs
+    - Optimized image loading with proper sizing attributes
+    - Better mobile experience with responsive design fixes
+  </Changes>
+
+  <Changes type="removed">
+    - Remove blog page
+    - Remove blog functions on markdown
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.10.0
+</div>
+
+<Release version="1.10.0" date="2025-05-21" title="Sidebar Improvements and Mobile TOC Enhancements">
+  <Changes type="added">
+    - New reusable ToggleButton component with animation
+    - Mobile-friendly Table of Contents (TOC) component
+    - Click-outside handler for better mobile navigation
+    - Smooth scroll behavior for TOC navigation
+    - Active section highlighting in TOC
+  </Changes>
+
+  <Changes type="improved">
+    - Sidebar now has a collapsible design
+    - Enhanced mobile responsiveness for TOC
+    - Better visual hierarchy in sidebar navigation
+    - Smoother animations for sidebar toggle
+    - Optimized TOC performance with intersection observer
+    - Improved accessibility with proper ARIA labels
+    - Better spacing and alignment in mobile view
+  </Changes>
+
+  <Changes type="fixed">
+    - Fixed sidebar toggle button positioning
+    - Resolved TOC highlighting issues during scroll
+    - Fixed z-index conflicts in mobile view
+    - Addressed minor UI glitches in dark mode
+    - Fixed TOC not updating on route changes
+    - Resolved scroll jank on mobile devices
+    - Fixed incorrect active state in navigation
+  </Changes>
+
+  <Changes type="deprecated">
+    - No longer support changelog.md
+    - No longer support changelog/page.tsx (will be removed in future update)
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.9.0
+</div>
+
+<Release version="1.9.0" date="2025-05-19" title="New Keyboard component to show keyboard shortcut on docs page">
+  <Changes type="added">
+    - New Keyboard component with props show, type, children
+    - Snippet keyboard component
+  </Changes>
+
+  <Changes type="improved">
+    - Support custom content
+    - Support platform type (mac or window)
+    - Support automatic rendering of platform-specific key symbols
+    - Rename lowercase to camelCase for markdown component
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.8.5
+</div>
+
+<Release version="1.8.5" date="2025-05-10" title="Add sponsor card on single docs page">
+  <Changes type="added">
+    - Expandables Leftbar
+    - Sponsor badges or ads
+    - Boolean show/hide 'edit on github'
+    - With the same code run anywhere (bun or nodejs)
+    - Add frontmatter (metadata) to playground editor
+  </Changes>
+
+  <Changes type="improved">
+    - Adjustment docu.json
+    - Adjustment navbar, footer and components
+  </Changes>
+
+  <Changes type="fixed">
+    - Bun compatibility: rename .js to common js
+    - CLI manage packageManager on package.json
+    - Inconsistent design moved to better UI/UX
+    - Error handle render footer.social
+  </Changes>
+
+  <Changes type="removed">
+    - Remove confusing and verbose CLI on installer
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.8.0
+</div>
+
+<Release version="1.8.0" date="2025-03-01" title="Now looks more modern and clean which is a big change in layout and design">
+  <Changes type="added">
+    - Social footer
+    - Toggle group
+    - Site description in footer
+    - Site title in footer
+  </Changes>
+
+  <Changes type="improved">
+    - Header design changes
+    - Footer design changes
+    - New functions in theme provider
+    - Object changes in docu.json
+  </Changes>
+
+  <Changes type="fixed">
+    - Updates to path structure components
+    - Groups to organize components
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.7.0
+</div>
+
+<Release version="1.7.0" date="2025-02-23" title="Remove the old function in the search dialog and replace it with a new and more optimal feature">
+  <Changes type="added">
+    - Up and down navigation in search dialog
+    - Enter (return) to select in search dialog
+    - Escape to close the dialog
+  </Changes>
+
+  <Changes type="improved">
+    - Maintenance for anchor components
+    - Anchor.tsx adjustments for all elements that use it
+  </Changes>
+
+  <Changes type="removed">
+    - Remove suboptimal search features
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.6.0
+</div>
+
+<Release version="1.6.0" date="2025-02-21" title="New Feature Card Groups with arrays for more Flexible Content">
+  <Changes type="added">
+    - Card Groups Components
+    - Props: href to url link
+    - Props: horizontal boolean
+  </Changes>
+
+  <Changes type="improved">
+    - Card props styling
+    - Compatibility for Cards components
+    - Support for children props in card content
+  </Changes>
+
+  <Changes type="removed">
+    - Remove unused props cards components
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.5.0
+</div>
+
+<Release version="1.5.0" date="2025-02-18" title="Minor Update - improved features and responsiveness on all devices">
+  <Changes type="added">
+    - New dialog footer on searchbox above medium screens
+    - Icon X for close dialog on searchbox (ESC key on medium screen)
+  </Changes>
+
+  <Changes type="improved">
+    - Responsive Leftbar components on large screens
+    - Menu Trigger on medium screens
+    - Responsive Navbar components on medium screens
+    - Better UX for searchbox dialog
+    - Tooltips components can be written together with regular paragraphs
+  </Changes>
+
+  <Changes type="fixed">
+    - Responsive issues
+    - Compatibility for Bun
+    - Changes postcss.config.js to .cjs for Bun
+    - All CLI installer and updater not working
+    - Adjustments for package managers (npm, pnpm, bun, yarn)
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.4.2
+</div>
+
+<Release version="1.4.2" date="2025-02-16" title="Complex Content for Accordion Component props children">
+  <Changes type="added">
+    - New Props with children in accordion
+    - Compatibility for markdown in accordion
+    - Nested components inside an accordion
+    - New icon on note components
+    - Add CLI npx @docubook/create@latest
+    - Add CLI npx @docubook/update@latest
+  </Changes>
+
+  <Changes type="improved">
+    - Better UI design for accordion
+    - Styling Note components on markdown
+    - Change accordion output on playground
+    - Change accordion output on snippet
+  </Changes>
+
+  <Changes type="removed">
+    - Remove deprecated props on accordion
+    - Remove CLI npx update_docu
+    - Remove CLI npx create_docu
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.4.0
+</div>
+
+<Release version="1.4.0" date="2025-02-11" title="Floating Button Version with Dynamic Tag version on Changelog page">
+  <Changes type="added">
+    - New components / changelog floating-version.tsx
+    - Button popover to open version-toc below large screens
+    - Dynamic tag by section ID #version
+    - Dynamic url tag #version
+    - Dynamic version indicator on floating version when scrolling section by ID
+  </Changes>
+
+  <Changes type="improved">
+    - Change icon version history
+    - Responsive version-toc
+    - Improvement components to changelog page
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.3.8
+</div>
+
+<Release version="1.3.8" date="2025-02-08" title="Responsive Table of Content">
+  <Changes type="added">
+    - Components terminal MagicUI
+    - Components card Shadcn
+    - New mob-toc for a better experience on mobile devices
+    - New Components scroll to top button
+    - Scroll to top: blog-post
+    - Scroll to top: docs-post
+  </Changes>
+
+  <Changes type="improved">
+    - lib/markdown for generated dynamic toc on markdown
+    - Responsive Table of Content below large screens
+    - Improve docs page
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.3.6
+</div>
+
+<Release version="1.3.6" date="2025-02-01" title="Appears more modern editor for Docu Play">
+
+  <Changes type="added">
+    - Line Number for editor
+    - editor.css
+  </Changes>
+
+  <Changes type="improved">
+    - Better Design for Editor
+    - Similar to Github Editor
+    - Moved Handler Element (copy, download, reset and fullscreen) on Header
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.3.5
+</div>
+
+<Release version="1.3.5" date="2025-01-30" title="It's Easy to Write Markdown with Playground">
+
+  <Changes type="added">
+    - New Playground Page
+    - New Playground Layout
+    - Toolbar for Markdown Components
+    - Fullscreen Mode to Focus Editing Your Content
+    - Copy to Clipboard Your Content
+    - Download Your Content as index.mdx
+    - Reset Your Content without refresh the Browser
+    - Only Large Screen for Better Experience
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.3.1
+</div>
+
+<Release version="1.3.1" date="2025-01-20" title="Snippet Feature to Easily Write Markdown and Call DocuBook Components">
+
+  <Changes type="added">
+    - New Feature Snippet for Markdown Components
+    - Support Snippet for Visual Studio Code
+  </Changes>
+
+  <Changes type="removed">
+    - Remove props icon and props description for accordion components
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.3.0
+</div>
+
+<Release version="1.3.0" date="2024-12-31" title="Release Note Feature to Make it Easier to Write Changelogs">
+  <Changes type="added">
+    - New Release Note Feature
+    - New Layout for Changelog page
+    - New Changelog page
+    - Add Release Note Component
+    - Easily write release notes directly from the CHANGELOG.md file
+    - TOC for versioning
+    - Write with the markdown tag
+    - Add lib / changelog.ts
+  </Changes>
+
+  <Changes type="improved">
+    - Improvement Responsive feature image for Version Entry
+    - Improvement Layout for changelog page
+    - Improvement Padding on mobile devices
+    - Only use containers of md size
+    - Improvement syntax.css for ul>li classes
+  </Changes>
+
+  <Changes type="fixed">
+    - Fix og:image not showing on Page.tsx
+    - Fix text-indent on class li
+  </Changes>
+
+  <Changes type="removed">
+    - Remove excessive padding
+    - Remove Logo on Footer
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.2.0
+</div>
+
+<Release version="1.2.0" date="2024-12-22" title="New Accordion Component: Support content plain text, html and all markdown component">
+  <Changes type="added">
+    - Add New Accordion Component
+  </Changes>
+
+  <Changes type="improved">
+    - Props Improvement
+    - Support Dynamic Content for Accordion
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.1.0
+</div>
+
+<Release version="1.1.0" date="2024-12-15" title="Minor Update: Easily manage set up with docu.json">
+  <Changes type="added">
+    - Add docu.json file
+    - Add openGraph (title, description, image)
+    - Add Dynamic metadata
+    - Generate metadata as openGraph
+    - OpenGraph support for .mdx
+  </Changes>
+
+  <Changes type="improved">
+    - Routes-config from json
+    - Frontmatter improvement
+    - Edit the content of footer.tsx simply via the docu.json file
+    - Edit the content of navbar.tsx simply via the docu.json file
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.0.7
+</div>
+
+<Release version="1.0.7" date="2024-12-14" title="Easily updates your DocuBook Version with CLI npx update_docu">
+  <Changes type="added">
+    - CLI npx update_docu (update features into docubook existing directory)
+    - Playground (easily to written content)
+    - New Button component
+    - Navbar external link conditions
+    - CLI npx create_docu
+  </Changes>
+
+  <Changes type="improved">
+    - Searchbar Improvement
+    - Navigation Improvement
+    - Edit on Github Improvement
+  </Changes>
+
+  <Changes type="removed">
+    - Remove CLI npx create-docu (on this version not usage dash `-`)
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.0.6
+</div>
+
+<Release version="1.0.6" date="2024-11-24" title="New Components, Fix and Improvement">
+  <Changes type="added">
+    - New Card component
+    - New Tooltips component
+  </Changes>
+
+  <Changes type="fixed">
+    - Change root folder
+  </Changes>
+
+  <Changes type="improved">
+    - Logo on navbar & footer
+    - Easily change logo
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.0.5
+</div>
+
+<Release version="1.0.5" date="2024-11-16" title="Add New Features and Improvement for this version">
+  <Changes type="added">
+    - New Youtube component
+    - Edit this page - easily manage directory content via the github repo
+    - Support installation via CLI command npx create-docu
+  </Changes>
+
+  <Changes type="improved">
+    - Keyboard shortcut command + k or ctrl + k to open search dialog
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.0.0
+</div>
+
+<Release version="1.0.0" date="2024-11-10" title="Initial release of DocuBook to create interactive nested docs with MDX">
+  <Changes type="added">
+    - Initial release of DocuBook
+    - Basic documentation structure
+    - Markdown support with MDX
+    - Responsive design
+    - Search functionality
+    - Dark mode support
+  </Changes>
+</Release>

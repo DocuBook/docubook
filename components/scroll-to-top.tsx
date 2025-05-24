@@ -1,52 +1,86 @@
 "use client";
 
 import { ArrowUpIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-export function ScrollToTop() {
-  const [show, setShow] = useState(false);
+interface ScrollToTopProps {
+  className?: string;
+  showIcon?: boolean;
+  offset?: number; // Optional offset in pixels from the trigger point
+}
+
+export function ScrollToTop({
+  className,
+  showIcon = true,
+  offset = 0
+}: ScrollToTopProps) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    // Calculate 50% of viewport height
+    const halfViewportHeight = window.innerHeight * 0.5;
+    // Check if scrolled past half viewport height (plus any offset)
+    const scrolledPastHalfViewport = window.scrollY > (halfViewportHeight + offset);
+
+    // Only update state if it changes to prevent unnecessary re-renders
+    if (scrolledPastHalfViewport !== isVisible) {
+      setIsVisible(scrolledPastHalfViewport);
+    }
+  }, [isVisible, offset]);
 
   useEffect(() => {
-    const handleScroll = () => {
-      // Check if user has scrolled to bottom
-      const scrolledToBottom =
-        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100;
+    // Initial check
+    checkScroll();
 
-      if (scrolledToBottom) {
-        setShow(true);
-      } else {
-        setShow(false);
-      }
+    // Set up scroll listener with debounce for better performance
+    let timeoutId: NodeJS.Timeout;
+    const handleScroll = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(checkScroll, 100);
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [checkScroll]);
+
+  const scrollToTop = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  if (!isVisible) return null;
 
   return (
     <div
       className={cn(
-        "lg:hidden fixed top-16 items-center z-50 w-full transition-all duration-300",
-        show ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-full pointer-events-none"
+        "mt-4 pt-4 border-t border-stone-200 dark:border-stone-800",
+        "transition-opacity duration-300",
+        isVisible ? 'opacity-100' : 'opacity-0',
+        className
       )}
     >
-      <div className="flex justify-center items-center pt-3 mx-auto">
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2 rounded-full shadow-md bg-background/80 backdrop-blur-sm border-primary/20 hover:bg-background hover:text-primary"
-          onClick={scrollToTop}
-        >
-          <ArrowUpIcon className="h-4 w-4" />
-          <span className="font-medium">Scroll to Top</span>
-        </Button>
-      </div>
+      <Link
+        href="#"
+        onClick={scrollToTop}
+        className={cn(
+          "inline-flex items-center text-sm text-muted-foreground hover:text-foreground",
+          "transition-all duration-200 hover:translate-y-[-1px]"
+        )}
+        aria-label="Scroll to top"
+      >
+        {showIcon && <ArrowUpIcon className="mr-1 h-3.5 w-3.5 flex-shrink-0" />}
+        <span>Scroll to Top</span>
+      </Link>
     </div>
   );
 }
