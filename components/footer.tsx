@@ -23,7 +23,7 @@ const docuConfig = docuData as {
 export function Footer() {
   const { footer } = docuConfig;
   return (
-    <footer className="w-full py-8 px-2 border-t bg-background">
+    <footer className="w-full py-8 border-t bg-background">
       <div className="container flex flex-col lg:flex-row items-center justify-between text-sm">
         <div className="flex flex-col items-center lg:items-start justify-start gap-4 w-full lg:w-3/5 text-center lg:text-left">
             <p className="text-muted-foreground">
