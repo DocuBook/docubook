@@ -87,7 +87,7 @@ export default function MobToc({ tocs }: MobTocProps) {
           transition={{ duration: 0.2, ease: 'easeInOut' }}
         >
           <div className="w-full bg-background/95 backdrop-blur-sm border-b border-stone-200 dark:border-stone-800 shadow-sm">
-            <div className="md:px-8 px-4 py-2">
+            <div className="sm:px-8 px-4 py-2">
               <Button
                 variant="ghost"
                 size="sm"

@@ -1,37 +1,78 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import Link from "next/link";
+import Link, { LinkProps } from "next/link";
 import { usePathname } from "next/navigation";
-import { ComponentProps, forwardRef } from "react";
+import { forwardRef } from "react";
 
-type AnchorProps = ComponentProps<typeof Link> & {
+type AnchorProps = LinkProps & {
   absolute?: boolean;
   activeClassName?: string;
   disabled?: boolean;
-};
+  className?: string;
+  children: React.ReactNode;
+} & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof LinkProps>;
 
 const Anchor = forwardRef<HTMLAnchorElement, AnchorProps>(
-  ({ absolute, className = "", activeClassName = "", disabled, children, ...props }, ref) => {
+  ({
+    absolute = false,
+    className = "",
+    activeClassName = "",
+    disabled = false,
+    children,
+    href,
+    ...props
+  }, ref) => {
     const path = usePathname();
-    const href = props.href.toString();
+    const hrefStr = href?.toString() || '';
 
-    // Deteksi URL eksternal menggunakan regex
-    const isExternal = /^(https?:\/\/|\/\/)/.test(href);
+    // Check if URL is external
+    const isExternal = /^(https?:\/\/|\/\/)/.test(hrefStr);
 
-    let isMatch = absolute
-      ? href.split("/")[1] === path.split("/")[1]
-      : path === href;
+    // Check if current path matches the link
+    const isActive = absolute
+      ? hrefStr.split("/")[1] === path?.split("/")[1]
+      : path === hrefStr;
 
-    if (isExternal) isMatch = false; // Hindari mencocokkan URL eksternal
+    // Apply active class only for internal links
+    const linkClassName = cn(
+      'transition-colors hover:text-primary',
+      className,
+      !isExternal && isActive && activeClassName
+    );
 
-    if (disabled)
+    if (disabled) {
       return (
-        <div className={cn(className, "cursor-not-allowed")}>{children}</div>
+        <span className={cn(linkClassName, "cursor-not-allowed opacity-50")}>
+          {children}
+        </span>
       );
+    }
+
+
+    if (isExternal) {
+      return (
+        <a
+          ref={ref}
+          href={hrefStr}
+          className={linkClassName}
+          target="_blank"
+          rel="noopener noreferrer"
+          {...props}
+        >
+          {children}
+        </a>
+      );
+    }
+
 
     return (
-      <Link ref={ref} className={cn(className, isMatch && activeClassName)} {...props}>
+      <Link
+        ref={ref}
+        href={hrefStr}
+        className={linkClassName}
+        {...props}
+      >
         {children}
       </Link>
     );

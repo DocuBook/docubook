@@ -9,7 +9,7 @@ export default async function Toc({ path }: { path: string }) {
   const tocs = await getDocsTocs(path);
 
   return (
-    <div className="lg:flex hidden toc flex-[1.5] min-w-[238px] py-9 sticky top-16 h-[calc(100vh-4rem)]">
+    <div className="lg:flex hidden toc flex-[1.5] min-w-[238px] py-5 sticky top-16 h-[calc(100vh-4rem)]">
       <div className="flex flex-col h-full w-full px-2 gap-2 mb-auto">
         <div className="flex items-center gap-2">
           <ListIcon className="w-4 h-4" />
