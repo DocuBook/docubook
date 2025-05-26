@@ -85,7 +85,7 @@ export default function TocObserver({
         });
       }
     };
-  }, [data, clickedId]);
+  }, [data, clickedId, activeId, setActiveId]);
 
   const handleLinkClick = useCallback((id: string) => {
     setClickedId(id);

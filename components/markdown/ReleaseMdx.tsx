@@ -101,7 +101,9 @@ function Changes({ type, children }: ChangesProps) {
 
 export { Release, Changes };
 
-export default {
+const ReleaseMdx = {
   Release,
   Changes
 };
+
+export default ReleaseMdx;
