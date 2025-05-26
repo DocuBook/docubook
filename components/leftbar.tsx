@@ -85,9 +85,6 @@ export function SheetLeftbar() {
           <div className="mx-2 px-5">
             <DocsMenu isSheet />
           </div>
-          <div className="px-6 py-2 flex justify-start items-center gap-6">
-            <FooterButtons />
-          </div>
           <div className="flex w-2/4 px-5">
             <ModeToggle />
           </div>

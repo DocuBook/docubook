@@ -15,44 +15,26 @@ interface FooterConfig {
   social?: SocialItem[];
 }
 
-interface MetaConfig {
-  title: string;
-  description: string;
-  baseURL: string;
-  favicon: string;
-}
-
-interface DocuConfig {
-  footer: FooterConfig;
-  meta: MetaConfig;
-  navbar: any;
-  repository: any;
-  routes: any[];
-}
-
 // Type assertion for docu.json
-const docuConfig = docuData as DocuConfig;
+const docuConfig = docuData as {
+  footer: FooterConfig;
+};
 
 export function Footer() {
   const { footer } = docuConfig;
-  const { meta } = docuConfig;
   return (
-    <footer className="w-full py-4 px-2 border-t lg:py-8 bg-background">
-      <div className="container flex flex-wrap items-center justify-between text-sm">
-        <div className="items-start justify-center hidden gap-4 lg:flex-col lg:flex lg:w-3/5">
-            <h3 className="text-lg font-bold font-code">{meta.title}</h3>
-            <span className="w-3/4 text-base text-wrap text-muted-foreground">{meta.description}</span>
-            <div className="flex items-center gap-6 mt-2">
+    <footer className="w-full py-8 px-2 border-t bg-background">
+      <div className="container flex flex-col lg:flex-row items-center justify-between text-sm">
+        <div className="flex flex-col items-center lg:items-start justify-start gap-4 w-full lg:w-3/5 text-center lg:text-left">
+            <p className="text-muted-foreground">
+                Copyright © {new Date().getFullYear()} {footer.copyright} - <MadeWith />
+            </p>
+            <div className="flex items-center justify-center lg:justify-start gap-6 mt-2 w-full">
                 <FooterButtons />
             </div>
         </div>
-        <div className="flex flex-col items-center justify-center w-full gap-4 mt-4 lg:items-end lg:w-2/5">
-            <p className="text-center text-muted-foreground">
-                Copyright © {new Date().getFullYear()} {footer.copyright} - <MadeWith />
-            </p>
-            <div className="hidden lg:flex">
-                <ModeToggle />
-            </div>
+        <div className="hidden lg:flex items-center justify-end lg:w-2/5">
+            <ModeToggle />
         </div>
       </div>
     </footer>
