@@ -5,11 +5,25 @@ import log from "../utils/logger.js";
 const { prompt } = enquirer;
 
 /**
+ * Detects if the command was run with yarn or yarn dlx
+ * @returns {boolean}
+ */
+function isYarnCommand() {
+  const userAgent = process.env.npm_config_user_agent || '';
+  return userAgent.includes('yarn') || process.argv.some(arg => arg.includes('yarn'));
+}
+
+/**
  * Collects user input for project creation
  * @returns {Promise<Object>} User answers
  */
 export async function collectUserInput() {
-  const answers = await prompt([
+  // Skip installation prompt if running with yarn/yarn dlx
+  const isYarn = isYarnCommand();
+  const defaultPackageManager = detectDefaultPackageManager();
+
+  // Get initial answers (directory name and package manager)
+  const { directoryName, packageManager } = await prompt([
     {
       type: "input",
       name: "directoryName",
@@ -21,18 +35,30 @@ export async function collectUserInput() {
       name: "packageManager",
       message: "📦 Package manager",
       choices: ["npm", "pnpm", "yarn", "bun"],
-      initial: detectDefaultPackageManager(),
-    },
-    {
-      type: "confirm",
-      name: "installNow",
-      message: "🛠️  Install dependencies now?",
-      initial: true,
-    },
+      initial: defaultPackageManager,
+    }
   ]);
 
+  // Only ask about installation if not using yarn
+  let installNow = false;
+  if (packageManager !== 'yarn') {
+    const { shouldInstall } = await prompt({
+      type: "confirm",
+      name: "shouldInstall",
+      message: "🛠️  Install dependencies now?",
+      initial: true,
+    });
+    installNow = shouldInstall;
+  }
+
+  // Prepare the answers object
+  const answers = {
+    directoryName,
+    packageManager,
+    installNow
+  };
+
   // Validate package manager is installed
-  const { packageManager } = answers;
   const version = getPackageManagerVersion(packageManager);
 
   if (!version) {
