@@ -1,0 +1,46 @@
+# Development files
+.git
+.github
+.vscode
+.editorconfig
+.eslintrc
+.prettierrc
+.gitignore
+
+# Build artifacts and test files
+node_modules
+coverage
+test
+tests
+__tests__
+*.test.js
+*.spec.js
+
+# Source files (since we're publishing the compiled version)
+# Uncomment if you're using TypeScript or have a build process
+# src
+# !src/dist
+
+# Logs and debugging
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+
+# Configuration files
+.env
+.env.*
+*.config.js
+!postcss.config.js
+!tailwind.config.js
+!next.config.js
+
+# Other unnecessary files
+.npmrc
+.yarnrc
+.travis.yml
+.gitlab-ci.yml
+Dockerfile
+docker-compose.yml
