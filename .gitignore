@@ -1,39 +1,99 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# Dependencies
 /node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
+.pnp.cjs
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
 
-# testing
+# Testing
 /coverage
+/.nyc_output
 
-# next.js
+# Next.js
 /.next/
 /out/
+/.swc
+.next/
+out/
 
-# production
+# Production
 /build
 
-# misc
-.DS_Store
-*.pem
+# Environment variables
+.env*.local
+.env
+.env.development
+.env.test
+.env.production
 
-# debug
+# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 
-# local env files
-.env*.local
+# Editor directories and files
+.idea
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# vercel
+# System files
+.DS_Store
+Thumbs.db
+
+# Vercel
 .vercel
 
-# typescript
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
 
-# bun
+# Package managers
+package-lock.json
+yarn.lock
 bun.lock
+pnpm-lock.yaml
+
+# Build outputs
+.next
+out
+
+# Local development
+.cache
+.temp
+.tmp
+
+# Testing
+/coverage
+/__tests__/__snapshots__/
+
+# Logs
+logs
+*.log
+
+# Misc
+*.pem
+*.p12
+*.key
+*.crt
+*.cer
+*.p7b
+*.p7c
+*.p7s
+*.pfx
+*.der
+*.sst
+*.stl

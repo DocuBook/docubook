@@ -3,7 +3,7 @@
 **DocuBook** is a documentation web project designed to provide a simple and user-friendly interface for accessing various types of documentation. This site is crafted for developers and teams who need quick access to references, guides, and essential documents.
 
 [![Deploy with
-Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/gitfromwildan/docubook)
+Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/DocuBook/docubook)
 
 ## Features
 

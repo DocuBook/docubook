@@ -1,0 +1,53 @@
+{
+  "File Tree Component": {
+    "prefix": "filetree",
+    "body": [
+      "<Files>",
+      "  <Folder name=\"${1:folder-name}\">",
+      "    <File name=\"${2:file-name}\" />",
+      "    <Folder name=\"${3:subfolder}\">",
+      "      <File name=\"${4:file.tsx}\" />",
+      "    </Folder>\n$0",
+      "  </Folder>",
+      "</Files>"
+    ],
+    "description": "DocuBook File Tree component with nested structure"
+  },
+  "File Tree Minimal": {
+    "prefix": "filetree-mini",
+    "body": [
+      "<Files>\n  <Folder name=\"${1:folder}\">\n    <File name=\"${2:file}\" />\n  </Folder>\n</Files>$0"
+    ],
+    "description": "Minimal DocuBook File Tree component"
+  },
+  "File Tree Complex": {
+    "prefix": "filetree-complex",
+    "body": [
+      "<Files>",
+      "  <Folder name=\"${1:project-root}\">",
+      "    <File name=\"package.json\" />",
+      "    <File name=\"tsconfig.json\" />",
+      "    <Folder name=\"src\">",
+      "      <File name=\"index.ts\" />",
+      "      <Folder name=\"components\">",
+      "        <File name=\"${2:Component}.tsx\" />",
+      "        <File name=\"${3:Component}.types.ts\" />",
+      "        <File name=\"index.ts\" />",
+      "      </Folder>\n$0",
+      "    </Folder>",
+      "  </Folder>",
+      "</Files>"
+    ],
+    "description": "Complex DocuBook File Tree with common project structure"
+  },
+  "File Tree Folder": {
+    "prefix": "folder",
+    "body": "<Folder name=\"${1:folder-name}\">\n  $0\n</Folder>",
+    "description": "DocuBook Folder component for file trees"
+  },
+  "File Tree File": {
+    "prefix": "file",
+    "body": "<File name=\"${1:file-name}\" />$0",
+    "description": "DocuBook File component for file trees"
+  }
+}

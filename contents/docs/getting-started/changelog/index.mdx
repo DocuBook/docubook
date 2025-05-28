@@ -9,6 +9,44 @@ date: 24-05-2025
 > This changelog contains a list of all the changes made to the DocuBook template. It will be updated with each new release and will include information about new features, bug fixes, and other improvements.
 
 <div className="sr-only">
+### v 1.12.0
+</div>
+
+<Release version="1.12.0" date="2025-05-28" title="New File Tree Component and enhancements for existing components or features">
+  <Changes type="added">
+    - New FileTree component for displaying hierarchical file structures
+    - Support for nested folders and files with expand/collapse functionality
+    - Hover effects showing file extensions
+    - Dark mode support with modern styling
+    - Keyboard navigation and accessibility features
+    - add toc-observer data attribute to detect toc section
+    - cli to copy from path npm registry
+  </Changes>
+  <Changes type="improved">
+    - search dialog hover effect return key
+    - search icon showing on mobile screens
+  </Changes>
+  <Changes type="fixed">
+    - fix search dialog on mobile screens
+    - fix release note component eslint error on mdx when rendering
+    - fix mob-toc callback function
+    - fix toc height issue when toc section is longer than screen height
+  </Changes>
+  <Changes type="removed">
+    - remove prompts depedencies
+    - remove degit depedencies
+    - remove prompts functions
+    - remove degit functions
+    - remove prompts and degit from package.json
+    - remove clone repository using git
+  </Changes>
+</Release>
+
+<Note type="note" title="Note">
+  on this version `1.12.0`, we remove clone repository using git and replace it with cli to copy from path npm registry
+</Note>
+
+<div className="sr-only">
 ### v 1.11.0
 </div>
 

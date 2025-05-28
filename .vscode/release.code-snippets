@@ -1,0 +1,49 @@
+{
+  "Release Note Component": {
+    "prefix": "release",
+    "body": [
+      "<Release version=\"$1\" date=\"${2:$CURRENT_YEAR-${CURRENT_MONTH}-${CURRENT_DATE}}\" title=\"$3\">",
+      "  <Changes type=\"added\">",
+      "    - $4",
+      "  </Changes>",
+      "",
+      "  <Changes type=\"fixed\">",
+      "    - $5",
+      "  </Changes>",
+      "",
+      "  <Changes type=\"improved\">",
+      "    - $6",
+      "  </Changes>",
+      "",
+      "  <Changes type=\"deprecated\">",
+      "    - $7",
+      "  </Changes>",
+      "",
+      "  <Changes type=\"removed\">",
+      "    - $8",
+      "  </Changes>",
+      "</Release>"
+    ],
+    "description": "DocuBook Release Note component with all change types"
+  },
+  "Release Note Simple": {
+    "prefix": "release-simple",
+    "body": [
+      "<Release version=\"$1\" date=\"${2:$CURRENT_YEAR-${CURRENT_MONTH}-${CURRENT_DATE}}\" title=\"$3\">",
+      "  <Changes type=\"$4\">",
+      "    - $5",
+      "  </Changes>\n$0",
+      "</Release>"
+    ],
+    "description": "Simple DocuBook Release Note component with one change type"
+  },
+  "Changes Only": {
+    "prefix": "changes",
+    "body": [
+      "<Changes type=\"$1\">",
+      "  - $2",
+      "</Changes>"
+    ],
+    "description": "DocuBook Changes component for individual change items"
+  }
+}

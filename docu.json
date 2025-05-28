@@ -15,11 +15,6 @@
       "copyright": "DocuBook",
       "social": [
         {
-            "name": "Gitlab",
-            "url": "https://gitlab.com/mywildancloud",
-            "iconName": "GitlabIcon"
-        },
-        {
             "name": "Instagram",
             "url": "https://www.instagram.com/wildan.nrs",
             "iconName": "InstagramIcon"
@@ -48,7 +43,7 @@
       "favicon": "/favicon.ico"
     },
     "repository": {
-      "url": "https://github.com/gitfromwildan/docubook",
+      "url": "https://github.com/DocuBook/docubook",
       "editPathTemplate": "/blob/main/{filePath}",
       "editLink": true
     },
@@ -58,7 +53,7 @@
         "title": "Vercel",
         "description": "Deploy your DocuBook app with zero configuration.",
         "image": "/images/vercel.png",
-        "url": "https://vercel.com/import/project?template=https://github.com/gitfromwildan/docubook"
+        "url": "https://vercel.com/import/project?template=https://github.com/DocuBook/docubook"
         }
     },
     "routes": [
@@ -80,6 +75,7 @@
             { "title": "Card", "href": "/card" },
             { "title": "Card Group", "href": "/card-group" },
             { "title": "Code Block", "href": "/code-block" },
+            { "title": "File Tree", "href": "/file-tree" },
             { "title": "Image", "href": "/image" },
             { "title": "Keyboard", "href": "/keyboard" },
             { "title": "Link", "href": "/link" },
