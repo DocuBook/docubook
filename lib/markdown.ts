@@ -26,6 +26,7 @@ import Accordion from "@/components/markdown/AccordionMdx";
 import CardGroup from "@/components/markdown/CardGroupMdx";
 import Kbd from "@/components/markdown/KeyboardMdx";
 import { Release, Changes } from "@/components/markdown/ReleaseMdx";
+import { File, Files, Folder } from "@/components/markdown/FileTreeMdx";
 
 // add custom components
 const components = {
@@ -47,8 +48,13 @@ const components = {
   Accordion,
   CardGroup,
   Kbd,
+  // Release Note Components
   Release,
   Changes,
+  // File Tree Components
+  File,
+  Files,
+  Folder,
 };
 
 // can be used for other pages like blogs, Guides etc
@@ -181,64 +187,3 @@ const postProcess = () => (tree: any) => {
     }
   });
 };
-
-// export type Author = {
-//   avatar?: string;
-//   handle: string;
-//   username: string;
-//   handleUrl: string;
-// };
-
-// Blog related types and functions have been removed
-/*
-export type BlogMdxFrontmatter = BaseMdxFrontmatter & {
-  date: string;
-  authors: Author[];
-  cover: string;
-};
-
-export async function getAllBlogStaticPaths() {
-  try {
-    const blogFolder = path.join(process.cwd(), "/contents/blogs/");
-    const res = await fs.readdir(blogFolder);
-    return res.map((file) => file.split(".")[0]);
-  } catch (err) {
-    console.log(err);
-    return [];
-  }
-}
-
-export async function getAllBlogs() {
-  const blogFolder = path.join(process.cwd(), "/contents/blogs/");
-  const files = await fs.readdir(blogFolder);
-  const uncheckedRes = await Promise.all(
-    files.map(async (file) => {
-      try {
-        const filepath = path.join(process.cwd(), `/contents/blogs/${file}`);
-        const rawMdx = await fs.readFile(filepath, "utf-8");
-        return {
-          ...justGetFrontmatterFromMD<BlogMdxFrontmatter>(rawMdx),
-          slug: file.split(".")[0],
-        };
-      } catch (err) {
-        console.log(err);
-        return null;
-      }
-    })
-  );
-  return uncheckedRes.filter((it) => !!it) as (BlogMdxFrontmatter & {
-    slug: string;
-  })[];
-}
-
-export async function getBlogForSlug(slug: string) {
-  try {
-    const blogFile = path.join(process.cwd(), "/contents/blogs/", `${slug}.mdx`);
-    const rawMdx = await fs.readFile(blogFile, "utf-8");
-    return await parseMdx<BlogMdxFrontmatter>(rawMdx);
-  } catch (err) {
-    console.log(err);
-    return null;
-  }
-}
-*/
