@@ -1,16 +1,54 @@
 {
-    "DocuCards": {
-      "prefix": "card",
-      "body": [
-        "<CardGroup cols={2}>",
-            "<Card title=\"${1:Heading2}\" icon=\"${2:Heading2}\">",
-            "   This is an example of card content with columns.",
-            "</Card>",
-            "<Card title=\"${3:Heading3}\" icon=\"${4:Heading3}\">",
-            "   This is an example of card content with columns.",
-            "</Card>",
-        "</CardGroup>"
-      ],
-      "description": "Create a DocuCards component on markdown."
-    }
+  "Docu Card Group": {
+    "prefix": "card-group",
+    "body": [
+      "<CardGroup cols={${1:2}}>",
+      "  <Card title=\"${2:Card Title}\" icon=\"${3:Home}\">",
+      "    ${4:Card content goes here. You can add **markdown** content.}",
+      "  </Card>",
+      "  <Card title=\"${5:Another Card}\" icon=\"${6:Settings}\">",
+      "    ${7:More content here.}",
+      "  </Card>",
+      "</CardGroup>"
+    ],
+    "description": "Create a group of cards in a responsive grid"
+  },
+  "Docu Card": {
+    "prefix": "card",
+    "body": [
+      "<Card ",
+      "  title=\"${1:Card Title}\"",
+      "  icon=\"${2:Home}\"",
+      "  href=\"${3:/optional-link}\"",
+      "  ${4:horizontal}>",
+      "  ${5:Card content goes here. You can add **markdown** content.}",
+      "</Card>"
+    ],
+    "description": "Create a single card component"
+  },
+  "Docu Horizontal Card": {
+    "prefix": "card-horizontal",
+    "body": [
+      "<Card ",
+      "  title=\"${1:Card Title}\"",
+      "  icon=\"${2:Home}\"",
+      "  href=\"${3:/optional-link}\"",
+      "  horizontal>",
+      "  ${4:Content appears next to the icon in a horizontal layout.}",
+      "</Card>"
+    ],
+    "description": "Create a horizontal card layout"
+  },
+  "Docu Card With Link": {
+    "prefix": "card-link",
+    "body": [
+      "<Card ",
+      "  title=\"${1:Card Title}\"",
+      "  icon=\"${2:ExternalLink}\"",
+      "  href=\"${3:https://example.com}\">",
+      "  ${4:This card is clickable and links to an external URL.}",
+      "</Card>"
+    ],
+    "description": "Create a clickable card that links to a URL"
   }
+}
