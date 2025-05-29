@@ -14,6 +14,7 @@ import { DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import DocsMenu from "@/components/docs-menu";
 import { ModeToggle } from "@/components/theme-toggle";
+import ContextPopover from "@/components/context-popover";
 
 // Toggle Button Component
 export function ToggleButton({
@@ -51,9 +52,14 @@ export function Leftbar() {
       ${collapsed ? "w-[24px]" : "w-[280px]"} flex flex-col pr-2`}
     >
       <ToggleButton collapsed={collapsed} onToggle={toggleCollapse} />
-      {/* Scrollable DocsMenu */}
+      {/* Scrollable Content */}
       <ScrollArea className="flex-1 px-0.5 pb-4">
-        {!collapsed && <DocsMenu />}
+        {!collapsed && (
+          <div className="space-y-2">
+            <ContextPopover />
+            <DocsMenu />
+          </div>
+        )}
       </ScrollArea>
     </aside>
   );
@@ -81,7 +87,8 @@ export function SheetLeftbar() {
           <div className="flex flex-col gap-2.5 mt-3 mx-2 px-5">
             <NavMenu isSheet />
           </div>
-          <div className="mx-2 px-5">
+          <div className="mx-2 px-5 space-y-2">
+            <ContextPopover />
             <DocsMenu isSheet />
           </div>
           <div className="flex w-2/4 px-5">
