@@ -10,7 +10,6 @@ import {
 import { Logo, NavMenu } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
 import { AlignLeftIcon, PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { FooterButtons } from "@/components/footer";
 import { DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import DocsMenu from "@/components/docs-menu";
