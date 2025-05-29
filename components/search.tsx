@@ -17,6 +17,23 @@ import {
 import Anchor from "./anchor";
 import { advanceSearch, cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { page_routes } from "@/lib/routes-config";
+
+// Define the ContextInfo type to match the one in routes-config
+type ContextInfo = {
+  icon: string;
+  description: string;
+  title?: string;
+};
+
+type SearchResult = {
+  title: string;
+  href: string;
+  noLink?: boolean;
+  items?: undefined;
+  score?: number;
+  context?: ContextInfo;
+};
 
 export default function Search() {
   const router = useRouter();
@@ -39,10 +56,25 @@ export default function Search() {
     };
   }, []);
 
-  const filteredResults = useMemo(
-    () => advanceSearch(searchedInput.trim()),
-    [searchedInput]
-  );
+  const filteredResults = useMemo<SearchResult[]>(() => {
+    const trimmedInput = searchedInput.trim();
+
+    // If search input is empty or less than 3 characters, show initial suggestions
+    if (trimmedInput.length < 3) {
+      return page_routes
+        .filter((route: { href: string }) => !route.href.endsWith('/')) // Filter out directory routes
+        .slice(0, 6) // Limit to 6 posts
+        .map((route: { title: string; href: string; noLink?: boolean; context?: ContextInfo }) => ({
+          title: route.title,
+          href: route.href,
+          noLink: route.noLink,
+          context: route.context
+        }));
+    }
+
+    // For search with 3 or more characters, use the advance search
+    return advanceSearch(trimmedInput) as unknown as SearchResult[];
+  }, [searchedInput]);
 
   useEffect(() => {
     setSelectedIndex(0);
