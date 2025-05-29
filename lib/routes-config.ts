@@ -1,9 +1,16 @@
 import docuConfig from "@/docu.json"; // Import JSON file
 
+export type ContextInfo = {
+  icon: string;
+  description: string;
+  title?: string;
+};
+
 export type EachRoute = {
   title: string;
   href: string;
-  noLink?: boolean; // Sekarang mendukung boolean
+  noLink?: boolean;
+  context?: ContextInfo;
   items?: EachRoute[];
 };
 
