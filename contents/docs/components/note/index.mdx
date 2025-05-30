@@ -4,8 +4,6 @@ description: A component used to display different types of messages such as gen
 date: 14-12-2024
 ---
 
-The `Note` component allows you to display different types of messages such as general notes, warnings, or success notifications. Each type is styled accordingly, providing a clear visual cue to the user.
-
 ## Preview
 
 <Note type="note" title="Note">
@@ -25,12 +23,12 @@ The `Note` component allows you to display different types of messages such as g
 
 | Prop    | Type                                           | Default | Description                              |
 | ------- | ---------------------------------------------- | ------- | ---------------------------------------- |
-| `title` | `string`                                       | "Note"  | Sets the title of the note.              |
-| `type`  | `"note"`, `"danger"`, `"warning"`, `"success"` | "note"  | Determines the visual style of the note. |
+| `title` | string                                       | "Note"  | Sets the title of the note.              |
+| `type`  | "note" "danger" "success" "warning" | undefined | Determines the visual style of the note. |
 
-## Code
+## Output Markdown
 
-```jsx
+```markdown
 <Note type="note" title="Note">
   This is a general note to convey information to the user.
 </Note>

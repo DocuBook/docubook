@@ -4,14 +4,12 @@ description: A component used to create buttons that can be used to trigger acti
 date: 14-12-2024
 ---
 
-The Button component is a component used to create buttons that can be used to trigger actions or navigate to other pages.
-
 ## Preview
 
 <Button
   text="Learn More"
   href="https://learn.example.com"
-  icon="ArrowUpRight"
+  icon="MoveUpRight"
   size="md"
   target="_blank"
   variation="primary"
@@ -19,18 +17,18 @@ The Button component is a component used to create buttons that can be used to t
 
 ## Props
 
-| Prop        | Type     | Default        | Description                                  |
-| ----------- | -------- | -------------- | -------------------------------------------- |
-| `text`      | `string` | `""`           | The value of text button.                    |
-| `href`      | `string` | `""`           | The value of url button.                     |
-| `icon`      | `string` | `null`         | The value of button icon render from lucide. |
-| `size`      | `string` | `"sm, md, lg"` | The value of size button.                    |
-| `target`    | `string` | `"_blank"`     | By default target `_blank`                   |
-| `variation` | `string` | `"primary"`    | By default variation is **Primary**          |
+| Prop        | Type     | Default     | Description                                  |
+| ----------- | -------- | ----------- | -------------------------------------------- |
+| `text`      | string   | undefined   | The button text                              |
+| `href`      | string   | **required**| The URL to navigate to                       |
+| `icon`      | string   | undefined   | Lucide icon name (e.g. "MoveUpRight")       |
+| `size`      | string   | "md"        | Button size: `"sm"`, `"md"`, or `"lg"`      |
+| `target`    | string   | undefined   | Link target (e.g. "_blank")                 |
+| `variation` | string   | "primary"   | Button style: `"primary"`, `"accent"`, or `"outline"` |
 
-## Code
+## Output Markdown
 
-```bash
+```markdown
 <Button
   text="Learn More"
   href="https://learn.example.com"
