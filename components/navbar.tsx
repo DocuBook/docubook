@@ -63,15 +63,15 @@ export function NavMenu({ isSheet = false }) {
         const Comp = (
           <Anchor
             key={`${item.title}-${item.href}`}
-            activeClassName="!text-primary md:font-semibold font-medium"
+            activeClassName="text-primary dark:text-accent md:font-semibold font-medium"
             absolute
-            className="flex items-center gap-1 dark:text-stone-300/85 text-stone-800"
+            className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors"
             href={item.href}
             target={isExternal ? "_blank" : undefined}
             rel={isExternal ? "noopener noreferrer" : undefined}
           >
             {item.title}
-            {isExternal && <ArrowUpRight className="w-4 h-4 text-muted-foreground" />}
+            {isExternal && <ArrowUpRight className="w-4 h-4 text-foreground/80" />}
           </Anchor>
         );
         return isSheet ? (

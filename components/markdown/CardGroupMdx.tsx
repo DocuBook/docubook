@@ -13,7 +13,7 @@ const CardGroup: React.FC<CardGroupProps> = ({ children, cols = 2, className }) 
   return (
     <div
       className={clsx(
-        "grid gap-4",
+        "grid gap-4 text-foreground",
         `grid-cols-1 sm:grid-cols-${cols}`,
         className
       )}

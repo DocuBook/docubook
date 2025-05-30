@@ -149,7 +149,7 @@ export default function TocObserver({
 
   return (
     <div className="relative">
-      <div className="relative text-sm text-stone-600 dark:text-stone-400">
+      <div className="relative text-sm text-foreground/70 hover:text-foreground transition-colors">
         <div className="flex flex-col gap-0">
           {data.map(({ href, level, text }, index) => {
             const id = href.slice(1);
@@ -172,7 +172,7 @@ export default function TocObserver({
                     {/* Vertical line */}
                     <div className={clsx(
                       "absolute left-0 top-0 h-full w-px",
-                      isActive ? "bg-primary/20" : "bg-stone-300 dark:bg-stone-600"
+                      isActive ? "bg-primary/20 dark:bg-primary/30" : "bg-border/50 dark:bg-border/50"
                     )}>
                       {isActive && (
                         <motion.div
@@ -187,11 +187,11 @@ export default function TocObserver({
                     {/* Horizontal line */}
                     <div className={clsx(
                       "absolute left-0 top-1/2 h-px w-6",
-                      isActive ? "bg-primary/20" : "bg-stone-300 dark:bg-stone-600"
+                      isActive ? "bg-primary/20 dark:bg-primary/30" : "bg-border/50 dark:bg-border/50"
                     )}>
                       {isActive && (
                         <motion.div
-                          className="absolute left-0 top-0 h-full w-full bg-primary origin-left"
+                          className="absolute left-0 top-0 h-full w-full bg-primary dark:bg-accent origin-left"
                           initial={{ scaleX: 0 }}
                           animate={{ scaleX: scrollProgress }}
                           transition={{ duration: 0.3, delay: 0.1 }}
@@ -207,8 +207,8 @@ export default function TocObserver({
                   className={clsx(
                     "relative flex items-center py-2 transition-colors",
                     {
-                      "text-primary dark:text-primary-400 font-medium": isActive,
-                      "text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200": !isActive,
+                      "text-primary dark:text-primary font-medium": isActive,
+                      "text-muted-foreground hover:text-foreground dark:hover:text-foreground/90": !isActive,
                     }
                   )}
                   style={{
@@ -229,13 +229,13 @@ export default function TocObserver({
                     <div className={clsx(
                       "w-1.5 h-1.5 rounded-full transition-all duration-300 relative z-10",
                       {
-                        "bg-primary scale-100": isActive,
-                        "bg-stone-300 dark:bg-stone-600 scale-75 group-hover:scale-100 group-hover:bg-primary/50": !isActive,
+                        "bg-primary scale-100 dark:bg-primary/90": isActive,
+                        "bg-muted-foreground/30 dark:bg-muted-foreground/30 scale-75 group-hover:scale-100 group-hover:bg-primary/50 dark:group-hover:bg-primary/50": !isActive,
                       }
                     )}>
                       {isActive && (
                         <motion.div
-                          className="absolute inset-0 rounded-full bg-primary/20"
+                          className="absolute inset-0 rounded-full bg-primary/20 dark:bg-primary/30"
                           initial={{ scale: 1 }}
                           animate={{ scale: 1.8 }}
                           transition={{
