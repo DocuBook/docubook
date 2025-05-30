@@ -71,7 +71,17 @@
         { "title": "Installation", "href": "/installation" },
         { "title": "Quick Start Guide", "href": "/quick-start-guide" },
         { "title": "Project Structure", "href": "/project-structure" },
-        { "title": "Customize", "href": "/customize" }
+        { "title": "Customize", "href": "/customize" },
+        {
+            "title": "Theme Colors",
+            "href": "/theme-colors",
+            "items": [
+                { "title": "Default", "href": "/default" },
+                { "title": "Fresh Lime", "href": "/freshlime" },
+                { "title": "Coffee", "href": "/coffee" },
+                { "title": "llms.txt", "href": "/llms" }
+            ]
+        }
       ]
     },
     {
@@ -103,7 +113,7 @@
       ]
     },
     {
-      "title": "Changelog",
+      "title": "Release",
       "href": "/changelog",
       "noLink": true,
       "context": {

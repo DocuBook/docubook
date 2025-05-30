@@ -68,7 +68,7 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
         >
           <div className="flex items-center gap-2">
             {activeRoute?.context?.icon && (
-              <span className="text-primary bg-primary/10 border border-primary rounded p-0.5">
+              <span className="text-primary bg-primary/10 border border-primary dark:border dark:border-accent dark:bg-accent/10 dark:text-accent rounded p-0.5">
                 {getIcon(activeRoute.context.icon)}
               </span>
             )}
@@ -98,14 +98,14 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
                   "relative flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm",
                   "text-left outline-none transition-colors",
                   isActive
-                    ? "bg-primary/20 text-primary"
-                    : "text-foreground/80 hover:bg-primary/20"
+                    ? "bg-primary/20 text-primary dark:bg-accent/20 dark:text-accent"
+                    : "text-foreground/80 hover:bg-primary/20 dark:text-foreground/60 dark:hover:bg-accent/20"
                 )}
               >
                 {route.context?.icon && (
                   <span className={cn(
                     "flex h-4 w-4 items-center justify-center",
-                    isActive ? "text-primary" : "text-foreground/60"
+                    isActive ? "text-primary dark:text-accent" : "text-foreground/60"
                   )}>
                     {getIcon(route.context.icon)}
                   </span>

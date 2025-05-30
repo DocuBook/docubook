@@ -54,9 +54,10 @@ export default function SubLink({
   // Only apply active styles if it's an exact match and not a parent with active children
   const Comp = useMemo(() => (
     <Anchor
-      activeClassName={!hasActiveChild ? "text-primary font-medium" : ""}
+      activeClassName={!hasActiveChild ? "dark:text-accent text-primary font-medium" : ""}
       href={fullHref}
       className={cn(
+        "text-foreground/80 hover:text-foreground transition-colors",
         hasActiveChild && "font-medium text-foreground"
       )}
     >
@@ -72,8 +73,8 @@ export default function SubLink({
     )
   ) : (
     <h4 className={cn(
-      "font-medium sm:text-sm",
-      hasActiveChild ? "text-foreground" : "text-primary"
+      "font-medium sm:text-sm text-foreground/90 hover:text-foreground transition-colors",
+      hasActiveChild ? "text-foreground" : "text-foreground/80"
     )}>
       {title}
     </h4>
@@ -93,7 +94,7 @@ export default function SubLink({
         >
           <div className="flex items-center justify-between w-full">
             {titleOrLink}
-            <span className="ml-2">
+            <span className="ml-2 text-muted-foreground">
               {!isOpen ? (
                 <ChevronRight className="h-[0.9rem] w-[0.9rem]" aria-hidden="true" />
               ) : (
@@ -111,8 +112,8 @@ export default function SubLink({
         >
           <div
             className={cn(
-              "flex flex-col items-start sm:text-sm dark:text-stone-300/85 text-stone-800 ml-0.5 mt-2.5 gap-3",
-              level > 0 && "pl-4 border-l ml-1.5"
+              "flex flex-col items-start sm:text-sm text-foreground/80 ml-0.5 mt-2.5 gap-3 hover:[&_a]:text-foreground transition-colors",
+              level > 0 && "pl-4 border-l border-border ml-1.5"
             )}
           >
             {items?.map((innerLink) => (

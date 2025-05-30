@@ -1,23 +1,20 @@
-/* ocean */
+/* Modern Blue Theme */
 /* Light Mode */
 .keyword {
-  color: #2563eb;
-  /* Vibrant Blue */
+  color: #1d4ed8; /* Darker blue for better contrast */
 }
 
 .function {
-  color: #0284c7;
-  /* Deep Sky Blue */
+  color: #0369a1; /* Deep blue */
 }
 
 .punctuation {
-  color: #475569;
-  /* Cool Slate Gray */
+  color: #4b5563; /* Slate gray */
 }
 
 .comment {
-  color: #64748b;
-  /* Muted Slate */
+  color: #6b7280; /* Muted gray */
+  font-style: italic;
 }
 
 .string,
@@ -25,34 +22,28 @@
 .annotation,
 .boolean,
 .number {
-  color: #0369a1;
-  /* Dark Cyan */
+  color: #0d9488; /* Teal for better distinction */
 }
 
 .tag {
-  color: #1e40af;
-  /* Indigo */
+  color: #1d4ed8; /* Matching keyword color */
 }
 
 .attr-name {
-  color: #0ea5e9;
-  /* Light Sky Blue */
+  color: #0284c7; /* Sky blue */
 }
 
 .attr-value {
-  color: #2563eb;
-  /* Bright Blue */
+  color: #2563eb; /* Primary blue */
 }
 
 /* Dark Mode */
 .dark .keyword {
-  color: #93c5fd;
-  /* Soft Blue */
+  color: #60a5fa; /* Soft blue */
 }
 
 .dark .function {
-  color: #38bdf8;
-  /* Sky Blue */
+  color: #38bdf8; /* Sky blue */
 }
 
 .dark .string,
@@ -60,23 +51,27 @@
 .dark .annotation,
 .dark .boolean,
 .dark .number {
-  color: #60a5fa;
-  /* Light Blue */
+  color: #2dd4bf; /* Teal */
 }
 
 .dark .tag {
-  color: #3b82f6;
-  /* Bold Blue */
+  color: #60a5fa; /* Matching keyword color */
 }
 
 .dark .attr-name {
-  color: #67e8f9;
-  /* Aqua */
+  color: #7dd3fc; /* Lighter blue */
 }
 
 .dark .attr-value {
-  color: #93c5fd;
-  /* Frosty Blue */
+  color: #3b82f6; /* Brighter blue */
+}
+
+.dark .comment {
+  color: #9ca3af; /* Lighter gray for dark mode */
+}
+
+.dark .punctuation {
+  color: #9ca3af; /* Lighter gray for dark mode */
 }
 
 .youtube {

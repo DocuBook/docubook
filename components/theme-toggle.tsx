@@ -28,7 +28,7 @@ export function ModeToggle() {
           setSelectedTheme(value);
         }
       }}
-      className="flex items-center gap-1 rounded-full border border-gray-300 dark:border-gray-700 p-1 transition-all"
+      className="flex items-center gap-1 rounded-full border border-border bg-background/50 p-1 transition-all"
     >
       <ToggleGroupItem
         value="light"
@@ -36,11 +36,11 @@ export function ModeToggle() {
         aria-label="Light Mode"
         className={`rounded-full p-1 transition-all ${
           selectedTheme === "light"
-            ? "bg-blue-500 text-white"
-            : "bg-transparent"
+            ? "bg-primary text-primary-foreground"
+            : "bg-transparent hover:bg-muted/50"
         }`}
       >
-        <Sun className={`h-4 w-4 ${selectedTheme === "light" ? "text-white" : "text-gray-600 dark:text-gray-300"}`} />
+        <Sun className="h-4 w-4" />
       </ToggleGroupItem>
       <ToggleGroupItem
         value="system"
@@ -48,11 +48,11 @@ export function ModeToggle() {
         aria-label="System Mode"
         className={`rounded-full p-1 transition-all ${
           selectedTheme === "system"
-            ? "bg-blue-500 text-white"
-            : "bg-transparent"
+            ? "bg-primary text-primary-foreground"
+            : "bg-transparent hover:bg-muted/50"
         }`}
       >
-        <Monitor className={`h-4 w-4 ${selectedTheme === "system" ? "text-white" : "text-gray-600 dark:text-gray-300"}`} />
+        <Monitor className="h-4 w-4" />
       </ToggleGroupItem>
       <ToggleGroupItem
         value="dark"
@@ -60,11 +60,11 @@ export function ModeToggle() {
         aria-label="Dark Mode"
         className={`rounded-full p-1 transition-all ${
           selectedTheme === "dark"
-            ? "bg-blue-500 text-white"
-            : "bg-transparent"
+            ? "bg-primary text-primary-foreground"
+            : "bg-transparent hover:bg-muted/50"
         }`}
       >
-        <Moon className={`h-4 w-4 ${selectedTheme === "dark" ? "text-white" : "text-gray-600 dark:text-gray-300"}`} />
+        <Moon className="h-4 w-4" />
       </ToggleGroupItem>
     </ToggleGroup>
   );

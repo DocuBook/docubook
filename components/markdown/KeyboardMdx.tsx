@@ -88,7 +88,7 @@ const KbdComponent: React.FC<KbdProps> = ({
 
   return (
     <kbd
-      className="inline-flex items-center justify-center px-2 py-1 mx-0.5 text-xs font-mono font-medium text-gray-800 bg-gray-100 border border-gray-300 rounded-md dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
+      className="inline-flex items-center justify-center px-2 py-1 mx-0.5 text-xs font-mono font-medium text-foreground bg-secondary/70 border rounded-md"
       {...props}
     >
       {renderContent()}

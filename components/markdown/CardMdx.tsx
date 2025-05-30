@@ -20,8 +20,9 @@ const Card: React.FC<CardProps> = ({ title, icon, href, horizontal, children, cl
   const content = (
     <div
       className={clsx(
-        "border rounded-lg shadow-sm p-4 transition-all duration-200 bg-white dark:bg-gray-900",
-        "hover:bg-gray-50 dark:hover:bg-gray-800",
+        "border rounded-lg shadow-sm p-4 transition-all duration-200",
+        "bg-card text-card-foreground border-border",
+        "hover:bg-accent/5 hover:border-accent/30",
         "flex gap-2",
         horizontal ? "flex-row items-center gap-1" : "flex-col space-y-1",
         className
@@ -29,8 +30,8 @@ const Card: React.FC<CardProps> = ({ title, icon, href, horizontal, children, cl
     >
       {Icon && <Icon className="w-5 h-5 text-primary flex-shrink-0" />}
       <div className="flex-1 min-w-0 my-auto h-full">
-        <span className="text-base font-semibold">{title}</span>
-        <div className="text-sm text-gray-600 dark:text-gray-400 -mt-3">{children}</div>
+        <span className="text-base font-semibold text-foreground">{title}</span>
+        <div className="text-sm text-muted-foreground -mt-3">{children}</div>
       </div>
     </div>
   );
