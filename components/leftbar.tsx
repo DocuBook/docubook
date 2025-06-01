@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/sheet";
 import { Logo, NavMenu } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
-import { AlignLeftIcon, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { LayoutGrid, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import DocsMenu from "@/components/docs-menu";
@@ -70,7 +70,7 @@ export function SheetLeftbar() {
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="max-lg:flex hidden">
-          <AlignLeftIcon />
+          <LayoutGrid />
         </Button>
       </SheetTrigger>
       <SheetContent className="flex flex-col gap-4 px-0" side="left">
