@@ -8,7 +8,25 @@ import rehypeSlug from "rehype-slug";
 import rehypeCodeTitles from "rehype-code-titles";
 import { page_routes, ROUTES } from "./routes-config";
 import { visit } from "unist-util-visit";
+import type { Node } from "unist";
 import matter from "gray-matter";
+
+// Type definitions for unist-util-visit
+interface Element extends Node {
+  type: string;
+  tagName?: string;
+  properties?: Record<string, unknown> & {
+    raw?: string;
+  };
+  children?: Node[];
+  value?: string;
+  raw?: string; // For internal use in processing
+}
+
+interface TextNode extends Node {
+  type: 'text';
+  value: string;
+}
 
 // custom components imports
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -139,11 +157,11 @@ function justGetFrontmatterFromMD<Frontmatter>(rawMd: string): Frontmatter {
 }
 
 export async function getAllChilds(pathString: string) {
-  const items = pathString.split("/").filter((it) => it != "");
+  const items = pathString.split("/").filter((it) => it !== "");
   let page_routes_copy = ROUTES;
 
   let prevHref = "";
-  for (let it of items) {
+  for (const it of items) {
     const found = page_routes_copy.find((innerIt) => innerIt.href == `/${it}`);
     if (!found) break;
     prevHref += found.href;
@@ -170,20 +188,28 @@ export async function getAllChilds(pathString: string) {
 }
 
 // for copying the code in pre
-const preProcess = () => (tree: any) => {
-  visit(tree, (node) => {
-    if (node?.type === "element" && node?.tagName === "pre") {
-      const [codeEl] = node.children;
-      if (codeEl.tagName !== "code") return;
-      node.raw = codeEl.children?.[0].value;
+const preProcess = () => (tree: Node) => {
+  visit(tree, (node: Node) => {
+    const element = node as Element;
+    if (element?.type === "element" && element?.tagName === "pre" && element.children) {
+      const [codeEl] = element.children as Element[];
+      if (codeEl.tagName !== "code" || !codeEl.children?.[0]) return;
+      
+      const textNode = codeEl.children[0] as TextNode;
+      if (textNode.type === 'text' && textNode.value) {
+        element.raw = textNode.value;
+      }
     }
   });
 };
 
-const postProcess = () => (tree: any) => {
-  visit(tree, "element", (node) => {
-    if (node?.type === "element" && node?.tagName === "pre") {
-      node.properties["raw"] = node.raw;
+const postProcess = () => (tree: Node) => {
+  visit(tree, "element", (node: Node) => {
+    const element = node as Element;
+    if (element?.type === "element" && element?.tagName === "pre") {
+      if (element.properties && element.raw) {
+        element.properties.raw = element.raw;
+      }
     }
   });
 };

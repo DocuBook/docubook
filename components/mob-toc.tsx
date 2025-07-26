@@ -7,7 +7,7 @@ import { useRef, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { useScrollPosition, useActiveSection } from "@/hooks";
+import { useActiveSection } from "@/hooks";
 import { TocItem } from "@/lib/toc";
 
 interface MobTocProps {

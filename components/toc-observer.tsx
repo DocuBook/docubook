@@ -1,6 +1,5 @@
 "use client";
 
-import { getDocsTocs } from "@/lib/markdown";
 import clsx from "clsx";
 import Link from "next/link";
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -110,7 +109,6 @@ export default function TocObserver({
 
   // Calculate scroll progress for the active section
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [activeSectionIndex, setActiveSectionIndex] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -137,15 +135,6 @@ export default function TocObserver({
     return () => window.removeEventListener('scroll', handleScroll);
   }, [activeId]);
 
-  // Update active section index when activeId changes
-  useEffect(() => {
-    if (activeId) {
-      const index = data.findIndex(item => item.href.slice(1) === activeId);
-      if (index !== -1) {
-        setActiveSectionIndex(index);
-      }
-    }
-  }, [activeId, data]);
 
   return (
     <div className="relative">
@@ -155,8 +144,9 @@ export default function TocObserver({
             const id = href.slice(1);
             const isActive = activeId === id;
             const indent = level > 1 ? (level - 1) * 20 : 0;
-            const isParent = hasChildren(id, level);
-            const isLastInLevel = index === data.length - 1 || data[index + 1].level <= level;
+            // Prefix with underscore to indicate intentionally unused
+            const _isParent = hasChildren(id, level);
+            const _isLastInLevel = index === data.length - 1 || data[index + 1].level <= level;
 
             return (
               <div key={href} className="relative">

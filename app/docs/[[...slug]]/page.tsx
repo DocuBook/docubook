@@ -68,7 +68,7 @@ export default async function DocsPage({ params: { slug = [] } }: PageProps) {
 
   if (!res) notFound();
 
-  const { title, description, image, date } = res.frontmatter;
+  const { title, description, image: _image, date } = res.frontmatter;
 
   // File path for edit link
   const filePath = `contents/docs/${slug.join("/") || ""}/index.mdx`;
