@@ -1,6 +1,6 @@
 'use client';
 
-import { MDXRemote, MDXRemoteProps } from 'next-mdx-remote/rsc';
+import { MDXRemote } from 'next-mdx-remote/rsc';
 import { Kbd } from './KeyboardMdx';
 
 // Define components mapping

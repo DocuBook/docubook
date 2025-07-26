@@ -1,8 +1,6 @@
 import React from "react";
 import * as Icons from "lucide-react";
 import Link from "next/link";
-
-type IconName = keyof typeof Icons;
 type ButtonProps = {
   icon?: keyof typeof Icons;
   text?: string;

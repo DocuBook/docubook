@@ -32,9 +32,6 @@ export default function SubLink({
   // Full path including parent's href
   const fullHref = `${parentHref}${href}`;
 
-  // Check if current path exactly matches this link's href
-  const isExactActive = useMemo(() => path === fullHref, [path, fullHref]);
-
   // Check if any child is active (for parent items)
   const hasActiveChild = useMemo(() => {
     if (!items) return false;

@@ -10,16 +10,76 @@ interface SponsorItem {
   description?: string;
 }
 
+interface NavbarConfig {
+  title?: string;
+  logo?: {
+    light?: string;
+    dark?: string;
+  };
+  links?: Array<{
+    title: string;
+    href: string;
+    external?: boolean;
+  }>;
+}
+
+interface FooterConfig {
+  text?: string;
+  links?: Array<{
+    title: string;
+    href: string;
+    external?: boolean;
+  }>;
+}
+
+interface MetaConfig {
+  title?: string;
+  description?: string;
+  favicon?: string;
+  socialBanner?: string;
+}
+
+interface RepositoryConfig {
+  url: string;
+  editUrl?: string;
+  branch?: string;
+  directory?: string;
+}
+
+interface RouteItem {
+  title: string;
+  href: string;
+  noLink?: boolean;
+  context?: {
+    icon: string;
+    description: string;
+    title: string;
+  };
+  items?: RouteItem[];
+}
+
+interface RouteConfig {
+  title: string;
+  href: string;
+  noLink?: boolean;
+  context?: {
+    icon: string;
+    description: string;
+    title: string;
+  };
+  items?: RouteItem[];
+}
+
 interface DocuConfig {
   sponsor?: {
     title?: string;
     item?: SponsorItem;
   };
-  navbar: any; // Anda bisa mendefinisikan tipe yang lebih spesifik jika diperlukan
-  footer: any;
-  meta: any;
-  repository: any;
-  routes: any[];
+  navbar: NavbarConfig;
+  footer: FooterConfig;
+  meta: MetaConfig;
+  repository: RepositoryConfig;
+  routes: RouteConfig[];
 }
 
 // Type assertion for docu.json
