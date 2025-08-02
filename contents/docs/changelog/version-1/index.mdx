@@ -1,12 +1,50 @@
 ---
 title: Release Version 1.0+
 description: List of latest changes and updates on DocuBook
-date: 24-05-2025
+date: 02-08-2025
 ---
 
 <Note type="note" title="Version History">
   This changelog contains a list of all the changes made to the DocuBook template. It will be updated with each new release and will include information about new features, bug fixes, and other improvements.
 </Note>
+
+<div className="sr-only">
+### v 1.14.0
+</div>
+
+<Release version="1.14.0" date="2025-08-02" title="Dev: Add workflow to run Sync NPM package">
+  <Changes type="added">
+    - Add workflows to run Sync NPM package
+    - Add sync-from-npm.yml
+    - Add PR to organization github.com/DocuBook/docubook
+  </Changes>
+</Release>
+
+<div className="sr-only">
+### v 1.13.9
+</div>
+
+<Release version="1.13.9" date="2025-07-27" title="Code Cleanup & Stability Improvements">
+  <Changes type="added">
+    - Added proper type definitions for unist-util-visit
+    - Added .eslintrc.json configuration file
+    - Added proper type checking for node values in markdown processing
+  </Changes>
+  <Changes type="improved">
+    - Enhanced type safety in lib/markdown.ts with proper TypeScript interfaces
+    - Converted interface extensions to type aliases in UI components for consistency
+    - Improved code organization across multiple files
+  </Changes>
+  <Changes type="fixed">
+    - Fixed potential null reference in markdown.ts when processing code blocks
+    - Updated import for MDXRemote in mdx-provider.tsx
+    - Optimized event listener cleanup in toc-observer.tsx
+  </Changes>
+  <Changes type="removed">
+    - Removed unused state and variables in toc-observer.tsx
+    - Removed unused imports for cleaner codebase
+  </Changes>
+</Release>
 
 <div className="sr-only">
 ### v 1.13.6
