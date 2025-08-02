@@ -25,7 +25,7 @@ export default function Home() {
             )}
           >
             <AnimatedShinyText className="inline-flex items-center justify-center px-4 py-1 transition ease-out hover:text-neutral-100 hover:duration-300 hover:dark:text-neutral-200">
-              <span>🚀 New Version - Release v1.13.9</span>
+              <span>🚀 New Version - Release v1.13.10</span>
               <ArrowRightIcon className="ml-1 size-3 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
             </AnimatedShinyText>
           </div>
