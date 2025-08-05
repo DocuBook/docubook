@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { Dialog } from "@/components/ui/dialog";
 import { SearchTrigger } from "@/components/SearchTrigger";
 import { SearchModal } from "@/components/SearchModal";
+import DocSearchComponent from "@/components/DocSearch";
+import { DialogTrigger } from "@radix-ui/react-dialog";
 
-// Define props for the Search component
 interface SearchProps {
   /**
-   * Specify the type of search engine to use.
+   * Specify which search engine to use.
    * @default 'default'
    */
   type?: "default" | "algolia";
@@ -17,33 +18,36 @@ interface SearchProps {
 export default function Search({ type = "default" }: SearchProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Effect to handle keyboard shortcut (Cmd/Ctrl + K)
+  // The useEffect below is ONLY for the 'default' type, which is correct.
+  // DocSearch handles its own keyboard shortcut.
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "k") {
-        event.preventDefault();
-        setIsOpen((open) => !open);
-      }
-    };
+    if (type === 'default') {
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === "k") {
+          event.preventDefault();
+          setIsOpen((open) => !open);
+        }
+      };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    }
+  }, [type]);
 
-  // Here you can add logic for different search types if needed in the future
   if (type === "algolia") {
-    // return <AlgoliaSearchComponent />; // Example for future implementation
-    console.warn("Tipe pencarian 'algolia' belum diimplementasikan.");
-    // For now, we will fall back to the default search implementation
+    // Just render the component without passing any state props
+    return <DocSearchComponent />;
   }
 
-  // Render the default search components
+  // Logic for 'default' search
   return (
     <div>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <SearchTrigger />
+        <DialogTrigger asChild>
+          <SearchTrigger />
+        </DialogTrigger>
         <SearchModal isOpen={isOpen} setIsOpen={setIsOpen} />
       </Dialog>
     </div>
