@@ -7,6 +7,7 @@ import { Footer } from "@/components/footer";
 import docuConfig from "@/docu.json";
 import { Toaster } from "@/components/ui/sonner";
 import "@/styles/globals.css";
+import "@/styles/algolia.css";
 
 const { meta } = docuConfig;
 
