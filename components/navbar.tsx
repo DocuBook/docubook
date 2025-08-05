@@ -26,7 +26,7 @@ export function Navbar() {
               <NavMenu />
             </div>
             <Separator className="hidden lg:flex my-4 h-9" orientation="vertical" />
-            <Search type="algolia" />
+            <Search />
         </div>
       </div>
     </nav>
