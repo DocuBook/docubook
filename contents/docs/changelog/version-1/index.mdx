@@ -9,6 +9,22 @@ date: 02-08-2025
 </Note>
 
 <div className="sr-only">
+### v 1.14.2
+</div>
+
+<Release version="1.14.2" date="2025-08-05" title="Refactor & Fix: Decouple Search Component and Resolve Type Errors">
+  <Changes type="added">
+    - Refactor Search component into three distinct components: Search, SearchTrigger, and SearchModal for better maintainability and scalability.
+    - New SearchTrigger components
+    - New SearchModal components
+  </Changes>
+  <Changes type="fixed">
+    - Resolve TypeScript error for missing 'noLink' property on the 'Page' type after refactoring.
+    - Fix TypeScript error for missing 'context' property by providing a complete inline type annotation in the SearchModal component.
+  </Changes>
+</Release>
+
+<div className="sr-only">
 ### v 1.14.0
 </div>
 
