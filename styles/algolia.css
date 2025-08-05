@@ -1,0 +1,156 @@
+/*
+================================================================================
+ DocSearch Component Styling (Themed Version)
+ - This version uses the CSS variables defined in :root and .dark
+   to automatically adapt to your site's light and dark themes.
+================================================================================
+*/
+.docsearch {
+  /* Map theme variables to DocSearch's internal variables */
+  --docsearch-primary-color: hsl(var(--primary));
+  --docsearch-text-color: hsl(var(--foreground));
+  --docsearch-container-background: hsla(var(--background) / 0.8); /* Use theme background with transparency */
+  --docsearch-modal-background: hsl(var(--card)); /* Modals should use card color */
+  --docsearch-modal-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --docsearch-searchbox-background: hsl(var(--secondary));
+  --docsearch-searchbox-focus-background: hsl(var(--secondary));
+  --docsearch-hit-color: hsl(var(--foreground));
+  --docsearch-hit-background: hsl(var(--card));
+  --docsearch-hit-shadow: none;
+  --docsearch-hit-active-color: hsl(var(--primary-foreground));
+  --docsearch-selected-background: hsl(var(--secondary)); /* Use secondary for selection */
+  --docsearch-footer-background: hsl(var(--card));
+  --docsearch-footer-shadow: inset 0 1px 0 0 hsl(var(--border));
+  --docsearch-key-gradient: transparent;
+  --docsearch-key-shadow: none;
+  --docsearch-muted-color: hsl(var(--muted-foreground)); /* Use muted for less important text */
+}
+
+/*
+ * =====================================
+ * 1. Initial Search Button Styling
+ * =====================================
+ */
+.docsearch .DocSearch-Button {
+  background-color: hsl(var(--secondary)); /* Use secondary for the button background */
+  border: 1px solid hsl(var(--border)); /* Use the standard border color */
+  border-radius: 9999px; /* Pill shape */
+  width: 160px; /* Lebar default untuk desktop */
+  height: 40px;
+  color: hsl(var(--muted-foreground)); /* Use muted text color for the placeholder */
+  transition: width 0.3s ease; /* Transisi untuk perubahan lebar */
+}
+
+.docsearch .DocSearch-Button:hover {
+  border-color: var(--docsearch-primary-color);
+  box-shadow: none;
+}
+
+/* Magnifying glass icon */
+.docsearch .DocSearch-Search-Icon {
+  color: hsl(var(--muted-foreground));
+}
+
+/* The 'Search' placeholder text */
+.docsearch .DocSearch-Button-Placeholder {
+  font-style: normal;
+}
+
+/* Styling for the '⌘K' keys */
+.docsearch .DocSearch-Button-Key {
+  background: hsl(var(--primary)); /* Use primary color for the key background */
+  border-radius: 6px;
+  color: hsl(var(--primary-foreground)); /* Use primary-foreground for the key text */
+  font-size: 14px;
+  font-weight: 500;
+  height: 24px;
+  padding: 0 6px;
+  border: none;
+  box-shadow: none;
+  top: 0;
+}
+
+
+/*
+ * =====================================
+ * 2. Modal and Results Styling
+ * =====================================
+ */
+
+/* Main modal window */
+.docsearch .DocSearch-Modal {
+  backdrop-filter: blur(8px);
+}
+
+.docsearch .DocSearch-Container {
+  box-shadow: var(--docsearch-modal-shadow);
+}
+
+/* Search input form */
+.docsearch .DocSearch-Form {
+  border: 1px solid hsl(var(--border));
+  box-shadow: none;
+  background-color: transparent;
+}
+
+/* The 'Return' and 'Esc' hints */
+.docsearch .DocSearch-Reset-Icon,
+.docsearch .DocSearch-Cancel {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Style for each search result item */
+.docsearch .DocSearch-Hit a {
+  border-radius: 4px;
+}
+
+/* Selected search result */
+.docsearch .DocSearch-Hit[aria-selected="true"] a {
+  background: var(--docsearch-selected-background); /* Highlight color for selected item */
+}
+
+/* Hide category headers if not needed */
+.docsearch .DocSearch-Hit-source {
+  display: none;
+}
+
+/* Icon next to each result title */
+.docsearch .DocSearch-Hit-icon {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Footer instructions ('to navigate', 'to select', etc.) */
+.docsearch .DocSearch-Footer {
+  border-top: 1px solid hsl(var(--border));
+}
+
+.docsearch .DocSearch-Footer--commands kbd {
+  background: hsl(var(--muted)); /* Use muted for the background of keyboard hints */
+  border: 1px solid hsl(var(--border));
+  border-radius: 4px;
+  color: hsl(var(--muted-foreground));
+}
+
+/*
+ * =====================================
+ * 3. Responsive Styling (Mobile)
+ * =====================================
+ */
+@media (max-width: 768px) {
+  /* Aturan ini akan aktif pada layar 768px ke bawah */
+
+  .docsearch .DocSearch-Button {
+    width: 40px; /* Mengubah lebar tombol menjadi seukuran ikon */
+    height: 40px; /* Memastikan tinggi tetap sama */
+    padding: 0; /* Menghapus padding agar ikon bisa di tengah */
+    justify-content: center; /* Memusatkan ikon di dalam tombol */
+    background: none;
+    border: none;
+  }
+
+  /* Menyembunyikan teks "Search..." dan shortcut keyboard */
+  .docsearch .DocSearch-Button-Placeholder,
+  .docsearch .DocSearch-Button-Key {
+    display: none;
+  }
+}
