@@ -9,10 +9,10 @@ date: 02-08-2025
 </Note>
 
 <div className="sr-only">
-### v 1.15.0
+### v 1.15.1
 </div>
 
-<Release version="1.15.0" date="2025-08-06" title="Algolia DocSearch for better search result">
+<Release version="1.15.1" date="2025-08-06" title="Algolia DocSearch for better search result">
   <Changes type="added">
     - new DocSearch.tsx components
     - add props type algolia
@@ -28,6 +28,12 @@ To use Algolia DocSearch, you need to configure the following environment variab
 NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_ID="your_app_id"
 NEXT_PUBLIC_ALGOLIA_DOCSEARCH_API_KEY="your_api_key"
 NEXT_PUBLIC_ALGOLIA_DOCSEARCH_INDEX_NAME="your_index_name"
+```
+
+in the navbar component, add a prop to the class
+
+```
+Change <Search /> to <Search type="algolia" />
 ```
 </Note>
 

@@ -1,9 +1,11 @@
+@import "@docsearch/css";
+@import "./algolia.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url("../styles/syntax.css");
-
+@import url("./syntax.css");
 /* Modern Blue Theme */
 @layer base {
     :root {
