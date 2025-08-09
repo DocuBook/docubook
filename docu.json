@@ -1,5 +1,12 @@
 {
-    "navbar": {
+  "$schema": "https://docubook.pro/docu.schema.json",
+  "meta": {
+    "baseURL": "https://docubook.pro",
+    "title": "DocuBook",
+    "description": "DocuBook is a modern documentation platform for building, deploying, and managing your docs with ease.",
+    "favicon": "/favicon.ico"
+  },
+  "navbar": {
       "logo": {
         "src": "/images/docu.svg",
         "alt": "DocuBook Logo"
@@ -10,120 +17,99 @@
         { "title": "Docs", "href": "/docs/getting-started/introduction" },
         { "title": "Community", "href": "https://docubook.pro" }
       ]
-    },
-    "footer": {
-      "copyright": "DocuBook",
-      "social": [
-        {
-            "name": "Instagram",
-            "url": "https://www.instagram.com/wildan.nrs",
-            "iconName": "InstagramIcon"
-        },
-        {
-            "name": "Facebook",
-            "url": "https://www.facebook.com/wildan.nrsh",
-            "iconName": "FacebookIcon"
-        },
-        {
-            "name": "Twitter",
-            "url": "https://x.com/wildan_nrss",
-            "iconName": "TwitterIcon"
-        },
-        {
-            "name": "Youtube",
-            "url": "https://www.youtube.com/@wildan.nrs_",
-            "iconName": "YoutubeIcon"
-        }
+  },
+  "repository": {
+    "url": "https://github.com/DocuBook/docubook",
+    "editPathTemplate": "/blob/main/{filePath}",
+    "editLink": true
+  },
+  "sponsor": {
+    "title": "Hosted on",
+    "item": {
+      "title": "Vercel",
+      "description": "Deploy your DocuBook app with zero configuration.",
+      "image": "/images/vercel.png",
+      "url": "https://vercel.com/import/project?template=https://github.com/DocuBook/docubook"
+    }
+  },
+  "footer": {
+    "copyright": "DocuBook",
+    "social": [
+      {
+          "name": "Instagram",
+          "url": "https://www.instagram.com/wildan.nrs",
+          "iconName": "InstagramIcon"
+      },
+      {
+          "name": "Facebook",
+          "url": "https://www.facebook.com/wildan.nrsh",
+          "iconName": "FacebookIcon"
+      },
+      {
+          "name": "Twitter",
+          "url": "https://x.com/wildan_nrss",
+          "iconName": "TwitterIcon"
+      },
+      {
+          "name": "Youtube",
+          "url": "https://www.youtube.com/@wildan.nrs_",
+          "iconName": "YoutubeIcon"
+      }
       ]
     },
-    "meta": {
-      "baseURL": "https://docubook.pro",
-      "title": "DocuBook",
-      "description": "DocuBook is a modern documentation platform for building, deploying, and managing your docs with ease.",
-      "favicon": "/favicon.ico"
-    },
-    "repository": {
-      "url": "https://github.com/DocuBook/docubook",
-      "editPathTemplate": "/blob/main/{filePath}",
-      "editLink": true
-    },
-    "sponsor": {
-        "title": "Hosted on",
-        "item": {
-        "title": "Vercel",
-        "description": "Deploy your DocuBook app with zero configuration.",
-        "image": "/images/vercel.png",
-        "url": "https://vercel.com/import/project?template=https://github.com/DocuBook/docubook"
-        }
-    },
     "routes": [
-    {
+      {
       "title": "Getting Started",
       "href": "/getting-started",
       "noLink": true,
       "context": {
-        "icon": "Book",
-        "description": "Set up your Documentation",
-        "title": "Guides"
+              "icon": "Book",
+              "description": "Set up your Documentation",
+              "title": "Guides"
+              },
+              "items": [
+                      { "title": "Introduction", "href": "/introduction" },
+                      { "title": "Quick Start Guide", "href": "/quick-start-guide" },
+                      { "title": "Development", "href": "/development" },
+                      {
+                              "title": "Config",
+                              "href": "/config",
+                              "items": [
+                                      { "title": "Sub Config", "href": "/subconfig" }
+                              ]
+                      }
+              ]
       },
-      "items": [
-        { "title": "Introduction", "href": "/introduction" },
-        { "title": "Installation", "href": "/installation" },
-        { "title": "Quick Start Guide", "href": "/quick-start-guide" },
-        { "title": "Project Structure", "href": "/project-structure" },
-        { "title": "Customize", "href": "/customize" },
-        {
-            "title": "Theme Colors",
-            "href": "/theme-colors",
-            "items": [
-                { "title": "Default", "href": "/default" },
-                { "title": "Fresh Lime", "href": "/freshlime" },
-                { "title": "Coffee", "href": "/coffee" },
-                { "title": "llms.txt", "href": "/llms" }
-            ]
-        }
-      ]
-    },
-    {
-      "title": "Components",
-      "href": "/components",
+      {
+      "title": "Api Reference",
+      "href": "/api-reference",
       "noLink": true,
       "context": {
-        "icon": "Layers",
-        "description": "Write with Markdown",
-        "title": "Markdown"
+              "icon": "Terminal",
+              "description": "reference for using the API",
+              "title": "API Reference"
+              },
+              "items": [
+                      { "title": "Get", "href": "/get" },
+                      { "title": "Fetch", "href": "/fetch" },
+                      { "title": "Post", "href": "/post" },
+                      { "title": "Delete", "href": "/delete" }
+              ]
       },
-      "items": [
-        { "title": "Accordion", "href": "/accordion" },
-        { "title": "Button", "href": "/button" },
-        { "title": "Card", "href": "/card" },
-        { "title": "Card Group", "href": "/card-group" },
-        { "title": "Code Block", "href": "/code-block" },
-        { "title": "File Tree", "href": "/file-tree" },
-        { "title": "Image", "href": "/image" },
-        { "title": "Keyboard", "href": "/keyboard" },
-        { "title": "Link", "href": "/link" },
-        { "title": "Note", "href": "/note" },
-        { "title": "Release Note", "href": "/release-note" },
-        { "title": "Stepper", "href": "/stepper" },
-        { "title": "Tabs", "href": "/tabs" },
-        { "title": "Tooltips", "href": "/tooltips" },
-        { "title": "Youtube", "href": "/youtube" },
-        { "title": "Custom", "href": "/custom" }
-      ]
-    },
-    {
-      "title": "Release",
-      "href": "/changelog",
+      {
+      "title": "Changelog",
+      "href": "/Changelog",
       "noLink": true,
       "context": {
-        "icon": "History",
-        "description": "Updates and changes",
-        "title": "Changelog"
-      },
-      "items": [
-        { "title": "Version 1.0+", "href": "/version-1" }
-      ]
-    }
-  ]
+              "icon": "Hystory",
+              "description": "Update and Changes",
+              "title": "Release"
+              },
+              "items": [
+                      { "title": "version 1", "href": "/version-1" },
+                      { "title": "version 2", "href": "/version-2" },
+                      { "title": "version 3", "href": "/version-3" }
+              ]
+      }
+    ]
 }

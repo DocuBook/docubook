@@ -1,145 +1,63 @@
 ---
-title: Quick Start Guide
-description: Get up and running with DocuBook in minutes with this comprehensive guide
-date: 20-05-2025
+title : Quick Start Guide
+description : a quick way to understand how to use it
+date : 10-12-2024
 ---
 
-Welcome to DocuBook! This guide will help you set up and customize your documentation site efficiently.
+## Heading 2
 
-## Prerequisites
+this is regular text written in markdown format with `inline code`, **bold**, and *italic*
 
-Before we begin, ensure you have the following installed:
+### Heading 3
 
-- [Git](https://git-scm.com/)
-- [Node.js 18+](https://nodejs.org/) or [Bun 1.0+](https://bun.sh/)
-- A package manager (npm, yarn, or pnpm)
+example of ordered list format :
 
-## Installation
+- list one
+        - sub list
+- list two
+- list three
 
-<Note type="note" title="Initial Setup">
-  Follow the [installation guide](/docs/getting-started/installation) to set up your project dependencies and configuration.
+#### Heading 4
+
+Below is an example of how to write a code block :
+
+````plaintext
+```javascript:main.js showLineNumbers {3-4}
+function isRocketAboutToCrash() {
+    // Check if the rocket is stable
+    if (!isStable()) {
+        NoCrash(); // Prevent the crash
+    }
+}
+```
+````
+
+example note :
+```plaintext
+<Note type="note" title="Note">
+  This is a general note to convey information to the user.
 </Note>
+```
 
-## Project Setup
-
-### Configuration
-
-<Stepper>
-  <StepperItem title="Add Favicon">
-    Place your favicon at `public/favicon.ico` for browser tab display.
-  </StepperItem>
-  <StepperItem title="Add Logo">
-    Add your logo at `public/images/docu.svg` (SVG format recommended for scalability).
-  </StepperItem>
-  <StepperItem title="Update Site Information">
-    Customize your site's metadata in `docu.json`:
-    - Site title and description
-    - Navigation structure
-    - Default theme settings
-  </StepperItem>
-</Stepper>
-
-## Content Management
-
-### File Structure
-
-DocuBook organizes content in a hierarchical structure:
+displaying an image in markdown format :
 
 ```plaintext
-contents/
-  docs/                    # Main documentation directory
-    getting-started/        # Section for getting started guides
-      quick-start-guide/    # Current guide
-        index.mdx           # Main content file
-    guides/                # Additional documentation sections
-      components/          # Component-specific documentation
-        index.mdx
+![Alt text for the image](https://via.placeholder.com/150)
 ```
 
-### Creating New Content
+render as :
+![Alt text for the image](https://via.placeholder.com/150)
 
-<Stepper>
-  <StepperItem title="1. Create Content Directory">
-    Organize your documentation by creating a new directory:
-    ```bash
-    mkdir -p contents/docs/your-section/your-topic
-    ```
+For a complete guide on using markdown content in DocuBook, please refer to the [Components](https://docubook.pro/docs/components) page.
 
-    Example for an API reference:
-    ```bash
-    mkdir -p contents/docs/api/authentication
-    ```
-  </StepperItem>
-
-  <StepperItem title="2. Create MDX Content">
-    Add an `index.mdx` file with frontmatter metadata:
-    ````markdown
-    ---
-    title: Authentication
-    description: Learn how to implement user authentication
-    date: 2025-05-29
-    ---
-
-    Your comprehensive guide to implementing authentication in your application.
-
-    ## Getting Started
-
-    Start by setting up your authentication provider...
-    ````
-  </StepperItem>
-
-  <StepperItem title="3. Update Navigation">
-    Add your new section to the navigation in `docu.json`. Here's how to add the authentication section we created earlier:
-
-    ```json:docu.json showLineNumbers {4-16}
-    {
-      "routes": [
-        // ... existing routes ...
-        {
-          "title": "API",
-          "href": "/api",
-          "noLink": true,
-          "context": {
-            "icon": "Code2",
-            "description": "API Reference and Integration",
-            "title": "API"
-          },
-          "items": [
-            { "title": "Authentication", "href": "/authentication" }
-          ]
-        }
-      ]
-    }
-    ```
-
-    This will add a new "API" section with an "Authentication" page under it. The `context` object defines how this section appears in the navigation, including its icon and description.
-  </StepperItem>
-</Stepper>
-
-## Development Workflow
-
-### Local Development
-
-Start the development server with live reload:
-
-```bash
-# Using npm
-npm run dev
-
-# Or using Bun
-bun dev
-```
-
-Access your site at [http://localhost:3000](http://localhost:3000)
-
-### Building for Production
-
-When ready to deploy:
-
-```bash
-# Build the production version
-npm run build
-
-# Start the production server
-npm start
-```
+<Note type="warning" title="Warning">
+  every page that is indexed in a folder will have an `index.mdx` file with metadata :
+  ```plaintext
+---
+title : Introduction
+description : overview or synopsis of a project
+date : 10-12-2024
+image : example-img.png
+---
+  ```
+</Note>
