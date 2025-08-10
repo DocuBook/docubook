@@ -70,14 +70,7 @@
               "items": [
                       { "title": "Introduction", "href": "/introduction" },
                       { "title": "Quick Start Guide", "href": "/quick-start-guide" },
-                      { "title": "Development", "href": "/development" },
-                      {
-                              "title": "Config",
-                              "href": "/config",
-                              "items": [
-                                      { "title": "Sub Config", "href": "/subconfig" }
-                              ]
-                      }
+                      { "title": "Development", "href": "/development" }
               ]
       },
       {
@@ -98,10 +91,10 @@
       },
       {
       "title": "Changelog",
-      "href": "/Changelog",
+      "href": "/changelog",
       "noLink": true,
       "context": {
-              "icon": "Hystory",
+              "icon": "History",
               "description": "Update and Changes",
               "title": "Release"
               },
