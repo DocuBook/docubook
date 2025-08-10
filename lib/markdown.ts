@@ -45,6 +45,7 @@ import CardGroup from "@/components/markdown/CardGroupMdx";
 import Kbd from "@/components/markdown/KeyboardMdx";
 import { Release, Changes } from "@/components/markdown/ReleaseMdx";
 import { File, Files, Folder } from "@/components/markdown/FileTreeMdx";
+import AccordionGroup from "@/components/markdown/AccordionGroupMdx";
 
 // add custom components
 const components = {
@@ -73,6 +74,7 @@ const components = {
   File,
   Files,
   Folder,
+  AccordionGroup
 };
 
 // can be used for other pages like blogs, Guides etc
