@@ -1,9 +1,10 @@
 "use client";
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useContext } from 'react';
 import { ChevronRight } from 'lucide-react';
 import * as Icons from "lucide-react";
 import { cn } from '@/lib/utils';
+import { AccordionGroupContext } from '@/components/contexts/AccordionContext'; 
 
 type AccordionProps = {
     title: string;
@@ -18,16 +19,26 @@ const Accordion: React.FC<AccordionProps> = ({
     defaultOpen = false,
     icon,
 }: AccordionProps) => {
+    const groupContext = useContext(AccordionGroupContext);
+    const isInGroup = groupContext?.inGroup === true;
     const [isOpen, setIsOpen] = useState(defaultOpen);
-
     const Icon = icon ? (Icons[icon] as React.FC<{ className?: string }>) : null;
 
+    // The main wrapper div for the accordion.
+    // All styling logic for the accordion container is handled here.
     return (
-        <div className={cn("border rounded-lg overflow-hidden")}>
+        <div 
+            className={cn(
+                // Style for STANDALONE: full card with border & shadow
+                !isInGroup && "border rounded-lg shadow-sm",
+                // Style for IN GROUP: only a bottom border separator
+                isInGroup && "border-b last:border-b-0 border-border"
+            )}
+        >
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center space-x-2 w-full px-4 h-12 transition-colors bg-background dark:hover:bg-muted/50 hover:bg-muted/15"
+                className="flex items-center space-x-2 w-full px-4 h-12 transition-colors bg-muted/40 dark:bg-muted/20 hover:bg-muted/70 dark:hover:bg-muted/70"
             >
                 <ChevronRight
                     className={cn(
@@ -40,7 +51,7 @@ const Accordion: React.FC<AccordionProps> = ({
             </button>
 
             {isOpen && (
-                <div className="px-4 py-3 border-t dark:bg-muted/50 bg-muted/15">
+                <div className="px-4 py-3 dark:bg-muted/10 bg-muted/15">
                     {children}
                 </div>
             )}
