@@ -93,3 +93,87 @@
   border: none;
   border-radius: 8px; /* Sudut melengkung pada iframe */
 }
+
+/* ======================================================================== */
+/* Custom styling for code blocks */
+/* ======================================================================== */
+
+.code-block-container {
+  position: relative;
+  margin: 1.5rem 0;
+  border: 1px solid hsl(var(--border));
+  overflow: hidden;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: hsl(var(--muted)); 
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid hsl(var(--border));
+  color: hsl(var(--muted-foreground));
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.code-block-actions {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  z-index: 10;
+}
+.code-block-actions button {
+  color: hsl(var(--muted-foreground));
+  transition: color 0.2s ease-in-out;
+}
+.code-block-actions button:hover {
+  color: hsl(var(--foreground));
+}
+
+
+.code-block-body pre[class*="language-"] {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.line-numbers-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3rem;
+  padding-top: 1rem;
+  text-align: right;
+  color: var(--line-number-color); 
+  user-select: none;
+}
+
+.line-highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: hsl(var(--primary) / 0.1); 
+  border-left: 2px solid hsl(var(--primary));
+  pointer-events: none;
+}
+
+.code-block-body pre[data-line-numbers="true"] .line-highlight {
+  padding-left: 3.5rem;
+}
+
+.code-block-body::-webkit-scrollbar {
+  height: 8px;
+}
+.code-block-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.code-block-body::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+.code-block-body::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted));
+}

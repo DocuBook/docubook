@@ -8,7 +8,7 @@ import rehypeSlug from "rehype-slug";
 import rehypeCodeTitles from "rehype-code-titles";
 import { page_routes, ROUTES } from "./routes-config";
 import { visit } from "unist-util-visit";
-import type { Node } from "unist";
+import type { Node, Parent } from "unist";
 import matter from "gray-matter";
 
 // Type definitions for unist-util-visit
@@ -16,6 +16,7 @@ interface Element extends Node {
   type: string;
   tagName?: string;
   properties?: Record<string, unknown> & {
+    className?: string[];
     raw?: string;
   };
   children?: Node[];
@@ -77,6 +78,49 @@ const components = {
   AccordionGroup
 };
 
+// helper function to handle rehype code titles, since by default we can't inject into the className of rehype-code-titles
+const handleCodeTitles = () => (tree: Node) => {
+  visit(tree, "element", (node: Element, index: number | null, parent: Parent | null) => {
+    // Ensure the visited node is valid
+    if (!parent || index === null || node.tagName !== 'div') {
+      return;
+    }
+
+    // Check if this is the title div from rehype-code-titles
+    const isTitleDiv = node.properties?.className?.includes('rehype-code-title');
+    if (!isTitleDiv) {
+      return;
+    }
+
+    // Find the next <pre> element, skipping over other nodes like whitespace text
+    let nextElement = null;
+    for (let i = index + 1; i < parent.children.length; i++) {
+      const sibling = parent.children[i];
+      if (sibling.type === 'element') {
+        nextElement = sibling as Element;
+        break;
+      }
+    }
+
+    // If the next element is a <pre>, move the title to it
+    if (nextElement && nextElement.tagName === 'pre') {
+      const titleNode = node.children?.[0] as TextNode;
+      if (titleNode && titleNode.type === 'text') {
+        if (!nextElement.properties) {
+          nextElement.properties = {};
+        }
+        nextElement.properties['data-title'] = titleNode.value;
+        
+        // Remove the original title div
+        parent.children.splice(index, 1);
+        
+        // Return the same index to continue visiting from the correct position
+        return index; 
+      }
+    }
+  });
+};
+
 // can be used for other pages like blogs, Guides etc
 async function parseMdx<Frontmatter>(rawMdx: string) {
   return await compileMDX<Frontmatter>({
@@ -87,6 +131,7 @@ async function parseMdx<Frontmatter>(rawMdx: string) {
         rehypePlugins: [
           preProcess,
           rehypeCodeTitles,
+          handleCodeTitles,
           rehypePrism,
           rehypeSlug,
           rehypeAutolinkHeadings,
