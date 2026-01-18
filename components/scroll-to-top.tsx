@@ -32,6 +32,7 @@ export function ScrollToTop({
 
   useEffect(() => {
     // Initial check
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     checkScroll();
 
     // Set up scroll listener with debounce for better performance

@@ -50,6 +50,7 @@ export function SearchModal({ isOpen, setIsOpen }: SearchModalProps) {
 
   useEffect(() => {
     if (!isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchedInput("");
     }
   }, [isOpen]);
@@ -71,9 +72,9 @@ export function SearchModal({ isOpen, setIsOpen }: SearchModalProps) {
     return advanceSearch(trimmedInput) as unknown as SearchResult[];
   }, [searchedInput]);
 
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [filteredResults]);
+  // useEffect(() => {
+  //   setSelectedIndex(0);
+  // }, [filteredResults]);
 
   useEffect(() => {
     const handleNavigation = (event: KeyboardEvent) => {
@@ -114,10 +115,13 @@ export function SearchModal({ isOpen, setIsOpen }: SearchModalProps) {
         <DialogTitle className="sr-only">Search Documentation</DialogTitle>
         <DialogDescription className="sr-only">Search through the documentation</DialogDescription>
       </DialogHeader>
-      
+
       <input
         value={searchedInput}
-        onChange={(e) => setSearchedInput(e.target.value)}
+        onChange={(e) => {
+          setSearchedInput(e.target.value);
+          setSelectedIndex(0);
+        }}
         placeholder="Type something to search..."
         autoFocus
         className="h-14 px-6 bg-transparent border-b text-[14px] outline-none w-full"
@@ -138,38 +142,38 @@ export function SearchModal({ isOpen, setIsOpen }: SearchModalProps) {
             const isActive = index === selectedIndex;
 
             return (
-                <DialogClose key={item.href} asChild>
-                    <Anchor
-                    ref={(el) => {
-                        itemRefs.current[index] = el as HTMLDivElement | null;
-                      }}
+              <DialogClose key={item.href} asChild>
+                <Anchor
+                  ref={(el) => {
+                    itemRefs.current[index] = el as HTMLDivElement | null;
+                  }}
+                  className={cn(
+                    "dark:hover:bg-accent/15 hover:bg-accent/10 w-full px-3 rounded-sm text-sm flex items-center gap-2.5",
+                    isActive && "bg-primary/20 dark:bg-primary/30",
+                    paddingClass
+                  )}
+                  href={`/docs${item.href}`}
+                  tabIndex={-1}
+                >
+                  <div
                     className={cn(
-                        "dark:hover:bg-accent/15 hover:bg-accent/10 w-full px-3 rounded-sm text-sm flex items-center gap-2.5",
-                        isActive && "bg-primary/20 dark:bg-primary/30",
-                        paddingClass
+                      "flex items-center w-full h-full py-3 gap-1.5 px-2 justify-between",
+                      level > 1 && "border-l pl-4"
                     )}
-                    href={`/docs${item.href}`}
-                    tabIndex={-1}
-                    >
-                    <div
-                        className={cn(
-                        "flex items-center w-full h-full py-3 gap-1.5 px-2 justify-between",
-                        level > 1 && "border-l pl-4"
-                        )}
-                    >
-                        <div className="flex items-center">
-                          <FileTextIcon className="h-[1.1rem] w-[1.1rem] mr-1" />
-                          <span>{item.title}</span>
-                        </div>
-                        {isActive && (
-                          <div className="hidden md:flex items-center text-xs text-muted-foreground">
-                            <span>Return</span>
-                            <CornerDownLeftIcon className="h-3 w-3 ml-1" />
-                          </div>
-                        )}
+                  >
+                    <div className="flex items-center">
+                      <FileTextIcon className="h-[1.1rem] w-[1.1rem] mr-1" />
+                      <span>{item.title}</span>
                     </div>
-                    </Anchor>
-                </DialogClose>
+                    {isActive && (
+                      <div className="hidden md:flex items-center text-xs text-muted-foreground">
+                        <span>Return</span>
+                        <CornerDownLeftIcon className="h-3 w-3 ml-1" />
+                      </div>
+                    )}
+                  </div>
+                </Anchor>
+              </DialogClose>
             );
           })}
         </div>
@@ -177,14 +181,14 @@ export function SearchModal({ isOpen, setIsOpen }: SearchModalProps) {
       <DialogFooter className="md:flex md:justify-start hidden h-14 px-6 bg-transparent border-t text-[14px] outline-none">
         <div className="flex items-center gap-2">
           <span className="dark:bg-accent/15 bg-slate-200 border rounded p-2">
-            <ArrowUpIcon className="w-3 h-3"/>
+            <ArrowUpIcon className="w-3 h-3" />
           </span>
           <span className="dark:bg-accent/15 bg-slate-200 border rounded p-2">
-            <ArrowDownIcon className="w-3 h-3"/>
+            <ArrowDownIcon className="w-3 h-3" />
           </span>
           <p className="text-muted-foreground">to navigate</p>
           <span className="dark:bg-accent/15 bg-slate-200 border rounded p-2">
-            <CornerDownLeftIcon className="w-3 h-3"/>
+            <CornerDownLeftIcon className="w-3 h-3" />
           </span>
           <p className="text-muted-foreground">to select</p>
           <span className="dark:bg-accent/15 bg-slate-200 border rounded px-2 py-1">

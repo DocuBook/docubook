@@ -1,4 +1,4 @@
-import { type ComponentProps } from "react";
+import { type ComponentProps, type JSX } from "react";
 import Copy from "./CopyMdx";
 import {
   SiJavascript,

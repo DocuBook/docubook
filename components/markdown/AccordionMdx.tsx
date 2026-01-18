@@ -4,7 +4,7 @@ import { ReactNode, useState, useContext } from 'react';
 import { ChevronRight } from 'lucide-react';
 import * as Icons from "lucide-react";
 import { cn } from '@/lib/utils';
-import { AccordionGroupContext } from '@/components/contexts/AccordionContext'; 
+import { AccordionGroupContext } from '@/components/contexts/AccordionContext';
 
 type AccordionProps = {
     title: string;
@@ -27,7 +27,7 @@ const Accordion: React.FC<AccordionProps> = ({
     // The main wrapper div for the accordion.
     // All styling logic for the accordion container is handled here.
     return (
-        <div 
+        <div
             className={cn(
                 // Style for STANDALONE: full card with border & shadow
                 !isInGroup && "border rounded-lg shadow-sm",
@@ -38,16 +38,16 @@ const Accordion: React.FC<AccordionProps> = ({
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center space-x-2 w-full px-4 h-12 transition-colors bg-muted/40 dark:bg-muted/20 hover:bg-muted/70 dark:hover:bg-muted/70"
+                className="flex items-center gap-2 w-full px-4 h-12 transition-colors bg-muted/40 dark:bg-muted/20 hover:bg-muted/70 dark:hover:bg-muted/70"
             >
                 <ChevronRight
                     className={cn(
-                        "w-4 h-4 text-muted-foreground transition-transform duration-200",
+                        "w-4 h-4 text-muted-foreground transition-transform duration-200 flex-shrink-0",
                         isOpen && "rotate-90"
                     )}
                 />
-                {Icon && <Icon className="text-foreground w-4 h-4"/> }
-                <h3 className="font-medium text-base text-foreground m-0">{title}</h3>
+                {Icon && <Icon className="text-foreground w-4 h-4 flex-shrink-0" />}
+                <h3 className="font-medium text-base text-foreground !m-0 leading-none">{title}</h3>
             </button>
 
             {isOpen && (
