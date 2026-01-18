@@ -8,13 +8,21 @@ interface CardGroupProps {
 }
 
 const CardGroup: React.FC<CardGroupProps> = ({ children, cols = 2, className }) => {
-  const cardsArray = React.Children.toArray(children); // Pastikan children berupa array
+  const cardsArray = React.Children.toArray(children);
+
+  // Static grid column classes for Tailwind v4 compatibility
+  const gridColsClass = {
+    1: "grid-cols-1",
+    2: "grid-cols-1 sm:grid-cols-2",
+    3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+    4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
+  }[cols] || "grid-cols-1 sm:grid-cols-2";
 
   return (
     <div
       className={clsx(
         "grid gap-4 text-foreground",
-        `grid-cols-1 sm:grid-cols-${cols}`,
+        gridColsClass,
         className
       )}
     >

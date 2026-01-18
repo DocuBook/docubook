@@ -6,6 +6,9 @@ import { GeistMono } from "geist/font/mono";
 import { Footer } from "@/components/footer";
 import docuConfig from "@/docu.json";
 import { Toaster } from "@/components/ui/sonner";
+import "@docsearch/css";
+import "@/styles/algolia.css";
+import "@/styles/syntax.css";
 import "@/styles/globals.css";
 
 const { meta } = docuConfig;
