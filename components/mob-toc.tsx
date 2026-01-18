@@ -14,7 +14,7 @@ interface MobTocProps {
   tocs: TocItem[];
 }
 
-const useClickOutside = (ref: React.RefObject<HTMLElement>, callback: () => void) => {
+const useClickOutside = (ref: React.RefObject<HTMLElement | null>, callback: () => void) => {
   const handleClick = React.useCallback((event: MouseEvent) => {
     if (ref.current && !ref.current.contains(event.target as Node)) {
       callback();

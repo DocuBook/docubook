@@ -12,13 +12,19 @@ import MobToc from "@/components/mob-toc";
 const { meta } = docuConfig;
 
 type PageProps = {
-  params: {
+  params: Promise<{
     slug: string[];
-  };
+  }>;
 };
 
 // Function to generate metadata dynamically
-export async function generateMetadata({ params: { slug = [] } }: PageProps) {
+export async function generateMetadata(props: PageProps) {
+  const params = await props.params;
+
+  const {
+    slug = []
+  } = params;
+
   const pathName = slug.join("/");
   const res = await getDocsForSlug(pathName);
 
@@ -62,7 +68,13 @@ export async function generateMetadata({ params: { slug = [] } }: PageProps) {
   };
 }
 
-export default async function DocsPage({ params: { slug = [] } }: PageProps) {
+export default async function DocsPage(props: PageProps) {
+  const params = await props.params;
+
+  const {
+    slug = []
+  } = params;
+
   const pathName = slug.join("/");
   const res = await getDocsForSlug(pathName);
 

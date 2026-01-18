@@ -45,6 +45,7 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
 
   useEffect(() => {
     if (pathname.startsWith("/docs")) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveRoute(getActiveContextRoute(pathname));
     } else {
       setActiveRoute(undefined);
@@ -61,7 +62,7 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
         <Button
           variant="ghost"
           className={cn(
-            "w-full max-w-[240px] flex items-center justify-between font-semibold text-foreground px-0 pt-8",
+            "w-full max-w-[240px] cursor-pointer flex items-center justify-between font-semibold text-foreground px-0 pt-8",
             "hover:bg-transparent hover:text-foreground",
             className
           )}

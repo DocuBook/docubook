@@ -29,7 +29,7 @@ export function ToggleButton({
       <Button
         size="icon"
         variant="outline"
-        className="hover:bg-transparent hover:text-inherit border-none text-muted-foreground"
+        className="cursor-pointer hover:bg-transparent hover:text-inherit border-none text-muted-foreground"
         onClick={onToggle}
       >
         {collapsed ? (

@@ -25,21 +25,21 @@ export default function Home() {
             )}
           >
             <AnimatedShinyText className="inline-flex items-center justify-center px-4 py-1 transition ease-out hover:text-neutral-100 hover:duration-300 hover:dark:text-neutral-200">
-              <span>🚀 New Version - Release v1.16.1</span>
+              <span>🚀 Release v2.0.0-beta.1</span>
               <ArrowRightIcon className="ml-1 size-3 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
             </AnimatedShinyText>
           </div>
         </div>
       </Link>
-    <div className="w-full max-w-[800px] pb-8">
+      <div className="w-full max-w-[800px] pb-8">
         <h1 className="mb-4 text-2xl font-bold sm:text-5xl">DocuBook Starter Templates</h1>
         <p className="mb-8 sm:text-xl text-muted-foreground">
-            Get started by editing app/page.tsx . Save and see your changes instantly.{' '}
-            <Link className="text-primary underline" href="https://www.docubook.pro/docs/getting-started/introduction" target="_blank">
+          Get started by editing app/page.tsx . Save and see your changes instantly.{' '}
+          <Link className="text-primary underline" href="https://www.docubook.pro/docs/getting-started/introduction" target="_blank">
             Read Documentations
-            </Link>
+          </Link>
         </p>
-    </div>
+      </div>
       <div className="flex flex-row items-center gap-6 mb-10">
         <Link
           href={`/docs${page_routes[0].href}`}

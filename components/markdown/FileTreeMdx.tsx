@@ -100,8 +100,8 @@ export const Files = ({ children }: { children: ReactNode }) => {
   return (
     <div
       className="
-        rounded-xl border border-muted/50
-        bg-card/50 backdrop-blur-sm
+        rounded-xl border border-muted/20
+        bg-card/20 backdrop-blur-sm
         shadow-sm overflow-hidden
         transition-all duration-200
         hover:shadow-md hover:border-muted/60

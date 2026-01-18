@@ -44,6 +44,7 @@ export default function SubLink({
   // Auto-expand if current path is a child of this item
   useEffect(() => {
     if (items && (path.startsWith(fullHref) && path !== fullHref)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsOpen(true);
     }
   }, [path, fullHref, items]);
