@@ -1,52 +1,69 @@
+"use client";
+
 import { cn } from "@/lib/utils";
-import clsx from "clsx";
-import { PropsWithChildren } from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 import {
   Info,
   AlertTriangle,
   ShieldAlert,
-  CheckCircle,
+  CheckCircle2,
 } from "lucide-react";
+import React from "react";
 
-type NoteProps = PropsWithChildren & {
-  title?: string;
-  type?: "note" | "danger" | "warning" | "success";
-};
+const noteVariants = cva(
+  "relative w-full rounded-lg border border-l-4 p-4 mb-4 [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground",
+  {
+    variants: {
+      variant: {
+        note: "bg-muted/30 border-border border-l-primary/50 text-foreground [&>svg]:text-primary",
+        danger: "border-destructive/20 border-l-destructive/60 bg-destructive/5 text-destructive [&>svg]:text-destructive dark:border-destructive/30",
+        warning: "border-orange-500/20 border-l-orange-500/60 bg-orange-500/5 text-orange-600 dark:text-orange-400 [&>svg]:text-orange-600 dark:[&>svg]:text-orange-400",
+        success: "border-emerald-500/20 border-l-emerald-500/60 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 [&>svg]:text-emerald-600 dark:[&>svg]:text-emerald-400",
+      },
+    },
+    defaultVariants: {
+      variant: "note",
+    },
+  }
+);
 
 const iconMap = {
-  note: <Info size={16} className="text-blue-500" />,
-  danger: <ShieldAlert size={16} className="text-red-500" />,
-  warning: <AlertTriangle size={16} className="text-orange-500" />,
-  success: <CheckCircle size={16} className="text-green-500" />,
+  note: Info,
+  danger: ShieldAlert,
+  warning: AlertTriangle,
+  success: CheckCircle2,
 };
 
+interface NoteProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+  VariantProps<typeof noteVariants> {
+  title?: string;
+  type?: "note" | "danger" | "warning" | "success";
+}
+
 export default function Note({
-  children,
+  className,
   title = "Note",
   type = "note",
+  children,
+  ...props
 }: NoteProps) {
-  const noteClassNames = clsx({
-    "dark:bg-stone-950/25 bg-stone-50": type === "note",
-    "dark:bg-red-950 bg-red-100 border-red-200 dark:border-red-900":
-      type === "danger",
-    "bg-orange-50 border-orange-200 dark:border-orange-900 dark:bg-orange-900/50":
-      type === "warning",
-    "dark:bg-green-950 bg-green-100 border-green-200 dark:border-green-900":
-      type === "success",
-  });
+  const Icon = iconMap[type] || Info;
 
   return (
     <div
-      className={cn(
-        "border rounded-md px-5 pb-0.5 mt-5 mb-7 text-sm tracking-wide",
-        noteClassNames
-      )}
+      className={cn(noteVariants({ variant: type }), className)}
+      {...props}
     >
-      <div className="flex items-center gap-2 font-bold -mb-2.5 pt-6">
-        {iconMap[type]}
-        <span className="text-base">{title}:</span>
+      <Icon className="h-5 w-5" />
+      <div className="pl-8">
+        <h5 className="mb-1 font-medium leading-none tracking-tight">
+          {title}
+        </h5>
+        <div className="text-sm [&_p]:leading-relaxed opacity-90">
+          {children}
+        </div>
       </div>
-      {children}
     </div>
   );
 }
