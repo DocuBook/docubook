@@ -49,7 +49,7 @@ export function ModeToggle() {
         value="light"
         size="sm"
         aria-label="Light Mode"
-        className={`rounded-full p-1 transition-all ${activeTheme === "light"
+        className={`rounded-full cursor-pointer p-1 transition-all ${activeTheme === "light"
           ? "bg-primary text-primary-foreground"
           : "bg-transparent hover:bg-muted/50"
           }`}
@@ -60,7 +60,7 @@ export function ModeToggle() {
         value="dark"
         size="sm"
         aria-label="Dark Mode"
-        className={`rounded-full p-1 transition-all ${activeTheme === "dark"
+        className={`rounded-full cursor-pointer p-1 transition-all ${activeTheme === "dark"
           ? "bg-primary text-primary-foreground"
           : "bg-transparent hover:bg-muted/50"
           }`}

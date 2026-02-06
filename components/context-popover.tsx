@@ -96,7 +96,7 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
                 key={route.href}
                 onClick={() => router.push(contextPath)}
                 className={cn(
-                  "relative flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm",
+                  "relative flex w-full items-center gap-2 cursor-pointer rounded px-2 py-1.5 text-sm",
                   "text-left outline-none transition-colors",
                   isActive
                     ? "bg-primary/20 text-primary dark:bg-accent/20 dark:text-accent"

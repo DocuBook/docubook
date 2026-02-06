@@ -86,7 +86,7 @@ export default function SubLink({
     <div className={cn("flex flex-col gap-1 w-full")}>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger
-          className="w-full pr-5 text-left"
+          className="w-full pr-5 text-left cursor-pointer"
           aria-expanded={isOpen}
           aria-controls={`collapsible-${fullHref.replace(/[^a-zA-Z0-9]/g, '-')}`}
         >
