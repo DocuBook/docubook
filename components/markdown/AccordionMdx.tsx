@@ -38,7 +38,7 @@ const Accordion: React.FC<AccordionProps> = ({
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 w-full px-4 h-12 transition-colors bg-muted/40 dark:bg-muted/20 hover:bg-muted/70 dark:hover:bg-muted/70"
+                className="flex items-center gap-2 w-full px-4 h-12 transition-colors bg-muted/40 dark:bg-muted/20 hover:bg-muted/70 dark:hover:bg-muted/70 cursor-pointer"
             >
                 <ChevronRight
                     className={cn(
