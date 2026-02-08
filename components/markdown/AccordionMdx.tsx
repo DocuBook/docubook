@@ -38,7 +38,7 @@ const Accordion: React.FC<AccordionProps> = ({
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 w-full px-4 h-12 transition-colors bg-muted/40 dark:bg-muted/20 hover:bg-muted/70 dark:hover:bg-muted/70 cursor-pointer"
+                className="flex items-center gap-2 w-full px-4 py-3 transition-colors bg-muted/40 dark:bg-muted/20 hover:bg-muted/70 dark:hover:bg-muted/70 cursor-pointer text-start"
             >
                 <ChevronRight
                     className={cn(
@@ -47,7 +47,7 @@ const Accordion: React.FC<AccordionProps> = ({
                     )}
                 />
                 {Icon && <Icon className="text-foreground w-4 h-4 flex-shrink-0" />}
-                <h3 className="font-medium text-base text-foreground !m-0 leading-none">{title}</h3>
+                <h3 className="font-medium text-base text-foreground !m-0">{title}</h3>
             </button>
 
             {isOpen && (
