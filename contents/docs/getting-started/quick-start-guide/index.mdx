@@ -19,6 +19,7 @@ example of ordered list format :
 
 #### Heading 4
 
+## Code Block
 Below is an example of how to write a code block :
 
 ````plaintext
@@ -32,23 +33,24 @@ function isRocketAboutToCrash() {
 ```
 ````
 
+<Accordion title="Code Block" defaultOpen={true} icon="Code">
+    ```javascript:main.js showLineNumbers {3-4}
+    function isRocketAboutToCrash() {
+        // Check if the rocket is stable
+        if (!isStable()) {
+            NoCrash(); // Prevent the crash
+        }
+    }
+    ```
+</Accordion>
+
+## Note
 example note :
 ```plaintext
 <Note type="note" title="Note">
   This is a general note to convey information to the user.
 </Note>
 ```
-
-displaying an image in markdown format :
-
-```plaintext
-![Alt text for the image](/images/example-img.png)
-```
-
-render as :
-![Alt text for the image](/images/example-img.png)
-
-For a complete guide on using markdown content in DocuBook, please refer to the [Components](https://docubook.pro/docs/components) page.
 
 <Note type="warning" title="Warning">
   every page that is indexed in a folder will have an `index.mdx` file with metadata :
@@ -61,3 +63,30 @@ image : example-img.png
 ---
   ```
 </Note>
+
+## Image
+displaying an image in markdown format :
+
+```plaintext
+![Alt text for the image](/images/example-img.png)
+```
+
+render as :
+![Alt text for the image](/images/example-img.png)
+
+For a complete guide on using markdown content in DocuBook, please refer to the [Components](https://docubook.pro/docs/components) page.
+
+## Table
+
+### Default Table
+
+| Property | Description | Type | Default |
+| --- | --- | --- | --- |
+| `title` | The title of the table | `string` | - |
+| `description` | The description of the table | `string` | - |
+
+### Table with Alignment
+| Left | Center | Right |
+| :--- | :---: | ---: |
+| Left-aligned text | Center-aligned text | Right-aligned text |
+| Left-aligned text | Center-aligned text | Right-aligned text |
