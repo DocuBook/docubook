@@ -31,6 +31,7 @@ interface TextNode extends Node {
 
 // custom components imports
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import Pre from "@/components/markdown/PreMdx";
 import Note from "@/components/markdown/NoteMdx";
 import { Stepper, StepperItem } from "@/components/markdown/StepperMdx";
@@ -54,20 +55,22 @@ const components = {
   TabsContent,
   TabsList,
   TabsTrigger,
-  pre: Pre,
-  Note,
-  Stepper,
-  StepperItem,
-  img: Image,
-  a: Link,
-  Outlet,
   Youtube,
   Tooltip,
   Card,
   Button,
   Accordion,
+  AccordionGroup,
   CardGroup,
   Kbd,
+  // Table Components
+  table: Table,
+  thead: TableHeader,
+  tbody: TableBody,
+  tfoot: TableFooter,
+  tr: TableRow,
+  th: TableHead,
+  td: TableCell,
   // Release Note Components
   Release,
   Changes,
@@ -75,7 +78,13 @@ const components = {
   File,
   Files,
   Folder,
-  AccordionGroup
+  pre: Pre,
+  Note,
+  Stepper,
+  StepperItem,
+  img: Image,
+  a: Link,
+  Outlet,
 };
 
 // helper function to handle rehype code titles, since by default we can't inject into the className of rehype-code-titles
@@ -110,12 +119,12 @@ const handleCodeTitles = () => (tree: Node) => {
           nextElement.properties = {};
         }
         nextElement.properties['data-title'] = titleNode.value;
-        
+
         // Remove the original title div
         parent.children.splice(index, 1);
-        
+
         // Return the same index to continue visiting from the correct position
-        return index; 
+        return index;
       }
     }
   });
@@ -241,7 +250,7 @@ const preProcess = () => (tree: Node) => {
     if (element?.type === "element" && element?.tagName === "pre" && element.children) {
       const [codeEl] = element.children as Element[];
       if (codeEl.tagName !== "code" || !codeEl.children?.[0]) return;
-      
+
       const textNode = codeEl.children[0] as TextNode;
       if (textNode.type === 'text' && textNode.value) {
         element.raw = textNode.value;
