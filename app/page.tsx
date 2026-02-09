@@ -1,6 +1,6 @@
 import { buttonVariants } from "@/components/ui/button";
 import { page_routes } from "@/lib/routes-config";
-import { ArrowRightIcon, FileJson, GitCommitHorizontal, SquarePlay } from "lucide-react";
+import { ArrowRightIcon, Terminal, AppWindow, FileText } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import AnimatedShinyText from "@/components/ui/animated-shiny-text";
@@ -25,7 +25,7 @@ export default function Home() {
             )}
           >
             <AnimatedShinyText className="inline-flex items-center justify-center px-4 py-1 transition ease-out hover:text-neutral-100 hover:duration-300 hover:dark:text-neutral-200">
-              <span>🚀 Release v2.0.0-beta.3</span>
+              <span>🚀 Release v2.0.0</span>
               <ArrowRightIcon className="ml-1 size-3 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
             </AnimatedShinyText>
           </div>
@@ -65,29 +65,29 @@ export default function Home() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 py-12">
         <Card className="px-2 py-6">
           <CardHeader className="flex flex-row justify-center items-center gap-3">
-            <FileJson className="size-6 text-primary" />
-            <CardTitle className="text-xl">docu.json</CardTitle>
+            <Terminal className="size-6 text-primary" />
+            <CardTitle className="text-xl">Advanced Code Blocks</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>Edit the docu.json file to change the content in the header, footer and sidebar.</p>
+            <p>Write amazing code blocks with syntax highlighting, line numbers, and line highlighting.</p>
           </CardContent>
         </Card>
         <Card className="px-2 py-6">
           <CardHeader className="flex flex-row justify-center items-center gap-3">
-            <GitCommitHorizontal className="size-6 text-primary" />
-            <CardTitle className="text-xl">CHANGELOG.md</CardTitle>
+            <AppWindow className="size-6 text-primary" />
+            <CardTitle className="text-xl">Custom Components</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>Manage changes to each version of your application in the CHANGELOG.md file.</p>
+            <p>Enhance your docs with custom components like Notes, Accordions, and Tabs.</p>
           </CardContent>
         </Card>
         <Card className="px-2 py-6">
           <CardHeader className="flex flex-row justify-center items-center gap-3">
-            <SquarePlay className="size-6 text-primary" />
-            <CardTitle className="text-xl">Docu Play</CardTitle>
+            <FileText className="size-6 text-primary" />
+            <CardTitle className="text-xl">Markdown Excellence</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>Easy to write interactive markdown content with a playground.</p>
+            <p>Full support for GFM including tables, lists, and images for rich documentation.</p>
           </CardContent>
         </Card>
       </div>
