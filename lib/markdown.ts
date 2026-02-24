@@ -174,19 +174,37 @@ export async function getDocsForSlug(slug: string) {
 export async function getDocsTocs(slug: string) {
   const contentPath = getDocsContentPath(slug);
   const rawMdx = await fs.readFile(contentPath, "utf-8");
-  // captures between ## - #### can modify accordingly
-  const headingsRegex = /^(#{2,4})\s(.+)$/gm;
+
+  // Regex to match code blocks (```...```), standard markdown headings (##), and <Release> tags
+  const combinedRegex = /(```[\s\S]*?```)|^(#{2,4})\s(.+)$|<Release[^>]*version="([^"]+)"/gm;
+
   let match;
   const extractedHeadings = [];
-  while ((match = headingsRegex.exec(rawMdx)) !== null) {
-    const headingLevel = match[1].length;
-    const headingText = match[2].trim();
-    const slug = sluggify(headingText);
-    extractedHeadings.push({
-      level: headingLevel,
-      text: headingText,
-      href: `#${slug}`,
-    });
+
+  while ((match = combinedRegex.exec(rawMdx)) !== null) {
+    // match[1] -> Code block content (ignore)
+    if (match[1]) continue;
+
+    // match[2] & match[3] -> Markdown headings
+    if (match[2]) {
+      const headingLevel = match[2].length;
+      const headingText = match[3].trim();
+      const slug = sluggify(headingText);
+      extractedHeadings.push({
+        level: headingLevel,
+        text: headingText,
+        href: `#${slug}`,
+      });
+    }
+    // match[4] -> Release component version
+    else if (match[4]) {
+      const version = match[4];
+      extractedHeadings.push({
+        level: 2,
+        text: `v${version}`,
+        href: `#${version}`,
+      });
+    }
   }
   return extractedHeadings;
 }
