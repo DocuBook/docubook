@@ -12,25 +12,29 @@ function Release({ version, title, date, children }: ReleaseProps) {
 
   return (
     <div className="mb-16 group">
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="bg-primary/10 text-primary border-2 border-primary/20 rounded-full px-4 py-1.5 text-base font-medium">
-            v{version}
-          </div>
-          {date && (
-            <div className="text-muted-foreground text-sm">
+      <div className="flex items-center gap-3 mt-6 mb-2">
+        <div
+          id={version}
+          className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm font-semibold text-primary transition-colors hover:bg-primary/15 scroll-m-20 backdrop-blur-sm"
+        >
+          v{version}
+        </div>
+        {date && (
+          <div className="flex items-center gap-3 text-sm font-medium text-muted-foreground">
+            <span className="h-1 w-1 rounded-full bg-muted-foreground/30"></span>
+            <time dateTime={date}>
               {new Date(date).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
               })}
-            </div>
-          )}
-        </div>
-        <h2 className="text-2xl font-bold text-foreground/90 mb-3">
-          {title}
-        </h2>
+            </time>
+          </div>
+        )}
       </div>
+      <h3 className="text-2xl font-bold text-foreground/90 mb-6 !mt-0">
+        {title}
+      </h3>
       <div className="space-y-8">
         {children}
       </div>
