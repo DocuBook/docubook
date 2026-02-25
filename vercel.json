@@ -1,0 +1,10 @@
+{
+  "projects": [
+    {
+      "path": "apps/web",
+      "name": "docubook"
+    }
+  ],
+  "buildCommand": "pnpm turbo build --filter=@docubook/web",
+  "outputDirectory": ".next"
+}
