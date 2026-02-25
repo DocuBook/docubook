@@ -1,0 +1,18 @@
+{
+  "name": "@docubook/ui",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@docubook/eslint-config": "workspace:*",
+    "@docubook/typescript-config": "workspace:*",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://docubook.pro/docu.schema.json",
+  "title": "DocuBook Configuration",
+  "description": "Schema for the docu.json configuration file used by DocuBook.",
+  "type": "object",
+
+  "definitions": {
+    "routeItem": {
+      "type": "object",
+      "description": "An item in the main navigation (routes).",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Text to be displayed for the menu item."
+        },
+        "href": {
+          "type": "string",
+          "description": "URL or path to navigate to when the item is clicked."
+        },
+        "noLink": {
+          "type": "boolean",
+          "description": "If true, this item will act as a group header without a link."
+        },
+        "context": {
+          "type": "object",
+          "description": "Additional contextual information for the navigation group.",
+          "properties": {
+            "icon": {"type": "string"},
+            "description": {"type": "string"},
+            "title": {"type": "string"}
+          }
+        },
+        "items": {
+          "type": "array",
+          "description": "Sub-menu for this navigation item.",
+          "items": { "$ref": "#/definitions/routeItem" }
+        }
+      },
+      "required": ["title"]
+    }
+  },
+
+  "properties": {
+    "navbar": {
+      "type": "object",
+      "description": "Configuration for the top navigation bar (header).",
+      "properties": {
+        "logo": {
+          "type": "object",
+          "properties": {
+            "src": { "type": "string" },
+            "alt": { "type": "string" }
+          },
+          "required": ["src", "alt"]
+        },
+        "logoText": { "type": "string" },
+        "menu": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "href": { "type": "string" }
+            },
+            "required": ["title", "href"]
+          }
+        }
+      }
+    },
+    "footer": {
+      "type": "object",
+      "description": "Configuration for the site footer section.",
+      "properties": {
+        "copyright": { "type": "string" },
+        "social": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "url": { "type": "string", "format": "uri" },
+              "iconName": { "type": "string" }
+            },
+            "required": ["name", "url", "iconName"]
+          }
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Metadata for SEO and site information.",
+      "properties": {
+        "baseURL": { "type": "string", "format": "uri" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "favicon": { "type": "string" }
+      },
+      "required": ["baseURL", "title", "description"]
+    },
+    "repository": {
+      "type": "object",
+      "properties": {
+        "url": { "type": "string", "format": "uri" },
+        "editPathTemplate": { "type": "string" },
+        "editLink": { "type": "boolean" }
+      }
+    },
+    "sponsor": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "item": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "image": { "type": "string" },
+            "url": { "type": "string", "format": "uri" }
+          }
+        }
+      }
+    },
+    "routes": {
+      "type": "array",
+      "description": "Main navigation structure for the documentation sidebar.",
+      "items": { "$ref": "#/definitions/routeItem" }
+    }
+  },
+  "required": ["navbar", "footer", "meta", "routes"]
+}

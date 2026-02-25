@@ -1,0 +1,16 @@
+{
+  "semi": false,
+  "singleQuote": false,
+  "tabWidth": 2,
+  "trailingComma": "es5",
+  "printWidth": 100,
+  "plugins": ["prettier-plugin-tailwindcss"],
+  "overrides": [
+    {
+      "files": ["*.md", "*.mdx"],
+      "options": {
+        "proseWrap": "always"
+      }
+    }
+  ]
+}

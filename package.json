@@ -1,0 +1,26 @@
+{
+  "name": "docubook-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "dev:web": "turbo dev --filter=@docubook/web",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,mdx,css}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,mdx,css}\" --ignore-path .gitignore",
+    "clean": "turbo clean",
+    "typecheck": "turbo typecheck"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3",
+    "turbo": "^2.5.3",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@9.15.4"
+}

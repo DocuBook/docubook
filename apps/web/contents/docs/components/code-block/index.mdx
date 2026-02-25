@@ -1,0 +1,67 @@
+---
+title: Code Block
+description: A component used to display code snippets with optional line numbering and line highlighting.
+date: 14-12-2024
+---
+
+## Preview
+
+```javascript:main.js showLineNumbers {3-4}
+function isRocketAboutToCrash() {
+    // Check if the rocket is stable
+    if (!isStable()) {
+        NoCrash(); // Prevent the crash
+    }
+}
+```
+
+In this example, line numbers are displayed for lines 3 and 4. You can specify which lines to highlight using the format `{2,3-5}`.
+
+## Output Markdown
+
+You can directly use the following syntax to create a code block with line numbers and highlight specific lines:
+
+````plaintext
+```javascript:main.js showLineNumbers {3-4}
+function isRocketAboutToCrash() {
+    // Check if the rocket is stable
+    if (!isStable()) {
+        NoCrash(); // Prevent the crash
+    }
+}
+```
+````
+
+## Features
+
+- **Language Title**: You can use a title for each programming language to render an icon and display a title bar. For example : `javascript:index.js`
+- **Line Numbers**: Enable line numbers by adding `showLineNumbers` after the opening backticks.
+- **Highlight Lines**: Specify lines to highlight using curly braces (e.g., `{2,3-5}`).
+- **Syntax Highlighting**: Use the appropriate language for syntax highlighting.
+
+## Language Support
+
+| **Language**         | **Title**                |
+| -------------------- | ------------------------ |
+| **javascript**       | `javascript:index.js`    |
+| **typescript**       | `typescript:index.ts`    |
+| **jsx** or **tsx**   | `jsx:index.jsx`          |
+| **python**           | `python:main.py`         |
+| **go**               | `go:main.go`             |
+| **php**              | `php:index.php`          |
+| **ruby**             | `ruby:main.rb`           |
+| **swift**            | `swift:main.swift`       |
+| **kotlin**           | `kotlin:main.kt`         |
+| **html**             | `html:index.html`        |
+| **css**              | `css:styles.css`         |
+| **sass** or **scss** | `sass:styles.sass`       |
+| **sql**              | `sql:database.sql`       |
+| **graphql**          | `graphql:database.gql`   |
+| **json**             | `json:config.json`       |
+| **yaml**             | `yaml:config.yml`        |
+| **toml**             | `toml:config.toml`       |
+| **docker**           | `docker:main.Dockerfile` |
+| **nginx**            | `nginx:config.nginx`     |
+| **gitignore**        | `gitignore:.git`         |
+| **bash**             | `bash:install.sh`        |
+| **markdown**         | `markdown:readme.md`     |

@@ -1,0 +1,68 @@
+---
+title : Accordion Group
+description: for writing multiple accordions and grouping them together
+date : 10-08-2025
+---
+
+An accordion is like a button that opens and closes information. To avoid clutter, long information can be hidden first and then revealed when clicked.
+
+<Note type="note" title="Note">
+  Group related accordions together using `<AccordionGroup>`. This creates a cohesive section of accordions that can be individually expanded or collapsed.
+</Note>
+
+## Usage
+
+<AccordionGroup>
+<Accordion title="Basic Usage">
+    example of using regular paragraph content inside the accordion component
+</Accordion>
+
+<Accordion title="With icon props" icon="MousePointerClick">
+    This accordion includes a [Lucide Icon](https://lucide.dev/icons/) because the `icon` prop is provided.
+</Accordion>
+
+<Accordion title="Expanded by Default" defaultOpen>
+    You can put other components inside Accordions.
+```jsx:helloword.jsx
+class HelloWorld {
+public static void main(String[] args) {
+        System.out.println("Hello, World!");
+        }
+}
+```
+</Accordion>
+</AccordionGroup>
+
+## Writing Markdown
+
+````plaintext
+<AccordionGroup>
+<Accordion title="Basic Usage">
+    This accordion includes a [Lucide Icon](https://lucide.dev/icons/) because the `icon` prop is provided.
+</Accordion>
+
+<Accordion title="With icon props" icon="MousePointerClick">
+    This accordion includes a Lucide icon because the `icon` prop is provided.
+</Accordion>
+
+<Accordion title="Expanded by Default" defaultOpen>
+    You can put other components inside Accordions.
+```jsx:helloword.jsx
+class HelloWorld {
+public static void main(String[] args) {
+        System.out.println("Hello, World!");
+        }
+}
+```
+</Accordion>
+</AccordionGroup>
+````
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `title` | string | - | **Required**. The text displayed in the accordion header. |
+| `children` | ReactNode | null | The content to be displayed when the accordion is expanded. Can be plain text, markdown, or React components. |
+| `defaultOpen` | boolean | false | When true, the accordion will be expanded by default. |
+| `icon` | string | undefined | Optional. Adds a Lucide icon before the title in the accordion header. |

@@ -1,0 +1,69 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+.yarn/install-state.gz
+.pnp.cjs
+
+# Build outputs
+.next
+out
+dist
+build
+
+# Turbo
+.turbo
+
+# Environment variables
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+logs
+*.log
+
+# Editor directories and files
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+Thumbs.db
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Local development
+.cache
+.temp
+.tmp
+
+# Testing
+coverage
+/__tests__/__snapshots__/
+
+# DocuBook
+/themes
+
+# System
+*.pem
+*.p12
+*.key
+*.crt
+*.cer
+.logs
+.agent

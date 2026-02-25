@@ -1,0 +1,101 @@
+# Color Palette Context for LLM
+
+## Theme: Modern Blue
+
+### Light Mode Colors
+- **Background & Surface**
+  - Background: hsl(210 40% 98%)
+  - Card: hsl(0 0% 100%)
+  - Popover: hsl(0 0% 100%)
+  - Muted: hsl(210 20% 92%)
+  - Border/Input: hsl(210 20% 85%)
+
+- **Text & Content**
+  - Primary Text: hsl(220 30% 15%)
+  - Secondary Text: hsl(220 30% 15%)
+  - Muted Text: hsl(220 15% 50%)
+  - On Primary: hsl(0 0% 100%)
+
+- **Accent Colors**
+  - Primary: hsl(210 81% 56%) #2281E3
+  - Secondary: hsl(210 30% 90%)
+  - Accent: hsl(200 100% 40%)
+  - Destructive: hsl(0 85% 60%)
+  - Ring/Outline: hsl(210 81% 56%)
+
+- **Charts**
+  - Chart 1: hsl(210 81% 56%)
+  - Chart 2: hsl(200 100% 40%)
+  - Chart 3: hsl(220 76% 60%)
+  - Chart 4: hsl(190 90% 50%)
+  - Chart 5: hsl(230 86% 45%)
+
+### Dark Mode Colors
+- **Background & Surface**
+  - Background: hsl(220 25% 10%)
+  - Card: hsl(220 25% 15%)
+  - Popover: hsl(220 25% 15%)
+  - Muted: hsl(215 20% 25%)
+  - Border/Input: hsl(215 20% 25%)
+
+- **Text & Content**
+  - Primary Text: hsl(210 30% 96%)
+  - Secondary Text: hsl(210 30% 96%)
+  - Muted Text: hsl(215 20% 65%)
+  - On Primary: hsl(220 25% 10%)
+
+- **Accent Colors**
+  - Primary: hsl(210 100% 65%)
+  - Secondary: hsl(215 25% 20%)
+  - Accent: hsl(200 100% 60%)
+  - Destructive: hsl(0 85% 70%)
+  - Ring/Outline: hsl(210 100% 65%)
+
+- **Charts**
+  - Chart 1: hsl(210 100% 65%)
+  - Chart 2: hsl(200 100% 60%)
+  - Chart 3: hsl(220 90% 70%)
+  - Chart 4: hsl(190 100% 65%)
+  - Chart 5: hsl(230 90% 60%)
+
+### Syntax Highlighting Colors
+
+#### Light Mode
+- Keywords: #1d4ed8 (Darker blue)
+- Functions: #0369a1 (Deep blue)
+- Punctuation: #4b5563 (Slate gray)
+- Comments: #6b7280 (Muted gray, italic)
+- Strings/Constants: #0d9488 (Teal)
+- Tags: #1d4ed8 (Matching keywords)
+- Attribute Names: #0284c7 (Sky blue)
+- Attribute Values: #2563eb (Primary blue)
+
+#### Dark Mode
+- Keywords: #60a5fa (Soft blue)
+- Functions: #38bdf8 (Sky blue)
+- Punctuation: #9ca3af (Light gray)
+- Comments: #9ca3af (Light gray, italic)
+- Strings/Constants: #2dd4bf (Teal)
+- Tags: #60a5fa (Matching keywords)
+- Attribute Names: #7dd3fc (Lighter blue)
+- Attribute Values: #3b82f6 (Brighter blue)
+
+### Design Tokens
+- Border Radius: 0.5rem
+- Line Number Color (Light): rgba(0, 0, 0, 0.05)
+- Line Number Color (Dark): rgba(255, 255, 255, 0.1)
+
+### Usage Guidelines
+- Use primary blue (#2281E3) for main actions and important elements
+- Use teal colors for strings and constants to improve code readability
+- Maintain high contrast between text and background colors
+- Use muted colors for secondary information and borders
+- Ensure proper color contrast for accessibility (WCAG AA/AAA compliance)
+- Use the chart colors in sequence for data visualization consistency
+
+### Color Relationships
+- Primary colors are used for interactive elements and key actions
+- Secondary colors provide visual hierarchy and depth
+- Muted colors are used for subtle UI elements and disabled states
+- Syntax colors follow semantic meaning in code (keywords, strings, etc.)
+- Dark mode colors maintain similar relationships but with adjusted brightness and saturation for better visibility in low-light conditions

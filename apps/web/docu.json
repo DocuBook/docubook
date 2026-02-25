@@ -1,0 +1,135 @@
+{
+  "$schema": "https://docubook.pro/docu.schema.json",
+  "navbar": {
+    "logo": {
+      "src": "/images/docu.svg",
+      "alt": "DocuBook Logo"
+    },
+    "logoText": "DocuBook",
+    "menu": [
+      { "title": "Home", "href": "/" },
+      { "title": "Docs", "href": "/docs/getting-started/introduction" },
+      { "title": "Showcase", "href": "/showcase" }
+    ]
+  },
+  "footer": {
+    "copyright": "DocuBook",
+    "social": [
+      {
+        "name": "Instagram",
+        "url": "https://www.instagram.com/wildan.nrs",
+        "iconName": "InstagramIcon"
+      },
+      {
+        "name": "Facebook",
+        "url": "https://www.facebook.com/wildan.nrsh",
+        "iconName": "FacebookIcon"
+      },
+      {
+        "name": "Twitter",
+        "url": "https://x.com/wildan_nrss",
+        "iconName": "TwitterIcon"
+      },
+      {
+        "name": "Youtube",
+        "url": "https://www.youtube.com/@wildandotdev",
+        "iconName": "YoutubeIcon"
+      }
+    ]
+  },
+  "meta": {
+    "baseURL": "https://docubook.pro",
+    "title": "DocuBook",
+    "description": "DocuBook is a modern documentation platform for building, deploying, and managing your docs with ease.",
+    "favicon": "/favicon.ico"
+  },
+  "repository": {
+    "url": "https://github.com/gitfromwildan/docu",
+    "editPathTemplate": "/blob/main/{filePath}",
+    "editLink": true
+  },
+  "sponsor": {
+    "title": "Hosted on",
+    "item": {
+      "title": "Vercel",
+      "description": "Deploy your DocuBook app with zero configuration.",
+      "image": "/images/vercel.png",
+      "url": "https://vercel.com/import/project?template=https://github.com/DocuBook/docubook"
+    }
+  },
+  "routes": [
+    {
+      "title": "Getting Started",
+      "href": "/getting-started",
+      "noLink": true,
+      "context": {
+        "icon": "BookOpen",
+        "description": "Set up your Documentation",
+        "title": "Guides"
+      },
+      "items": [
+        { "title": "Introduction", "href": "/introduction" },
+        { "title": "Installation", "href": "/installation" },
+        { "title": "Quick Start Guide", "href": "/quick-start-guide" },
+        { "title": "Project Structure", "href": "/project-structure" },
+        { "title": "Customize", "href": "/customize" },
+        { "title": "Global Settings", "href": "/global-settings" },
+        {
+          "title": "Theme Colors",
+          "href": "/theme-colors",
+          "items": [
+            { "title": "Default", "href": "/default" },
+            { "title": "Fresh Lime", "href": "/freshlime" },
+            { "title": "Coffee", "href": "/coffee" },
+            { "title": "llms.txt", "href": "/llms" }
+          ]
+        },
+        {
+          "title": "Search",
+          "href": "/search",
+          "items": [{ "title": "Algolia", "href": "/algolia" }]
+        }
+      ]
+    },
+    {
+      "title": "Components",
+      "href": "/components",
+      "noLink": true,
+      "context": {
+        "icon": "Layers",
+        "description": "Write with Markdown",
+        "title": "Markdown"
+      },
+      "items": [
+        { "title": "Accordion", "href": "/accordion" },
+        { "title": "Accordion Group", "href": "/accordion-group" },
+        { "title": "Button", "href": "/button" },
+        { "title": "Card", "href": "/card" },
+        { "title": "Card Group", "href": "/card-group" },
+        { "title": "Code Block", "href": "/code-block" },
+        { "title": "File Tree", "href": "/file-tree" },
+        { "title": "Image", "href": "/image" },
+        { "title": "Keyboard", "href": "/keyboard" },
+        { "title": "Link", "href": "/link" },
+        { "title": "Note", "href": "/note" },
+        { "title": "Release Note", "href": "/release-note" },
+        { "title": "Stepper", "href": "/stepper" },
+        { "title": "Tabs", "href": "/tabs" },
+        { "title": "Tooltips", "href": "/tooltips" },
+        { "title": "Tables", "href": "/tables" },
+        { "title": "Youtube", "href": "/youtube" },
+        { "title": "Custom", "href": "/custom" }
+      ]
+    },
+    {
+      "title": "Release",
+      "href": "/changelog",
+      "noLink": true,
+      "context": {
+        "icon": "History",
+        "description": "Updates and changes",
+        "title": "Changelog"
+      }
+    }
+  ]
+}
