@@ -1,7 +1,10 @@
 {
   "name": "docubook-monorepo",
-  "version": "0.0.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
@@ -17,6 +20,9 @@
     "prettier": "^3.5.3",
     "turbo": "^2.5.3",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "next": "^16.1.6"
   },
   "engines": {
     "node": ">=20",
