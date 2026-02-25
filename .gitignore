@@ -32,7 +32,7 @@ logs
 
 # Editor directories and files
 .idea
-.DS_Store
+*.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
