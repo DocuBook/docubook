@@ -1,0 +1,109 @@
+---
+title: File Tree Component
+description: A customizable file tree component for displaying hierarchical file structures in your documentation.
+date: 28-05-2025
+---
+
+The File Tree component allows you to display hierarchical file structures in your documentation with collapsible folders and files.
+
+## Basic Usage
+
+```
+<Files>
+  <Folder name="src">
+    <File name="App.tsx" />
+    <File name="index.tsx" />
+    <Folder name="components">
+      <File name="Button.tsx" />
+      <File name="Card.tsx" />
+    </Folder>
+    <Folder name="pages">
+      <File name="Home.tsx" />
+      <File name="About.tsx" />
+    </Folder>
+  </Folder>
+</Files>
+```
+
+Render As:
+<Files>
+  <Folder name="src">
+    <File name="App.tsx" />
+    <File name="index.tsx" />
+    <Folder name="components">
+      <File name="Button.tsx" />
+      <File name="Card.tsx" />
+    </Folder>
+    <Folder name="pages">
+      <File name="Home.tsx" />
+      <File name="About.tsx" />
+    </Folder>
+  </Folder>
+</Files>
+
+## Props
+
+### Files
+
+The root component that wraps the entire file tree.
+
+### Folder
+
+| Prop     | Type     | Required | Description                           |
+|----------|----------|----------|---------------------------------------|
+| `name`     | string   | Yes      | The name of the folder                |
+| `children` | ReactNode | No      | Child elements (File or Folder)       |
+
+### File
+
+| Prop | Type   | Required | Description                |
+|------|--------|----------|----------------------------|
+| `name` | string | Yes      | The name of the file       |
+
+
+## Examples
+
+### Nested Folder Structure
+
+```
+<Files>
+  <Folder name="project-root">
+    <File name="package.json" />
+    <File name="tsconfig.json" />
+    <Folder name="src">
+      <File name="index.ts" />
+      <Folder name="components">
+        <File name="Button.tsx" />
+        <File name="Card.tsx" />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+```
+
+### Minimal Example
+
+```
+<Files>
+  <Folder name="components">
+    <File name="Button.tsx" />
+    <File name="Input.tsx" />
+  </Folder>
+</Files>
+```
+
+## Best Practices
+
+1. Keep the nesting level reasonable (recommended max 3-4 levels deep)
+2. Use clear and descriptive names for files and folders
+3. Consider the user experience when displaying large file structures
+4. Use consistent naming conventions throughout your file tree
+
+## Accessibility
+
+The File Tree component includes built-in accessibility features:
+
+- Keyboard navigation support
+- ARIA attributes for screen readers
+- Focus management for interactive elements
+- High contrast mode support

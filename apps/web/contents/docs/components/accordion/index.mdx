@@ -1,0 +1,59 @@
+---
+title: Accordion
+description: A component used to create collapsible content that can be hidden and shown again.
+date: 22-12-2024
+---
+
+## Preview
+
+### Basic Usage
+
+```plaintext
+<Accordion title="Click to expand">
+    This is a simple accordion component that can be toggled by clicking the header. The content can include any valid React nodes, including text, components, and markdown.
+</Accordion>
+```
+
+Render as :
+
+<Accordion title="Click to expand">
+    This is a simple accordion component that can be toggled by clicking the header. The content can include any valid React nodes, including text, components, and markdown.
+</Accordion>
+
+### With Code Block
+
+````plaintext
+<Accordion title="Code Block" defaultOpen={true} icon="Code">
+    ```javascript:main.js showLineNumbers {3-4}
+    function isRocketAboutToCrash() {
+        // Check if the rocket is stable
+        if (!isStable()) {
+            NoCrash(); // Prevent the crash
+        }
+    }
+    ```
+</Accordion>
+````
+
+Render as :
+
+<Accordion title="Code Block" defaultOpen={true} icon="Code">
+    ```javascript:main.js showLineNumbers {3-4}
+    function isRocketAboutToCrash() {
+        // Check if the rocket is stable
+        if (!isStable()) {
+            NoCrash(); // Prevent the crash
+        }
+    }
+    ```
+</Accordion>
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `title` | string | - | **Required**. The text displayed in the accordion header. |
+| `children` | ReactNode | null | The content to be displayed when the accordion is expanded. Can be plain text, markdown, or React components. |
+| `defaultOpen` | boolean | false | When true, the accordion will be expanded by default. |
+| `icon` | string | undefined | Optional. Adds a Lucide icon before the title in the accordion header. |
+

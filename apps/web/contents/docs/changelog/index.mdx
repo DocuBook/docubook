@@ -1,0 +1,649 @@
+---
+title: Release Version
+description: List of latest changes and updates on DocuBook
+date: 02-08-2025
+---
+
+> This changelog contains a list of all the changes made to the DocuBook template. It will be updated with each new release and will include information about new features, bug fixes, and other improvements.
+
+<Release version="2.2.0" date="2026-02-24" title="ReleaseMdx enhancements, TOC bug fixes, and UI/UX improvements">
+  <Changes type="improved">
+    - Modify ReleaseMdx.tsx to render v{version} as an `<h2 id={version}>` with `scroll-m-20` utility instead of a regular `div`.
+    - Demoted the literal `<Release>` title from `h2` down to `h3` in ReleaseMdx.tsx to preserve document heading hierarchy.
+    - Update `getDocsTocs` regex in `lib/markdown.ts` to natively capture `version="..."` tags alongside traditional markdown headings (`##`).
+    - Redesigned the `<Release>` version badge in `ReleaseMdx.tsx` according to UI/UX guidelines (added elegant bordered backdrop, balanced padding, adjusted margins, and a semantic `<time>` tag with a subtle separator dot).
+  </Changes>
+  <Changes type="fixed">
+    - Enhance `getDocsTocs` regex to explicitly ignore `<Release>` tags wrapped inside markdown code blocks (\`\`\`markdown\`\`\` or \`\`\`) preventing false TOC entries.
+    - Added `mounted` state check in `components/mob-toc.tsx` to fix Next.js Server/Client Hydration Mismatch error caused by Framer Motion and `usePathname()`.
+  </Changes>
+</Release>
+
+<Release version="2.1.0" date="2026-02-21" title="Upgrade next-mdx-remote">
+  <Changes type="fixed">
+    - Upgrade to **next-mdx-remote** to `^6.0.0`
+  </Changes>
+</Release>
+
+<Release version="2.0.0" date="2026-02-09" title="Major Update: Next.js 16, React 19, Tailwind CSS 4, and New Components">
+  <Changes type="added">
+    - Added table components
+    - Added zoom image feature
+    - Added cursor copy on pre code block
+    - Upgraded to Next.js 16
+    - Upgraded to React 19
+    - Upgraded to Tailwind CSS 4
+    - Modernized `tailwind.config.ts` structure
+  </Changes>
+  <Changes type="improved">
+    - Update styling to differentiate standalone and grouped accordions
+    - Clean Notes Design
+    - Updates to Markdown components: `AccordionMdx`, `CardGroupMdx`, `ImageMdx`, `PreMdx`
+    - Enhancements to `SearchModal`, `Leftbar` components
+    - Accessibility and functional improvements in `components/ui`
+  </Changes>
+  <Changes type="removed">
+    - Removed legacy `styles/editor.css`
+  </Changes>
+</Release>
+
+<Release version="1.16.1" date="2025-08-12" title="Icon mapping, code block titles, and code block improvements">
+  <Changes type="added">
+    - icon mapping based on language
+    - added handleCodeTitles function to generate pre block titles
+  </Changes>
+  <Changes type="improved">
+    - adjusted the rehypeCodeTitles function
+    - adjustments for CSS code block
+  </Changes>
+</Release>
+
+In this update, you can see the differences in the images below.
+
+![code block old](/images/codeblock-before.png)
+
+![code block new](/images/codeblock-after.png)
+
+<Release version="1.16.0" date="2025-08-10" title="Accordion context, AccordionGroup component, and improved UI styling">
+  <Changes type="added">
+    - `AccordionGroupContext` to enable grouped accordion behavior
+    - Add `AccordionGroup` component to markdown
+  </Changes>
+  <Changes type="fixed">
+    - Adjust hover and background colors for improved visual consistency
+  </Changes>
+  <Changes type="improved">
+    - Update styling to differentiate standalone and grouped accordions
+  </Changes>
+</Release>
+
+<Release version="1.15.3" date="2025-08-10" title="feat(accordion): add icon support and update styling">
+  <Changes type="added">
+    - Added optional `icon` prop to Accordion component using lucide-react icons
+    - add docu.schema.json
+  </Changes>
+  <Changes type="fixed">
+    - improve className and adjusted styling classes
+  </Changes>
+  <Changes type="removed">
+    - Removed unused className prop
+  </Changes>
+</Release>
+
+<Release version="1.15.1" date="2025-08-06" title="Algolia DocSearch for better search result">
+  <Changes type="added">
+    - new DocSearch.tsx components
+    - add props type algolia
+    - add searchprops
+    - add algolia.css
+  </Changes>
+</Release>
+
+<Note type="warning" title="environment">
+To use Algolia DocSearch, you need to configure the following environment variables:
+
+```plaintext
+NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_ID="your_app_id"
+NEXT_PUBLIC_ALGOLIA_DOCSEARCH_API_KEY="your_api_key"
+NEXT_PUBLIC_ALGOLIA_DOCSEARCH_INDEX_NAME="your_index_name"
+```
+
+in the navbar component, add a prop to the class
+
+```plaintext
+Change <Search /> to <Search type="algolia" />
+```
+</Note>
+
+<Release version="1.14.2" date="2025-08-05" title="Refactor & Fix: Decouple Search Component and Resolve Type Errors">
+  <Changes type="added">
+    - Refactor Search component into three distinct components: Search, SearchTrigger, and SearchModal for better maintainability and scalability.
+    - New SearchTrigger components
+    - New SearchModal components
+  </Changes>
+  <Changes type="fixed">
+    - Resolve TypeScript error for missing 'noLink' property on the 'Page' type after refactoring.
+    - Fix TypeScript error for missing 'context' property by providing a complete inline type annotation in the SearchModal component.
+  </Changes>
+</Release>
+
+<Release version="1.14.0" date="2025-08-02" title="Dev: Add workflow to run Sync NPM package">
+  <Changes type="added">
+    - Add workflows to run Sync NPM package
+    - Add sync-from-npm.yml
+    - Add PR to organization github.com/DocuBook/docubook
+  </Changes>
+</Release>
+
+<Release version="1.13.9" date="2025-07-27" title="Code Cleanup & Stability Improvements">
+  <Changes type="added">
+    - Added proper type definitions for unist-util-visit
+    - Added .eslintrc.json configuration file
+    - Added proper type checking for node values in markdown processing
+  </Changes>
+  <Changes type="improved">
+    - Enhanced type safety in lib/markdown.ts with proper TypeScript interfaces
+    - Converted interface extensions to type aliases in UI components for consistency
+    - Improved code organization across multiple files
+  </Changes>
+  <Changes type="fixed">
+    - Fixed potential null reference in markdown.ts when processing code blocks
+    - Updated import for MDXRemote in mdx-provider.tsx
+    - Optimized event listener cleanup in toc-observer.tsx
+  </Changes>
+  <Changes type="removed">
+    - Removed unused state and variables in toc-observer.tsx
+    - Removed unused imports for cleaner codebase
+  </Changes>
+</Release>
+
+<Release version="1.13.6" date="2025-06-01" title="Improve sheet leftbar and search icon">
+  <Changes type="improved">
+    - Improve sheet leftbar and search icon
+    - color scheme for sheet leftbar
+    - color scheme for search icon
+  </Changes>
+</Release>
+
+<Release version="1.13.5" date="2025-05-31" title="Add Theme schema for consistent theme">
+  <Changes type="added">
+    - Add Theme schema
+    - Add Freshlime theme
+    - Add Coffee theme
+    - Add llms context for generated theme with AI
+  </Changes>
+  <Changes type="improved">
+    - Markdown support for theme-colors
+    - consistent theme-colors page
+    - all components now consistent with theme-colors
+    - syntax with theme-colors
+  </Changes>
+  <Changes type="fixed">
+    - fix bug FileTree component
+    - fix issue markdown with theme-colors
+  </Changes>
+</Release>
+
+<Release version="1.13.0" date="2025-05-29" title="Context Menu for organize file and folder">
+  <Changes type="added">
+    - New ContextMenu component for organizing file and folder
+    - Nested docs folder and file support with context menu
+  </Changes>
+  <Changes type="improved">
+    - improve routes-config with context menu
+    - improve docu.json with context menu
+    - improve leftbar with context menu
+    - improve docs-menu with context menu
+    - improve search dialog limit result to 6 post per suggestion
+    - improve search result typing 3 characters to show suggestion
+  </Changes>
+</Release>
+
+<Release version="1.12.0" date="2025-05-28" title="New File Tree Component and enhancements for existing components or features">
+  <Changes type="added">
+    - New FileTree component for displaying hierarchical file structures
+    - Support for nested folders and files with expand/collapse functionality
+    - Hover effects showing file extensions
+    - Dark mode support with modern styling
+    - Keyboard navigation and accessibility features
+    - add toc-observer data attribute to detect toc section
+    - cli to copy from path npm registry
+  </Changes>
+  <Changes type="improved">
+    - search dialog hover effect return key
+    - search icon showing on mobile screens
+  </Changes>
+  <Changes type="fixed">
+    - fix search dialog on mobile screens
+    - fix release note component eslint error on mdx when rendering
+    - fix mob-toc callback function
+    - fix toc height issue when toc section is longer than screen height
+  </Changes>
+  <Changes type="removed">
+    - remove prompts depedencies
+    - remove degit depedencies
+    - remove prompts functions
+    - remove degit functions
+    - remove prompts and degit from package.json
+    - remove clone repository using git
+  </Changes>
+</Release>
+
+<Note type="note" title="Note">
+  on this version `1.12.0`, we remove clone repository using git and replace it with cli to copy from path npm registry
+</Note>
+
+<Release version="1.11.0" date="2025-05-25" title="New Release Note components support multiple products or multiple changelogs">
+  <Changes type="added">
+    - New ReleaseNote component for structured changelog display
+    - Added support for categorized changes (added, fixed, improved, deprecated, removed)
+    - Integrated Lucide icons for better visual hierarchy
+    - Support for multiple release notes
+  </Changes>
+
+  <Changes type="improved">
+    - Enhanced documentation with comprehensive usage examples
+    - Better component organization and styling
+    - Semantic versioning support
+    - Nested release notes support
+  </Changes>
+
+  <Changes type="removed">
+    - Removed old changelog page in favor of the new ReleaseMdx component
+    - Removed changelog.md
+    - Removed changelog/page.tsx
+    - Removed changelog.ts
+    - Removed components/changelog
+  </Changes>
+</Release>
+
+<Release version="1.10.1" date="2025-05-24" title="Accessibility Improvements and Bug Fixes">
+  <Changes type="fixed">
+    - Added missing DialogDescription components for better accessibility
+    - Fixed image aspect ratio issues in navbar logo
+    - Resolved console warnings for missing image sizes
+    - Improved keyboard navigation in search component
+    - Fixed mobile layout for search result items
+  </Changes>
+
+  <Changes type="improved">
+    - Added proper ARIA labels for screen readers
+    - Enhanced focus management in dialogs
+    - Optimized image loading with proper sizing attributes
+    - Better mobile experience with responsive design fixes
+  </Changes>
+
+  <Changes type="removed">
+    - Remove blog page
+    - Remove blog functions on markdown
+  </Changes>
+</Release>
+
+<Release version="1.10.0" date="2025-05-21" title="Sidebar Improvements and Mobile TOC Enhancements">
+  <Changes type="added">
+    - New reusable ToggleButton component with animation
+    - Mobile-friendly Table of Contents (TOC) component
+    - Click-outside handler for better mobile navigation
+    - Smooth scroll behavior for TOC navigation
+    - Active section highlighting in TOC
+  </Changes>
+
+  <Changes type="improved">
+    - Sidebar now has a collapsible design
+    - Enhanced mobile responsiveness for TOC
+    - Better visual hierarchy in sidebar navigation
+    - Smoother animations for sidebar toggle
+    - Optimized TOC performance with intersection observer
+    - Improved accessibility with proper ARIA labels
+    - Better spacing and alignment in mobile view
+  </Changes>
+
+  <Changes type="fixed">
+    - Fixed sidebar toggle button positioning
+    - Resolved TOC highlighting issues during scroll
+    - Fixed z-index conflicts in mobile view
+    - Addressed minor UI glitches in dark mode
+    - Fixed TOC not updating on route changes
+    - Resolved scroll jank on mobile devices
+    - Fixed incorrect active state in navigation
+  </Changes>
+
+  <Changes type="deprecated">
+    - No longer support changelog.md
+    - No longer support changelog/page.tsx (will be removed in future update)
+  </Changes>
+</Release>
+
+<Release version="1.9.0" date="2025-05-19" title="New Keyboard component to show keyboard shortcut on docs page">
+  <Changes type="added">
+    - New Keyboard component with props show, type, children
+    - Snippet keyboard component
+  </Changes>
+
+  <Changes type="improved">
+    - Support custom content
+    - Support platform type (mac or window)
+    - Support automatic rendering of platform-specific key symbols
+    - Rename lowercase to camelCase for markdown component
+  </Changes>
+</Release>
+
+<Release version="1.8.5" date="2025-05-10" title="Add sponsor card on single docs page">
+  <Changes type="added">
+    - Expandables Leftbar
+    - Sponsor badges or ads
+    - Boolean show/hide 'edit on github'
+    - With the same code run anywhere (bun or nodejs)
+    - Add frontmatter (metadata) to playground editor
+  </Changes>
+
+  <Changes type="improved">
+    - Adjustment docu.json
+    - Adjustment navbar, footer and components
+  </Changes>
+
+  <Changes type="fixed">
+    - Bun compatibility: rename .js to common js
+    - CLI manage packageManager on package.json
+    - Inconsistent design moved to better UI/UX
+    - Error handle render footer.social
+  </Changes>
+
+  <Changes type="removed">
+    - Remove confusing and verbose CLI on installer
+  </Changes>
+</Release>
+
+<Release version="1.8.0" date="2025-03-01" title="Now looks more modern and clean which is a big change in layout and design">
+  <Changes type="added">
+    - Social footer
+    - Toggle group
+    - Site description in footer
+    - Site title in footer
+  </Changes>
+
+  <Changes type="improved">
+    - Header design changes
+    - Footer design changes
+    - New functions in theme provider
+    - Object changes in docu.json
+  </Changes>
+
+  <Changes type="fixed">
+    - Updates to path structure components
+    - Groups to organize components
+  </Changes>
+</Release>
+
+<Release version="1.7.0" date="2025-02-23" title="Remove the old function in the search dialog and replace it with a new and more optimal feature">
+  <Changes type="added">
+    - Up and down navigation in search dialog
+    - Enter (return) to select in search dialog
+    - Escape to close the dialog
+  </Changes>
+
+  <Changes type="improved">
+    - Maintenance for anchor components
+    - Anchor.tsx adjustments for all elements that use it
+  </Changes>
+
+  <Changes type="removed">
+    - Remove suboptimal search features
+  </Changes>
+</Release>
+
+<Release version="1.6.0" date="2025-02-21" title="New Feature Card Groups with arrays for more Flexible Content">
+  <Changes type="added">
+    - Card Groups Components
+    - Props: href to url link
+    - Props: horizontal boolean
+  </Changes>
+
+  <Changes type="improved">
+    - Card props styling
+    - Compatibility for Cards components
+    - Support for children props in card content
+  </Changes>
+
+  <Changes type="removed">
+    - Remove unused props cards components
+  </Changes>
+</Release>
+
+<Release version="1.5.0" date="2025-02-18" title="Minor Update - improved features and responsiveness on all devices">
+  <Changes type="added">
+    - New dialog footer on searchbox above medium screens
+    - Icon X for close dialog on searchbox (ESC key on medium screen)
+  </Changes>
+
+  <Changes type="improved">
+    - Responsive Leftbar components on large screens
+    - Menu Trigger on medium screens
+    - Responsive Navbar components on medium screens
+    - Better UX for searchbox dialog
+    - Tooltips components can be written together with regular paragraphs
+  </Changes>
+
+  <Changes type="fixed">
+    - Responsive issues
+    - Compatibility for Bun
+    - Changes postcss.config.js to .cjs for Bun
+    - All CLI installer and updater not working
+    - Adjustments for package managers (npm, pnpm, bun, yarn)
+  </Changes>
+</Release>
+
+<Release version="1.4.2" date="2025-02-16" title="Complex Content for Accordion Component props children">
+  <Changes type="added">
+    - New Props with children in accordion
+    - Compatibility for markdown in accordion
+    - Nested components inside an accordion
+    - New icon on note components
+    - Add CLI npx @docubook/create@latest
+    - Add CLI npx @docubook/update@latest
+  </Changes>
+
+  <Changes type="improved">
+    - Better UI design for accordion
+    - Styling Note components on markdown
+    - Change accordion output on playground
+    - Change accordion output on snippet
+  </Changes>
+
+  <Changes type="removed">
+    - Remove deprecated props on accordion
+    - Remove CLI npx update_docu
+    - Remove CLI npx create_docu
+  </Changes>
+</Release>
+
+<Release version="1.4.0" date="2025-02-11" title="Floating Button Version with Dynamic Tag version on Changelog page">
+  <Changes type="added">
+    - New components / changelog floating-version.tsx
+    - Button popover to open version-toc below large screens
+    - Dynamic tag by section ID #version
+    - Dynamic url tag #version
+    - Dynamic version indicator on floating version when scrolling section by ID
+  </Changes>
+
+  <Changes type="improved">
+    - Change icon version history
+    - Responsive version-toc
+    - Improvement components to changelog page
+  </Changes>
+</Release>
+
+<Release version="1.3.8" date="2025-02-08" title="Responsive Table of Content">
+  <Changes type="added">
+    - Components terminal MagicUI
+    - Components card Shadcn
+    - New mob-toc for a better experience on mobile devices
+    - New Components scroll to top button
+    - Scroll to top: blog-post
+    - Scroll to top: docs-post
+  </Changes>
+
+  <Changes type="improved">
+    - lib/markdown for generated dynamic toc on markdown
+    - Responsive Table of Content below large screens
+    - Improve docs page
+  </Changes>
+</Release>
+
+<Release version="1.3.6" date="2025-02-01" title="Appears more modern editor for Docu Play">
+
+  <Changes type="added">
+    - Line Number for editor
+    - editor.css
+  </Changes>
+
+  <Changes type="improved">
+    - Better Design for Editor
+    - Similar to Github Editor
+    - Moved Handler Element (copy, download, reset and fullscreen) on Header
+  </Changes>
+</Release>
+
+<Release version="1.3.5" date="2025-01-30" title="It's Easy to Write Markdown with Playground">
+
+  <Changes type="added">
+    - New Playground Page
+    - New Playground Layout
+    - Toolbar for Markdown Components
+    - Fullscreen Mode to Focus Editing Your Content
+    - Copy to Clipboard Your Content
+    - Download Your Content as index.mdx
+    - Reset Your Content without refresh the Browser
+    - Only Large Screen for Better Experience
+  </Changes>
+</Release>
+
+<Release version="1.3.1" date="2025-01-20" title="Snippet Feature to Easily Write Markdown and Call DocuBook Components">
+
+  <Changes type="added">
+    - New Feature Snippet for Markdown Components
+    - Support Snippet for Visual Studio Code
+  </Changes>
+
+  <Changes type="removed">
+    - Remove props icon and props description for accordion components
+  </Changes>
+</Release>
+
+<Release version="1.3.0" date="2024-12-31" title="Release Note Feature to Make it Easier to Write Changelogs">
+  <Changes type="added">
+    - New Release Note Feature
+    - New Layout for Changelog page
+    - New Changelog page
+    - Add Release Note Component
+    - Easily write release notes directly from the CHANGELOG.md file
+    - TOC for versioning
+    - Write with the markdown tag
+    - Add lib / changelog.ts
+  </Changes>
+
+  <Changes type="improved">
+    - Improvement Responsive feature image for Version Entry
+    - Improvement Layout for changelog page
+    - Improvement Padding on mobile devices
+    - Only use containers of md size
+    - Improvement syntax.css for ul>li classes
+  </Changes>
+
+  <Changes type="fixed">
+    - Fix og:image not showing on Page.tsx
+    - Fix text-indent on class li
+  </Changes>
+
+  <Changes type="removed">
+    - Remove excessive padding
+    - Remove Logo on Footer
+  </Changes>
+</Release>
+
+<Release version="1.2.0" date="2024-12-22" title="New Accordion Component: Support content plain text, html and all markdown component">
+  <Changes type="added">
+    - Add New Accordion Component
+  </Changes>
+
+  <Changes type="improved">
+    - Props Improvement
+    - Support Dynamic Content for Accordion
+  </Changes>
+</Release>
+
+<Release version="1.1.0" date="2024-12-15" title="Minor Update: Easily manage set up with docu.json">
+  <Changes type="added">
+    - Add docu.json file
+    - Add openGraph (title, description, image)
+    - Add Dynamic metadata
+    - Generate metadata as openGraph
+    - OpenGraph support for .mdx
+  </Changes>
+
+  <Changes type="improved">
+    - Routes-config from json
+    - Frontmatter improvement
+    - Edit the content of footer.tsx simply via the docu.json file
+    - Edit the content of navbar.tsx simply via the docu.json file
+  </Changes>
+</Release>
+
+<Release version="1.0.7" date="2024-12-14" title="Easily updates your DocuBook Version with CLI npx update_docu">
+  <Changes type="added">
+    - CLI npx update_docu (update features into docubook existing directory)
+    - Playground (easily to written content)
+    - New Button component
+    - Navbar external link conditions
+    - CLI npx create_docu
+  </Changes>
+
+  <Changes type="improved">
+    - Searchbar Improvement
+    - Navigation Improvement
+    - Edit on Github Improvement
+  </Changes>
+
+  <Changes type="removed">
+    - Remove CLI npx create-docu (on this version not usage dash `-`)
+  </Changes>
+</Release>
+
+<Release version="1.0.6" date="2024-11-24" title="New Components, Fix and Improvement">
+  <Changes type="added">
+    - New Card component
+    - New Tooltips component
+  </Changes>
+
+  <Changes type="fixed">
+    - Change root folder
+  </Changes>
+
+  <Changes type="improved">
+    - Logo on navbar & footer
+    - Easily change logo
+  </Changes>
+</Release>
+
+<Release version="1.0.5" date="2024-11-16" title="Add New Features and Improvement for this version">
+  <Changes type="added">
+    - New Youtube component
+    - Edit this page - easily manage directory content via the github repo
+    - Support installation via CLI command npx create-docu
+  </Changes>
+
+  <Changes type="improved">
+    - Keyboard shortcut command + k or ctrl + k to open search dialog
+  </Changes>
+</Release>
+
+<Release version="1.0.0" date="2024-11-10" title="Initial release of DocuBook to create interactive nested docs with MDX">
+  <Changes type="added">
+    - Initial release of DocuBook
+    - Basic documentation structure
+    - Markdown support with MDX
+    - Responsive design
+    - Search functionality
+    - Dark mode support
+  </Changes>
+</Release>

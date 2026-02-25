@@ -1,0 +1,35 @@
+---
+title: Tables
+description: Organize your data in style with GitHub-flavored tables.
+date: 08-02-2026
+---
+
+Tables are a powerful way to organize and present data. With full support for GitHub Flavored Markdown, you can easily create clean, responsive grids to display properties, comparisons, or datasets. Control column alignment and headers with simple syntax, ensuring your information looks professional and is easy to read.
+
+## Basic Table
+
+| Property | Description | Type | Default |
+| --- | --- | --- | --- |
+| `title` | The title of the table | `string` | - |
+| `description` | The description of the table | `string` | - |
+
+## Alignment
+
+| Left | Center | Right |
+| :--- | :---: | ---: |
+| Left-aligned text | Center-aligned text | Right-aligned text |
+| Left-aligned text | Center-aligned text | Right-aligned text |
+
+## Output Markdown
+
+```markdown:index.mdx
+| Property | Description | Type | Default |
+| --- | --- | --- | --- |
+| `title` | The title of the table | `string` | - |
+| `description` | The description of the table | `string` | - |
+
+| Left | Center | Right |
+| :--- | :---: | ---: |
+| Left-aligned text | Center-aligned text | Right-aligned text |
+| Left-aligned text | Center-aligned text | Right-aligned text |
+```
