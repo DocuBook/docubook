@@ -6,6 +6,15 @@ date: 02-08-2025
 
 > This changelog contains a list of all the changes made to the DocuBook template. It will be updated with each new release and will include information about new features, bug fixes, and other improvements.
 
+<Release version="2.3.0" date="2026-02-28" title="feat: Migrate and restructure documentation from contents/docs to docs, adding new components and content.">
+  <Changes type="improved">
+    - Migrate and restructure documentation from `contents/docs` to `docs`
+    - pages route mapping to `docs` on `app/docs/[[...slug]]/page.tsx`
+    - FilePath refactor to `docs`
+    - page_route_copy map to `docs` on `lib/markdown.ts`
+  </Changes>
+</Release>
+
 <Release version="2.2.0" date="2026-02-24" title="ReleaseMdx enhancements, TOC bug fixes, and UI/UX improvements">
   <Changes type="improved">
     - Modify ReleaseMdx.tsx to render v{version} as an `<h2 id={version}>` with `scroll-m-20` utility instead of a regular `div`.

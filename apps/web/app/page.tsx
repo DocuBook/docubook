@@ -16,7 +16,7 @@ export default function Home() {
       <Link
         href="/docs/changelog" className="flex items-center gap-2 py-6">
         <InteractiveHoverButton>
-          v2.2.0 Available Now!
+          v2.3.0 Available Now!
         </InteractiveHoverButton>
       </Link>
       <div className="w-full max-w-[800px] pb-8">

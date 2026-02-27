@@ -46,14 +46,13 @@ Before we begin, ensure you have the following installed:
 DocuBook organizes content in a hierarchical structure:
 
 ```plaintext
-contents/
-  docs/                    # Main documentation directory
-    getting-started/        # Section for getting started guides
-      quick-start-guide/    # Current guide
-        index.mdx           # Main content file
-    guides/                # Additional documentation sections
-      components/          # Component-specific documentation
-        index.mdx
+docs/                    # Main documentation directory
+  getting-started/        # Section for getting started guides
+    quick-start-guide/    # Current guide
+      index.mdx           # Main content file
+  guides/                # Additional documentation sections
+    components/          # Component-specific documentation
+      index.mdx
 ```
 
 ### Creating New Content
@@ -62,12 +61,12 @@ contents/
   <StepperItem title="1. Create Content Directory">
     Organize your documentation by creating a new directory:
     ```bash
-    mkdir -p contents/docs/your-section/your-topic
+    mkdir -p docs/your-section/your-topic
     ```
 
     Example for an API reference:
     ```bash
-    mkdir -p contents/docs/api/authentication
+    mkdir -p docs/api/authentication
     ```
   </StepperItem>
 
