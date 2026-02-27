@@ -44,7 +44,7 @@
     "favicon": "/favicon.ico"
   },
   "repository": {
-    "url": "https://github.com/gitfromwildan/docu",
+    "url": "https://github.com/DocuBook/docubook/apps/web",
     "editPathTemplate": "/blob/main/{filePath}",
     "editLink": true
   },
