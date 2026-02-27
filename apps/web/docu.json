@@ -44,7 +44,7 @@
     "favicon": "/favicon.ico"
   },
   "repository": {
-    "url": "https://github.com/DocuBook/docubook/apps/web",
+    "url": "https://github.com/DocuBook/docubook",
     "editPathTemplate": "/blob/main/{filePath}",
     "editLink": true
   },
