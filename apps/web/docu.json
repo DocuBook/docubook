@@ -71,9 +71,7 @@
         { "title": "Introduction", "href": "/introduction" },
         { "title": "Installation", "href": "/installation" },
         { "title": "Quick Start Guide", "href": "/quick-start-guide" },
-        { "title": "Project Structure", "href": "/project-structure" },
         { "title": "Customize", "href": "/customize" },
-        { "title": "Global Settings", "href": "/global-settings" },
         {
           "title": "Theme Colors",
           "href": "/theme-colors",

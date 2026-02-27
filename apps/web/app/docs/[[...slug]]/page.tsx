@@ -83,7 +83,7 @@ export default async function DocsPage(props: PageProps) {
   const { title, description, image: _image, date } = res.frontmatter;
 
   // File path for edit link
-  const filePath = `contents/docs/${slug.join("/") || ""}/index.mdx`;
+  const filePath = `docs/${slug.join("/") || ""}/index.mdx`;
 
   const tocs = await getDocsTocs(pathName);
 

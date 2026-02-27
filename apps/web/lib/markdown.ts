@@ -223,7 +223,7 @@ function sluggify(text: string) {
 }
 
 function getDocsContentPath(slug: string) {
-  return path.join(process.cwd(), "/contents/docs/", `${slug}/index.mdx`);
+  return path.join(process.cwd(), "/docs/", `${slug}/index.mdx`);
 }
 
 function justGetFrontmatterFromMD<Frontmatter>(rawMd: string): Frontmatter {
@@ -247,7 +247,7 @@ export async function getAllChilds(pathString: string) {
     page_routes_copy.map(async (it) => {
       const totalPath = path.join(
         process.cwd(),
-        "/contents/docs/",
+        "/docs/",
         prevHref,
         it.href,
         "index.mdx"
