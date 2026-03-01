@@ -163,17 +163,20 @@ export type BaseMdxFrontmatter = {
 
 export async function getDocsForSlug(slug: string) {
   try {
-    const contentPath = getDocsContentPath(slug);
-    const rawMdx = await fs.readFile(contentPath, "utf-8");
-    return await parseMdx<BaseMdxFrontmatter>(rawMdx);
+    const { content, filePath } = await getRawMdx(slug);
+    const mdx = await parseMdx<BaseMdxFrontmatter>(content);
+    return {
+      ...mdx,
+      filePath,
+    };
   } catch (err) {
     console.log(err);
   }
 }
 
 export async function getDocsTocs(slug: string) {
-  const contentPath = getDocsContentPath(slug);
-  const rawMdx = await fs.readFile(contentPath, "utf-8");
+  const { content } = await getRawMdx(slug);
+  const rawMdx = content;
 
   // Regex to match code blocks (```...```), standard markdown headings (##), and <Release> tags
   const combinedRegex = /(```[\s\S]*?```)|^(#{2,4})\s(.+)$|<Release[^>]*version="([^"]+)"/gm;
@@ -222,8 +225,26 @@ function sluggify(text: string) {
   return slug.replace(/[^a-z0-9-]/g, "");
 }
 
-function getDocsContentPath(slug: string) {
-  return path.join(process.cwd(), "/docs/", `${slug}/index.mdx`);
+async function getRawMdx(slug: string) {
+  const commonPath = path.join(process.cwd(), "/docs/");
+  const paths = [
+    path.join(commonPath, `${slug}.mdx`),
+    path.join(commonPath, slug, "index.mdx"),
+  ];
+
+  for (const p of paths) {
+    try {
+      const content = await fs.readFile(p, "utf-8");
+      return {
+        content,
+        filePath: `docs/${path.relative(commonPath, p)}`,
+      };
+    } catch {
+      // ignore and try next
+    }
+  }
+
+  throw new Error(`Could not find mdx file for slug: ${slug}`);
 }
 
 function justGetFrontmatterFromMD<Frontmatter>(rawMd: string): Frontmatter {
@@ -245,16 +266,10 @@ export async function getAllChilds(pathString: string) {
 
   return await Promise.all(
     page_routes_copy.map(async (it) => {
-      const totalPath = path.join(
-        process.cwd(),
-        "/docs/",
-        prevHref,
-        it.href,
-        "index.mdx"
-      );
-      const raw = await fs.readFile(totalPath, "utf-8");
+      const slug = path.join(prevHref, it.href);
+      const { content } = await getRawMdx(slug);
       return {
-        ...justGetFrontmatterFromMD<BaseMdxFrontmatter>(raw),
+        ...justGetFrontmatterFromMD<BaseMdxFrontmatter>(content),
         href: `/docs${prevHref}${it.href}`,
       };
     })

@@ -6,6 +6,16 @@ date: 02-08-2025
 
 > This changelog contains a list of all the changes made to the DocuBook template. It will be updated with each new release and will include information about new features, bug fixes, and other improvements.
 
+<Release version="2.4.0" date="2026-03-01" title="MDX Loading Refactor & Comprehensive Documentation Expansion">
+  <Changes type="improved">
+    - Refactored MDX loading logic in `lib/markdown.ts` to support both `filename.mdx` and `filename/index.mdx` file structures.
+    - Enhanced `getRawMdx` function for more robust file path resolution.
+    - Improved `getAllChilds` function for better frontmatter extraction and type safety.
+    - Reorganized context and routing files for better maintainability (e.g., `routes-config.ts` to `routes.ts`).
+    - Applied minor styling improvements to MDX components.
+  </Changes>
+</Release>
+
 <Release version="2.3.0" date="2026-02-28" title="feat: Migrate and restructure documentation from contents/docs to docs.">
   <Changes type="improved">
     - Migrate and restructure documentation from `contents/docs` to `docs`
