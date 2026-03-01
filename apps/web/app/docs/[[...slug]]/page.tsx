@@ -81,10 +81,7 @@ export default async function DocsPage(props: PageProps) {
   if (!res) notFound();
 
   const { title, description, image: _image, date } = res.frontmatter;
-
-  // File path for edit link
-  const filePath = `docs/${slug.join("/") || ""}/index.mdx`;
-
+  const filePath = res.filePath;
   const tocs = await getDocsTocs(pathName);
 
   return (
@@ -93,7 +90,7 @@ export default async function DocsPage(props: PageProps) {
         <MobToc tocs={tocs} />
         <DocsBreadcrumb paths={slug} />
         <Typography>
-          <h1 className="text-3xl !-mt-0.5">{title}</h1>
+          <h1 className="text-3xl -mt-0.5!">{title}</h1>
           <p className="-mt-4 text-muted-foreground text-[16.5px]">{description}</p>
           <div>{res.content}</div>
           <div

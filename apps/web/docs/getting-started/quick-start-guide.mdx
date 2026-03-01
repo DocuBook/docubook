@@ -48,11 +48,10 @@ DocuBook organizes content in a hierarchical structure:
 ```plaintext
 docs/                    # Main documentation directory
   getting-started/        # Section for getting started guides
-    quick-start-guide/    # Current guide
-      index.mdx           # Main content file
+    quick-start-guide.mdx # filename.mdx example
   guides/                # Additional documentation sections
     components/          # Component-specific documentation
-      index.mdx
+      index.mdx          # Main content file
 ```
 
 ### Creating New Content
@@ -60,18 +59,15 @@ docs/                    # Main documentation directory
 <Stepper>
   <StepperItem title="1. Create Content Directory">
     Organize your documentation by creating a new directory:
-    ```bash
-    mkdir -p docs/your-section/your-topic
-    ```
-
+    
     Example for an API reference:
     ```bash
-    mkdir -p docs/api/authentication
+    mkdir -p docs/api/authentication.mdx
     ```
   </StepperItem>
 
   <StepperItem title="2. Create MDX Content">
-    Add an `index.mdx` file with frontmatter metadata:
+
     ````markdown
     ---
     title: Authentication
