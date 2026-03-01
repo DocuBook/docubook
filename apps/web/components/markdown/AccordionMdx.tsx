@@ -4,7 +4,7 @@ import { ReactNode, useState, useContext } from 'react';
 import { ChevronRight } from 'lucide-react';
 import * as Icons from "lucide-react";
 import { cn } from '@/lib/utils';
-import { AccordionGroupContext } from '@/components/contexts/AccordionContext';
+import { AccordionGroupContext } from '@/components/AccordionContext';
 
 type AccordionProps = {
     title: string;
@@ -42,12 +42,12 @@ const Accordion: React.FC<AccordionProps> = ({
             >
                 <ChevronRight
                     className={cn(
-                        "w-4 h-4 text-muted-foreground transition-transform duration-200 flex-shrink-0",
+                        "w-4 h-4 text-muted-foreground transition-transform duration-200 shrink-0",
                         isOpen && "rotate-90"
                     )}
                 />
-                {Icon && <Icon className="text-foreground w-4 h-4 flex-shrink-0" />}
-                <h3 className="font-medium text-base text-foreground !m-0">{title}</h3>
+                {Icon && <Icon className="text-foreground w-4 h-4 shrink-0" />}
+                <h3 className="font-medium text-base text-foreground m-0!">{title}</h3>
             </button>
 
             {isOpen && (

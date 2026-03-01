@@ -1,5 +1,5 @@
 import { buttonVariants } from "@/components/ui/button";
-import { page_routes } from "@/lib/routes-config";
+import { page_routes } from "@/lib/routes";
 import Link from "next/link";
 import { getMetadata } from "@/app/layout";
 import { CopyCommand } from "@/components/home/copycommand";

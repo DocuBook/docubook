@@ -32,7 +32,7 @@ function Release({ version, title, date, children }: ReleaseProps) {
           </div>
         )}
       </div>
-      <h3 className="text-2xl font-bold text-foreground/90 mb-6 !mt-0">
+      <h3 className="text-2xl font-bold text-foreground/90 mb-6 mt-0!">
         {title}
       </h3>
       <div className="space-y-8">
