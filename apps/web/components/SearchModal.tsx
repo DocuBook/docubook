@@ -6,7 +6,7 @@ import { ArrowUpIcon, ArrowDownIcon, CornerDownLeftIcon, FileTextIcon } from "lu
 import Anchor from "./anchor";
 import { advanceSearch, cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { page_routes } from "@/lib/routes-config";
+import { page_routes } from "@/lib/routes";
 import {
   DialogContent,
   DialogHeader,

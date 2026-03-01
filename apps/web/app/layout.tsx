@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/contexts/theme-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Footer } from "@/components/footer";
 import docuConfig from "@/docu.json";
-import { Toaster } from "@/components/ui/sonner";
 import "@docsearch/css";
 import "@/styles/algolia.css";
 import "@/styles/syntax.css";
@@ -91,7 +90,6 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
-          <Toaster position="top-center" />
         </ThemeProvider>
       </body>
     </html>

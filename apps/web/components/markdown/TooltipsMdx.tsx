@@ -19,7 +19,7 @@ const Tooltip: React.FC<TooltipProps> = ({ text, tip }) => {
         {text}
       </span>
       {visible && (
-        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 bg-popover text-popover-foreground text-sm p-3 rounded-md shadow-lg border border-border/50 break-words text-left z-50">
+        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 bg-popover text-popover-foreground text-sm p-3 rounded-md shadow-lg border border-border/50 wrap-break-word text-left z-50">
           {tip}
           <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-popover rotate-45 border-b border-r border-border/50 -z-10" />
         </span>

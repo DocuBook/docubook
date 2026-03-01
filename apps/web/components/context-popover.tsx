@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { ROUTES, EachRoute } from "@/lib/routes-config";
+import { ROUTES, EachRoute } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";

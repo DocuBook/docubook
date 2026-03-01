@@ -24,7 +24,7 @@ const FileComponent = ({ name }: FileProps) => {
       tabIndex={-1}
     >
       <FileIcon className={`
-        h-3.5 w-3.5 flex-shrink-0 transition-colors
+        h-3.5 w-3.5 shrink-0 transition-colors
         ${isHovered ? 'text-accent' : 'text-muted-foreground'}
       `} />
       <span className="font-mono text-sm text-foreground truncate">{name}</span>
@@ -61,7 +61,7 @@ const FolderComponent = ({ name, children }: FileProps) => {
         {hasChildren ? (
           <ChevronRight
             className={`
-              h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200
+              h-3.5 w-3.5 shrink-0 transition-transform duration-200
               ${isOpen ? 'rotate-90' : ''}
               ${isHovered ? 'text-foreground/70' : 'text-muted-foreground'}
             `}
@@ -71,12 +71,12 @@ const FolderComponent = ({ name, children }: FileProps) => {
         )}
         {isOpen ? (
           <FolderOpen className={`
-            h-4 w-4 flex-shrink-0 transition-colors
+            h-4 w-4 shrink-0 transition-colors
             ${isHovered ? 'text-accent' : 'text-muted-foreground'}
           `} />
         ) : (
           <FolderIcon className={`
-            h-4 w-4 flex-shrink-0 transition-colors
+            h-4 w-4 shrink-0 transition-colors
             ${isHovered ? 'text-accent/80' : 'text-muted-foreground/80'}
           `} />
         )}

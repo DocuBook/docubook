@@ -6,7 +6,7 @@ import rehypePrism from "rehype-prism-plus";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeSlug from "rehype-slug";
 import rehypeCodeTitles from "rehype-code-titles";
-import { page_routes, ROUTES } from "./routes-config";
+import { page_routes, ROUTES } from "./routes";
 import { visit } from "unist-util-visit";
 import type { Node, Parent } from "unist";
 import matter from "gray-matter";
