@@ -15,7 +15,7 @@ import { Button } from "./ui/button"
 import { motion, AnimatePresence } from "framer-motion"
 import { useActiveSection } from "@/hooks"
 import { TocItem } from "@/lib/toc"
-import Search from "@/components/search"
+import Search from "@/components/SearchBox"
 
 interface MobTocProps {
   tocs: TocItem[]
@@ -108,36 +108,6 @@ export default function MobToc({ tocs }: MobTocProps) {
         <div className="bg-background/95 w-full border-b border-stone-200 shadow-sm backdrop-blur-sm dark:border-stone-800">
           <div className="p-2">
             <div className="flex items-center gap-2">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="hidden max-lg:flex">
-                    <PanelRight className="h-5 w-5 shrink-0" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent className="flex flex-col gap-4 px-0" side="left">
-                  <DialogTitle className="sr-only">Navigation Menu</DialogTitle>
-                  <DialogDescription className="sr-only">
-                    Main navigation menu with links to different sections
-                  </DialogDescription>
-                  <SheetHeader>
-                    <SheetClose className="px-4" asChild>
-                      <div className="flex items-center justify-start gap-16">
-                        <span className="px-2">
-                          <Logo />
-                        </span>
-                        <ModeToggle />
-                      </div>
-                    </SheetClose>
-                  </SheetHeader>
-                  <div className="flex flex-col gap-4 overflow-y-auto">
-                    <div className="mx-2 space-y-2 px-5">
-                      <ContextPopover />
-                      <DocsMenu isSheet />
-                    </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
-              <Search type="algolia" />
               <Button
                 variant="ghost"
                 size="sm"
@@ -152,6 +122,38 @@ export default function MobToc({ tocs }: MobTocProps) {
                 </div>
                 {chevronIcon}
               </Button>
+              <Search type="algolia" />
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="hidden max-lg:flex">
+                    <PanelRight className="h-5 w-5 shrink-0" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="flex flex-col gap-4 px-0" side="right">
+                  <DialogTitle className="sr-only">Navigation Menu</DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Main navigation menu with links to different sections
+                  </DialogDescription>
+                  <SheetHeader>
+                    <SheetClose className="px-4" asChild>
+                      <div className="flex items-center justify-between">
+                        <span className="px-2">
+                          <Logo />
+                        </span>
+                        <div className="mr-6">
+                          <ModeToggle />
+                        </div>
+                      </div>
+                    </SheetClose>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-4 overflow-y-auto">
+                    <div className="mx-2 space-y-2 px-5">
+                      <ContextPopover />
+                      <DocsMenu isSheet />
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
 
             <AnimatePresence>

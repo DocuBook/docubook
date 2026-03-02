@@ -1,7 +1,7 @@
 import { ArrowUpRight } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import Search from "@/components/search"
+import Search from "@/components/SearchBox"
 import Anchor from "@/components/anchor"
 import { SheetLeftbar } from "@/components/leftbar"
 import { SheetClose } from "@/components/ui/sheet"
@@ -17,21 +17,21 @@ export function Navbar({ id }: NavbarProps) {
   return (
     <nav id={id} className="bg-background sticky top-0 z-50 h-16 w-full border-b">
       <div className="mx-auto flex h-full w-[95vw] items-center justify-between sm:container md:gap-2">
-        <div className="flex items-center gap-5">
-          <SheetLeftbar />
-          <div className="flex items-center gap-6">
-            <div className="hidden lg:flex">
-              <Logo />
-            </div>
+        <div className="flex items-center gap-6">
+          <div className="hidden sm:flex">
+            <Logo />
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="text-muted-foreground hidden items-center gap-4 text-sm font-medium lg:flex">
+        <div className="flex items-center gap-2 max-md:flex-row-reverse">
+          <SheetLeftbar />
+          <div className="text-muted-foreground hidden items-center gap-4 text-sm font-medium md:flex">
             <NavMenu />
           </div>
-          <Separator className="my-4 hidden h-9 lg:flex" orientation="vertical" />
+          <Separator className="my-4 hidden h-9 md:flex" orientation="vertical" />
           <Search type="algolia" />
-          <GitHubStarButton />
+          <div className="hidden md:flex">
+            <GitHubStarButton />
+          </div>
         </div>
       </div>
     </nav>
