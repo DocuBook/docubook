@@ -1,23 +1,22 @@
-import { ArrowUpRight } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
-import Search from "@/components/Search";
-import Anchor from "@/components/anchor";
-import { SheetLeftbar } from "@/components/leftbar";
-import { SheetClose } from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
-import docuConfig from "@/docu.json"; // Import JSON
-import GitHubStarButton from "@/components/GithubStart";
+import { ArrowUpRight } from "lucide-react"
+import Link from "next/link"
+import Image from "next/image"
+import Search from "@/components/search"
+import Anchor from "@/components/anchor"
+import { SheetLeftbar } from "@/components/leftbar"
+import { SheetClose } from "@/components/ui/sheet"
+import { Separator } from "@/components/ui/separator"
+import docuConfig from "@/docu.json" // Import JSON
+import GitHubStarButton from "@/components/GithubStart"
 
 interface NavbarProps {
-  id?: string;
+  id?: string
 }
 
 export function Navbar({ id }: NavbarProps) {
-
   return (
-    <nav id={id} className="sticky top-0 z-50 w-full h-16 border-b bg-background">
-      <div className="sm:container mx-auto w-[95vw] h-full flex items-center justify-between md:gap-2">
+    <nav id={id} className="bg-background sticky top-0 z-50 h-16 w-full border-b">
+      <div className="mx-auto flex h-full w-[95vw] items-center justify-between sm:container md:gap-2">
         <div className="flex items-center gap-5">
           <SheetLeftbar />
           <div className="flex items-center gap-6">
@@ -27,24 +26,24 @@ export function Navbar({ id }: NavbarProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="items-center hidden gap-4 text-sm font-medium lg:flex text-muted-foreground">
+          <div className="text-muted-foreground hidden items-center gap-4 text-sm font-medium lg:flex">
             <NavMenu />
           </div>
-          <Separator className="hidden lg:flex my-4 h-9" orientation="vertical" />
+          <Separator className="my-4 hidden h-9 lg:flex" orientation="vertical" />
           <Search type="algolia" />
           <GitHubStarButton />
         </div>
       </div>
     </nav>
-  );
+  )
 }
 
 export function Logo() {
-  const { navbar } = docuConfig; // Extract navbar from JSON
+  const { navbar } = docuConfig // Extract navbar from JSON
 
   return (
     <Link href="/" className="flex items-center gap-1.5">
-      <div className="relative w-8 h-8">
+      <div className="relative h-8 w-8">
         <Image
           src={navbar.logo.src}
           alt={navbar.logo.alt}
@@ -53,41 +52,43 @@ export function Logo() {
           className="object-contain"
         />
       </div>
-      <h2 className="font-bold font-code text-lg dark:text-accent text-primary">{navbar.logoText}</h2>
+      <h2 className="font-code dark:text-accent text-primary text-lg font-bold">
+        {navbar.logoText}
+      </h2>
     </Link>
-  );
+  )
 }
 
 export function NavMenu({ isSheet = false }) {
-  const { navbar } = docuConfig; // Extract navbar from JSON
+  const { navbar } = docuConfig // Extract navbar from JSON
 
   return (
     <>
       {navbar?.menu?.map((item) => {
-        const isExternal = item.href.startsWith("http");
+        const isExternal = item.href.startsWith("http")
 
         const Comp = (
           <Anchor
             key={`${item.title}-${item.href}`}
             activeClassName="text-primary dark:text-accent md:font-semibold font-medium"
             absolute
-            className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition-colors"
+            className="text-foreground/80 hover:text-foreground flex items-center gap-1 transition-colors"
             href={item.href}
             target={isExternal ? "_blank" : undefined}
             rel={isExternal ? "noopener noreferrer" : undefined}
           >
             {item.title}
-            {isExternal && <ArrowUpRight className="w-4 h-4 text-foreground/80" />}
+            {isExternal && <ArrowUpRight className="text-foreground/80 h-4 w-4" />}
           </Anchor>
-        );
+        )
         return isSheet ? (
           <SheetClose key={item.title + item.href} asChild>
             {Comp}
           </SheetClose>
         ) : (
           Comp
-        );
+        )
       })}
     </>
-  );
+  )
 }
