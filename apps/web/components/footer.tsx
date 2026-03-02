@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { ModeToggle } from "@/components/theme-toggle";
-import AuroraText from "./ui/aurora";
+import { ModeToggle } from "@/components/ThemeToggle";
 import docuData from "@/docu.json";
 import * as LucideIcons from "lucide-react";
+import AuroraText from "@/components/ui/aurora";
 
 // Define types for docu.json
 interface SocialItem {
@@ -21,21 +21,25 @@ const docuConfig = docuData as {
   footer: FooterConfig;
 };
 
-export function Footer() {
+interface FooterProps {
+  id?: string;
+}
+
+export function Footer({ id }: FooterProps) {
   const { footer } = docuConfig;
   return (
-    <footer className="w-full py-8 border-t bg-background">
+    <footer id={id} className="w-full py-8 border-t bg-background">
       <div className="container flex flex-col lg:flex-row items-center justify-between text-sm">
         <div className="flex flex-col items-center lg:items-start justify-start gap-4 w-full lg:w-3/5 text-center lg:text-left">
-            <p className="text-muted-foreground">
-                Copyright © {new Date().getFullYear()} {footer.copyright} - <MadeWith />
-            </p>
-            <div className="flex items-center justify-center lg:justify-start gap-6 mt-2 w-full">
-                <FooterButtons />
-            </div>
+          <p className="text-muted-foreground">
+            Copyright © {new Date().getFullYear()} {footer.copyright} - <MadeWith />
+          </p>
+          <div className="flex items-center justify-center lg:justify-start gap-6 mt-2 w-full">
+            <FooterButtons />
+          </div>
         </div>
         <div className="hidden lg:flex items-center justify-end lg:w-2/5">
-            <ModeToggle />
+          <ModeToggle />
         </div>
       </div>
     </footer>
@@ -80,7 +84,7 @@ export function MadeWith() {
       <span className="text-muted-foreground">Built by </span>
       <span className="text-primary">
         <Link href="https://github.com/gitfromwildan" target="_blank" rel="noopener noreferrer">
-            <AuroraText>Wildan.nrs</AuroraText>
+          <AuroraText>Wildan.nrs</AuroraText>
         </Link></span>
     </>
   );

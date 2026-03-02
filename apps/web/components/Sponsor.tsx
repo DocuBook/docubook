@@ -89,7 +89,7 @@ export function Sponsor() {
   // Safely get sponsor data with optional chaining and default values
   const sponsor = docuConfig?.sponsor || {};
   const item = sponsor?.item;
-  
+
   // Return null if required fields are missing
   if (!item?.url || !item?.image || !item?.title) {
     return null;
@@ -106,7 +106,7 @@ export function Sponsor() {
         rel="noopener noreferrer"
         className="flex flex-col justify-center gap-2 p-4 border rounded-lg hover:shadow transition-shadow"
       >
-        <div className="relative w-8 h-8 flex-shrink-0">
+        <div className="relative w-8 h-8 shrink-0">
           <Image
             src={item.image}
             alt={item.title}

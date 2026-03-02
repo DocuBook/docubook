@@ -19,76 +19,15 @@ export default function TocObserver({
   onActiveIdChange
 }: TocObserverProps) {
   const [internalActiveId, setInternalActiveId] = useState<string | null>(null);
-  const observer = useRef<IntersectionObserver | null>(null);
   const [clickedId, setClickedId] = useState<string | null>(null);
   const itemRefs = useRef<Map<string, HTMLAnchorElement>>(new Map());
 
-  // Use external activeId if provided, otherwise use internal state
   const activeId = externalActiveId !== undefined ? externalActiveId : internalActiveId;
   const setActiveId = onActiveIdChange || setInternalActiveId;
 
-  // Handle intersection observer for auto-highlighting
-  useEffect(() => {
-    const handleIntersect = (entries: IntersectionObserverEntry[]) => {
-      const visibleEntries = entries.filter(entry => entry.isIntersecting);
-
-      // Find the most recently scrolled-into-view element
-      const mostVisibleEntry = visibleEntries.reduce((prev, current) => {
-        // Prefer the entry that's more visible or higher on the page
-        const prevRatio = prev?.intersectionRatio || 0;
-        const currentRatio = current.intersectionRatio;
-
-        if (currentRatio > prevRatio) return current;
-        if (currentRatio === prevRatio &&
-            current.boundingClientRect.top < prev.boundingClientRect.top) {
-          return current;
-        }
-        return prev;
-      }, visibleEntries[0]);
-
-      if (mostVisibleEntry && !clickedId) {
-        const newActiveId = mostVisibleEntry.target.id;
-        if (newActiveId !== activeId) {
-          setActiveId(newActiveId);
-        }
-      }
-    };
-
-    observer.current = new IntersectionObserver(handleIntersect, {
-      root: null,
-      rootMargin: "-20% 0px -70% 0px", // Adjusted margins for better section detection
-      threshold: [0, 0.1, 0.5, 0.9, 1], // Multiple thresholds for better accuracy
-    });
-
-    const elements = data.map((item) =>
-      document.getElementById(item.href.slice(1))
-    );
-
-    elements.forEach((el) => {
-      if (el && observer.current) {
-        observer.current.observe(el);
-      }
-    });
-
-    // Set initial active ID if none is set
-    if (!activeId && elements[0]) {
-      setActiveId(elements[0].id);
-    }
-
-    return () => {
-      if (observer.current) {
-        elements.forEach((el) => {
-          if (el) {
-            observer.current!.unobserve(el);
-          }
-        });
-      }
-    };
-  }, [data, clickedId, activeId, setActiveId]);
-
   const handleLinkClick = useCallback((id: string) => {
     setClickedId(id);
-    setActiveId(id);
+    // setActiveId(id);
 
     // Reset the clicked state after a delay to allow for smooth scrolling
     const timer = setTimeout(() => {
@@ -132,6 +71,10 @@ export default function TocObserver({
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Initial calculation
+    handleScroll();
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, [activeId]);
 
@@ -215,7 +158,7 @@ export default function TocObserver({
                   }}
                 >
                   {/* Circle indicator */}
-                  <div className="relative w-4 h-4 flex items-center justify-center flex-shrink-0">
+                  <div className="relative w-4 h-4 flex items-center justify-center shrink-0">
                     <div className={clsx(
                       "w-1.5 h-1.5 rounded-full transition-all duration-300 relative z-10",
                       {

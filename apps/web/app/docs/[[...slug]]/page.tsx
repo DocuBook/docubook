@@ -7,7 +7,7 @@ import { Typography } from "@/components/typography";
 import EditThisPage from "@/components/edit-on-github";
 import { formatDate2 } from "@/lib/utils";
 import docuConfig from "@/docu.json";
-import MobToc from "@/components/mob-toc";
+import MobToc from "@/components/docs-sidebar";
 
 const { meta } = docuConfig;
 
@@ -85,29 +85,31 @@ export default async function DocsPage(props: PageProps) {
   const tocs = await getDocsTocs(pathName);
 
   return (
-    <div className="flex items-start gap-10">
-      <div className="flex-[4.5] pt-5">
-        <MobToc tocs={tocs} />
-        <DocsBreadcrumb paths={slug} />
-        <Typography>
-          <h1 className="text-3xl -mt-0.5!">{title}</h1>
-          <p className="-mt-4 text-muted-foreground text-[16.5px]">{description}</p>
-          <div>{res.content}</div>
-          <div
-            className={`my-8 flex items-center border-b-2 border-dashed border-x-muted-foreground ${docuConfig.repository?.editLink ? "justify-between" : "justify-end"
-              }`}
-          >
-            {docuConfig.repository?.editLink && <EditThisPage filePath={filePath} />}
-            {date && (
-              <p className="text-[13px] text-muted-foreground">
-                Published on {formatDate2(date)}
-              </p>
-            )}
-          </div>
-          <Pagination pathname={pathName} />
-        </Typography>
+    <div className="flex flex-1 w-full px-0 lg:px-8 pb-24">
+      <div className="w-full flex lg:flex-row flex-col items-start bg-card dark:bg-card/20 border border-muted-foreground/20 backdrop-blur-sm rounded-xl shadow-md">
+        <div className="flex-7 min-w-0 w-full lg:px-8 px-4 lg:py-8 py-4">
+          <MobToc tocs={tocs} />
+          <DocsBreadcrumb paths={slug} />
+          <Typography>
+            <h1 className="text-3xl -mt-0.5!">{title}</h1>
+            <p className="-mt-4 text-muted-foreground text-[16.5px]">{description}</p>
+            <div>{res.content}</div>
+            <div
+              className={`my-8 flex items-center border-b-2 border-dashed border-x-muted-foreground ${docuConfig.repository?.editLink ? "justify-between" : "justify-end"
+                }`}
+            >
+              {docuConfig.repository?.editLink && <EditThisPage filePath={filePath} />}
+              {date && (
+                <p className="text-[13px] text-muted-foreground">
+                  Published on {formatDate2(date)}
+                </p>
+              )}
+            </div>
+            <Pagination pathname={pathName} />
+          </Typography>
+        </div>
+        <Toc path={pathName} />
       </div>
-      <Toc path={pathName} />
     </div>
   );
 }

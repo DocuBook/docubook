@@ -1,4 +1,6 @@
 import { Leftbar } from "@/components/leftbar";
+import DocsNavbar from "@/components/docs-navbar";
+import "@/styles/override.css";
 
 export default function DocsLayout({
   children,
@@ -6,10 +8,15 @@ export default function DocsLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex items-start gap-8">
-      <Leftbar key="leftbar" />
-      <div className="flex-[5.25] px-1">
-        {children}
+    <div className="docs-layout flex flex-col min-h-screen w-full">
+      <div className="flex flex-1 items-start w-full">
+        <Leftbar key="leftbar" />
+        <main className="flex-1 min-w-0 dark:bg-background/50 min-h-screen flex flex-col">
+          <DocsNavbar />
+          <div className="flex-1 w-full">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );
