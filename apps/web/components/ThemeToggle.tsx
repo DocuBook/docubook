@@ -17,7 +17,7 @@ export function ModeToggle() {
   // Jika belum mounted, jangan render apapun untuk menghindari mismatch
   if (!mounted) {
     return (
-      <div className="flex items-center gap-1 rounded-full border border-border bg-background/50 p-1">
+      <div className="flex items-center gap-1 rounded-full border border-border bg-background/50 p-0.5">
         <div className="rounded-full p-0 w-1 h-1" />
         <div className="rounded-full p-0 w-1 h-1" />
       </div>
@@ -43,7 +43,7 @@ export function ModeToggle() {
       type="single"
       value={activeTheme}
       onValueChange={handleToggle}
-      className="flex items-center gap-1 rounded-full border border-border bg-background/50 p-1 transition-all"
+      className="flex items-center gap-1 rounded-full border border-border bg-background/50 p-0.5 transition-all"
     >
       <ToggleGroupItem
         value="light"

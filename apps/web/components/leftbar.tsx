@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import DocsMenu from "@/components/docs-menu"
 import { ModeToggle } from "@/components/ThemeToggle"
 import ContextPopover from "@/components/ContextPopover"
-import Search from "@/components/search"
+import Search from "@/components/SearchBox"
 
 export function Leftbar() {
   return (
@@ -42,22 +42,24 @@ export function SheetLeftbar() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="hidden max-lg:flex">
+        <Button variant="ghost" size="icon" className="hidden justify-end max-md:flex">
           <PanelRight className="h-5 w-5 shrink-0" />
         </Button>
       </SheetTrigger>
-      <SheetContent className="flex flex-col gap-4 px-0" side="left">
+      <SheetContent className="flex flex-col gap-4 px-0" side="right">
         <DialogTitle className="sr-only">Navigation Menu</DialogTitle>
         <DialogDescription className="sr-only">
           Main navigation menu with links to different sections
         </DialogDescription>
         <SheetHeader>
           <SheetClose className="px-4" asChild>
-            <div className="flex items-center justify-start gap-16">
+            <div className="flex items-center justify-between">
               <span className="px-2">
                 <Logo />
               </span>
-              <ModeToggle />
+              <div className="mr-6">
+                <ModeToggle />
+              </div>
             </div>
           </SheetClose>
         </SheetHeader>
