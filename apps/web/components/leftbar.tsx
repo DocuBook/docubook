@@ -9,10 +9,11 @@ import DocsMenu from "@/components/docs-menu"
 import { ModeToggle } from "@/components/ThemeToggle"
 import ContextPopover from "@/components/ContextPopover"
 import Search from "@/components/SearchBox"
+import GitHubStarButton from "@/components/GithubStart"
 
 export function Leftbar() {
   return (
-    <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 flex-col lg:flex">
+    <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 flex-col lg:flex">
       {/* Logo */}
       <div className="flex h-14 shrink-0 items-center px-5">
         <Logo />
@@ -54,9 +55,7 @@ export function SheetLeftbar() {
         <SheetHeader>
           <SheetClose className="px-4" asChild>
             <div className="flex items-center justify-between">
-              <span className="px-2">
-                <Logo />
-              </span>
+              <GitHubStarButton />
               <div className="mr-6">
                 <ModeToggle />
               </div>

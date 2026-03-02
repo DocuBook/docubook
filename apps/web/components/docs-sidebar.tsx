@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useActiveSection } from "@/hooks"
 import { TocItem } from "@/lib/toc"
 import Search from "@/components/SearchBox"
+import GitHubStarButton from "@/components/GithubStart"
 
 interface MobTocProps {
   tocs: TocItem[]
@@ -105,7 +106,7 @@ export default function MobToc({ tocs }: MobTocProps) {
         exit={{ y: -100, opacity: 0 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
       >
-        <div className="bg-background/95 w-full border-b border-stone-200 shadow-sm backdrop-blur-sm dark:border-stone-800">
+        <div className="bg-background/95 w-full border-b border-muted shadow-sm backdrop-blur-sm dark:border-foreground/10 dark:bg-background">
           <div className="p-2">
             <div className="flex items-center gap-2">
               <Button
@@ -137,9 +138,7 @@ export default function MobToc({ tocs }: MobTocProps) {
                   <SheetHeader>
                     <SheetClose className="px-4" asChild>
                       <div className="flex items-center justify-between">
-                        <span className="px-2">
-                          <Logo />
-                        </span>
+                        <GitHubStarButton />
                         <div className="mr-6">
                           <ModeToggle />
                         </div>
