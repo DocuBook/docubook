@@ -62,7 +62,7 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
         <Button
           variant="ghost"
           className={cn(
-            "w-full max-w-[240px] cursor-pointer flex items-center justify-between font-semibold text-foreground px-0 pt-8",
+            "w-full cursor-pointer flex items-center justify-between font-semibold text-foreground px-2 py-4 border border-muted",
             "hover:bg-transparent hover:text-foreground",
             className
           )}

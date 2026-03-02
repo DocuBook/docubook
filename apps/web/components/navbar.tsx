@@ -18,11 +18,11 @@ export function Navbar({ id }: NavbarProps) {
     <nav id={id} className="bg-background sticky top-0 z-50 h-16 w-full border-b">
       <div className="mx-auto flex h-full w-[95vw] items-center justify-between sm:container md:gap-2">
         <div className="flex items-center gap-6">
-          <div className="hidden sm:flex">
+          <div className="flex">
             <Logo />
           </div>
         </div>
-        <div className="flex items-center gap-2 max-md:flex-row-reverse">
+        <div className="flex items-center md:gap-2 gap-0 max-md:flex-row-reverse">
           <SheetLeftbar />
           <div className="text-muted-foreground hidden items-center gap-4 text-sm font-medium md:flex">
             <NavMenu />
