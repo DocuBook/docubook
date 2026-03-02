@@ -126,7 +126,7 @@ export default function MobToc({ tocs }: MobTocProps) {
               <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="hidden max-lg:flex">
-                    <PanelRight className="h-5 w-5 shrink-0" />
+                    <PanelRight className="h-6 w-6 shrink-0" />
                   </Button>
                 </SheetTrigger>
                 <SheetContent className="flex flex-col gap-4 px-0" side="right">
@@ -138,7 +138,7 @@ export default function MobToc({ tocs }: MobTocProps) {
                     <SheetClose className="px-4" asChild>
                       <div className="flex items-center justify-between">
                         <GitHubStarButton />
-                        <div className="mr-6">
+                        <div className="mr-8">
                           <ModeToggle />
                         </div>
                       </div>

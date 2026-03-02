@@ -1,29 +1,31 @@
-import { useState, useCallback, useEffect } from 'react';
+"use client"
+
+import { useState, useCallback, useEffect } from "react"
 
 export function useScrollPosition(threshold = 0.5) {
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false)
 
   const handleScroll = useCallback(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return
 
-    const scrollPosition = window.scrollY;
-    const viewportHeight = window.innerHeight;
-    const shouldBeSticky = scrollPosition > viewportHeight * threshold;
+    const scrollPosition = window.scrollY
+    const viewportHeight = window.innerHeight
+    const shouldBeSticky = scrollPosition > viewportHeight * threshold
 
-    setIsScrolled(prev => shouldBeSticky !== prev ? shouldBeSticky : prev);
-  }, [threshold]);
+    setIsScrolled((prev) => (shouldBeSticky !== prev ? shouldBeSticky : prev))
+  }, [threshold])
 
   // Add scroll event listener
   useEffect(() => {
     // Initial check
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    handleScroll();
+    handleScroll()
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true })
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [handleScroll]);
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [handleScroll])
 
-  return isScrolled;
+  return isScrolled
 }

@@ -1,27 +1,29 @@
-import { getDocsTocs } from "@/lib/markdown";
-import TocObserver from "./toc-observer";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ListIcon } from "lucide-react";
-import Sponsor from "./Sponsor";
+"use client"
 
+import TocObserver from "./toc-observer"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { ListIcon } from "lucide-react"
+import Sponsor from "./Sponsor"
+import { useActiveSection } from "@/hooks"
+import { TocItem } from "@/lib/toc"
 
-export default async function Toc({ path }: { path: string }) {
-  const tocs = await getDocsTocs(path);
+export default function Toc({ tocs }: { tocs: TocItem[] }) {
+  const { activeId, setActiveId } = useActiveSection(tocs)
 
   return (
-    <div className="lg:flex hidden toc flex-3 min-w-[238px] lg:p-8 sticky top-4 h-[calc(100vh-2rem)] self-start">
-      <div className="flex flex-col h-full w-full px-2 gap-2 mb-auto">
+    <div className="toc flex-3 sticky top-4 hidden h-[calc(100vh-2rem)] min-w-[238px] self-start lg:flex lg:p-8">
+      <div className="mb-auto flex h-full w-full flex-col gap-2 px-2">
         <div className="flex items-center gap-2">
-          <ListIcon className="w-4 h-4" />
-          <h3 className="font-medium text-sm">On this page</h3>
+          <ListIcon className="h-4 w-4" />
+          <h3 className="text-sm font-medium">On this page</h3>
         </div>
-        <div className="shrink-0 min-h-0 max-h-[calc(70vh-2rem)]">
+        <div className="max-h-[calc(70vh-2rem)] min-h-0 shrink-0">
           <ScrollArea className="h-full">
-            <TocObserver data={tocs} />
+            <TocObserver data={tocs} activeId={activeId} onActiveIdChange={setActiveId} />
           </ScrollArea>
         </div>
         <Sponsor />
       </div>
     </div>
-  );
+  )
 }

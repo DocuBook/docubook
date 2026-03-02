@@ -2,7 +2,7 @@
 
 import clsx from "clsx"
 import Link from "next/link"
-import { useState, useRef, useEffect, useCallback, Dispatch, SetStateAction } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
 import { ScrollToTop } from "./scroll-to-top"
 import { TocItem } from "@/lib/toc"
@@ -10,23 +10,24 @@ import { TocItem } from "@/lib/toc"
 interface TocObserverProps {
   data: TocItem[]
   activeId?: string | null
-  onActiveIdChange?: Dispatch<SetStateAction<string | null>>
+  onActiveIdChange?: (id: string | null) => void
 }
 
 export default function TocObserver({
   data,
   activeId: externalActiveId,
-  onActiveIdChange: _onActiveIdChange,
+  onActiveIdChange,
 }: TocObserverProps) {
   const itemRefs = useRef<Map<string, HTMLAnchorElement>>(new Map())
 
   const activeId = externalActiveId ?? null
 
-  const handleLinkClick = useCallback((_id: string) => {
-    const timer = setTimeout(() => {}, 1000)
-
-    return () => clearTimeout(timer)
-  }, [])
+  const handleLinkClick = useCallback(
+    (id: string) => {
+      onActiveIdChange?.(id)
+    },
+    [onActiveIdChange]
+  )
 
   // Function to check if an item has children
   const hasChildren = (currentId: string, currentLevel: number) => {
