@@ -75,11 +75,11 @@ export function ScrollToTop({
         onClick={scrollToTop}
         className={cn(
           "inline-flex items-center text-sm text-muted-foreground hover:text-foreground",
-          "transition-all duration-200 hover:translate-y-[-1px]"
+          "transition-all duration-200 hover:translate-y-px"
         )}
         aria-label="Scroll to top"
       >
-        {showIcon && <ArrowUpIcon className="mr-1 h-3.5 w-3.5 flex-shrink-0" />}
+        {showIcon && <ArrowUpIcon className="mr-1 h-3.5 w-3.5 shrink-0" />}
         <span>Scroll to Top</span>
       </Link>
     </div>

@@ -110,7 +110,7 @@ export function SearchModal({ isOpen, setIsOpen }: SearchModalProps) {
   }, [selectedIndex]);
 
   return (
-    <DialogContent className="p-0 max-w-[650px] sm:top-[38%] top-[45%] !rounded-md">
+    <DialogContent className="p-0 max-w-[650px] sm:top-[38%] top-[45%] rounded-md!">
       <DialogHeader>
         <DialogTitle className="sr-only">Search Documentation</DialogTitle>
         <DialogDescription className="sr-only">Search through the documentation</DialogDescription>

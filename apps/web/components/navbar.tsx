@@ -1,7 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import Search from "@/components/search";
+import Search from "@/components/Search";
 import Anchor from "@/components/anchor";
 import { SheetLeftbar } from "@/components/leftbar";
 import { SheetClose } from "@/components/ui/sheet";
@@ -9,10 +9,14 @@ import { Separator } from "@/components/ui/separator";
 import docuConfig from "@/docu.json"; // Import JSON
 import GitHubStarButton from "@/components/GithubStart";
 
-export function Navbar() {
+interface NavbarProps {
+  id?: string;
+}
+
+export function Navbar({ id }: NavbarProps) {
 
   return (
-    <nav className="sticky top-0 z-50 w-full h-16 border-b bg-background">
+    <nav id={id} className="sticky top-0 z-50 w-full h-16 border-b bg-background">
       <div className="sm:container mx-auto w-[95vw] h-full flex items-center justify-between md:gap-2">
         <div className="flex items-center gap-5">
           <SheetLeftbar />
@@ -23,12 +27,12 @@ export function Navbar() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-            <div className="items-center hidden gap-4 text-sm font-medium lg:flex text-muted-foreground">
-              <NavMenu />
-            </div>
-            <Separator className="hidden lg:flex my-4 h-9" orientation="vertical" />
-            <Search type="algolia"/>
-            <GitHubStarButton />
+          <div className="items-center hidden gap-4 text-sm font-medium lg:flex text-muted-foreground">
+            <NavMenu />
+          </div>
+          <Separator className="hidden lg:flex my-4 h-9" orientation="vertical" />
+          <Search type="algolia" />
+          <GitHubStarButton />
         </div>
       </div>
     </nav>
@@ -40,12 +44,12 @@ export function Logo() {
 
   return (
     <Link href="/" className="flex items-center gap-1.5">
-      <div className="relative w-10 h-10">
+      <div className="relative w-8 h-8">
         <Image
           src={navbar.logo.src}
           alt={navbar.logo.alt}
           fill
-          sizes="42px"
+          sizes="32px"
           className="object-contain"
         />
       </div>
