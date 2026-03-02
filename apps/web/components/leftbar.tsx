@@ -43,7 +43,7 @@ export function SheetLeftbar() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="hidden justify-end max-md:flex">
+        <Button variant="ghost" size="icon" className="hidden max-md:flex">
           <PanelRight className="h-5 w-5 shrink-0" />
         </Button>
       </SheetTrigger>
