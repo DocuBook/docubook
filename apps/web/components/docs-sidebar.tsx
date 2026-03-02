@@ -2,7 +2,6 @@
 
 import { ChevronDown, ChevronUp, PanelRight } from "lucide-react"
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTrigger } from "@/components/ui/sheet"
-import { Logo } from "@/components/navbar"
 import DocsMenu from "@/components/docs-menu"
 import { ModeToggle } from "@/components/ThemeToggle"
 import { DialogTitle, DialogDescription } from "@/components/ui/dialog"
