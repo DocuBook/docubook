@@ -1,95 +1,85 @@
-"use client";
+"use client"
 
-import clsx from "clsx";
-import Link from "next/link";
-import { useState, useRef, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
-import { ScrollToTop } from "./scroll-to-top";
-import { TocItem } from "@/lib/toc";
+import clsx from "clsx"
+import Link from "next/link"
+import { useState, useRef, useEffect, useCallback, Dispatch, SetStateAction } from "react"
+import { motion } from "framer-motion"
+import { ScrollToTop } from "./scroll-to-top"
+import { TocItem } from "@/lib/toc"
 
 interface TocObserverProps {
-  data: TocItem[];
-  activeId?: string | null;
-  onActiveIdChange?: (id: string | null) => void;
+  data: TocItem[]
+  activeId?: string | null
+  onActiveIdChange?: Dispatch<SetStateAction<string | null>>
 }
 
 export default function TocObserver({
   data,
   activeId: externalActiveId,
-  onActiveIdChange
+  onActiveIdChange: _onActiveIdChange,
 }: TocObserverProps) {
-  const [internalActiveId, setInternalActiveId] = useState<string | null>(null);
-  const [clickedId, setClickedId] = useState<string | null>(null);
-  const itemRefs = useRef<Map<string, HTMLAnchorElement>>(new Map());
+  const itemRefs = useRef<Map<string, HTMLAnchorElement>>(new Map())
 
-  const activeId = externalActiveId !== undefined ? externalActiveId : internalActiveId;
-  const setActiveId = onActiveIdChange || setInternalActiveId;
+  const activeId = externalActiveId ?? null
 
-  const handleLinkClick = useCallback((id: string) => {
-    setClickedId(id);
-    // setActiveId(id);
+  const handleLinkClick = useCallback((_id: string) => {
+    const timer = setTimeout(() => {}, 1000)
 
-    // Reset the clicked state after a delay to allow for smooth scrolling
-    const timer = setTimeout(() => {
-      setClickedId(null);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [setActiveId]);
+    return () => clearTimeout(timer)
+  }, [])
 
   // Function to check if an item has children
   const hasChildren = (currentId: string, currentLevel: number) => {
-    const currentIndex = data.findIndex(item => item.href.slice(1) === currentId);
-    if (currentIndex === -1 || currentIndex === data.length - 1) return false;
+    const currentIndex = data.findIndex((item) => item.href.slice(1) === currentId)
+    if (currentIndex === -1 || currentIndex === data.length - 1) return false
 
-    const nextItem = data[currentIndex + 1];
-    return nextItem.level > currentLevel;
-  };
+    const nextItem = data[currentIndex + 1]
+    return nextItem.level > currentLevel
+  }
 
   // Calculate scroll progress for the active section
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const [scrollProgress, setScrollProgress] = useState(0)
 
   useEffect(() => {
     const handleScroll = () => {
-      if (!activeId) return;
+      if (!activeId) return
 
-      const activeElement = document.getElementById(activeId);
-      if (!activeElement) return;
+      const activeElement = document.getElementById(activeId)
+      if (!activeElement) return
 
-      const rect = activeElement.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      const elementTop = rect.top;
-      const elementHeight = rect.height;
+      const rect = activeElement.getBoundingClientRect()
+      const windowHeight = window.innerHeight
+      const elementTop = rect.top
+      const elementHeight = rect.height
 
       // Calculate how much of the element is visible
-      let progress = 0;
+      let progress = 0
       if (elementTop < windowHeight) {
-        progress = Math.min(1, (windowHeight - elementTop) / (windowHeight + elementHeight));
+        progress = Math.min(1, (windowHeight - elementTop) / (windowHeight + elementHeight))
       }
 
-      setScrollProgress(progress);
-    };
+      setScrollProgress(progress)
+    }
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true })
 
     // Initial calculation
-    handleScroll();
+    handleScroll()
 
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [activeId]);
-
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [activeId])
 
   return (
     <div className="relative">
-      <div className="relative text-sm text-foreground/70 hover:text-foreground transition-colors">
+      <div className="text-foreground/70 hover:text-foreground relative text-sm transition-colors">
         <div className="flex flex-col gap-0">
           {data.map(({ href, level, text }, index) => {
-            const id = href.slice(1);
-            const isActive = activeId === id;
-            const indent = level > 1 ? (level - 1) * 20 : 0;
+            const id = href.slice(1)
+            const isActive = activeId === id
+            const indent = level > 1 ? (level - 1) * 20 : 0
             // Prefix with underscore to indicate intentionally unused
-            const _isParent = hasChildren(id, level);
-            const _isLastInLevel = index === data.length - 1 || data[index + 1].level <= level;
+            const _isParent = hasChildren(id, level)
+            const _isLastInLevel = index === data.length - 1 || data[index + 1].level <= level
 
             return (
               <div key={href} className="relative">
@@ -103,13 +93,17 @@ export default function TocObserver({
                     })}
                   >
                     {/* Vertical line */}
-                    <div className={clsx(
-                      "absolute left-0 top-0 h-full w-px",
-                      isActive ? "bg-primary/20 dark:bg-primary/30" : "bg-border/50 dark:bg-border/50"
-                    )}>
+                    <div
+                      className={clsx(
+                        "absolute left-0 top-0 h-full w-px",
+                        isActive
+                          ? "bg-primary/20 dark:bg-primary/30"
+                          : "bg-border/50 dark:bg-border/50"
+                      )}
+                    >
                       {isActive && (
                         <motion.div
-                          className="absolute left-0 top-0 w-full h-full bg-primary origin-top"
+                          className="bg-primary absolute left-0 top-0 h-full w-full origin-top"
                           initial={{ scaleY: 0 }}
                           animate={{ scaleY: scrollProgress }}
                           transition={{ duration: 0.3 }}
@@ -118,13 +112,17 @@ export default function TocObserver({
                     </div>
 
                     {/* Horizontal line */}
-                    <div className={clsx(
-                      "absolute left-0 top-1/2 h-px w-6",
-                      isActive ? "bg-primary/20 dark:bg-primary/30" : "bg-border/50 dark:bg-border/50"
-                    )}>
+                    <div
+                      className={clsx(
+                        "absolute left-0 top-1/2 h-px w-6",
+                        isActive
+                          ? "bg-primary/20 dark:bg-primary/30"
+                          : "bg-border/50 dark:bg-border/50"
+                      )}
+                    >
                       {isActive && (
                         <motion.div
-                          className="absolute left-0 top-0 h-full w-full bg-primary dark:bg-accent origin-left"
+                          className="bg-primary dark:bg-accent absolute left-0 top-0 h-full w-full origin-left"
                           initial={{ scaleX: 0 }}
                           animate={{ scaleX: scrollProgress }}
                           transition={{ duration: 0.3, delay: 0.1 }}
@@ -137,61 +135,60 @@ export default function TocObserver({
                 <Link
                   href={href}
                   onClick={() => handleLinkClick(id)}
-                  className={clsx(
-                    "relative flex items-center py-2 transition-colors",
-                    {
-                      "text-primary dark:text-primary font-medium": isActive,
-                      "text-muted-foreground hover:text-foreground dark:hover:text-foreground/90": !isActive,
-                    }
-                  )}
+                  className={clsx("relative flex items-center py-2 transition-colors", {
+                    "text-primary dark:text-primary font-medium": isActive,
+                    "text-muted-foreground hover:text-foreground dark:hover:text-foreground/90":
+                      !isActive,
+                  })}
                   style={{
                     paddingLeft: `${indent}px`,
-                    marginLeft: level > 1 ? '12px' : '0',
+                    marginLeft: level > 1 ? "12px" : "0",
                   }}
                   ref={(el) => {
-                    const map = itemRefs.current;
+                    const map = itemRefs.current
                     if (el) {
-                      map.set(id, el);
+                      map.set(id, el)
                     } else {
-                      map.delete(id);
+                      map.delete(id)
                     }
                   }}
                 >
                   {/* Circle indicator */}
-                  <div className="relative w-4 h-4 flex items-center justify-center shrink-0">
-                    <div className={clsx(
-                      "w-1.5 h-1.5 rounded-full transition-all duration-300 relative z-10",
-                      {
-                        "bg-primary scale-100 dark:bg-primary/90": isActive,
-                        "bg-muted-foreground/30 dark:bg-muted-foreground/30 scale-75 group-hover:scale-100 group-hover:bg-primary/50 dark:group-hover:bg-primary/50": !isActive,
-                      }
-                    )}>
+                  <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
+                    <div
+                      className={clsx(
+                        "relative z-10 h-1.5 w-1.5 rounded-full transition-all duration-300",
+                        {
+                          "bg-primary dark:bg-primary/90 scale-100": isActive,
+                          "bg-muted-foreground/30 dark:bg-muted-foreground/30 group-hover:bg-primary/50 dark:group-hover:bg-primary/50 scale-75 group-hover:scale-100":
+                            !isActive,
+                        }
+                      )}
+                    >
                       {isActive && (
                         <motion.div
-                          className="absolute inset-0 rounded-full bg-primary/20 dark:bg-primary/30"
+                          className="bg-primary/20 dark:bg-primary/30 absolute inset-0 rounded-full"
                           initial={{ scale: 1 }}
                           animate={{ scale: 1.8 }}
                           transition={{
                             duration: 2,
                             repeat: Infinity,
-                            repeatType: "reverse"
+                            repeatType: "reverse",
                           }}
                         />
                       )}
                     </div>
                   </div>
 
-                  <span className="truncate text-sm">
-                    {text}
-                  </span>
+                  <span className="truncate text-sm">{text}</span>
                 </Link>
               </div>
-            );
+            )
           })}
         </div>
       </div>
       {/* Add scroll to top link at the bottom of TOC */}
       <ScrollToTop className="mt-6" />
     </div>
-  );
+  )
 }
