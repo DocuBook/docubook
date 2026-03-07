@@ -2,7 +2,7 @@
 
 import React, { ReactNode } from "react";
 import clsx from "clsx";
-import { AccordionGroupContext } from "@/components/AccordionContext";
+import { AccordionGroupContext } from "@/lib/accordion-context";
 
 interface AccordionGroupProps {
   children: ReactNode;

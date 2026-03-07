@@ -4,7 +4,7 @@ import { ReactNode, useState, useContext } from 'react';
 import { ChevronRight } from 'lucide-react';
 import * as Icons from "lucide-react";
 import { cn } from '@/lib/utils';
-import { AccordionGroupContext } from '@/components/AccordionContext';
+import { AccordionGroupContext } from '@/lib/accordion-context';
 
 type AccordionProps = {
     title: string;
