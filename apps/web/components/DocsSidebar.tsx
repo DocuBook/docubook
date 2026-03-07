@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useActiveSection } from "@/hooks"
 import { TocItem } from "@/lib/toc"
 import Search from "@/components/SearchBox"
-import GitHubStarButton from "@/components/GithubStart"
+import GitHubButton from "@/components/Github"
 import { NavMenu } from "@/components/navbar"
 import {
   DropdownMenu,
@@ -153,7 +153,7 @@ export default function MobToc({ tocs }: MobTocProps) {
                   <SheetHeader>
                     <SheetClose className="px-4" asChild>
                       <div className="flex items-center justify-between">
-                        <GitHubStarButton />
+                        <GitHubButton />
                         <div className="mr-8">
                           <ModeToggle />
                         </div>

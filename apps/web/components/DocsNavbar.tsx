@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowUpRight } from "lucide-react";
-import GitHubStarButton from "@/components/GithubStart";
+import GitHubButton from "@/components/Github";
 import Anchor from "@/components/Anchor";
 import docuConfig from "@/docu.json";
 
@@ -37,7 +37,7 @@ export function DocsNavbar() {
             </Anchor>
           );
         })}
-        <GitHubStarButton />
+        <GitHubButton />
       </div>
     </div>
   );
