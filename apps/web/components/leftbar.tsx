@@ -9,7 +9,7 @@ import DocsMenu from "@/components/DocsMenu"
 import { ModeToggle } from "@/components/ThemeToggle"
 import ContextPopover from "@/components/ContextPopover"
 import Search from "@/components/SearchBox"
-import GitHubStarButton from "@/components/GithubStart"
+import GitHubButton from "@/components/Github"
 
 export function Leftbar() {
   return (
@@ -55,7 +55,7 @@ export function SheetLeftbar() {
         <SheetHeader>
           <SheetClose className="px-4" asChild>
             <div className="flex items-center justify-between">
-              <GitHubStarButton />
+              <GitHubButton />
               <div className="mr-8">
                 <ModeToggle />
               </div>

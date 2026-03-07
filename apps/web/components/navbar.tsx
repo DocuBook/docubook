@@ -7,7 +7,7 @@ import Search from "@/components/SearchBox"
 import Anchor from "@/components/Anchor"
 import { Separator } from "@/components/ui/separator"
 import docuConfig from "@/docu.json"
-import GitHubStarButton from "@/components/GithubStart"
+import GitHubButton from "@/components/Github"
 import { Button } from "@/components/ui/button"
 import { useState, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -55,7 +55,7 @@ export function Navbar({ id }: NavbarProps) {
             <Separator className="my-4 hidden h-9 md:flex" orientation="vertical" />
             <Search type="algolia" />
             <div className="hidden md:flex">
-              <GitHubStarButton />
+              <GitHubButton />
             </div>
           </div>
         </div>
@@ -75,7 +75,7 @@ export function Navbar({ id }: NavbarProps) {
                 <NavMenuCollapsible onItemClick={() => setIsMenuOpen(false)} />
               </ul>
               <div className="flex items-center justify-between border-t px-1 py-3">
-                <GitHubStarButton />
+                <GitHubButton />
                 <ModeToggle />
               </div>
             </div>
