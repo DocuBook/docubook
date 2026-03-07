@@ -6,4 +6,5 @@ export interface TocItem {
 
 export interface MobTocProps {
   tocs: TocItem[];
+  title?: string;
 }

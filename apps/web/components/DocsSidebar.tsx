@@ -25,6 +25,7 @@ import {
 
 interface MobTocProps {
   tocs: TocItem[]
+  title?: string
 }
 
 const useClickOutside = (ref: React.RefObject<HTMLElement | null>, callback: () => void) => {
@@ -45,7 +46,7 @@ const useClickOutside = (ref: React.RefObject<HTMLElement | null>, callback: () 
   }, [handleClick])
 }
 
-export default function MobToc({ tocs }: MobTocProps) {
+export default function MobToc({ tocs, title }: MobTocProps) {
   const pathname = usePathname()
   const [isExpanded, setIsExpanded] = React.useState(false)
   const tocRef = useRef<HTMLDivElement>(null)
@@ -57,8 +58,12 @@ export default function MobToc({ tocs }: MobTocProps) {
   // Only show on /docs pages
   const isDocsPage = useMemo(() => pathname?.startsWith("/docs"), [pathname])
 
-  // Get title from path segment (last part of URL)
-  const pageTitle = pathname?.split("/").filter(Boolean).pop() || ""
+  // Get title from active section if available, otherwise document title
+  const activeSection = useMemo(() => {
+    return tocs.find((toc) => toc.href.slice(1) === activeId)
+  }, [tocs, activeId])
+
+  const displayTitle = activeSection?.text || title || "On this page"
 
   const [mounted, setMounted] = React.useState(false)
 
@@ -133,7 +138,7 @@ export default function MobToc({ tocs }: MobTocProps) {
               >
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium capitalize">
-                    {pageTitle || "On this page"}
+                    {displayTitle}
                   </span>
                 </div>
                 {chevronIcon}
