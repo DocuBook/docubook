@@ -126,7 +126,7 @@ export default function MobToc({ tocs }: MobTocProps) {
               <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="hidden max-lg:flex">
-                    <PanelRight className="h-6 w-6 shrink-0" />
+                    <PanelRight className="h-6 w-6 shrink-0 text-muted-foreground" />
                   </Button>
                 </SheetTrigger>
                 <SheetContent className="flex flex-col gap-4 px-0" side="right">
