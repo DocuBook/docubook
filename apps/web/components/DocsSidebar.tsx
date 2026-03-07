@@ -129,7 +129,7 @@ export default function MobToc({ tocs }: MobTocProps) {
                     <PanelRight className="h-6 w-6 shrink-0 text-muted-foreground" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent className="flex flex-col gap-4 px-0" side="right">
+                <SheetContent className="w-full flex flex-col gap-4 px-0 lg:w-auto" side="right">
                   <DialogTitle className="sr-only">Navigation Menu</DialogTitle>
                   <DialogDescription className="sr-only">
                     Main navigation menu with links to different sections
