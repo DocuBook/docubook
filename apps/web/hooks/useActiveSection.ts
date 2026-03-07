@@ -8,6 +8,12 @@ export function useActiveSection(tocs: TocItem[]) {
   const observerRef = useRef<IntersectionObserver | null>(null)
   const clickedIdRef = useRef<string | null>(null)
 
+  const activeIdRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    activeIdRef.current = activeId
+  }, [activeId])
+
   // Handle intersection observer for active section
   useEffect(() => {
     if (typeof document === "undefined" || !tocs.length) return
@@ -24,15 +30,19 @@ export function useActiveSection(tocs: TocItem[]) {
       }, visibleEntries[0])
 
       const newActiveId = mostVisibleEntry.target.id
-      if (newActiveId !== activeId) {
+      if (newActiveId !== activeIdRef.current) {
         setActiveId(newActiveId)
       }
     }
 
+    // Determine the scroll root: #scroll-container is only used on desktop (lg)
+    const isDesktop = window.innerWidth >= 1024
+    const container = isDesktop ? document.getElementById("scroll-container") : null
+
     // Initialize intersection observer
     observerRef.current = new IntersectionObserver(handleIntersect, {
-      root: document.getElementById("scroll-container"),
-      rootMargin: "0px 0px -60% 0px",
+      root: container,
+      rootMargin: isDesktop ? "0px 0px -60% 0px" : "-160px 0px -60% 0px",
       threshold: 0,
     })
 
@@ -48,7 +58,7 @@ export function useActiveSection(tocs: TocItem[]) {
     return () => {
       observerRef.current?.disconnect()
     }
-  }, [tocs, activeId])
+  }, [tocs]) // Only depend on tocs, handle activeId via ref
 
   const handleLinkClick = useCallback((id: string) => {
     clickedIdRef.current = id
