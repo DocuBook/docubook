@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import * as LucideIcons from "lucide-react";
 import { ChevronsUpDown, Check, type LucideIcon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ContextPopoverProps {
   className?: string;
@@ -74,7 +75,7 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
               </span>
             )}
             <span className="truncate text-sm">
-              {activeRoute?.context?.title || activeRoute?.title || 'Select context'}
+              {activeRoute?.context?.title || activeRoute?.title || <Skeleton className="h-3.5 w-24" />}
             </span>
           </div>
           <ChevronsUpDown className="h-4 w-4 text-foreground/50" />
