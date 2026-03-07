@@ -1,24 +1,23 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-const GitHubStarButton: React.FC = () => {
-  const [stars, setStars] = useState<number | null>(null);
+const formatStars = (count: number) =>
+  count >= 1000 ? `${(count / 1000).toFixed(1)}K` : `${count}`;
 
-  useEffect(() => {
-    fetch('https://api.github.com/repos/DocuBook/docubook')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.stargazers_count !== undefined) {
-          setStars(data.stargazers_count);
-        }
-      })
-      .catch((error) => console.error('Failed to fetch stars:', error));
-  }, []);
+async function getGitHubStars(): Promise<number | null> {
+  try {
+    const res = await fetch('https://api.github.com/repos/DocuBook/docubook', {
+      next: { revalidate: 3600 }, // cache for 1 hour (ISR)
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.stargazers_count ?? null;
+  } catch {
+    return null;
+  }
+}
 
-  const formatStars = (count: number) =>
-    count >= 1000 ? `${(count / 1000).toFixed(1)}K` : `${count}`;
+const GitHubStarButton = async () => {
+  const stars = await getGitHubStars();
 
   return (
     <Link
