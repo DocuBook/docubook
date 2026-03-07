@@ -117,7 +117,7 @@ export default function MobToc({ tocs }: MobTocProps) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label="Navigation menu">
-                    <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                    <MoreVertical className="h-5 w-5 text-muted-foreground" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="flex flex-col gap-1 p-2 min-w-[160px]">
