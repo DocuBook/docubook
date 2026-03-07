@@ -1,5 +1,5 @@
-import { Leftbar } from "@/components/leftbar";
-import DocsNavbar from "@/components/docs-navbar";
+import { Leftbar } from "@/components/Leftbar";
+import DocsNavbar from "@/components/DocsNavbar";
 import "@/styles/override.css";
 
 export default function DocsLayout({

@@ -19,10 +19,14 @@ export function ScrollToTop({
   const [isVisible, setIsVisible] = useState(false);
 
   const checkScroll = useCallback(() => {
+    // Check local scroll container or document
+    const container = document.getElementById("scroll-container");
+    const scrollY = container ? container.scrollTop : window.scrollY;
+
     // Calculate 50% of viewport height
     const halfViewportHeight = window.innerHeight * 0.5;
     // Check if scrolled past half viewport height (plus any offset)
-    const scrolledPastHalfViewport = window.scrollY > (halfViewportHeight + offset);
+    const scrolledPastHalfViewport = scrollY > (halfViewportHeight + offset);
 
     // Only update state if it changes to prevent unnecessary re-renders
     if (scrolledPastHalfViewport !== isVisible) {
@@ -42,21 +46,24 @@ export function ScrollToTop({
       timeoutId = setTimeout(checkScroll, 100);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    const container = document.getElementById("scroll-container") || window;
+    container.addEventListener('scroll', handleScroll, { passive: true });
 
     // Cleanup
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      container.removeEventListener('scroll', handleScroll);
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [checkScroll]);
 
   const scrollToTop = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+    const container = document.getElementById("scroll-container");
+    if (container) {
+      container.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, []);
 
   if (!isVisible) return null;

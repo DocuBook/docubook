@@ -1,6 +1,6 @@
 "use client"
 
-import TocObserver from "./toc-observer"
+import TocObserver from "./TocObserver"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ListIcon } from "lucide-react"
 import Sponsor from "./Sponsor"

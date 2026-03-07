@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { ArrowUpIcon, ArrowDownIcon, CornerDownLeftIcon, FileTextIcon } from "lucide-react";
-import Anchor from "./anchor";
+import Anchor from "./Anchor";
 import { advanceSearch, cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { page_routes } from "@/lib/routes";

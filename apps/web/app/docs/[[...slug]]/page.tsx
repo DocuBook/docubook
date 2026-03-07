@@ -1,13 +1,13 @@
 import { notFound } from "next/navigation"
 import { getDocsForSlug, getDocsTocs } from "@/lib/markdown"
-import DocsBreadcrumb from "@/components/docs-breadcrumb"
-import Pagination from "@/components/pagination"
-import Toc from "@/components/toc"
-import { Typography } from "@/components/typography"
-import EditThisPage from "@/components/edit-on-github"
+import DocsBreadcrumb from "@/components/DocsBreadcrumb"
+import Pagination from "@/components/Pagination"
+import Toc from "@/components/Toc"
+import { Typography } from "@/components/Typography"
+import EditThisPage from "@/components/EditWithGithub"
 import { formatDate2 } from "@/lib/utils"
 import docuConfig from "@/docu.json"
-import MobToc from "@/components/docs-sidebar"
+import MobToc from "@/components/DocsSidebar"
 
 const { meta } = docuConfig
 
@@ -79,8 +79,8 @@ export default async function DocsPage(props: PageProps) {
   const tocs = await getDocsTocs(pathName)
 
   return (
-    <div className="flex w-full flex-1 px-0 pb-24 lg:px-8">
-      <div className="bg-card dark:bg-card/20 border-muted-foreground/20 flex w-full flex-col items-start rounded-xl border shadow-md backdrop-blur-sm lg:flex-row">
+    <div className="flex w-full flex-1 px-0 pb-4 lg:px-8 lg:pb-8 h-[calc(100vh-4rem)]">
+      <div id="scroll-container" className="bg-card dark:bg-card/20 border-muted-foreground/20 flex w-full h-full flex-col items-start rounded-xl border shadow-md backdrop-blur-sm lg:flex-row overflow-y-auto relative">
         <div className="flex-7 w-full min-w-0 px-4 py-4 lg:px-8 lg:py-8">
           <MobToc tocs={tocs} />
           <DocsBreadcrumb paths={slug} />
@@ -89,9 +89,8 @@ export default async function DocsPage(props: PageProps) {
             <p className="text-muted-foreground -mt-4 text-[16.5px]">{description}</p>
             <div>{res.content}</div>
             <div
-              className={`border-x-muted-foreground my-8 flex items-center border-b-2 border-dashed ${
-                docuConfig.repository?.editLink ? "justify-between" : "justify-end"
-              }`}
+              className={`border-x-muted-foreground my-8 flex items-center border-b-2 border-dashed ${docuConfig.repository?.editLink ? "justify-between" : "justify-end"
+                }`}
             >
               {docuConfig.repository?.editLink && <EditThisPage filePath={filePath} />}
               {date && (

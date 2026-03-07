@@ -31,9 +31,9 @@ export function useActiveSection(tocs: TocItem[]) {
 
     // Initialize intersection observer
     observerRef.current = new IntersectionObserver(handleIntersect, {
-      root: null,
-      rootMargin: "0px 0px -80% 0px",
-      threshold: 0.1,
+      root: document.getElementById("scroll-container"),
+      rootMargin: "0px 0px -60% 0px",
+      threshold: 0,
     })
 
     // Observe all headings

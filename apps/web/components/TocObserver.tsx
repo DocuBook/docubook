@@ -4,7 +4,7 @@ import clsx from "clsx"
 import Link from "next/link"
 import { useState, useRef, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
-import { ScrollToTop } from "./scroll-to-top"
+import { ScrollToTop } from "./ScrollToTop"
 import { TocItem } from "@/lib/toc"
 
 interface TocObserverProps {
@@ -62,12 +62,14 @@ export default function TocObserver({
       setScrollProgress(progress)
     }
 
-    window.addEventListener("scroll", handleScroll, { passive: true })
+    const container = document.getElementById("scroll-container") || window
+
+    container.addEventListener("scroll", handleScroll, { passive: true })
 
     // Initial calculation
     handleScroll()
 
-    return () => window.removeEventListener("scroll", handleScroll)
+    return () => container.removeEventListener("scroll", handleScroll)
   }, [activeId])
 
   return (
