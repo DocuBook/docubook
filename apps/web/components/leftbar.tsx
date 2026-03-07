@@ -1,6 +1,6 @@
 "use client"
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTrigger } from "@/components/ui/sheet"
-import { Logo, NavMenu } from "@/components/Navbar"
+import { Logo, NavMenu } from "@/components/navbar"
 import { Button } from "@/components/ui/button"
 import { PanelRight } from "lucide-react"
 import { DialogTitle, DialogDescription } from "@/components/ui/dialog"
