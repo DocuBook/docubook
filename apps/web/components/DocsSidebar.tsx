@@ -16,7 +16,7 @@ import { useActiveSection } from "@/hooks"
 import { TocItem } from "@/lib/toc"
 import Search from "@/components/SearchBox"
 import GitHubStarButton from "@/components/GithubStart"
-import { NavMenu } from "@/components/Navbar"
+import { NavMenu } from "@/components/navbar"
 import {
   DropdownMenu,
   DropdownMenuContent,

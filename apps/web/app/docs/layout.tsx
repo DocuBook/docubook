@@ -1,4 +1,4 @@
-import { Leftbar } from "@/components/Leftbar";
+import { Leftbar } from "@/components/leftbar";
 import DocsNavbar from "@/components/DocsNavbar";
 import "@/styles/override.css";
 
