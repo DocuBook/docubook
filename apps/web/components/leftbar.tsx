@@ -64,7 +64,7 @@ export function SheetLeftbar() {
         </SheetHeader>
         <div className="flex flex-col gap-4 overflow-y-auto">
           <div className="mx-2 mt-3 flex flex-col gap-2.5 px-5">
-            <NavMenu isSheet />
+            <NavMenu />
           </div>
         </div>
       </SheetContent>
