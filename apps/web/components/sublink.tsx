@@ -1,5 +1,5 @@
 import { EachRoute } from "@/lib/routes";
-import Anchor from "./anchor";
+import Anchor from "./Anchor";
 import {
   Collapsible,
   CollapsibleContent,

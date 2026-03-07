@@ -2,7 +2,7 @@
 
 import { ArrowUpRight } from "lucide-react";
 import GitHubStarButton from "@/components/GithubStart";
-import Anchor from "@/components/anchor";
+import Anchor from "@/components/Anchor";
 import docuConfig from "@/docu.json";
 
 interface NavbarItem {

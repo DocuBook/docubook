@@ -2,11 +2,11 @@
 
 import { ChevronDown, ChevronUp, PanelRight } from "lucide-react"
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTrigger } from "@/components/ui/sheet"
-import DocsMenu from "@/components/docs-menu"
+import DocsMenu from "@/components/DocsMenu"
 import { ModeToggle } from "@/components/ThemeToggle"
 import { DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import ContextPopover from "@/components/ContextPopover"
-import TocObserver from "./toc-observer"
+import TocObserver from "./TocObserver"
 import * as React from "react"
 import { useRef, useMemo } from "react"
 import { usePathname } from "next/navigation"
