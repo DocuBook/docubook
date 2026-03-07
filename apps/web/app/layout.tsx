@@ -3,7 +3,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navbar } from "@/components/navbar";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { Footer } from "@/components/Footer";
+import { Footer } from "@/components/footer";
 import { SearchProvider } from "@/components/SearchContext";
 import docuConfig from "@/docu.json";
 import "@docsearch/css";
