@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronDown, ChevronUp, PanelRight } from "lucide-react"
+import { ChevronDown, ChevronUp, PanelRight, MoreVertical } from "lucide-react"
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTrigger } from "@/components/ui/sheet"
 import DocsMenu from "@/components/DocsMenu"
 import { ModeToggle } from "@/components/ThemeToggle"
@@ -16,6 +16,12 @@ import { useActiveSection } from "@/hooks"
 import { TocItem } from "@/lib/toc"
 import Search from "@/components/SearchBox"
 import GitHubStarButton from "@/components/GithubStart"
+import { NavMenu } from "@/components/Navbar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface MobTocProps {
   tocs: TocItem[]
@@ -108,6 +114,16 @@ export default function MobToc({ tocs }: MobTocProps) {
         <div className="bg-background/95 w-full border-b border-muted shadow-sm backdrop-blur-sm dark:border-foreground/10 dark:bg-background">
           <div className="p-2">
             <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label="Navigation menu">
+                    <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="flex flex-col gap-1 p-2 min-w-[160px]">
+                  <NavMenu />
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 variant="ghost"
                 size="sm"
