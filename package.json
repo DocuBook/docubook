@@ -17,15 +17,21 @@
     "typecheck": "turbo typecheck"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.3",
+    "@typescript-eslint/eslint-plugin": "^8.57.0",
+    "@typescript-eslint/parser": "^8.57.0",
+    "eslint": "^9.39.3",
+    "eslint-config-next": "16.1.3",
     "prettier": "^3.5.3",
     "turbo": "^2.5.3",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1"
   },
   "dependencies": {
     "next": "^16.1.6"
   },
   "engines": {
-    "node": ">=20",
+    "node": ">=22",
     "pnpm": ">=10"
   },
   "packageManager": "pnpm@10.31.0+sha512.e3927388bfaa8078ceb79b748ffc1e8274e84d75163e67bc22e06c0d3aed43dd153151cbf11d7f8301ff4acb98c68bdc5cadf6989532801ffafe3b3e4a63c268"
