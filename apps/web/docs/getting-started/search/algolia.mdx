@@ -1,12 +1,8 @@
 ---
-title: Algolia DocSearch
+title: Algolia
 description: Learn how to integrate Algolia DocSearch into your documentation.
 date: 09-03-2026
 ---
-
-<Note type="warning" title="Recuired">
-  To use Algolia DocSearch, you need at least DocuBook version 1.15.1 or higher.
-</Note>
 
 [Algolia DocSearch](https://docsearch.algolia.com/) provides a fast, relevant search experience for
 documentation sites. It powers the search in this project **(DocuBook)**. Follow this guide to
@@ -26,15 +22,16 @@ To enable Algolia DocSearch, update the `search.type` in your `docu.json` file:
 
 This will automatically apply Algolia search across all search components in your documentation.
 
-<Note type="tip" title="Built-in Search">
-  To use the built-in search instead, set `"type": "default"` or remove the `search` configuration
-  entirely.
-</Note>
+> **Built-in Search**
+>
+> To use the built-in search instead, set `"type": "default"` or remove the `search` configuration
+entirely.
 
 ## Apply for DocSearch
 
 Algolia provides `DocSearch` for open-source projects for free. To apply:
 
+<div className="pl-4">
 <Stepper>
   <StepperItem title="Step 1: Visit the DocSearch">
     Visit [DocSearch Application](https://docsearch.algolia.com/apply/ ) to register your
@@ -47,21 +44,21 @@ Algolia provides `DocSearch` for open-source projects for free. To apply:
     - Application ID
     - Search API Key
     - Index Name
-    <Note type="note" title="env.local">
-      Store your environment variables securely by creating a .env.local file
-      ```plaintext
-        NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_ID="your_app_id"
-        NEXT_PUBLIC_ALGOLIA_DOCSEARCH_API_KEY="your_api_key"
-        NEXT_PUBLIC_ALGOLIA_DOCSEARCH_INDEX_NAME="your_index_name"
-      ```
-    </Note>
+    > Store your environment variables securely by creating a .env.local file
+    >  ```plaintext
+    >    NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_ID="your_app_id"
+    >    NEXT_PUBLIC_ALGOLIA_DOCSEARCH_API_KEY="your_api_key"
+    >    NEXT_PUBLIC_ALGOLIA_DOCSEARCH_INDEX_NAME="your_index_name"
+    >  ```
   </StepperItem>
 </Stepper>
+</div>
 
 ## Crawler Editor
 
 Now we will customize the crawler to follow the hierarchy of the docs created by DocuBook :
 
+<div className="pl-4">
 <Stepper>
   <StepperItem title="Step 1: Dashboard Algolia">
     Visit the [Algolia DocSearch dashboard](https://dashboard.algolia.com/)
@@ -72,9 +69,7 @@ Now we will customize the crawler to follow the hierarchy of the docs created by
   <StepperItem title="Step 3: In the Data Sources menu">
     Please navigate to the "Crawler" tab, where you will see a list of crawlers. Then, click on the name of the crawler you want to customize.
 
-    <Note type="note" title="attention">
-      make sure to add your domain in the `domains` tab in the crawler settings
-    </Note>
+    > make sure to add your domain in the `domains` tab in the crawler settings
   </StepperItem>
   <StepperItem title="Step 4: Editor">
     On the crawler page, open the `setup` dropdown and select `editor`.
@@ -83,108 +78,115 @@ Now we will customize the crawler to follow the hierarchy of the docs created by
 
   </StepperItem>
 </Stepper>
-
-<Note type="note" title="Note">
-  Pay attention to the **highlighted** parts of the crawler syntax below—these are the sections you
-  need to modify.
-</Note>
+</div>
 
 copy the entire crawler code below :
 
-```json showLineNumbers {2,5,12,15-16,40,91}
-new Crawler({
-  appId: "your_appId",
-  indexPrefix: "",
-  rateLimit: 8,
-  startUrls: ["https://docubook.pro"], // replace with your domain
-  renderJavaScript: false,
-  maxDepth: 10,
-  maxUrls: 8000,
-  schedule: "on the 24 day of the month",
-  sitemaps: [],
-  ignoreCanonicalTo: false,
-  discoveryPatterns: ["https://docubook.pro/**"], // replace with your domain
-  actions: [
-    {
-      indexName: "docu.crawler", // index name adjust to environment variables
-      pathsToMatch: ["https://docubook.pro/**"], // replace with your domain
-      recordExtractor: ({ helpers }) => {
-        return helpers.docsearch({
-          recordProps: {
-            lvl1: ["header h1", "article h1", "main h1", "h1", "head > title"],
-            content: ["article p, article li", "main p, main li", "p, li"],
-            lvl0: {
-              selectors: "nav[aria-label='Documentation navigation'] h4",
-              defaultValue: "docs",
+> Pay attention to the **highlighted** parts of the crawler syntax below—these are the sections you
+need to modify.
+
+<Accordion title="Crawler code" icon="ClipboardCopy">
+  ```javascript:index.js showLineNumbers {2,5,12,15-16,97}
+  new Crawler({
+    appId: "5CCYZZZ96E", // changes appId
+    indexPrefix: "",
+    rateLimit: 8,
+    startUrls: ["https://www.docubook.pro"], // your domain
+    renderJavaScript: true, // Switched to true for Next.js
+    maxDepth: 10,
+    maxUrls: 8000,
+    schedule: "every 1 day at 02:00 am", // Recommended daily schedule
+    sitemaps: [],
+    ignoreCanonicalTo: true,
+    discoveryPatterns: ["https://www.docubook.pro/**"], // your domain
+    actions: [
+      {
+        indexName: "docs.crawler",
+        pathsToMatch: ["https://www.docubook.pro/**"], // your domain
+        recordExtractor: ({ $, helpers }) => {
+          // Prefer the specific data attribute, fall back to breadcrumb
+          const lvl0 =
+            $("[data-search-lvl0='true']").first().text().trim() ||
+            $("nav[aria-label='breadcrumb'] li:nth-child(3)").text().trim() ||
+            "Docs";
+
+          return helpers.docsearch({
+            recordProps: {
+              lvl0: {
+                selectors: "",
+                defaultValue: lvl0,
+              },
+              lvl1: ["header h1", "article h1", "main h1", "h1"],
+              content: ["article p, article li", "main p, main li", "p, li"],
+              lvl2: ["article h2", "main h2", "h2"],
+              lvl3: ["article h3", "main h3", "h3"],
+              lvl4: ["article h4", "main h4", "h4"],
+              lvl5: ["article h5", "main h5", "h5"],
+              lvl6: ["article h6", "main h6", "h6"],
             },
-            lvl2: ["article h2", "main h2", "h2"],
-            lvl3: ["article h3", "main h3", "h3"],
-            lvl4: ["article h4", "main h4", "h4"],
-            lvl5: ["article h5", "main h5", "h5"],
-            lvl6: ["article h6", "main h6", "h6"],
-          },
-          aggregateContent: true,
-          recordVersion: "v3",
-        });
+            aggregateContent: true,
+            recordVersion: "v3",
+          });
+        },
+      },
+    ],
+    safetyChecks: { beforeIndexPublishing: { maxLostRecordsPercentage: 10 } },
+    initialIndexSettings: {
+      "docs.crawler": {
+        attributesForFaceting: ["type", "lang"],
+        attributesToRetrieve: [
+          "hierarchy",
+          "content",
+          "anchor",
+          "url",
+          "url_without_anchor",
+          "type",
+        ],
+        attributesToHighlight: ["hierarchy", "content"],
+        attributesToSnippet: ["content:10"],
+        camelCaseAttributes: ["hierarchy", "content"],
+        searchableAttributes: [
+          "unordered(hierarchy.lvl0)",
+          "unordered(hierarchy.lvl1)",
+          "unordered(hierarchy.lvl2)",
+          "unordered(hierarchy.lvl3)",
+          "unordered(hierarchy.lvl4)",
+          "unordered(hierarchy.lvl5)",
+          "unordered(hierarchy.lvl6)",
+          "content",
+        ],
+        distinct: true,
+        attributeForDistinct: "url",
+        customRanking: [
+          "desc(weight.pageRank)",
+          "desc(weight.level)",
+          "asc(weight.position)",
+        ],
+        ranking: [
+          "words",
+          "filters",
+          "typo",
+          "attribute",
+          "proximity",
+          "exact",
+          "custom",
+        ],
+        highlightPreTag: '<span class="algolia-docsearch-suggestion--highlight">',
+        highlightPostTag: "</span>",
+        minWordSizefor1Typo: 3,
+        minWordSizefor2Typos: 7,
+        allowTyposOnNumericTokens: false,
+        minProximity: 1,
+        ignorePlurals: true,
+        advancedSyntax: true,
+        attributeCriteriaComputedByMinProximity: true,
+        removeWordsIfNoResults: "allOptional",
       },
     },
-  ],
-  safetyChecks: { beforeIndexPublishing: { maxLostRecordsPercentage: 30 } },
-  initialIndexSettings: {
-    "docu.crawler": { // index name adjust to environment variables
-      attributesForFaceting: ["type", "lang"],
-      attributesToRetrieve: [
-        "hierarchy",
-        "content",
-        "anchor",
-        "url",
-        "url_without_anchor",
-        "type",
-      ],
-      attributesToHighlight: ["hierarchy", "content"],
-      attributesToSnippet: ["content:10"],
-      camelCaseAttributes: ["hierarchy", "content"],
-      searchableAttributes: [
-        "unordered(hierarchy.lvl0)",
-        "unordered(hierarchy.lvl1)",
-        "unordered(hierarchy.lvl2)",
-        "unordered(hierarchy.lvl3)",
-        "unordered(hierarchy.lvl4)",
-        "unordered(hierarchy.lvl5)",
-        "unordered(hierarchy.lvl6)",
-        "content",
-      ],
-      distinct: true,
-      attributeForDistinct: "url",
-      customRanking: [
-        "desc(weight.pageRank)",
-        "desc(weight.level)",
-        "asc(weight.position)",
-      ],
-      ranking: [
-        "words",
-        "filters",
-        "typo",
-        "attribute",
-        "proximity",
-        "exact",
-        "custom",
-      ],
-      highlightPreTag: '<span class="algolia-docsearch-suggestion--highlight">',
-      highlightPostTag: "</span>",
-      minWordSizefor1Typo: 3,
-      minWordSizefor2Typos: 7,
-      allowTyposOnNumericTokens: false,
-      minProximity: 1,
-      ignorePlurals: true,
-      advancedSyntax: true,
-      attributeCriteriaComputedByMinProximity: true,
-      removeWordsIfNoResults: "allOptional",
-    },
-  },
-  apiKey: "your_apiKey",
-});
-```
+    apiKey: "01469aacecdb2a6a828cb6222bc872ec", // your crawler apiKey
+  });
+  ```
+</Accordion>
 
 ## Vercel
 

@@ -35,6 +35,10 @@ const defaultMetadata: Metadata = {
     locale: "en_US",
     type: "website",
   },
+  /* to implementations domains verification for Algolia with Meta Tag */
+  // other: {
+  //   "algolia-site-verification": "value",
+  // },
 };
 
 // Dynamic Metadata Getter
