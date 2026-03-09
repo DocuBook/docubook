@@ -26,9 +26,9 @@
           "type": "object",
           "description": "Additional contextual information for the navigation group.",
           "properties": {
-            "icon": {"type": "string"},
-            "description": {"type": "string"},
-            "title": {"type": "string"}
+            "icon": { "type": "string" },
+            "description": { "type": "string" },
+            "title": { "type": "string" }
           }
         },
         "items": {
@@ -118,6 +118,18 @@
             "image": { "type": "string" },
             "url": { "type": "string", "format": "uri" }
           }
+        }
+      }
+    },
+    "search": {
+      "type": "object",
+      "description": "Configuration for the search functionality.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["default", "algolia"],
+          "default": "default",
+          "description": "Search engine to use. 'default' uses built-in search, 'algolia' uses Algolia DocSearch."
         }
       }
     },

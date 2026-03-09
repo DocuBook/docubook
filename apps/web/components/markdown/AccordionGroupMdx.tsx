@@ -1,31 +1,20 @@
 "use client"
 
-import React, { ReactNode } from "react";
-import clsx from "clsx";
-import { AccordionGroupContext } from "@/lib/accordion-context";
+import React, { ReactNode } from "react"
+import clsx from "clsx"
+import { AccordionGroupProvider } from "@/components/markdown/AccordionContext"
 
 interface AccordionGroupProps {
-  children: ReactNode;
-  className?: string;
+  children: ReactNode
+  className?: string
 }
 
 const AccordionGroup: React.FC<AccordionGroupProps> = ({ children, className }) => {
-
   return (
-    // Wrap all children with the AccordionGroupContext.Provider
-    // so that any nested accordions know they are inside a group.
-    // This enables group-specific behavior in child components.
-    <AccordionGroupContext.Provider value={{ inGroup: true }}>
-      <div
-        className={clsx(
-          "border rounded-lg overflow-hidden",
-          className
-        )}
-      >
-        {children}
-      </div>
-    </AccordionGroupContext.Provider>
-  );
-};
+    <AccordionGroupProvider>
+      <div className={clsx("overflow-hidden rounded-lg border", className)}>{children}</div>
+    </AccordionGroupProvider>
+  )
+}
 
-export default AccordionGroup;
+export default AccordionGroup
