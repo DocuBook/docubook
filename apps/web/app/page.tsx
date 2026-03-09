@@ -21,10 +21,10 @@ export default function Home() {
       </Link>
       <div className="w-full max-w-[800px] pb-8">
         <h1 className="mb-4 text-2xl font-bold sm:text-5xl">
-          Hello Docu, Smooth sailing when making docs.
+          The Universal Documentation Engine for React Framework.
         </h1>
         <p className="mb-8 sm:text-xl text-muted-foreground">
-          An open-source Software <span className="underline decoration-dotted" >Mintlify / Gitbook / Docusaurus</span> alternative. Free forever with no feature limitations.
+          The open-source alternative to <span className="underline decoration-dotted" >Mintlify, GitBook, and Docusaurus</span>. Just write in MDX — it works with pretty much any React framework.
         </p>
       </div>
       <div className="flex flex-row items-center gap-5">
