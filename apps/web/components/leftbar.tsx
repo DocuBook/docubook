@@ -20,7 +20,7 @@ export function Leftbar() {
       </div>
 
       <div className="flex shrink-0 items-center gap-2 px-4 pb-4">
-        <Search type="algolia" />
+        <Search className="min-w-[250px] max-w-[250px]" />
       </div>
 
       {/* Scrollable Navigation */}
@@ -44,7 +44,7 @@ export function SheetLeftbar() {
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="hidden max-md:flex">
-          <PanelRight className="h-6 w-6 shrink-0 text-muted-foreground" />
+          <PanelRight className="text-muted-foreground h-6 w-6 shrink-0" />
         </Button>
       </SheetTrigger>
       <SheetContent className="flex flex-col gap-4 px-0" side="right">

@@ -1,14 +1,3 @@
-/*
-================================================================================
- DocSearch Component Styling (Refactored Version)
-================================================================================
-*/
-
-/* -- LANGKAH 1: Definisi Variabel Global --
-  Variabel tema DocSearch sekarang didefinisikan secara global di :root.
-  Ini menyederhanakan pewarisan tema dan memastikan konsistensi.
-  Mode gelap secara otomatis menimpa variabel ini karena .dark di globals.css.
-*/
 :root {
   --docsearch-primary-color: hsl(var(--primary));
   --docsearch-text-color: hsl(var(--muted-foreground));
@@ -31,7 +20,7 @@
   --docsearch-searchbox-focus-background: hsl(var(--card));
   --docsearch-searchbox-shadow: none;
 
-  /* Hit (Hasil Pencarian) */
+  /* Hit (Search Result) */
   --docsearch-hit-height: 56px;
   --docsearch-hit-color: hsl(var(--foreground));
   --docsearch-hit-active-color: hsl(var(--primary-foreground));
@@ -49,16 +38,12 @@
   --docsearch-footer-shadow: none;
 }
 
-/* -- LANGKAH 2: Gaya untuk Tombol Awal --
-  Gaya ini spesifik untuk tombol yang ada di Navbar, 
-  yang dibungkus oleh <div class="docsearch">.
-*/
 .docsearch .DocSearch-Button {
   background-color: hsl(var(--secondary));
   border: 1px solid hsl(var(--border));
   border-radius: 9999px;
-  width: 260px;
-  height: 40px;
+  width: 250px;
+  height: 35px;
   color: hsl(var(--muted-foreground));
   transition: width 0.3s ease;
   margin: 0;
@@ -86,7 +71,6 @@
 .docsearch .DocSearch-Button-Key {
   background: var(--docsearch-primary-color);
   color: var(--docsearch-logo-color);
-  /* Menggunakan variabel yg relevan */
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
@@ -97,10 +81,6 @@
   top: 0;
 }
 
-/* -- LANGKAH 3: Gaya untuk Modal dan Isinya --
-  Gaya ini menargetkan elemen-elemen modal yang dirender terpisah.
-  Karena variabel sudah global, kita hanya perlu menata elemennya.
-*/
 .DocSearch-Container .DocSearch-Modal {
   backdrop-filter: blur(8px);
 }
@@ -118,7 +98,6 @@
   border-top: 1px solid hsl(var(--border));
 }
 
-/* Gaya untuk tombol keyboard di footer */
 .DocSearch-Footer--commands kbd {
   background-color: hsl(var(--secondary));
   border: 1px solid hsl(var(--border));
@@ -131,7 +110,6 @@
   justify-content: center;
 }
 
-/* Menghilangkan gaya default dari ikon di dalam tombol footer */
 .DocSearch-Commands-Key {
   background: none;
   color: hsl(var(--muted-foreground));
@@ -144,9 +122,6 @@
   border-radius: 6px;
 }
 
-/* -- LANGKAH 4: Gaya Responsif --
-  Tidak ada perubahan, hanya mempertahankan fungsionalitas mobile.
-*/
 @media (max-width: 768px) {
   .docsearch .DocSearch-Button {
     width: 40px;
