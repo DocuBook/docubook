@@ -67,3 +67,4 @@ coverage
 *.cer
 .logs
 .agent
+AGENTS.md

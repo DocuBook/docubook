@@ -1,26 +1,27 @@
-"use client";
+"use client"
 
-import React from "react";
-import { DocSearch } from "@docsearch/react";
+import { DocSearch } from "@docsearch/react"
+import { algoliaConfig } from "@/lib/search/algolia"
+import { cn } from "@/lib/utils"
 
-export default function DocSearchComponent() {
-  const appId = process.env.NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_ID;
-  const apiKey = process.env.NEXT_PUBLIC_ALGOLIA_DOCSEARCH_API_KEY;
-  const indexName = process.env.NEXT_PUBLIC_ALGOLIA_DOCSEARCH_INDEX_NAME;
+interface AlgoliaSearchProps {
+  className?: string
+}
+
+export default function AlgoliaSearch({ className }: AlgoliaSearchProps) {
+  const { appId, apiKey, indexName } = algoliaConfig
 
   if (!appId || !apiKey || !indexName) {
-    console.error(
-      "DocSearch credentials are not set in the environment variables."
-    );
+    console.error("DocSearch credentials are not set in the environment variables.")
     return (
-      <button className="text-sm text-muted-foreground" disabled>
+      <button className="text-muted-foreground text-sm" disabled>
         Search... (misconfigured)
       </button>
-    );
+    )
   }
 
   return (
-    <div className="docsearch">
+    <div className={cn("docsearch", className)}>
       <DocSearch
         appId={appId}
         apiKey={apiKey}
@@ -28,5 +29,5 @@ export default function DocSearchComponent() {
         placeholder="Type something to search..."
       />
     </div>
-  );
+  )
 }
