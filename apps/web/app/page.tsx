@@ -24,7 +24,7 @@ export default function Home() {
           The Universal Documentation Engine for React Framework.
         </h1>
         <p className="mb-8 sm:text-xl text-muted-foreground">
-          An open-source alternative to <span className="underline decoration-dotted" >Mintlify/GitBook/Docusaurus</span>. Just write in MDX — it works with pretty much any React framework.
+          An open-source alternative to <span className="px-1 py-0.5 bg-card" >Mintlify or GitBook</span>. Just write in MDX — it works with pretty much any React framework.
         </p>
       </div>
       <div className="flex flex-row items-center gap-5">
