@@ -4,7 +4,7 @@ description: Learn how to integrate Algolia DocSearch into your documentation.
 date: 09-03-2026
 ---
 
-<Note type="warning" title="Recuired">
+<Note type="note" title="Recuired">
   To use Algolia DocSearch, you need at least DocuBook version 1.15.1 or higher.
 </Note>
 
@@ -44,17 +44,37 @@ Algolia provides `DocSearch` for open-source projects for free. To apply:
     - Your website URL - The selectors for headings and content
   </StepperItem>
   <StepperItem title="Step 3: Submit your request. Once approved, Algolia will provide:">
-    - Application ID - Search API Key - Index Name
+    - Application ID
+    - Search API Key
+    - Index Name
     <Note type="note" title="env.local">
-      Store your environment variables securely by creating a .env.local file 
+      Store your environment variables securely by creating a .env.local file
       ```plaintext
-      NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_ID="your_app_id"
-      NEXT_PUBLIC_ALGOLIA_DOCSEARCH_API_KEY="your_api_key"
-      NEXT_PUBLIC_ALGOLIA_DOCSEARCH_INDEX_NAME="your_index_name"
+        NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_ID="your_app_id"
+        NEXT_PUBLIC_ALGOLIA_DOCSEARCH_API_KEY="your_api_key"
+        NEXT_PUBLIC_ALGOLIA_DOCSEARCH_INDEX_NAME="your_index_name"
       ```
     </Note>
   </StepperItem>
 </Stepper>
+
+## Changes props
+
+Open the `navbar.tsx` file and locate the `<Search />` component :
+
+```tsx
+  <Search type="algolia"/>  // change the props like this
+```
+<Accordion title="Hierarchy Structure" defaultOpen={true}>
+    <Files>
+      <Folder name="components">
+        <Folder name="contexts" />
+        <Folder name="markdown" />
+        <Folder name="ui" />
+        <File name="navbar.tsx" />
+      </Folder>
+    </Files>
+</Accordion>
 
 ## Crawler Editor
 
@@ -73,7 +93,6 @@ Now we will customize the crawler to follow the hierarchy of the docs created by
     <Note type="note" title="attention">
       make sure to add your domain in the `domains` tab in the crawler settings
     </Note>
-
   </StepperItem>
   <StepperItem title="Step 4: Editor">
     On the crawler page, open the `setup` dropdown and select `editor`.
@@ -83,12 +102,12 @@ Now we will customize the crawler to follow the hierarchy of the docs created by
   </StepperItem>
 </Stepper>
 
-copy the entire crawler code below :
-
 <Note type="note" title="Note">
   Pay attention to the **highlighted** parts of the crawler syntax below—these are the sections you
   need to modify.
 </Note>
+
+copy the entire crawler code below :
 
 ```json showLineNumbers {2,5,12,15-16,40,91}
 new Crawler({
