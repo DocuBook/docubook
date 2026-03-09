@@ -4,7 +4,7 @@ description: Learn how to integrate Algolia DocSearch into your documentation.
 date: 09-03-2026
 ---
 
-<Note type="note" title="Recuired">
+<Note type="warning" title="Recuired">
   To use Algolia DocSearch, you need at least DocuBook version 1.15.1 or higher.
 </Note>
 
@@ -57,24 +57,6 @@ Algolia provides `DocSearch` for open-source projects for free. To apply:
     </Note>
   </StepperItem>
 </Stepper>
-
-## Changes props
-
-Open the `navbar.tsx` file and locate the `<Search />` component :
-
-```tsx
-  <Search type="algolia"/>  // change the props like this
-```
-<Accordion title="Hierarchy Structure" defaultOpen={true}>
-    <Files>
-      <Folder name="components">
-        <Folder name="contexts" />
-        <Folder name="markdown" />
-        <Folder name="ui" />
-        <File name="navbar.tsx" />
-      </Folder>
-    </Files>
-</Accordion>
 
 ## Crawler Editor
 
