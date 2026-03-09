@@ -54,6 +54,7 @@ export default function SubLink({
     <Anchor
       activeClassName={!hasActiveChild ? "dark:text-accent text-primary font-medium" : ""}
       href={fullHref}
+      data-search-lvl0={level === 0 && hasActiveChild ? "true" : undefined}
       className={cn(
         "text-foreground/80 hover:text-foreground transition-colors",
         hasActiveChild && "font-medium text-foreground"
@@ -61,7 +62,7 @@ export default function SubLink({
     >
       {title}
     </Anchor>
-  ), [title, fullHref, hasActiveChild]);
+  ), [title, fullHref, hasActiveChild, level]);
 
   const titleOrLink = !noLink ? (
     isSheet ? (
@@ -70,10 +71,13 @@ export default function SubLink({
       Comp
     )
   ) : (
-    <h4 className={cn(
-      "font-medium sm:text-sm text-foreground/90 hover:text-foreground transition-colors",
-      hasActiveChild ? "text-foreground" : "text-foreground/80"
-    )}>
+    <h4
+      data-search-lvl0={level === 0 && hasActiveChild ? "true" : undefined}
+      className={cn(
+        "font-medium sm:text-sm text-foreground/90 hover:text-foreground transition-colors",
+        hasActiveChild ? "text-foreground" : "text-foreground/80"
+      )}
+    >
       {title}
     </h4>
   );
