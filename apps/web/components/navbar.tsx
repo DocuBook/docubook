@@ -33,7 +33,7 @@ export function Navbar({ id }: NavbarProps) {
               <Logo />
             </div>
           </div>
-          <div className="flex items-center md:gap-2 gap-0 max-md:flex-row-reverse">
+          <div className="flex items-center gap-0 max-md:flex-row-reverse md:gap-2">
             <div className="text-muted-foreground hidden items-center gap-4 text-sm font-medium md:flex">
               <NavMenu />
             </div>
@@ -46,14 +46,14 @@ export function Navbar({ id }: NavbarProps) {
               className="flex items-center gap-1 px-2 text-sm font-medium md:hidden"
             >
               {isMenuOpen ? (
-                <ChevronUp className="h-6 w-6 text-muted-foreground" />
+                <ChevronUp className="text-muted-foreground h-6 w-6" />
               ) : (
-                <ChevronDown className="h-6 w-6 text-muted-foreground" />
+                <ChevronDown className="text-muted-foreground h-6 w-6" />
               )}
             </Button>
 
             <Separator className="my-4 hidden h-9 md:flex" orientation="vertical" />
-            <Search type="algolia" />
+            <Search />
             <div className="hidden md:flex">
               <GitHubButton />
             </div>

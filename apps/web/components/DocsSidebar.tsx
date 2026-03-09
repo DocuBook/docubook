@@ -116,16 +116,24 @@ export default function MobToc({ tocs, title }: MobTocProps) {
         exit={{ y: -100, opacity: 0 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
       >
-        <div className="bg-background/95 w-full border-b border-muted shadow-sm backdrop-blur-sm dark:border-foreground/10 dark:bg-background">
+        <div className="bg-background/95 border-muted dark:border-foreground/10 dark:bg-background w-full border-b shadow-sm backdrop-blur-sm">
           <div className="p-2">
             <div className="flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label="Navigation menu">
-                    <MoreVertical className="h-5 w-5 text-muted-foreground" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 shrink-0"
+                    aria-label="Navigation menu"
+                  >
+                    <MoreVertical className="text-muted-foreground h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="flex flex-col gap-1 p-2 min-w-[160px]">
+                <DropdownMenuContent
+                  align="start"
+                  className="flex min-w-[160px] flex-col gap-1 p-2"
+                >
                   <NavMenu />
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -137,20 +145,18 @@ export default function MobToc({ tocs, title }: MobTocProps) {
                 aria-label={isExpanded ? "Collapse table of contents" : "Expand table of contents"}
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium capitalize">
-                    {displayTitle}
-                  </span>
+                  <span className="text-sm font-medium capitalize">{displayTitle}</span>
                 </div>
                 {chevronIcon}
               </Button>
-              <Search type="algolia" />
+              <Search />
               <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="hidden max-lg:flex">
-                    <PanelRight className="h-6 w-6 shrink-0 text-muted-foreground" />
+                    <PanelRight className="text-muted-foreground h-6 w-6 shrink-0" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent className="w-full flex flex-col gap-4 px-0 lg:w-auto" side="right">
+                <SheetContent className="flex w-full flex-col gap-4 px-0 lg:w-auto" side="right">
                   <DialogTitle className="sr-only">Navigation Menu</DialogTitle>
                   <DialogDescription className="sr-only">
                     Main navigation menu with links to different sections

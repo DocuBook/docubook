@@ -1,5 +1,8 @@
 {
   "$schema": "https://docubook.pro/docu.schema.json",
+  "search": {
+    "type": "algolia"
+  },
   "navbar": {
     "logo": {
       "src": "/images/docu.svg",
