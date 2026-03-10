@@ -84,26 +84,26 @@ Now we will customize the crawler to follow the hierarchy of the docs created by
 
 copy the entire crawler code below :
 
-> Pay attention to the **highlighted** parts of the crawler syntax below—these are the sections you
+> Pay attention to the <span className="text-red-500 font-bold">highlighted</span> parts of the crawler syntax below—these are the sections you
 > need to modify.
 
-```javascript:index.js showLineNumbers {2,5,12,15-16,46,97}
+```javascript:index.js showLineNumbers {2,5,12,15-16,62,113}
 new Crawler({
-  appId: "", // changes appId
+  appId: "5CCY***", // changes appId
   indexPrefix: "",
   rateLimit: 8,
-  startUrls: ["https://www.docubook.pro"], // your domain
+  startUrls: ["https://www.docubook.pro"], // changes to your domain
   renderJavaScript: true, // Switched to true for Next.js
   maxDepth: 10,
   maxUrls: 8000,
   schedule: "every 1 day at 02:00 am", // Recommended daily schedule
   sitemaps: [],
   ignoreCanonicalTo: true,
-  discoveryPatterns: ["https://www.docubook.pro/**"], // your domain
+  discoveryPatterns: ["https://www.docubook.pro/**"], // changes to your domain
   actions: [
     {
-      indexName: "docs.crawler",
-      pathsToMatch: ["https://www.docubook.pro/**"], // your domain
+      indexName: "docs.crawler", // changes crawler name
+      pathsToMatch: ["https://www.docubook.pro/**"], // changes to your domain
       recordExtractor: ({ $, helpers }) => {
         // Prefer the specific data attribute, fall back to breadcrumb
         const lvl0 =
@@ -149,7 +149,7 @@ new Crawler({
   ],
   safetyChecks: { beforeIndexPublishing: { maxLostRecordsPercentage: 10 } },
   initialIndexSettings: {
-    "docs.crawler": {
+    "docs.crawler": { // changes crawler name
       attributesForFaceting: ["type", "lang"],
       attributesToRetrieve: [
         "hierarchy",
@@ -200,7 +200,7 @@ new Crawler({
       removeWordsIfNoResults: "allOptional",
     },
   },
-  apiKey: "", // your crawler apiKey
+  apiKey: "01469***", // changes crawler apiKey
 });
 ```
 
