@@ -78,6 +78,7 @@
         {
           "title": "Theme Colors",
           "href": "/theme-colors",
+          "noLink": true,
           "items": [
             { "title": "Default", "href": "/default" },
             { "title": "Fresh Lime", "href": "/freshlime" },
