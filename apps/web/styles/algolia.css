@@ -42,7 +42,7 @@
   background-color: hsl(var(--secondary));
   border: 1px solid hsl(var(--border));
   border-radius: 9999px;
-  width: 250px;
+  width: 230px;
   height: 35px;
   color: hsl(var(--muted-foreground));
   transition: width 0.3s ease;
@@ -98,6 +98,27 @@
   border-top: 1px solid hsl(var(--border));
 }
 
+.dark .DocSearch-Footer .DocSearch-Label {
+  color: var(--docsearch-muted-color);
+}
+
+.dark button.DocSearch-Action.DocSearch-Close {
+  color: var(--docsearch-muted-color);
+}
+
+.dark .DocSearch-Hit-Container .DocSearch-Hit-icon {
+  color: var(--docsearch-muted-color);
+}
+
+.dark .DocSearch-Hit[aria-selected="true"] .DocSearch-Hit-Container .DocSearch-Hit-icon,
+.dark .DocSearch-Hit[aria-selected="true"] .DocSearch-Hit-action {
+  color: var(--docsearch-highlight-color);
+}
+
+.dark .DocSearch-Hit-Container .DocSearch-Hit-path {
+  color: var(--docsearch-muted-color);
+}
+
 .DocSearch-Footer--commands kbd {
   background-color: hsl(var(--secondary));
   border: 1px solid hsl(var(--border));
@@ -115,7 +136,7 @@
   color: hsl(var(--muted-foreground));
   border: 1px solid hsl(var(--border));
   box-shadow: none;
-  padding: 2px 4px;
+  padding: 4px 8px;
   margin-right: 0.4em;
   height: 20px;
   width: 32px;
