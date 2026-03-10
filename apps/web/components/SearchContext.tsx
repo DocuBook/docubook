@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { searchConfig } from "@/lib/search/config";
 
 interface SearchContextType {
   isOpen: boolean;
@@ -18,6 +19,9 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Only add keyboard shortcut for default search, not Algolia (Algolia handles its own)
+    if (searchConfig.type === "algolia") return;
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key === "k") {
         event.preventDefault();
