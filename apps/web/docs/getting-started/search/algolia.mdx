@@ -111,6 +111,8 @@ new Crawler({
           $("nav[aria-label='breadcrumb'] li:nth-child(3)").text().trim() ||
           "Docs";
 
+        const layoutAnchors = ["scroll-container", "main-navbar"];
+
         return helpers
           .docsearch({
             recordProps: {
@@ -119,7 +121,7 @@ new Crawler({
                 defaultValue: lvl0,
               },
               // Limit H1 extraction to the document content area.
-              // This avoids anchors like #scroll-container from layout wrappers.
+              // This avoids layout anchors like #scroll-container or #main-navbar.
               lvl1: ["article h1", "main h1"],
               content: ["article p, article li", "main p, main li", "p, li"],
               lvl2: ["article h2", "main h2", "h2"],
@@ -132,13 +134,14 @@ new Crawler({
             recordVersion: "v3",
           })
           .map((record) => {
-            if (record.anchor !== "scroll-container") return record;
+            if (!layoutAnchors.includes(record.anchor)) return record;
 
             return {
               ...record,
               anchor: undefined,
-              url: record.url?.replace(/#scroll-container$/, ""),
-              url_without_anchor: record.url_without_anchor || record.url?.split("#")[0],
+              url: record.url ? record.url.replace(/#(scroll-container|main-navbar)$/, "") : record.url,
+              url_without_anchor:
+                record.url_without_anchor || (record.url ? record.url.split("#")[0] : record.url),
             };
           });
       },
