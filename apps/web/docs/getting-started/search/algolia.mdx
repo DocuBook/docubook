@@ -75,9 +75,6 @@ Now we will customize the crawler to follow the hierarchy of the docs created by
   </StepperItem>
   <StepperItem title="Step 4: Editor">
     On the crawler page, open the `setup` dropdown and select `editor`.
-
-    ![crawler editor](/images/crawler-algolia.png)
-
   </StepperItem>
 </Stepper>
 </div>
@@ -87,6 +84,7 @@ copy the entire crawler code below :
 > Pay attention to the <span className="text-red-500 font-bold">highlighted</span> parts of the crawler syntax below—these are the sections you
 > need to modify.
 
+<Accordion title="crawler editor">
 ```javascript:index.js showLineNumbers {2,5,12,15-16,62,113}
 new Crawler({
   appId: "5CCY***", // changes appId
@@ -203,13 +201,12 @@ new Crawler({
   apiKey: "01469***", // changes crawler apiKey
 });
 ```
+</Accordion>
 
 ## Vercel
 
 If you are deploying your DocuBook project using the Vercel platform, here are the steps to bring
 your local environment variables to production:
-
-![environment variables](/images/env-vercel.png)
 
 | **key**                                          | **value**           |
 | ------------------------------------------------ | ------------------- |
