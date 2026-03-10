@@ -9,13 +9,14 @@
   --docsearch-logo-color: hsl(var(--primary-foreground));
 
   /* Modal */
-  --docsearch-modal-width: 560px;
+  --docsearch-modal-width: 800px;
   --docsearch-modal-height: 600px;
   --docsearch-modal-background: hsl(var(--background));
   --docsearch-modal-shadow: 0 0 0 1px hsl(var(--border)), 0 8px 20px rgba(0, 0, 0, 0.2);
 
   /* SearchBox */
-  --docsearch-searchbox-height: 56px;
+  --docsearch-searchbox-width: 230px;
+  --docsearch-searchbox-height: 35px;
   --docsearch-searchbox-background: hsl(var(--input));
   --docsearch-searchbox-focus-background: hsl(var(--card));
   --docsearch-searchbox-shadow: none;
@@ -42,8 +43,8 @@
   background-color: hsl(var(--secondary));
   border: 1px solid hsl(var(--border));
   border-radius: 9999px;
-  width: 230px;
-  height: 35px;
+  width: var(--docsearch-searchbox-width);
+  height: var(--docsearch-searchbox-height);
   color: hsl(var(--muted-foreground));
   transition: width 0.3s ease;
   margin: 0;
