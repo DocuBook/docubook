@@ -1,6 +1,7 @@
 "use client"
 
 import { DocSearch } from "@docsearch/react"
+import "@docsearch/css"
 import { algoliaConfig } from "@/lib/search/algolia"
 import { cn } from "@/lib/utils"
 
@@ -9,7 +10,7 @@ interface AlgoliaSearchProps {
 }
 
 export default function AlgoliaSearch({ className }: AlgoliaSearchProps) {
-  const { appId, apiKey, indexName } = algoliaConfig
+  const { appId, apiKey, indexName, askAiAssistantId } = algoliaConfig
 
   if (!appId || !apiKey || !indexName) {
     console.error("DocSearch credentials are not set in the environment variables.")
@@ -26,7 +27,15 @@ export default function AlgoliaSearch({ className }: AlgoliaSearchProps) {
         appId={appId}
         apiKey={apiKey}
         indexName={indexName}
-        placeholder="Type something to search..."
+        placeholder="Search docs..."
+        askAi={
+          askAiAssistantId
+            ? {
+                assistantId: askAiAssistantId,
+                suggestedQuestions: true,
+              } as const
+            : undefined
+        }
       />
     </div>
   )
