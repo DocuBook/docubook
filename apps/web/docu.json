@@ -76,16 +76,6 @@
         { "title": "Quick Start Guide", "href": "/quick-start-guide" },
         { "title": "Customize", "href": "/customize" },
         {
-          "title": "Theme Colors",
-          "href": "/theme-colors",
-          "items": [
-            { "title": "Default", "href": "/default" },
-            { "title": "Fresh Lime", "href": "/freshlime" },
-            { "title": "Coffee", "href": "/coffee" },
-            { "title": "llms", "href": "/llms" }
-          ]
-        },
-        {
           "title": "Search",
           "href": "/search",
           "items": [{ "title": "Algolia", "href": "/algolia" }]
