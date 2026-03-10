@@ -35,7 +35,15 @@ public static void main(String[] args) {
 </Accordion>
 </AccordionGroup>
 
-## Writing Markdown
+## Props
+
+| Prop       | Type      | Default   | Description                                                                                                   |
+| ---------- | --------- | --------- | ------------------------------------------------------------------------------------------------------------- |
+| `title`    | string    | -         | **Required**. The text displayed in the accordion header.                                                     |
+| `children` | ReactNode | null      | The content to be displayed when the accordion is expanded. Can be plain text, markdown, or React components. |
+| `icon`     | string    | undefined | Optional. Adds a Lucide icon before the title in the accordion header.                                        |
+
+## Output Markdown
 
 ````plaintext
 <AccordionGroup>
@@ -59,11 +67,3 @@ public static void main(String[] args) {
 </Accordion>
 </AccordionGroup>
 ````
-
-## Props
-
-| Prop       | Type      | Default   | Description                                                                                                   |
-| ---------- | --------- | --------- | ------------------------------------------------------------------------------------------------------------- |
-| `title`    | string    | -         | **Required**. The text displayed in the accordion header.                                                     |
-| `children` | ReactNode | null      | The content to be displayed when the accordion is expanded. Can be plain text, markdown, or React components. |
-| `icon`     | string    | undefined | Optional. Adds a Lucide icon before the title in the accordion header.                                        |

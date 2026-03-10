@@ -36,16 +36,6 @@ The `Release` component is used to display key information about a release versi
 | `date` | string | ❌ | Release date in a valid format (example: "2025-05-24") |
 | `children` | ReactNode | ✅ | Child content, typically `Changes` components |
 
-```markdown:.mdx
-<Release
-  version="1.10.1"
-  date="2025-05-24"
-  title="Accessibility Improvements and Bug Fixes"
->
-  {/* Changes content here */}
-</Release>
-```
-
 ## Changes Component
 
 The `Changes` component is used to group changes by category with appropriate icons and colors.
@@ -66,20 +56,6 @@ The `Changes` component is used to group changes by category with appropriate ic
 | `improved` | Enhancements or optimizations to existing features |
 | `deprecated` | Features that are not recommended and may be removed in future |
 | `removed` | Features that have been completely removed |
-
-### Changes Example
-
-```markdown:.mdx
-<Changes type="added">
-  - New feature to improve accessibility
-  - Keyboard navigation support for dialog components
-</Changes>
-
-<Changes type="fixed">
-  - Bug fix for mobile menu
-  - Fixed loading issues on documentation pages
-</Changes>
-```
 
 ## Complete Implementation
 

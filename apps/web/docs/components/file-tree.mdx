@@ -8,7 +8,7 @@ The File Tree component allows you to display hierarchical file structures in yo
 
 ## Basic Usage
 
-```
+```tsx:index.tsx
 <Files>
   <Folder name="src">
     <File name="App.tsx" />
@@ -43,54 +43,22 @@ Render As:
 
 ## Props
 
-### Files
-
-The root component that wraps the entire file tree.
-
-### Folder
-
-| Prop     | Type     | Required | Description                           |
-|----------|----------|----------|---------------------------------------|
-| `name`     | string   | Yes      | The name of the folder                |
-| `children` | ReactNode | No      | Child elements (File or Folder)       |
-
-### File
-
-| Prop | Type   | Required | Description                |
-|------|--------|----------|----------------------------|
-| `name` | string | Yes      | The name of the file       |
-
-
-## Examples
-
-### Nested Folder Structure
-
-```
-<Files>
-  <Folder name="project-root">
-    <File name="package.json" />
-    <File name="tsconfig.json" />
-    <Folder name="src">
-      <File name="index.ts" />
-      <Folder name="components">
-        <File name="Button.tsx" />
-        <File name="Card.tsx" />
-      </Folder>
-    </Folder>
-  </Folder>
-</Files>
-```
-
-### Minimal Example
-
-```
-<Files>
-  <Folder name="components">
-    <File name="Button.tsx" />
-    <File name="Input.tsx" />
-  </Folder>
-</Files>
-```
+<Stepper>
+  <StepperItem title="Files">
+    > The root component that wraps the entire file tree.
+  </StepperItem>
+  <StepperItem title="Folder">
+    | Prop     | Type     | Required | Description                           |
+    |----------|----------|----------|---------------------------------------|
+    | `name`     | string   | Yes      | The name of the folder                |
+    | `children` | ReactNode | No      | Child elements (File or Folder)       |
+  </StepperItem>
+  <StepperItem title="File">
+    | Prop | Type   | Required | Description                |
+    |------|--------|----------|----------------------------|
+    | `name` | string | Yes      | The name of the file       |
+  </StepperItem>
+</Stepper>
 
 ## Best Practices
 
