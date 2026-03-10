@@ -4,98 +4,300 @@ description: This page explains the Modern Blue theme colors used in DocuBook, w
 date: 20-05-2025
 ---
 
-## Styles
-<Note type="note" title="note">
-  You can override the default styles by adding your own CSS variables in the `globals.css` and `syntax.css` files.
-</Note>
+> You can override the default styles by adding your own CSS variables in the `globals.css` and `overrides.css` files to apply `default theme`.
 
 <Tabs defaultValue="globals" className="pt-5 pb-1">
   <TabsList>
     <TabsTrigger value="globals">globals.css</TabsTrigger>
-    <TabsTrigger value="syntax">syntax.css</TabsTrigger>
+    <TabsTrigger value="overrides">overrides.css</TabsTrigger>
   </TabsList>
   <TabsContent value="globals">
-    ```css:globals.css
-    /* Modern Blue Theme */
-@layer base {
-    :root {
-        --background: 210 40% 98%;
-        --foreground: 220 30% 15%;
-        --card: 0 0% 100%;
-        --card-foreground: 220 30% 15%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 220 30% 15%;
-        --primary: 210 81% 56%; /* #2281E3 */
-        --primary-foreground: 0 0% 100%;
-        --secondary: 210 30% 90%;
-        --secondary-foreground: 220 30% 15%;
-        --muted: 210 20% 92%;
-        --muted-foreground: 220 15% 50%;
-        --accent: 200 100% 40%;
-        --accent-foreground: 0 0% 100%;
-        --destructive: 0 85% 60%;
-        --destructive-foreground: 0 0% 100%;
-        --border: 210 20% 85%;
-        --input: 210 20% 85%;
-        --ring: 210 81% 56%;
-        --radius: 0.5rem;
-        --chart-1: 210 81% 56%;
-        --chart-2: 200 100% 40%;
-        --chart-3: 220 76% 60%;
-        --chart-4: 190 90% 50%;
-        --chart-5: 230 86% 45%;
-        --line-number-color: rgba(0, 0, 0, 0.05);
-        }
+```css:globals.css showLineNumbers{128-187}
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
 
-    .dark {
-        --background: 220 25% 10%;
-        --foreground: 210 30% 96%;
-        --card: 220 25% 15%;
-        --card-foreground: 210 30% 96%;
-        --popover: 220 25% 15%;
-        --popover-foreground: 210 30% 96%;
-        --primary: 210 100% 65%;
-        --primary-foreground: 220 25% 10%;
-        --secondary: 215 25% 20%;
-        --secondary-foreground: 210 30% 96%;
-        --muted: 215 20% 25%;
-        --muted-foreground: 215 20% 65%;
-        --accent: 200 100% 60%;
-        --accent-foreground: 0 0% 100%;
-        --destructive: 0 85% 70%;
-        --destructive-foreground: 0 0% 100%;
-        --border: 215 20% 25%;
-        --input: 215 20% 25%;
-        --ring: 210 100% 65%;
-        --chart-1: 210 100% 65%;
-        --chart-2: 200 100% 60%;
-        --chart-3: 220 90% 70%;
-        --chart-4: 190 100% 65%;
-        --chart-5: 230 90% 60%;
-        --line-number-color: rgba(255, 255, 255, 0.1);
-        }
+
+@custom-variant dark (&:is(.dark *));
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+
+  @media (width >=--theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+
+  @media (width >=1440px) {
+    max-width: 1440px;
+  }
+}
+
+@theme {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --font-code: var(--font-geist-mono);
+  --font-regular: var(--font-geist-sans);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-shiny-text: shiny-text 8s infinite;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
+  }
+
+  @keyframes shiny-text {
+
+    0%,
+    90%,
+    100% {
+      background-position: calc(-100% - var(--shiny-width)) 0;
+    }
+
+    30%,
+    60% {
+      background-position: calc(100% + var(--shiny-width)) 0;
+    }
+  }
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility animate-shine {
+  --animate-shine: shine var(--duration) infinite linear;
+  animation: var(--animate-shine);
+  background-size: 200% 200%;
+}
+
+/* Modern Blue Theme - start here */
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 220 30% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 30% 15%;
+    --primary: 210 81% 56%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 30% 90%;
+    --secondary-foreground: 220 30% 15%;
+    --muted: 210 20% 92%;
+    --muted-foreground: 220 15% 50%;
+    --accent: 200 100% 40%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 20% 85%;
+    --input: 210 20% 85%;
+    --ring: 210 81% 56%;
+    --radius: 0.5rem;
+    --chart-1: 210 81% 56%;
+    --chart-2: 200 100% 40%;
+    --chart-3: 220 76% 60%;
+    --chart-4: 190 90% 50%;
+    --chart-5: 230 86% 45%;
+    --line-number-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .dark {
+    --background: 220 25% 10%;
+    --foreground: 210 30% 96%;
+    --card: 220 25% 15%;
+    --card-foreground: 210 30% 96%;
+    --popover: 220 25% 15%;
+    --popover-foreground: 210 30% 96%;
+    --primary: 210 100% 65%;
+    --primary-foreground: 220 25% 10%;
+    --secondary: 215 25% 20%;
+    --secondary-foreground: 210 30% 96%;
+    --muted: 215 20% 25%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 200 100% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 85% 70%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 215 20% 25%;
+    --input: 215 20% 25%;
+    --ring: 210 100% 65%;
+    --chart-1: 210 100% 65%;
+    --chart-2: 200 100% 60%;
+    --chart-3: 220 90% 70%;
+    --chart-4: 190 100% 65%;
+    --chart-5: 230 90% 60%;
+    --line-number-color: rgba(255, 255, 255, 0.1);
+  }
+}
+/* Modern Blue Theme - end here */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .prose {
+    margin: 0 !important;
+  }
+
+  pre {
+    padding: 2px 0 !important;
+    width: inherit !important;
+    overflow-x: auto;
+  }
+
+  pre>code {
+    display: grid;
+    max-width: inherit !important;
+    padding: 14px 0 !important;
+    border: 0 !important;
+  }
+
+  .code-line {
+    padding: 0.75px 16px;
+    @apply border-l-2 border-transparent;
+  }
+
+  .line-number::before {
+    display: inline-block;
+    width: 1rem;
+    margin-right: 22px;
+    margin-left: -2px;
+    color: rgb(110, 110, 110);
+    content: attr(line);
+    font-size: 13.5px;
+    text-align: right;
+  }
+
+  .highlight-line {
+    @apply bg-primary/5 border-l-2 border-primary/30;
+  }
+
+  .rehype-code-title {
+    @apply px-2 -mb-8 w-full text-sm pb-5 font-medium mt-5 font-code;
+  }
+
+  .highlight-comp>code {
+    background-color: transparent !important;
+  }
+}
+
+@layer utilities {
+
+  @keyframes shine {
+    0% {
+      background-position: 0% 0%;
+    }
+
+    50% {
+      background-position: 100% 100%;
+    }
+
+    100% {
+      background-position: 0% 0%;
+    }
+  }
 }
 ```
 </TabsContent>
 
-  <TabsContent value="syntax">
-    ```css:syntax.css
-/* Modern Blue Theme */
-/* Light Mode */
+  <TabsContent value="overrides">
+```css:overrides.css showLineNumbers{1-91}
+/* Modern Blue Theme - start here */
 .keyword {
-  color: #1d4ed8; /* Darker blue for better contrast */
+  color: #1d4ed8;
+  /* Darker blue for better contrast */
 }
 
 .function {
-  color: #0369a1; /* Deep blue */
+  color: #0369a1;
+  /* Deep blue */
 }
 
 .punctuation {
-  color: #4b5563; /* Slate gray */
+  color: #4b5563;
+  /* Slate gray */
 }
 
 .comment {
-  color: #6b7280; /* Muted gray */
+  color: #6b7280;
+  /* Muted gray */
   font-style: italic;
 }
 
@@ -104,28 +306,34 @@ date: 20-05-2025
 .annotation,
 .boolean,
 .number {
-  color: #0d9488; /* Teal for better distinction */
+  color: #0d9488;
+  /* Teal for better distinction */
 }
 
 .tag {
-  color: #1d4ed8; /* Matching keyword color */
+  color: #1d4ed8;
+  /* Matching keyword color */
 }
 
 .attr-name {
-  color: #0284c7; /* Sky blue */
+  color: #0284c7;
+  /* Sky blue */
 }
 
 .attr-value {
-  color: #2563eb; /* Primary blue */
+  color: #2563eb;
+  /* Primary blue */
 }
 
 /* Dark Mode */
 .dark .keyword {
-  color: #60a5fa; /* Soft blue */
+  color: #60a5fa;
+  /* Soft blue */
 }
 
 .dark .function {
-  color: #38bdf8; /* Sky blue */
+  color: #38bdf8;
+  /* Sky blue */
 }
 
 .dark .string,
@@ -133,27 +341,165 @@ date: 20-05-2025
 .dark .annotation,
 .dark .boolean,
 .dark .number {
-  color: #2dd4bf; /* Teal */
+  color: #2dd4bf;
+  /* Teal */
 }
 
 .dark .tag {
-  color: #60a5fa; /* Matching keyword color */
+  color: #60a5fa;
+  /* Matching keyword color */
 }
 
 .dark .attr-name {
-  color: #7dd3fc; /* Lighter blue */
+  color: #7dd3fc;
+  /* Lighter blue */
 }
 
 .dark .attr-value {
-  color: #3b82f6; /* Brighter blue */
+  color: #3b82f6;
+  /* Brighter blue */
 }
 
 .dark .comment {
-  color: #9ca3af; /* Lighter gray for dark mode */
+  color: #9ca3af;
+  /* Lighter gray for dark mode */
 }
 
 .dark .punctuation {
-  color: #9ca3af; /* Lighter gray for dark mode */
+  color: #9ca3af;
+  /* Lighter gray for dark mode */
+}
+/* Modern Blue Theme - end here */
+
+/* ======================================================================== */
+/* Custom styling for code blocks */
+/* ======================================================================== */
+
+.code-block-container {
+  position: relative;
+  margin: 1.5rem 0;
+  border: 1px solid hsl(var(--border));
+  overflow: hidden;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: hsl(var(--muted));
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid hsl(var(--border));
+  color: hsl(var(--muted-foreground));
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.code-block-actions {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  z-index: 10;
+}
+
+.code-block-actions button {
+  color: hsl(var(--muted-foreground));
+  transition: color 0.2s ease-in-out;
+}
+
+.code-block-actions button:hover {
+  color: hsl(var(--foreground));
+}
+
+
+.code-block-body pre[class*="language-"] {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.line-numbers-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3rem;
+  padding-top: 1rem;
+  text-align: right;
+  color: var(--line-number-color);
+  user-select: none;
+}
+
+.line-highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: hsl(var(--primary) / 0.1);
+  border-left: 2px solid hsl(var(--primary));
+  pointer-events: none;
+}
+
+.code-block-body pre[data-line-numbers="true"] .line-highlight {
+  padding-left: 3.5rem;
+}
+
+.code-block-body::-webkit-scrollbar {
+  height: 8px;
+}
+
+.code-block-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.code-block-body::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+
+.code-block-body::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted));
+}
+
+/* ======================================================================== */
+/* Custom styling for youtube blocks */
+/* ======================================================================== */
+.youtube {
+  position: relative;
+  padding-bottom: 56.25%;
+  /* Aspect Ratio 16:9 */
+  height: 0;
+  overflow: hidden;
+  background: #000;
+  /* Black background to blend the player */
+  border-radius: 8px;
+  /* Rounded corners */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  /* Soft shadow */
+}
+
+.youtube iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 8px;
+  /* Rounded corners on iframe */
+}
+
+/* Hide main navbar and footer when docs layout is active */
+body:has(.docs-layout) #main-navbar,
+body:has(.docs-layout) #main-footer {
+  display: none;
+}
+
+/* Remove container constraints for docs pages */
+body:has(.docs-layout) #main-content {
+  max-width: none;
+  width: 100%;
+  padding: 0;
+  margin: 0;
 }
 ```
 </TabsContent>

@@ -1,5 +1,5 @@
 ---
-title: Llms.txt - Generate Custom Theme
+title: Llms
 description: Complete guide for creating and using AI-generated custom themes based on LLMS context.
 date: 31-05-2025
 ---
@@ -8,10 +8,11 @@ date: 31-05-2025
 This document explains how to create and implement custom color themes using AI with LLMS context. The context includes a consistent color palette for both light and dark modes, along with syntax highlighting colors for code.
 
 ## File Structure
+
 <Files>
    <Folder name="styles">
      <File name="globals.css" />
-     <File name="syntax.css" />
+     <File name="overrides.css" />
    </Folder>
 </Files>
 
@@ -37,9 +38,7 @@ This document explains how to create and implement custom color themes using AI 
     3. Include variants for both light and dark modes
     4. Keep the same structure as the provided context
     ```
-<Note type="danger" title="Colors example">
-changes the value of Hex color `#2281E3` into your brand colors.
-</Note>
+    > changes the value of Hex color `#2281E3` into your brand colors.
   </StepperItem>
 </Stepper>
 
@@ -48,7 +47,7 @@ After receiving the new color palette:
 
 1. Copy the generated CSS code to your theme file
 2. Update CSS variables in `globals.css`
-3. Adjust syntax colors in `syntax.css` if needed
+3. Adjust syntax colors in `overrides.css` if needed
 4. Test the theme across different devices and display modes
 
 ## Example Implementation
