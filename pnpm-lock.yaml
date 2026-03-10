@@ -43,7 +43,7 @@ importers:
   apps/web:
     dependencies:
       '@docsearch/css':
-        specifier: ^4.0.0
+        specifier: ^4.6.0
         version: 4.6.0
       '@docsearch/react':
         specifier: ^4.0.0
