@@ -82,7 +82,7 @@
             { "title": "Default", "href": "/default" },
             { "title": "Fresh Lime", "href": "/freshlime" },
             { "title": "Coffee", "href": "/coffee" },
-            { "title": "llms.txt", "href": "/llms" }
+            { "title": "llms", "href": "/llms" }
           ]
         },
         {
