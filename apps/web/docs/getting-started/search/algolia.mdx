@@ -25,7 +25,7 @@ This will automatically apply Algolia search across all search components in you
 > **Built-in Search**
 >
 > To use the built-in search instead, set `"type": "default"` or remove the `search` configuration
-entirely.
+> entirely.
 
 ## Apply for DocSearch
 
@@ -71,6 +71,7 @@ Now we will customize the crawler to follow the hierarchy of the docs created by
     Please navigate to the "Crawler" tab, where you will see a list of crawlers. Then, click on the name of the crawler you want to customize.
 
     > make sure to add your domain in the `domains` tab in the crawler settings
+
   </StepperItem>
   <StepperItem title="Step 4: Editor">
     On the crawler page, open the `setup` dropdown and select `editor`.
@@ -84,7 +85,7 @@ Now we will customize the crawler to follow the hierarchy of the docs created by
 copy the entire crawler code below :
 
 > Pay attention to the **highlighted** parts of the crawler syntax below—these are the sections you
-need to modify.
+> need to modify.
 
 ```javascript:index.js showLineNumbers {2,5,12,15-16,46,97}
 new Crawler({
@@ -110,23 +111,39 @@ new Crawler({
           $("nav[aria-label='breadcrumb'] li:nth-child(3)").text().trim() ||
           "Docs";
 
-        return helpers.docsearch({
-          recordProps: {
-            lvl0: {
-              selectors: "",
-              defaultValue: lvl0,
+        const layoutAnchors = ["scroll-container", "main-navbar"];
+
+        return helpers
+          .docsearch({
+            recordProps: {
+              lvl0: {
+                selectors: "",
+                defaultValue: lvl0,
+              },
+              // Limit H1 extraction to the document content area.
+              // This avoids layout anchors like #scroll-container or #main-navbar.
+              lvl1: ["article h1", "main h1"],
+              content: ["article p, article li", "main p, main li", "p, li"],
+              lvl2: ["article h2", "main h2", "h2"],
+              lvl3: ["article h3", "main h3", "h3"],
+              lvl4: ["article h4", "main h4", "h4"],
+              lvl5: ["article h5", "main h5", "h5"],
+              lvl6: ["article h6", "main h6", "h6"],
             },
-            lvl1: ["header h1", "article h1", "main h1", "h1"],
-            content: ["article p, article li", "main p, main li", "p, li"],
-            lvl2: ["article h2", "main h2", "h2"],
-            lvl3: ["article h3", "main h3", "h3"],
-            lvl4: ["article h4", "main h4", "h4"],
-            lvl5: ["article h5", "main h5", "h5"],
-            lvl6: ["article h6", "main h6", "h6"],
-          },
-          aggregateContent: true,
-          recordVersion: "v3",
-        });
+            aggregateContent: true,
+            recordVersion: "v3",
+          })
+          .map((record) => {
+            if (!layoutAnchors.includes(record.anchor)) return record;
+
+            return {
+              ...record,
+              anchor: undefined,
+              url: record.url ? record.url.replace(/#(scroll-container|main-navbar)$/, "") : record.url,
+              url_without_anchor:
+                record.url_without_anchor || (record.url ? record.url.split("#")[0] : record.url),
+            };
+          });
       },
     },
   ],
@@ -194,11 +211,11 @@ your local environment variables to production:
 
 ![environment variables](/images/env-vercel.png)
 
-| **key**                                          | **value**                    |
-| ------------------------------------------------ | ---------------------------- |
-| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_ID             | `your_app_id`                |
-| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_KEY            | `your_api_key`               |
-| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_INDEX_NAME         | `your_index_name`            |
-| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_ASKAI_ASSISTANT_ID | `your_assistant_id`          |
+| **key**                                          | **value**           |
+| ------------------------------------------------ | ------------------- |
+| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_ID             | `your_app_id`       |
+| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_KEY            | `your_api_key`      |
+| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_INDEX_NAME         | `your_index_name`   |
+| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_ASKAI_ASSISTANT_ID | `your_assistant_id` |
 
 or you can import the .env.local file
