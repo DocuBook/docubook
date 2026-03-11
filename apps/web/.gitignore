@@ -11,11 +11,8 @@ out
 .env
 .env.*
 !.env.example
-.crawler
 
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
 
-# DocuBook
-/themes

@@ -67,4 +67,5 @@ coverage
 *.cer
 .logs
 .agent
-AGENTS.md
+# .github
+# AGENTS.md
