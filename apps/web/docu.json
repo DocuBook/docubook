@@ -79,7 +79,9 @@
         {
           "title": "Search",
           "href": "/search",
-          "items": [{ "title": "Algolia", "href": "/algolia" }]
+          "items": [
+            { "title": "Algolia", "href": "/algolia" }
+          ]
         }
       ]
     },
@@ -112,16 +114,6 @@
         { "title": "Youtube", "href": "/youtube" },
         { "title": "Custom", "href": "/custom" }
       ]
-    },
-    {
-      "title": "Release",
-      "href": "/changelog",
-      "noLink": true,
-      "context": {
-        "icon": "History",
-        "description": "Updates and changes",
-        "title": "Changelog"
-      }
     }
   ]
 }
