@@ -101,6 +101,10 @@
   overflow: hidden;
   font-size: 0.875rem;
   border-radius: 0.75rem;
+  /* Force GPU compositing layer to prevent white flash/flicker on mobile
+     when the inner scrollable element is scrolled horizontally */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 .code-block-header {
@@ -160,6 +164,22 @@
 
 .code-block-body pre[data-line-numbers="true"] .line-highlight {
   padding-left: 3.5rem;
+}
+
+.code-block-body {
+  /* Make the body the scroll container (the custom scrollbar CSS targets this element) */
+  overflow-x: auto;
+  /* Prevent horizontal scroll from propagating to the page on mobile */
+  overscroll-behavior-x: contain;
+}
+
+/* Override globals.css `pre { overflow-x: auto; width: inherit !important }` inside code blocks.
+   The body is now the scroll container, so pre must be allowed to expand beyond it. */
+.code-block-body pre {
+  overflow-x: visible;
+  /* Expand to fit content width, but fill at least the full container */
+  width: max-content !important;
+  min-width: 100%;
 }
 
 .code-block-body::-webkit-scrollbar {
