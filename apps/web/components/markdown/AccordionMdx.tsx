@@ -53,7 +53,18 @@ const Accordion: React.FC<AccordionProps> = ({ title, children, icon }: Accordio
         <h3 className="text-foreground m-0! text-base font-medium">{title}</h3>
       </button>
 
-      {isOpen && <div className="dark:bg-muted/10 bg-muted/15 px-4 py-3">{children}</div>}
+      {/* Always keep children mounted to avoid expensive DOM insertion on mobile.
+          grid-template-rows transition collapses/expands without repaint. */}
+      <div
+        className={cn(
+          "grid transition-[grid-template-rows] duration-200 ease-out",
+          isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="dark:bg-muted/10 bg-muted/15 px-4 py-3">{children}</div>
+        </div>
+      </div>
     </div>
   )
 }
