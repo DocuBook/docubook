@@ -101,10 +101,6 @@
   overflow: hidden;
   font-size: 0.875rem;
   border-radius: 0.75rem;
-  /* Force GPU compositing layer to prevent white flash/flicker on mobile
-     when the inner scrollable element is scrolled horizontally */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
 }
 
 .code-block-header {
@@ -171,6 +167,12 @@
   overflow-x: auto;
   /* Prevent horizontal scroll from propagating to the page on mobile */
   overscroll-behavior-x: contain;
+  /* Explicit background prevents iOS Safari from using white as the default
+     when creating a compositing layer for this scrollable element */
+  background-color: hsl(var(--background));
+  /* Promote the SCROLLING element (not its container) to its own GPU layer.
+     This lets iOS scroll without re-painting the parent's overflow/border-radius clip. */
+  will-change: transform;
 }
 
 /* Override globals.css `pre { overflow-x: auto; width: inherit !important }` inside code blocks.

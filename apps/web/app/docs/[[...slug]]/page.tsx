@@ -80,7 +80,7 @@ export default async function DocsPage(props: PageProps) {
 
   return (
     <div className="flex w-full flex-1 px-0 pb-4 lg:px-8 lg:pb-8 lg:h-[calc(100vh-4rem)]">
-      <div id="scroll-container" className="max-lg:scroll-p-54 bg-card dark:bg-card/20 border-muted-foreground/20 flex w-full flex-col items-start lg:h-full lg:rounded-xl rounded-b-3xl border shadow-md backdrop-blur-sm lg:flex-row lg:overflow-y-auto relative">
+      <div id="scroll-container" className="max-lg:scroll-p-54 bg-card dark:bg-card border-muted-foreground/20 flex w-full flex-col items-start lg:h-full lg:rounded-xl rounded-b-3xl border shadow-md lg:backdrop-blur-sm lg:dark:bg-card/20 lg:flex-row lg:overflow-y-auto relative">
         <div className="flex-7 w-full min-w-0 px-4 py-4 lg:px-8 lg:py-8">
           <MobToc tocs={tocs} title={title} />
           <DocsBreadcrumb paths={slug} />
