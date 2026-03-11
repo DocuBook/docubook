@@ -114,6 +114,16 @@
         { "title": "Youtube", "href": "/youtube" },
         { "title": "Custom", "href": "/custom" }
       ]
+    },
+    {
+      "title": "Release",
+      "href": "/release",
+      "noLink": true,
+      "context": {
+        "icon": "Package",
+        "description": "Update History",
+        "title": "Release"
+      }
     }
   ]
 }
