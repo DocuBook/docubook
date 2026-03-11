@@ -84,19 +84,6 @@ export default function MobToc({ tocs, title }: MobTocProps) {
     }
   })
 
-  // Handle body overflow when TOC is expanded
-  React.useEffect(() => {
-    if (isExpanded) {
-      document.body.style.overflow = "hidden"
-    } else {
-      document.body.style.overflow = ""
-    }
-
-    return () => {
-      document.body.style.overflow = ""
-    }
-  }, [isExpanded])
-
   // Don't render anything if not on docs page
   if (!isDocsPage || !mounted) return null
 
@@ -111,10 +98,10 @@ export default function MobToc({ tocs, title }: MobTocProps) {
       <motion.div
         ref={tocRef}
         className="sticky top-0 z-50 -mx-4 -mt-4 mb-4 lg:hidden"
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: -100, opacity: 0 }}
-        transition={{ duration: 0.2, ease: "easeInOut" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15, ease: "easeInOut" }}
       >
         <div className="bg-background/95 border-muted dark:border-foreground/10 dark:bg-background w-full border-b shadow-sm backdrop-blur-sm">
           <div className="p-2">
