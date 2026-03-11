@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import docuConfig from "@/docu.json"
 import GitHubButton from "@/components/Github"
 import { Button } from "@/components/ui/button"
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ModeToggle } from "@/components/ThemeToggle"
 
@@ -19,13 +19,33 @@ interface NavbarProps {
 
 export function Navbar({ id }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const navRef = useRef<HTMLDivElement>(null)
 
   const toggleMenu = useCallback(() => {
     setIsMenuOpen((prev) => !prev)
   }, [])
 
+  // Close menu when the user clicks/taps anywhere outside the navbar, or presses Escape
+  useEffect(() => {
+    if (!isMenuOpen) return
+    const handleClickOutside = (event: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false)
+      }
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsMenuOpen(false)
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("keydown", handleKeyDown)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [isMenuOpen])
+
   return (
-    <div className="sticky top-0 z-50 w-full">
+    <div ref={navRef} className="sticky top-0 z-50 w-full">
       <nav id={id} className="bg-background h-16 w-full border-b">
         <div className="mx-auto flex h-full w-[95vw] items-center justify-between sm:container md:gap-2">
           <div className="flex items-center gap-6">
@@ -43,6 +63,7 @@ export function Navbar({ id }: NavbarProps) {
               onClick={toggleMenu}
               aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={isMenuOpen}
+              aria-controls="mobile-nav-menu"
               className="flex items-center gap-1 px-2 text-sm font-medium md:hidden"
             >
               {isMenuOpen ? (
@@ -64,6 +85,7 @@ export function Navbar({ id }: NavbarProps) {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
+            id="mobile-nav-menu"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
