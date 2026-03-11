@@ -1,6 +1,6 @@
 "use client";
 
-import { ComponentProps, useState, useEffect } from "react";
+import { ComponentProps, useState, useEffect, useRef } from "react";
 import NextImage from "next/image";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,21 +21,30 @@ export default function Image({
     ...props
 }: ImageProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const scrollYRef = useRef(0);
 
-    // Lock scroll when open
+    // Mobile-compatible scroll lock (position:fixed approach works on iOS Safari;
+    // overflow:hidden on body does not reliably prevent scroll and causes page jumps)
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = "hidden";
-            // Check for Escape key
-            const handleEsc = (e: KeyboardEvent) => {
-                if (e.key === "Escape") setIsOpen(false);
-            };
-            window.addEventListener("keydown", handleEsc);
-            return () => {
-                document.body.style.overflow = "auto";
-                window.removeEventListener("keydown", handleEsc);
-            };
-        }
+        if (!isOpen) return;
+
+        scrollYRef.current = window.scrollY;
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${scrollYRef.current}px`;
+        document.body.style.width = "100%";
+
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setIsOpen(false);
+        };
+        window.addEventListener("keydown", handleEsc);
+
+        return () => {
+            document.body.style.position = "";
+            document.body.style.top = "";
+            document.body.style.width = "";
+            window.scrollTo(0, scrollYRef.current);
+            window.removeEventListener("keydown", handleEsc);
+        };
     }, [isOpen]);
 
     if (!src) return null;
@@ -57,6 +66,7 @@ export default function Image({
                     width={width as Width}
                     height={height as Height}
                     quality={85}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 800px"
                     className="w-full h-auto rounded-lg transition-transform duration-300 group-hover:scale-[1.01]"
                     {...props}
                 />
