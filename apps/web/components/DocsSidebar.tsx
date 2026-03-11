@@ -84,19 +84,6 @@ export default function MobToc({ tocs, title }: MobTocProps) {
     }
   })
 
-  // Handle body overflow when TOC is expanded
-  React.useEffect(() => {
-    if (isExpanded) {
-      document.body.style.overflow = "hidden"
-    } else {
-      document.body.style.overflow = ""
-    }
-
-    return () => {
-      document.body.style.overflow = ""
-    }
-  }, [isExpanded])
-
   // Don't render anything if not on docs page
   if (!isDocsPage || !mounted) return null
 
