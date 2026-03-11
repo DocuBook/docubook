@@ -162,6 +162,28 @@
   padding-left: 3.5rem;
 }
 
+.code-block-body {
+  /* Make the body the scroll container (the custom scrollbar CSS targets this element) */
+  overflow-x: auto;
+  /* Prevent horizontal scroll from propagating to the page on mobile */
+  overscroll-behavior-x: contain;
+  /* Explicit background prevents iOS Safari from using white as the default
+     when creating a compositing layer for this scrollable element */
+  background-color: hsl(var(--background));
+  /* Promote the SCROLLING element (not its container) to its own GPU layer.
+     This lets iOS scroll without re-painting the parent's overflow/border-radius clip. */
+  will-change: transform;
+}
+
+/* Override globals.css `pre { overflow-x: auto; width: inherit !important }` inside code blocks.
+   The body is now the scroll container, so pre must be allowed to expand beyond it. */
+.code-block-body pre {
+  overflow-x: visible;
+  /* Expand to fit content width, but fill at least the full container */
+  width: max-content !important;
+  min-width: 100%;
+}
+
 .code-block-body::-webkit-scrollbar {
   height: 8px;
 }
