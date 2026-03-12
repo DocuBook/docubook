@@ -6,6 +6,21 @@ date: 02-08-2025
 
 > This changelog contains a list of all the changes made to the DocuBook template. It will be updated with each new release and will include information about new features, bug fixes, and other improvements.
 
+<Release version="2.5.2" date="2026-03-12" title="Fix bug and more improvements">
+  <Changes type="added">
+    - optimize lucide react import
+  </Changes>
+  <Changes type="fixed">
+    - fix: use position-fixed scroll lock in ImageMdx to prevent mobile flicker
+    - fix: keep accordion content mounted with grid-template-rows transition to prevent mobile freeze
+    - fix: PreMdx mobile flicker, mobile sidebar body overflow conflict, collapsible animation
+    - fix: remove backdrop-blur from scroll-container on mobile, fix GPU layer placement, fade-only sticky animation
+  </Changes>
+  <Changes type="improved">
+    - feat: close mobile navmenu on outside click, Escape key, and add aria-controls
+  </Changes>
+</Release>
+
 <Release version="2.5.1" date="2026-03-09" title="Dynamic titles on Mobile Toc">
   <Changes type="added">
     - Dynamic titles on mobile toc
