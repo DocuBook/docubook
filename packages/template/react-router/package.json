@@ -1,0 +1,30 @@
+{
+  "name": "docubook/react-router",
+  "version": "1.0.0",
+  "description": "React Router documentation template for DocuBook",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-router-dom": "^6.20.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.0",
+    "typescript": "^5.9.3",
+    "vite": "^5.0.0",
+    "tailwindcss": "^4.1.18",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.35",
+    "eslint": "^9.39.3",
+    "@typescript-eslint/parser": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.0"
+  }
+}

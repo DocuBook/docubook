@@ -1,0 +1,60 @@
+---
+title : Quick Start Guide
+description : a quick way to understand how to use it
+date : 10-12-2024
+---
+
+## Adding a Route
+
+To add a new page to your documentation, you need to register it in the `docu.json` file.
+
+<Stepper>
+  <StepperItem title="Create the MDX file">
+    Create a new `.mdx` file in the `docs` directory. For example, `docs/my-new-page.mdx`.
+  </StepperItem>
+  <StepperItem title="Register in docu.json">
+    Open `docu.json` and add an entry to the `routes` array.
+
+    ```json
+    {
+      "title": "My New Page",
+      "href": "/my-new-page"
+    }
+    ```
+  </StepperItem>
+</Stepper>
+
+## Writing Content
+
+DocuBook supports standard Markdown and a variety of custom components to make your documentation more interactive.
+
+### Using Components
+
+Here are some common components you can use:
+
+#### Cards
+
+Use cards to highlight important links or features.
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="Download" href="#">
+    Learn how to install DocuBook.
+  </Card>
+  <Card title="Configuration" icon="Settings" href="#">
+    Configure your documentation site.
+  </Card>
+</CardGroup>
+
+#### Notes
+
+Use notes to provide additional context or warnings.
+
+<Note type="warning" title="Warning">
+  Always remember to back up your configuration files.
+</Note>
+
+<Note type="note" title="Pro Tip">
+  You can use Lucide icons in your cards by specifying the `icon` prop.
+</Note>
+
+For more details on available components, check out the [Components](/docs/components) section.

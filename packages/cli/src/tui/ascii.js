@@ -4,7 +4,7 @@ import { colors } from './colors.js';
  * DocuBook ASCII logo - Full artistic version
  */
 export const DOCUBOOK_LOGO_FULL = `
-${colors.cyan}                                    *****************************
+${colors.cyan}                    *****************************
                                **************************************
                            **********************************************
                         ****************************************************
@@ -97,7 +97,7 @@ export function createWelcomeBannerCompact(version) {
 export function createScaffoldingBanner() {
   return `
   ${colors.cyan}┌──────────────────┐${colors.reset}
-  ${colors.cyan}│ Creating Project  │${colors.reset}
+  ${colors.cyan}│ Creating Project │${colors.reset}
   ${colors.cyan}└──────────────────┘${colors.reset}
   `;
 }
