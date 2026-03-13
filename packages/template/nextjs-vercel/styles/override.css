@@ -1,0 +1,244 @@
+/* Modern Blue Theme */
+/* Light Mode */
+.keyword {
+  color: #1d4ed8;
+  /* Darker blue for better contrast */
+}
+
+.function {
+  color: #0369a1;
+  /* Deep blue */
+}
+
+.punctuation {
+  color: #4b5563;
+  /* Slate gray */
+}
+
+.comment {
+  color: #6b7280;
+  /* Muted gray */
+  font-style: italic;
+}
+
+.string,
+.constant,
+.annotation,
+.boolean,
+.number {
+  color: #0d9488;
+  /* Teal for better distinction */
+}
+
+.tag {
+  color: #1d4ed8;
+  /* Matching keyword color */
+}
+
+.attr-name {
+  color: #0284c7;
+  /* Sky blue */
+}
+
+.attr-value {
+  color: #2563eb;
+  /* Primary blue */
+}
+
+/* Dark Mode */
+.dark .keyword {
+  color: #60a5fa;
+  /* Soft blue */
+}
+
+.dark .function {
+  color: #38bdf8;
+  /* Sky blue */
+}
+
+.dark .string,
+.dark .constant,
+.dark .annotation,
+.dark .boolean,
+.dark .number {
+  color: #2dd4bf;
+  /* Teal */
+}
+
+.dark .tag {
+  color: #60a5fa;
+  /* Matching keyword color */
+}
+
+.dark .attr-name {
+  color: #7dd3fc;
+  /* Lighter blue */
+}
+
+.dark .attr-value {
+  color: #3b82f6;
+  /* Brighter blue */
+}
+
+.dark .comment {
+  color: #9ca3af;
+  /* Lighter gray for dark mode */
+}
+
+.dark .punctuation {
+  color: #9ca3af;
+  /* Lighter gray for dark mode */
+}
+
+/* ======================================================================== */
+/* Custom styling for code blocks */
+/* ======================================================================== */
+
+.code-block-container {
+  position: relative;
+  margin: 1.5rem 0;
+  border: 1px solid hsl(var(--border));
+  overflow: hidden;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: hsl(var(--muted));
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid hsl(var(--border));
+  color: hsl(var(--muted-foreground));
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.code-block-actions {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  z-index: 10;
+}
+
+.code-block-actions button {
+  color: hsl(var(--muted-foreground));
+  transition: color 0.2s ease-in-out;
+}
+
+.code-block-actions button:hover {
+  color: hsl(var(--foreground));
+}
+
+
+.code-block-body pre[class*="language-"] {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.line-numbers-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3rem;
+  padding-top: 1rem;
+  text-align: right;
+  color: var(--line-number-color);
+  user-select: none;
+}
+
+.line-highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: hsl(var(--primary) / 0.1);
+  border-left: 2px solid hsl(var(--primary));
+  pointer-events: none;
+}
+
+.code-block-body pre[data-line-numbers="true"] .line-highlight {
+  padding-left: 3.5rem;
+}
+
+.code-block-body {
+  /* Make the body the scroll container (the custom scrollbar CSS targets this element) */
+  overflow-x: auto;
+  /* Prevent horizontal scroll from propagating to the page on mobile */
+  overscroll-behavior-x: contain;
+  /* Explicit background prevents iOS Safari from using white as the default
+     when creating a compositing layer for this scrollable element */
+  background-color: hsl(var(--background));
+  /* Promote the SCROLLING element (not its container) to its own GPU layer.
+     This lets iOS scroll without re-painting the parent's overflow/border-radius clip. */
+  will-change: transform;
+}
+
+/* Override globals.css `pre { overflow-x: auto; width: inherit !important }` inside code blocks.
+   The body is now the scroll container, so pre must be allowed to expand beyond it. */
+.code-block-body pre {
+  overflow-x: visible;
+  /* Expand to fit content width, but fill at least the full container */
+  width: max-content !important;
+  min-width: 100%;
+}
+
+.code-block-body::-webkit-scrollbar {
+  height: 8px;
+}
+
+.code-block-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.code-block-body::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+
+.code-block-body::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted));
+}
+
+/* ======================================================================== */
+/* Custom styling for youtube blocks */
+/* ======================================================================== */
+.youtube {
+  position: relative;
+  padding-bottom: 56.25%;
+  /* Aspect Ratio 16:9 */
+  height: 0;
+  overflow: hidden;
+  background: #000;
+  /* Black background to blend the player */
+  border-radius: 8px;
+  /* Rounded corners */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  /* Soft shadow */
+}
+
+.youtube iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 8px;
+  /* Rounded corners on iframe */
+}
+
+/* Hide main navbar and footer when docs layout is active */
+body:has(.docs-layout) #main-navbar,
+body:has(.docs-layout) #main-footer {
+  display: none;
+}
+
+/* Remove container constraints for docs pages */
+body:has(.docs-layout) #main-content {
+  max-width: none;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}

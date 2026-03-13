@@ -1,0 +1,20 @@
+{
+  "name": "nextjs-vercel",
+  "id": "nextjs-vercel",
+  "description": "Modern documentation with Next.js and Vercel deployment",
+  "framework": "nextjs",
+  "packageManagers": ["npm", "yarn", "pnpm", "bun"],
+  "features": [
+    "Next.js 16",
+    "React 19",
+    "TypeScript",
+    "Tailwind CSS",
+    "MDX Support",
+    "Dark Mode",
+    "Search (Algolia)",
+    "Responsive Design"
+  ],
+  "author": "DocuBook Team",
+  "repository": "https://github.com/DocuBook/cli",
+  "homepage": "https://docubook.pro"
+}
