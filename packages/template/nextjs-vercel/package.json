@@ -1,5 +1,6 @@
 {
-  "name": "docubook/next",
+  "name": "docubook",
+  "template": "nextjs-vercel",
   "description": "Next.js Vercel documentation template for DocuBook",
   "version": "1.0.0",
   "private": true,

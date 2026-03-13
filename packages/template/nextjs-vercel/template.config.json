@@ -14,7 +14,7 @@
     "Search (Algolia)",
     "Responsive Design"
   ],
-  "author": "DocuBook Team",
-  "repository": "https://github.com/DocuBook/cli",
+  "author": "wildan.nrs",
+  "repository": "https://github.com/DocuBook/packages/template/nextjs-vercel",
   "homepage": "https://docubook.pro"
 }

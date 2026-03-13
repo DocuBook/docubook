@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ModeToggle } from "@/components/ThemeToggle";
 import docuData from "@/docu.json";
 import * as LucideIcons from "lucide-react";
-import AuroraText from "@/components/ui/aurora";
 
 // Define types for docu.json
 interface SocialItem {
@@ -81,11 +80,12 @@ export function FooterButtons() {
 export function MadeWith() {
   return (
     <>
-      <span className="text-muted-foreground">Built by </span>
+      <span className="text-muted-foreground">Made with </span>
       <span className="text-primary">
-        <Link href="https://github.com/gitfromwildan" target="_blank" rel="noopener noreferrer">
-          <AuroraText>Wildan.nrs</AuroraText>
-        </Link></span>
+        <Link href="https://www.docubook.pro" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 text-muted-foreground">
+          DocuBook
+        </Link>
+      </span>
     </>
   );
 }

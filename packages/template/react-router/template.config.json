@@ -12,8 +12,8 @@
     "Client-side routing",
     "Responsive Design"
   ],
-  "author": "DocuBook Team",
-  "repository": "https://github.com/DocuBook/cli",
+  "author": "wildan.nrs",
+  "repository": "https://github.com/DocuBook/packages/template/react-router",
   "homepage": "https://docubook.pro",
   "status": "coming-soon"
 }
