@@ -1,6 +1,6 @@
 {
   "name": "@docubook/cli",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "DocuBook CLI tool that helps you initialize, update, and deploy documentation directly from your terminal.",
   "type": "module",
   "files": [
