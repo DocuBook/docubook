@@ -5,7 +5,7 @@ import { TerminalSquareIcon, ClipboardIcon, CheckIcon } from "lucide-react";
 
 export function CopyCommand() {
   const [copied, setCopied] = useState(false);
-  const command = "npx @docubook/create";
+  const command = "npx @docubook/cli";
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(command);

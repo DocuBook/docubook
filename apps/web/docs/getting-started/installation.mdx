@@ -18,25 +18,60 @@ For a faster setup, use the `cli` command to create a new DocuBook project in on
     <TabsTrigger value="yarn">yarn</TabsTrigger>
   </TabsList>
   <TabsContent value="npm">
-    ```shell
-    npx @docubook/create@latest
+    ```shell:npx
+    npx @docubook/cli@latest
     ```
   </TabsContent>
   <TabsContent value="pnpm">
-    ```shell
-    pnpm dlx @docubook/create@latest
+    ```shell:pnpm
+    pnpm dlx @docubook/cli@latest
     ```
   </TabsContent>
   <TabsContent value="bun">
-    ```shell
-    bunx @docubook/create@latest
+    ```shell:bun
+    bunx @docubook/cli@latest
     ```
   </TabsContent>
   <TabsContent value="yarn">
-    ```shell
-    yarn dlx @docubook/create@latest
+    ```shell:yarn
+    yarn dlx @docubook/cli@latest
     ```
   </TabsContent>
 </Tabs>
+
+## Installing the CLI Globally
+
+If you prefer installing the CLI globally so the `docubook` command is available system-wide, use one of the following:
+
+```shell:bash
+# npm
+npm install -g @docubook/cli@latest
+
+# pnpm
+pnpm add -g @docubook/cli@latest
+
+# yarn (classic)
+yarn global add @docubook/cli@latest
+
+# bun
+bun add -g @docubook/cli@latest
+```
+
+After a global install, verify the installation and check the CLI version:
+
+```shell:bash
+# show version
+docubook -v
+# or
+docubook --version
+```
+
+If you used `npx`, `pnpm dlx`, `bunx` or `yarn dlx` you can still run the CLI directly without installing. Example:
+
+```shell:npx
+npx @docubook/cli@latest --version
+```
+
+These commands install the `docubook` binary (package "bin"), so the `docubook` command should be available in your PATH after installation.
 
 With this setup, you’ll have a ready-to-use DocuBook instance to start building your documentation.
