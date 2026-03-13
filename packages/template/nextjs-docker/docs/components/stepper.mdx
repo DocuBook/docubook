@@ -1,0 +1,49 @@
+---
+title: Stepper
+description: A component used to display step-by-step instructions directly within the markdown render.
+date: 14-12-2024
+---
+
+In this guide, we utilize a custom `Stepper` component, specifically designed for DocuBook, which enables users to display step-by-step instructions directly within the markdown render.
+
+## Preview
+
+<Stepper>
+  <StepperItem title="Step 1: Clone the DocuBook Repository">
+    ```bash
+    git clone https://github.com/DocuBook/docubook.git
+    ```
+  </StepperItem>
+  <StepperItem title="Step 2: Access the Project Directory">
+    ```bash
+    cd docubook
+    ```
+  </StepperItem>
+  <StepperItem title="Step 3: Install Required Dependencies">
+    ```bash
+    pnpm install
+    ```
+  </StepperItem>
+</Stepper>
+
+## Output Markdown
+
+````markdown:mdx
+<Stepper>
+  <StepperItem title="Step 1: Clone the DocuBook Repository">
+    ```bash
+    git clone https://github.com/DocuBook/docubook.git
+    ```
+  </StepperItem>
+  <StepperItem title="Step 2: Access the Project Directory">
+    ```bash
+    cd docubook
+    ```
+  </StepperItem>
+  <StepperItem title="Step 3: Install Required Dependencies">
+    ```bash
+    pnpm install
+    ```
+  </StepperItem>
+</Stepper>
+````

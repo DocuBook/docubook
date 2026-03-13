@@ -1,35 +1,21 @@
-# React Router Documentation Template (Coming Soon)
+# DocuBook
 
-This is a skeleton template for building client-side documentation with React Router.
+**DocuBook** is a documentation web project designed to provide a simple and user-friendly interface for accessing various types of documentation. This site is crafted for developers and teams who need quick access to references, guides, and essential documents.
 
-## Status
+## Features
 
-🚧 **Under Development** - This template is coming soon.
+- **Easy Navigation**: Simple layout for quick navigation between pages.
+- **Quick Search**: Easily find documentation using a search function.
+- **Responsive Theme**: Responsive design optimized for devices ranging from desktops to mobile.
+- **Markdown Content**: Support for markdown-based documents.
+- **SEO Friendly**: Optimized structure for search visibility, enhancing accessibility on search engines.
 
-## Planned Features
-
-- React Router v6 for client-side routing
-- Full TypeScript support
-- Tailwind CSS for styling
-- Responsive design
-- MDX content support (planned)
-
-## Setup
+## Installation
 
 ```bash
-npm run dev
+npx @docubook/cli@latest
 ```
 
-## Build
+#### command output
 
-```bash
-npm run build
-```
-
-## Customization
-
-More details coming soon!
-
-## License
-
-MIT
+![command output](https://github.com/DocuBook/docubook/blob/main/cli-docubook.png)

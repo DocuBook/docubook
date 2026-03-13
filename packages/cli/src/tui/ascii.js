@@ -62,7 +62,7 @@ export function createWelcomeBanner(version) {
   const logoMid = `${colors.cyan}${colors.bright}▌>_▐${colors.reset}`
   const logoBot = `${colors.cyan}▙▄▄▟${colors.reset}`
 
-  const title = `${colors.cyan}${colors.bright}DocuBook${colors.reset} v${version}`
+  const title = `${colors.cyan}${colors.bright}DocuBook CLI${colors.reset} v${version}`
   const subtitle = `${colors.gray}Initialize, build, and deploy docs from terminal.${colors.reset}`
 
   const tip = `${colors.gray}Visit our documentation.${colors.reset}`
@@ -103,16 +103,8 @@ export function createBoxedMessage(title, content, color = colors.green) {
   const reset = "\x1b[0m";
   const termWidth = process.stdout.columns || 80;
 
-  // 1. Tentukan total lebar box (termasuk border)
   const boxWidth = Math.min(80, termWidth - 4);
-
-  // 2. width adalah panjang garis horizontal (─) di atas dan bawah
-  // Total lebar box adalah width + 2 (untuk karakter pojok ┌ dan ┐)
   const width = boxWidth - 2;
-
-  // 3. inner adalah ruang bersih di dalam box untuk teks (tanpa padding spasi)
-  // Kita beri padding 2 spasi di kiri dan 2 spasi di kanan (total 4)
-  // Jadi: 1(│) + 2(spasi) + inner + 2(spasi) + 1(│) = width + 2
   const inner = (width + 2) - 6;
 
   const centerTitle = () => {
@@ -126,16 +118,11 @@ export function createBoxedMessage(title, content, color = colors.green) {
 
   const pad = (text = "") => {
     const len = stringWidth(text);
-    // Tambahkan spasi hingga tepat mengisi 'inner'
     return text + " ".repeat(Math.max(0, inner - len));
   };
 
   const lines = [];
-
-  // Header
   lines.push(`${color}┌${centerTitle()}┐${reset}`);
-
-  // Padding atas (opsional)
   lines.push(`${color}│${reset}  ${pad("")}  ${color}│${reset}`);
 
   const items = typeof content === "string"
@@ -145,15 +132,10 @@ export function createBoxedMessage(title, content, color = colors.green) {
   for (const line of items) {
     const wrapped = wrapText(line, inner);
     wrapped.forEach((w) => {
-      // Pastikan struktur: │ + spasi(2) + konten + spasi(2) + │
       lines.push(`${color}│${reset}  ${pad(w)}  ${color}│${reset}`);
     });
   }
-
-  // Padding bawah (opsional)
   lines.push(`${color}│${reset}  ${pad("")}  ${color}│${reset}`);
-
-  // Footer
   lines.push(`${color}└${"─".repeat(width)}┘${reset}`);
 
   return "\n" + lines.join("\n") + "\n";

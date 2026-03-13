@@ -1,0 +1,21 @@
+{
+  "name": "nextjs-docker",
+  "id": "nextjs-docker",
+  "description": "Next.js standalone with Docker image (optimized for coolify, etc.)",
+  "framework": "nextjs",
+  "packageManagers": ["npm", "yarn", "pnpm", "bun"],
+  "features": [
+    "Next.js 16",
+    "React 19",
+    "TypeScript",
+    "Tailwind CSS",
+    "MDX Support",
+    "Dark Mode",
+    "Search (Algolia)",
+    "Responsive Design",
+    "Docker Deployment"
+  ],
+  "author": "wildan.nrs",
+  "repository": "https://github.com/DocuBook/packages/template/nextjs-docker",
+  "homepage": "https://docubook.pro"
+}
