@@ -1,31 +1,5 @@
-import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
-
-/**
- * Gets the version of the specified package manager
- * @param {string} pm - Package manager name
- * @returns {string|null} Version string or null if not installed
- */
-export function getPackageManagerVersion(pm) {
-  try {
-    return execSync(`${pm} --version`).toString().trim();
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Detects the default package manager from user environment
- * @returns {string} Default package manager name
- */
-export function detectDefaultPackageManager() {
-  const userAgent = process.env.npm_config_user_agent || "";
-  if (userAgent.includes("pnpm")) return "pnpm";
-  if (userAgent.includes("yarn")) return "yarn";
-  if (userAgent.includes("bun")) return "bun";
-  return "npm";
-}
 
 /**
  * Updates postcss config file extension for Bun compatibility
