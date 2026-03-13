@@ -40,6 +40,21 @@ Format conventions
   - `getPackageManagerVersion()` in packageManager.js (duplicate of packageManagerDetect.js version)
   - `detectDefaultPackageManager()` in packageManager.js (redundant with detectPackageManager())
 
+---
+
+## v0.2.4 - 2026-03-12
+
+### Added
+- Update command (`docubook update`) to check for latest npm version and install globally
+- Spinner indicator while checking for npm updates
+- Custom `--version` output formatting for CLI
+
+### Fixed
+- Spinner not stopping correctly on error during update check
+- Update check display showing spinner then plain "Checking for updates..." line
+- Global `fetch` definition for Node.js compatibility
+- Spinner scoping and cleanup to prevent dangling processes
+
 
 Notes
 - The CLI fetches `CHANGELOG.md` from the repository tag (raw.githubusercontent.com/{owner}/{repo}/{tag}/CHANGELOG.md) and falls back to the `main` file when a tag-specific file isn't found. Keep headings for each released version so the CLI can extract and display the relevant section once per user.
