@@ -3,8 +3,7 @@ name: Publish @docubook/cli to npm
 on:
   push:
     tags:
-      - 'v*.*.*'
-      - 'cli-v*.*.*'
+      - "cli-v*.*.*"
 
 jobs:
   build-and-test:
@@ -23,8 +22,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'pnpm'
+          node-version: "22"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -42,7 +41,7 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
 
     steps:
@@ -59,11 +58,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org'
-          scope: '@docubook'
-          auth-type: 'oidc'
+          node-version: "22"
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+          scope: "@docubook"
           always-auth: true
 
       - name: Install dependencies
@@ -72,6 +70,7 @@ jobs:
       - name: Publish @docubook/cli to npm
         run: pnpm publish packages/cli --access public --no-git-checks
         env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
 
       - name: Create Release
