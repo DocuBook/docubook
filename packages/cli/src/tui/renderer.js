@@ -16,10 +16,10 @@ function padLine(text) {
   return '│ ' + text + ' '.repeat(Math.max(0, padding)) + ' │';
 }
 
-export function renderWelcome() {
+export function renderWelcome(version = '0.1.0') {
   console.clear();
   console.log('');
-  console.log(createWelcomeBanner('0.1.0'));
+  console.log(createWelcomeBanner(version));
   console.log('');
 }
 
