@@ -32,21 +32,18 @@ function _writeChangelogStore(obj) {
   }
 }
 
-async function _fetchChangelogFromGitHub(tag) {
-  // Try to fetch CHANGELOG.md from the repo tag. Support several tag-name variants
-  // (e.g. v1.2.3, 1.2.3, cli-v1.2.3, cli-1.2.3) and common filename variants.
+async function _fetchChangelogFromGitHub(version) {
+  // Fetch CHANGELOG.md from the CLI release tag format: cli-v0.2.5
   const repo = "DocuBook/docubook";
+  const bare = version.replace(/^v/, "");
+  const tag = `cli-v${bare}`;
 
-  const bare = tag.replace(/^v/, "");
-  const variants = [tag, bare, `cli-${tag}`, `cli-${bare}`].filter(Boolean);
-
-  const candidates = [];
-  for (const v of variants) {
-    candidates.push(`https://raw.githubusercontent.com/${repo}/${v}/CHANGELOG.md`);
-    candidates.push(`https://raw.githubusercontent.com/${repo}/${v}/CHANGELOG.MD`);
-  }
-  // final fallback to main branch
-  candidates.push(`https://raw.githubusercontent.com/${repo}/main/CHANGELOG.md`);
+  const candidates = [
+    `https://raw.githubusercontent.com/${repo}/${tag}/CHANGELOG.md`,
+    `https://raw.githubusercontent.com/${repo}/${tag}/CHANGELOG.MD`,
+    // Fallback to main branch
+    `https://raw.githubusercontent.com/${repo}/main/CHANGELOG.md`,
+  ];
 
   for (const url of candidates) {
     try {
@@ -90,8 +87,7 @@ async function showChangelogOnce(pkgName, version) {
     const seen = Array.isArray(store[pkgName]) ? store[pkgName] : [];
     if (seen.includes(version)) return;
 
-    const tag = version.startsWith("v") ? version : `v${version}`;
-    const changelog = await _fetchChangelogFromGitHub(tag);
+    const changelog = await _fetchChangelogFromGitHub(version);
     if (!changelog) return;
 
     const section = _extractVersionSection(changelog, version);
