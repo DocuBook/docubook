@@ -17,6 +17,23 @@
       "url": "https://github.com/DocuBook/docubook/tree/main/packages/template/nextjs-vercel"
     },
     {
+      "id": "nextjs-docker",
+      "name": "nextjs-docker",
+      "description": "Modern documentation with Next.js standalone and Docker deployment",
+      "features": [
+        "Next.js 16",
+        "React 19",
+        "TypeScript",
+        "Tailwind CSS",
+        "MDX Support",
+        "Dark Mode",
+        "Search (Algolia)",
+        "Responsive Design",
+        "Docker Deployment"
+      ],
+      "url": "https://github.com/DocuBook/docubook/tree/main/packages/template/nextjs-docker"
+    },
+    {
       "id": "react-router",
       "name": "react-router",
       "description": "Client-side documentation with React Router",

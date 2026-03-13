@@ -19,8 +19,6 @@ build
 # Environment variables
 .env
 .env.*
-!.env.example
-!.env.*.example
 
 # Editor directories and files
 .idea
@@ -31,9 +29,6 @@ build
 *.sln
 *.sw?
 Thumbs.db
-
-# Vercel
-.vercel
 
 # TypeScript
 *.tsbuildinfo

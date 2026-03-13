@@ -1,7 +1,7 @@
 {
   "name": "nextjs-vercel",
   "id": "nextjs-vercel",
-  "description": "Modern documentation with Next.js and Vercel deployment",
+  "description": "Next.js and Vercel deployment (optimized for vercel)",
   "framework": "nextjs",
   "packageManagers": ["npm", "yarn", "pnpm", "bun"],
   "features": [
