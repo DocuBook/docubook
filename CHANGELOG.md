@@ -1,4 +1,4 @@
-# CHANGELOG
+# CHANGELOG - DocuBook CLI
 
 All notable changes to this project will be documented in this file.
 
@@ -67,6 +67,12 @@ Format conventions
 - Spinner scoping and cleanup to prevent dangling processes
 
 
-Notes
-- The CLI fetches `CHANGELOG.md` from the repository tag (raw.githubusercontent.com/{owner}/{repo}/{tag}/CHANGELOG.md) and falls back to the `main` file when a tag-specific file isn't found. Keep headings for each released version so the CLI can extract and display the relevant section once per user.
-- To force-show changelog manually, run the update command again or modify the file `$HOME/.docubook_cli_seen_changelogs.json` (advanced users only).
+## Tips
+
+> [!TIP]
+> **Changelog Display**
+> The CLI fetches `CHANGELOG.md` from the repository tag (`raw.githubusercontent.com/{owner}/{repo}/{tag}/CHANGELOG.md`) and falls back to the `main` file when a tag-specific file isn't found. Keep headings for each released version so the CLI can extract and display the relevant section once per user.
+
+> [!NOTE]
+> **Force-show changelog**
+> To force-show changelog manually, run the update command again or modify the file `$HOME/.docubook_cli_seen_changelogs.json` (advanced users only).
