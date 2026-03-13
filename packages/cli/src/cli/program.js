@@ -12,6 +12,7 @@ import ora from "ora";
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { lt } from "semver";
 
 // Helpers to show changelog once per installed version. Stores shown versions under
 // $HOME/.docubook_cli_seen_changelogs.json as a map: { "@docubook/cli": ["1.2.3"] }
@@ -94,7 +95,7 @@ async function showChangelogOnce(pkgName, version) {
     if (!section) return;
 
     // Print a concise changelog section
-    console.log("\n=== DocuBook CLI changelog (new) ===\n");
+    console.log("\n===========================================================\n");
     console.log(section.trim());
     console.log("\nFor full changelog, visit:");
     console.log(`  https://github.com/DocuBook/docubook/blob/main/CHANGELOG.md\n`);
@@ -145,8 +146,8 @@ export function initializeProgram(version) {
         if (spinner && typeof spinner.stop === 'function') spinner.stop();
         console.log('Checking for updates...');
 
-        if (latest === version) {
-          console.log(`No update needed, current version is ${version}, fetched latest release is ${latest}`);
+        if (!lt(version, latest)) {
+          console.log(`No update needed, current version is ${version}, latest release is ${latest}`);
           return;
         }
 
@@ -192,7 +193,7 @@ export function initializeProgram(version) {
     .argument("[directory]", "The name of the project directory")
     .action(async (directory) => {
       const state = new CLIState();
-      
+
       try {
         // Render welcome screen with version
         renderWelcome(version);
