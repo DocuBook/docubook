@@ -63,7 +63,7 @@ export function initializeProgram(version) {
         }
       } catch (err) {
         // ensure spinner is stopped on error
-        try { ora().stop && spinner.stop(); } catch (e) {}
+        try { spinner.stop(); } catch (e) {}
         console.error(err.message || err);
         process.exitCode = 1;
       }
