@@ -7,9 +7,39 @@ on:
       - 'cli-v*.*.*'
 
 jobs:
-  publish:
+  build-and-test:
     runs-on: ubuntu-latest
+    name: Build (Node 22.x)
 
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm typecheck
+
+  publish:
+    needs: build-and-test
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
@@ -32,13 +62,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: pnpm install
-
-      - name: Build
-        run: pnpm build
-
-      - name: Lint
-        run: pnpm lint
+        run: pnpm install --frozen-lockfile
 
       - name: Publish @docubook/cli to npm
         run: pnpm publish packages/cli --access public --no-git-checks

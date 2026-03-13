@@ -38,7 +38,7 @@ Update `packages/cli/package.json`:
 
 ```json
 {
-  "version": "0.2.0"
+  "version": "0.1.1"
 }
 ```
 
@@ -57,7 +57,7 @@ pnpm typecheck
 
 # Test the CLI locally
 cd packages/cli
-node src/index.js --version  # Should show 0.2.0
+node src/index.js --version  # Should show 0.1.1
 node src/index.js my-test    # Test scaffolding
 ```
 
@@ -65,8 +65,8 @@ node src/index.js my-test    # Test scaffolding
 
 ```bash
 git add .
-git commit -m "chore: release @docubook/cli@0.2.0"
-git tag cli-v0.2.0
+git commit -m "chore: release @docubook/cli@0.1.1"
+git tag cli-v0.1.1
 git push origin main --tags
 ```
 
@@ -102,7 +102,7 @@ The `publish-cli.yml` workflow:
 ### How OIDC Works
 
 ```
-Developer pushes tag (cli-v0.2.0)
+Developer pushes tag (cli-v0.1.1)
          ↓
 GitHub Actions starts workflow
          ↓
@@ -153,14 +153,14 @@ After setup:
 
 ```bash
 # Push a tag to trigger publish
-git tag cli-v0.2.0
+git tag cli-v0.1.1
 git push origin main --tags
 
 # Watch GitHub Actions:
 # https://github.com/DocuBook/docubook/actions/workflows/publish-cli.yml
 
 # Then verify on npm:
-npm view @docubook/cli@0.2.0
+npm view @docubook/cli@0.1.1
 ```
 
 ### Alternative: Traditional Token (Legacy)
@@ -191,7 +191,7 @@ Use semantic versioning:
 
 ```
 cli-v0.1.0  → Initial release
-cli-v0.2.0  → New features
+cli-v0.1.1  → New features
 cli-v0.2.1  → Bug fixes
 cli-v1.0.0  → Major release
 ```
@@ -282,7 +282,7 @@ git push origin main --tags
 For consistency, use this changelog format:
 
 ```markdown
-## [0.2.0] - 2026-03-15
+## [0.1.1] - 2026-03-15
 
 ### Added
 - Multi-template support

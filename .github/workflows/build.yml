@@ -7,12 +7,14 @@ on:
     branches: [main, develop]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
+    name: Build (Node ${{ matrix.node-version }})
 
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
+      fail-fast: false
 
     steps:
       - uses: actions/checkout@v4
@@ -29,7 +31,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm build
