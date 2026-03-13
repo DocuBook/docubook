@@ -75,7 +75,8 @@ function _extractVersionSection(changelogText, version) {
 
   let end = lines.length;
   for (let j = start + 1; j < lines.length; j++) {
-    if (/^#{1,3}\s*/.test(lines[j])) {
+    // Match the next version heading (level 2, ## but not ###)
+    if (/^##\s*(?!#)/.test(lines[j])) {
       end = j;
       break;
     }
