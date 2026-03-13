@@ -4,216 +4,186 @@ Complete documentation and best practices for working with the DocuBook monorepo
 
 ## 📚 Available Guides
 
-### 🚀 Quick Start
-Start here if you're new to the project:
-- **[MONOREPO_COMMANDS.md](./MONOREPO_COMMANDS.md)** - Complete guide to pnpm and Turbo commands
-  - Installation, building, linting, development workflows
-  - When to use `pnpm build` vs `npx turbo build`
-  - All available commands with examples
-
-### 🔗 Dependencies & Workspaces
-Learn about the project structure and dependency management:
-- **[WORKSPACE_RULES.md](./WORKSPACE_RULES.md)** - Dependency management guidelines
-  - Workspace hierarchy and organization
-  - Root vs workspace dependencies
-  - Common mistakes and how to avoid them
-  - Adding and updating dependencies
-
-### 📐 Architecture & Design
-Deep dive into the project structure:
-- **[ARCHITECTURE_DIAGRAM.md](./ARCHITECTURE_DIAGRAM.md)** - System architecture overview
-  - Directory structure and file organization
-  - How different components interact
-  - Data flow and integration points
-
 ### 📦 Publishing & Distribution
-Information about publishing packages:
-- **[PUBLISHING_GUIDE.md](./PUBLISHING_GUIDE.md)** - How to publish packages to npm
+Information about publishing packages to npm:
+- **[PUBLISHING_GUIDE.md](./PUBLISHING_GUIDE.md)** - How to publish @docubook/cli packages
+  - NPM OIDC setup (recommended security approach)
   - Version management
   - Release process
   - Publishing to npm registry
 
 ### 🛠️ CLI & Integration
-Technical implementation details:
-- **[CLI_IMPLEMENTATION_SUMMARY.md](./CLI_IMPLEMENTATION_SUMMARY.md)** - DocuBook CLI overview
-  - CLI command structure
-  - How the CLI works internally
-
+Technical implementation and integration details:
 - **[INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)** - Integration guidelines
   - How to integrate DocuBook with your project
   - Best practices for implementation
 
-### 📋 Template-Specific
-Questions about the template package:
-- **[TEMPLATE_BUNDLING_FAQ.md](./TEMPLATE_BUNDLING_FAQ.md)** - Common template questions
-  - Bundling and distribution
-  - Template usage and customization
-
 ---
 
-## 🎯 Quick Reference
+## 🎯 Quick CLI Commands
 
-### Commands You'll Use Daily
+### Build & Publish
 
 ```bash
-# Setup
-pnpm install              # Install all dependencies
+# Build all packages
+pnpm build
 
-# Development
-pnpm dev:web              # Start web app dev server
-pnpm lint                 # Check code quality
-pnpm format               # Auto-format code
+# Build only CLI
+pnpm build --filter=@docubook/cli
 
-# Building
-pnpm build                # Build all packages
-npx turbo build --filter=docubook  # Build specific app
+# Lint
+pnpm lint
 
-# Pre-commit
-pnpm lint:fix             # Fix lint issues
-pnpm typecheck            # Check TypeScript
+# Lint & fix
+pnpm lint:fix
+
+# Type check
+pnpm typecheck
 ```
 
-### Key Files to Know
+### Publishing @docubook/cli
 
-```
-.
-├── package.json              # Root dependencies & scripts
-├── pnpm-workspace.yaml       # Workspace configuration
-├── turbo.json                # Turbo configuration
-├── apps/web/                 # Main web application
-├── packages/ui/              # Shared UI components
-├── packages/template/        # Template starter
-└── .github/guide/            # This folder (guides)
+```bash
+# 1. Update version in packages/cli/package.json
+# "version": "0.2.0"
+
+# 2. Build & test
+pnpm build
+pnpm lint
+pnpm typecheck
+
+# 3. Commit & tag
+git commit -m "chore: release @docubook/cli@0.2.0"
+git tag cli-v0.2.0
+git push origin main --tags
+
+# 4. GitHub Actions publishes automatically
+# Monitor: https://github.com/DocuBook/docubook/actions
 ```
 
 ---
 
-## ✅ Workflow Checklist
+## 📂 Monorepo Structure
 
-### Before Starting Development
-- [ ] Read [MONOREPO_COMMANDS.md](./MONOREPO_COMMANDS.md) for command overview
-- [ ] Run `pnpm install`
-- [ ] Run `pnpm build` to verify setup
-- [ ] Read [WORKSPACE_RULES.md](./WORKSPACE_RULES.md) to understand structure
-
-### Before Committing
-- [ ] Run `pnpm lint:fix`
-- [ ] Run `pnpm format`
-- [ ] Run `pnpm typecheck`
-- [ ] Run `pnpm build` to ensure no regressions
-
-### Before Pushing
-- [ ] Check [WORKSPACE_RULES.md](./WORKSPACE_RULES.md) for dependency changes
-- [ ] Verify build succeeds: `pnpm build`
-- [ ] All linting passes: `pnpm lint`
-- [ ] Types check out: `pnpm typecheck`
+```
+docubook-monorepo/
+├── apps/web/                      # Main web application
+├── packages/
+│   ├── cli/                       # DocuBook CLI tool
+│   ├── template/nextjs-vercel/   # Next.js Vercel template
+│   ├── template/react-router/    # React Router template
+│   ├── ui/                        # Shared UI components
+│   ├── eslint-config/            # ESLint rules
+│   └── typescript-config/        # TypeScript config
+├── .github/
+│   ├── workflows/                 # GitHub Actions
+│   │   ├── build.yml             # Build & test workflow
+│   │   └── publish-cli.yml       # Publish CLI to npm
+│   └── guide/                     # This documentation
+├── pnpm-workspace.yaml           # Workspace config
+└── turbo.json                    # Turbo build config
+```
 
 ---
 
-## 🤔 Common Questions
+## ✅ CLI Publishing Checklist
 
-### Q: Which command should I use?
-**A:** Check [MONOREPO_COMMANDS.md](./MONOREPO_COMMANDS.md)
-- Use `pnpm build` for normal builds
-- Use `npx turbo build --filter=X` for specific packages
-- Never use `pnpm turbo build` (confusing)
+### One-time Setup (OIDC)
+- [ ] Go to https://www.npmjs.com/settings/@docubook/access
+- [ ] Click "Trusted Publishers" tab
+- [ ] Add GitHub Actions as publisher:
+  - Organization/user: `DocuBook`
+  - Repository: `docubook`
+  - Workflow filename: `publish-cli.yml`
 
-### Q: Where do I add dependencies?
-**A:** Check [WORKSPACE_RULES.md](./WORKSPACE_RULES.md)
-- Add to root if used by multiple workspaces
-- Add to workspace if used only there
-- Use `workspace:*` for internal packages
+### Before Each Release
+- [ ] Update version in `packages/cli/package.json`
+- [ ] Run `pnpm build --filter=@docubook/cli`
+- [ ] Run `pnpm lint --filter=@docubook/cli`
+- [ ] Test CLI locally: `cd packages/cli && node src/index.js --version`
+- [ ] Commit changes
+- [ ] Create git tag: `git tag cli-v0.X.X`
+- [ ] Push to main: `git push origin main --tags`
+- [ ] Monitor GitHub Actions: https://github.com/DocuBook/docubook/actions/workflows/publish-cli.yml
 
-### Q: How is the project structured?
-**A:** Check [ARCHITECTURE_DIAGRAM.md](./ARCHITECTURE_DIAGRAM.md)
-- Understand workspace organization
-- See how components interact
-- Learn the file structure
+### Verify Publishing
+```bash
+# After ~2 minutes, verify on npm
+npm view @docubook/cli@0.X.X
 
-### Q: How do I set up NPM publishing with OIDC?
-**A:** Check [PUBLISHING_GUIDE.md](./PUBLISHING_GUIDE.md#-npm-token-setup-oidc-method---recommended)
-- One-time npm configuration (5 minutes)
+# Or install & test
+npm install -g @docubook/cli@0.X.X
+docubook --version
+```
+
+---
+
+## 🚀 @docubook/cli Features
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| ASCII Art Logo | ✅ | Cyan-colored artistic display |
+| Dynamic Version | ✅ | Auto from package.json |
+| Multi-PM Support | ✅ | npm, pnpm, yarn, bun |
+| Template Bundling | ✅ | nextjs-vercel, react-router |
+| OIDC Publishing | ✅ | Secure GitHub Actions integration |
+| Auto-detection | ✅ | Detects used package manager |
+
+---
+
+## 📋 Common Questions
+
+### Q: How do I publish a new CLI version?
+**A:** See [PUBLISHING_GUIDE.md](./PUBLISHING_GUIDE.md#-npm-token-setup-oidc-method---recommended)
+1. Update version in `packages/cli/package.json`
+2. Create and push git tag: `git tag cli-v0.X.X && git push origin main --tags`
+3. GitHub Actions automatically publishes to npm
+
+### Q: How do I set up NPM OIDC?
+**A:** See [PUBLISHING_GUIDE.md](./PUBLISHING_GUIDE.md#-npm-token-setup-oidc-method---recommended)
+- One-time setup at https://www.npmjs.com/settings/@docubook/access
 - No secrets needed in GitHub
-- Workflow is already OIDC-ready
-- Security benefits explained
+- Secure & recommended approach
 
-### Q: My build is failing, what do I do?
-**A:** Try this:
-```bash
-pnpm clean              # Clear build cache
-pnpm install            # Fresh install
-pnpm build --no-cache   # Rebuild without cache
-```
-Then check [MONOREPO_COMMANDS.md](./MONOREPO_COMMANDS.md) for detailed troubleshooting.
+### Q: How does the CLI detect my package manager?
+**A:** Check [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)
+- Auto-detects from environment variables
+- Supports npm, pnpm, yarn, bun
+- Works with global install or npx
 
 ---
 
-## 📖 Documentation Standards
+## 📌 Key Files
 
-All guides in this folder follow these standards:
+### CLI Package
+- `packages/cli/package.json` - Version & entry point
+- `packages/cli/src/index.js` - CLI entry point
+- `packages/cli/src/tui/ascii.js` - ASCII art logo
+- `packages/cli/src/tui/renderer.js` - UI/welcome screen
+- `packages/cli/build.js` - Template bundling script
 
-- **Clear Hierarchy:** Use headings to organize content
-- **Code Examples:** Show practical examples for every concept
-- **Quick Reference:** Provide tables and summaries
-- **Do's and Don'ts:** Highlight best practices
-- **Related Links:** Link to related guides
-- **Troubleshooting:** Include common issues and solutions
-
----
-
-## 🚀 Tips for Success
-
-1. **Read the right guide:** Match your task to the appropriate guide
-2. **Use examples:** Copy-paste commands that match your scenario
-3. **Check `pnpm list`:** Always verify dependencies before debugging
-4. **Run `pnpm clean`:** When in doubt, clean and rebuild
-5. **Follow rules:** Consistency prevents 90% of problems
+### Workflows
+- `.github/workflows/build.yml` - Build & test on PR
+- `.github/workflows/publish-cli.yml` - Publish on git tag
 
 ---
 
-## 📞 Need Help?
+## ✨ Latest Updates (Session)
 
-1. Check if your question is answered in these guides
-2. Search the repository for similar issues
-3. Check the related guide's troubleshooting section
-4. Review the command examples provided
+### CLI Improvements
+- ✅ Added "files" field to package.json (include dist/ in npm)
+- ✅ Implemented ASCII art logo with cyan styling
+- ✅ Made version dynamic from package.json
+- ✅ Updated OIDC documentation with full setup guide
+- ✅ Fixed ESLint warnings
+- ✅ Removed unused TypeScript config
 
----
-
-### Guide Index by Task
-
-### I want to...
-
-**...start developing**
-→ [MONOREPO_COMMANDS.md](./MONOREPO_COMMANDS.md#-development)
-
-**...understand the project structure**
-→ [ARCHITECTURE_DIAGRAM.md](./ARCHITECTURE_DIAGRAM.md)
-
-**...add a new dependency**
-→ [WORKSPACE_RULES.md](./WORKSPACE_RULES.md#-when-to-add-dependencies)
-
-**...build the project**
-→ [MONOREPO_COMMANDS.md](./MONOREPO_COMMANDS.md#-building)
-
-**...fix lint/format issues**
-→ [MONOREPO_COMMANDS.md](./MONOREPO_COMMANDS.md#-linting)
-
-**...publish a package**
-→ [PUBLISHING_GUIDE.md](./PUBLISHING_GUIDE.md)
-
-**...set up NPM OIDC publishing**
-→ [PUBLISHING_GUIDE.md](./PUBLISHING_GUIDE.md#-npm-token-setup-oidc-method---recommended)
-
-**...use the template**
-→ [TEMPLATE_BUNDLING_FAQ.md](./TEMPLATE_BUNDLING_FAQ.md)
-
-**...understand dependencies**
-→ [WORKSPACE_RULES.md](./WORKSPACE_RULES.md)
-
-**...integrate DocuBook**
-→ [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)
+### Documentation Updated
+- ✅ Updated PUBLISHING_GUIDE.md with detailed OIDC setup
+- ✅ Enhanced README.md with quick reference
+- ✅ Added publishing checklist
+- ✅ Simplified guide index (kept only active guides)
 
 ---
 
-Last Updated: March 13, 2026
+**Last Updated:** March 13, 2026

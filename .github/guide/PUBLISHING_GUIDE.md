@@ -2,6 +2,13 @@
 
 This guide explains how to publish the CLI to npm and manage template bundling.
 
+## 📝 Latest Updates
+
+- ✅ Templates now properly included in npm package (fixed with "files" field)
+- ✅ ASCII art logo with cyan styling added to welcome screen
+- ✅ Dynamic version from package.json
+- ✅ CLI ready for production publishing
+
 ## Overview
 
 The CLI uses a **bundled template** strategy (like VitePress):
