@@ -40,8 +40,8 @@ export function initializeProgram(version) {
           throw new Error("Could not determine latest version from npm registry");
         }
 
-        // Stop spinner but keep the "Checking for updates..." line above
-        spinner.stop();
+        // Replace spinner with a succeeded state to preserve the "Checking for updates..." line
+        spinner.succeed('Checking for updates...');
 
         if (latest === version) {
           console.log(`No update needed, current version is ${version}, fetched latest release is ${latest}`);
