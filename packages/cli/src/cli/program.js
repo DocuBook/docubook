@@ -60,8 +60,11 @@ async function _fetchChangelogFromGitHub(version) {
 function _extractVersionSection(changelogText, version) {
   if (!changelogText) return null;
   const lines = changelogText.split(/\r?\n/);
-  // Look for headings that include the version (e.g. "## v1.2.3" or "## 1.2.3")
-  const headerRe = new RegExp(`^#{1,3}\\s*(?:v)?${version.replace(/\./g, "\\.")}(?:\\b|\\D)`, "i");
+  // Look for level-2 headings that include the version
+  // Matches patterns like "## cli-v0.2.7", "## v0.2.7", or "## 0.2.7"
+  // Use exactly "##" (level 2), not "###" or other levels
+  const versionEscaped = version.replace(/\./g, "\\.");
+  const headerRe = new RegExp(`^##\\s*(?:cli-)?v?${versionEscaped}(?:\\b|\\D)`, "i");
   let start = -1;
   for (let i = 0; i < lines.length; i++) {
     if (headerRe.test(lines[i])) {
