@@ -5,12 +5,11 @@
   "type": "module",
   "files": [
     "src",
-    "dist",
     "build.js",
     "README.md"
   ],
   "bin": {
-    "docubook": "./src/index.js"
+    "docubook": "src/index.js"
   },
   "main": "./src/index.js",
   "scripts": {
@@ -27,7 +26,10 @@
     "template"
   ],
   "homepage": "https://docubook.pro/",
-  "repository": "github:DocuBook/docubook",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DocuBook/docubook"
+  },
   "author": "wildan.nrs",
   "author-url": "https://wildan.dev",
   "license": "MIT",
