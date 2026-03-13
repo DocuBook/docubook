@@ -3,7 +3,7 @@
     {
       "id": "nextjs-vercel",
       "name": "nextjs-vercel",
-      "description": "Modern documentation with Next.js and Vercel deployment",
+      "description": "Next.js and Vercel deployment (optimized for vercel)",
       "features": [
         "Next.js 16",
         "React 19",
@@ -19,7 +19,7 @@
     {
       "id": "nextjs-docker",
       "name": "nextjs-docker",
-      "description": "Modern documentation with Next.js standalone and Docker deployment",
+      "description": "Next.js standalone with Docker image (optimized for coolify, etc.)",
       "features": [
         "Next.js 16",
         "React 19",
