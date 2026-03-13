@@ -1,12 +1,12 @@
 {
   "name": "@docubook/cli",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "DocuBook CLI tool that helps you initialize, update, and deploy documentation directly from your terminal.",
   "type": "module",
   "files": [
     "src",
-    "build.js",
-    "README.md"
+    "README.md",
+    "templates.json"
   ],
   "bin": {
     "docubook": "src/index.js"
@@ -14,7 +14,6 @@
   "main": "./src/index.js",
   "scripts": {
     "dev": "node src/index.js",
-    "build": "node build.js",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix"
   },

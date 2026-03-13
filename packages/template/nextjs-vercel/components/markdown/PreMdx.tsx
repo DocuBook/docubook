@@ -11,7 +11,7 @@ import {
   SiSwift,
   SiKotlin,
   SiHtml5,
-  SiCss3,
+  SiCss,
   SiSass,
   SiPostgresql,
   SiGraphql,
@@ -68,7 +68,7 @@ const LanguageIcon = ({ lang }: { lang: string }) => {
     js: <SiJavascript {...iconProps} />,
     javascript: <SiJavascript {...iconProps} />,
     html: <SiHtml5 {...iconProps} />,
-    css: <SiCss3 {...iconProps} />,
+    css: <SiCss {...iconProps} />,
     scss: <SiSass {...iconProps} />,
     sass: <SiSass {...iconProps} />,
   };

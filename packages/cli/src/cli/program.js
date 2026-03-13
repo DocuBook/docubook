@@ -63,7 +63,7 @@ export function initializeProgram(version) {
 
         // Show success message
         const pmInfo = getPackageManagerInfo(detectedPM);
-        renderDone(userInput.directoryName, detectedPM, pmInfo.devCmd);
+        renderDone(userInput.directoryName, detectedPM, pmInfo.devCmd, userInput.autoInstall !== false);
       } catch (err) {
         renderError(err.message || "An unexpected error occurred.");
         log.error(err.message || "An unexpected error occurred.");

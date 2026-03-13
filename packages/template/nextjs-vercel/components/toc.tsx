@@ -4,7 +4,7 @@ import TocObserver from "./TocObserver"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ListIcon } from "lucide-react"
 import Sponsor from "./Sponsor"
-import { useActiveSection } from "@/.hooks"
+import { useActiveSection } from "@/hooks"
 import { TocItem } from "@/lib/toc"
 
 export default function Toc({ tocs }: { tocs: TocItem[] }) {

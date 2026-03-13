@@ -1,5 +1,6 @@
 {
-  "name": "docubook/react-router",
+  "name": "docubook",
+  "template": "react-router",
   "version": "1.0.0",
   "description": "React Router documentation template for DocuBook",
   "private": true,
