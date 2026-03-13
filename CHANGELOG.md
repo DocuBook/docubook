@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## cli-v0.2.7 - 2026-03-14
+
+### Fixed
+- Semantic version comparison in `docubook update` command
+  - Replaced string equality (`===`) with `semver.lt()` for proper version comparison
+  - Fixes issue where second `docubook update` would re-fetch and downgrade instead of detecting current version
+  - Now properly handles pre-release versions (1.0.0-beta.1 < 1.0.0) and build metadata (1.0.0+build.1)
+  - Added `semver ^7.7.4` as dependency
+
+### Improved
+- Build performance by replacing pnpm global overrides with `.pnpmfile.cjs` hook
+  - More efficient dependency resolution (only affects packages that depend on flatted)
+  - Avoids full tree re-resolution, reducing pnpm install/build overhead
+  - Maintains flatted >=3.4.0 security fix for DoS vulnerability
+
+---
+
 ## cli-v0.2.6 - 2026-03-14
 
 ### Fixed
