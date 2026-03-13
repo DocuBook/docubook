@@ -1,16 +1,14 @@
-// Hook to enforce flatted >=3.4.0 only in packages that actually use it
-// This is more efficient than global overrides which force full resolution
-
-function afterResolve(pkg, context) {
-  // Only override flatted version in packages that depend on it directly
-  if (pkg.dependencies && pkg.dependencies.flatted) {
-    pkg.dependencies.flatted = '>=3.4.0';
-  }
-  return pkg;
-}
+// Hook to enforce flatted >=3.4.0 to fix DoS vulnerability
+// This is applied to all packages with flatted dependency
 
 module.exports = {
   hooks: {
-    afterResolve,
+    afterResolve(pkg) {
+      if (pkg.dependencies && pkg.dependencies.flatted) {
+        pkg.dependencies.flatted = '>=3.4.0';
+      }
+      return pkg;
+    },
   },
 };
+
