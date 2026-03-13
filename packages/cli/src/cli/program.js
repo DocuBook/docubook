@@ -9,6 +9,106 @@ import { detectPackageManager, getPackageManagerInfo, getPackageManagerVersion }
 import { getAvailableTemplates, getTemplate, getDefaultTemplate } from "../utils/templateDetect.js";
 import { execSync } from "child_process";
 import ora from "ora";
+import fs from "fs";
+import os from "os";
+import path from "path";
+
+// Helpers to show changelog once per installed version. Stores shown versions under
+// $HOME/.docubook_cli_seen_changelogs.json as a map: { "@docubook/cli": ["1.2.3"] }
+const _CHANGELOG_STORE = path.join(os.homedir(), ".docubook_cli_seen_changelogs.json");
+function _readChangelogStore() {
+  try {
+    const raw = fs.readFileSync(_CHANGELOG_STORE, "utf8");
+    return JSON.parse(raw || "{}");
+  } catch {
+    return {};
+  }
+}
+function _writeChangelogStore(obj) {
+  try {
+    fs.writeFileSync(_CHANGELOG_STORE, JSON.stringify(obj, null, 2), { mode: 0o600 });
+  } catch {
+    // non-fatal
+  }
+}
+
+async function _fetchChangelogFromGitHub(tag) {
+  // Try to fetch CHANGELOG.md from the repo tag. Support several tag-name variants
+  // (e.g. v1.2.3, 1.2.3, cli-v1.2.3, cli-1.2.3) and common filename variants.
+  const repo = "DocuBook/docubook";
+
+  const bare = tag.replace(/^v/, "");
+  const variants = [tag, bare, `cli-${tag}`, `cli-${bare}`].filter(Boolean);
+
+  const candidates = [];
+  for (const v of variants) {
+    candidates.push(`https://raw.githubusercontent.com/${repo}/${v}/CHANGELOG.md`);
+    candidates.push(`https://raw.githubusercontent.com/${repo}/${v}/CHANGELOG.MD`);
+  }
+  // final fallback to main branch
+  candidates.push(`https://raw.githubusercontent.com/${repo}/main/CHANGELOG.md`);
+
+  for (const url of candidates) {
+    try {
+      const res = await fetch(url);
+      if (res && res.ok) return await res.text();
+    } catch {
+      // ignore and try next
+    }
+  }
+  return null;
+}
+
+function _extractVersionSection(changelogText, version) {
+  if (!changelogText) return null;
+  const lines = changelogText.split(/\r?\n/);
+  // Look for headings that include the version (e.g. "## v1.2.3" or "## 1.2.3")
+  const headerRe = new RegExp(`^#{1,3}\\s*(?:v)?${version.replace(/\./g, "\\.")}(?:\\b|\\D)`, "i");
+  let start = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (headerRe.test(lines[i])) {
+      start = i;
+      break;
+    }
+  }
+  if (start === -1) return changelogText.slice(0, 2000); // fallback: return beginning of changelog
+
+  let end = lines.length;
+  for (let j = start + 1; j < lines.length; j++) {
+    if (/^#{1,3}\s*/.test(lines[j])) {
+      end = j;
+      break;
+    }
+  }
+  return lines.slice(start, end).join("\n");
+}
+
+async function showChangelogOnce(pkgName, version) {
+  try {
+    const store = _readChangelogStore();
+    const seen = Array.isArray(store[pkgName]) ? store[pkgName] : [];
+    if (seen.includes(version)) return;
+
+    const tag = version.startsWith("v") ? version : `v${version}`;
+    const changelog = await _fetchChangelogFromGitHub(tag);
+    if (!changelog) return;
+
+    const section = _extractVersionSection(changelog, version);
+    if (!section) return;
+
+    // Print a concise changelog section
+    console.log("\n=== DocuBook CLI changelog (new) ===\n");
+    console.log(section.trim());
+    console.log("\n(End of changelog)\n");
+
+    // Mark as shown
+    store[pkgName] = Array.from(new Set([...seen, version]));
+    _writeChangelogStore(store);
+  } catch {
+    // silent on any error - changelog is a nicety
+  }
+}
+
 
 /**
  * Initializes the CLI program
@@ -59,6 +159,12 @@ export function initializeProgram(version) {
         try {
           execSync(cmd, { stdio: "inherit" });
           console.log(`Successfully updated to ${latest}`);
+          // Try to show changelog for the newly installed version once
+          try {
+            await showChangelogOnce(pkgName, latest);
+          } catch {
+            // non-fatal
+          }
         } catch (installErr) {
           // If install fails, provide a helpful message
           console.error(`Update failed: ${installErr.message || installErr}`);
@@ -71,6 +177,16 @@ export function initializeProgram(version) {
         console.error(err.message || err);
         process.exitCode = 1;
       }
+    });
+
+  // Expose a `version` subcommand: `docubook version`
+  program
+    .command('version')
+    .description('Print the DocuBook CLI version')
+    .action(() => {
+      console.log(`DocuBook CLI ${version}`);
+      console.log("Run 'docubook update' to check for updates.");
+      process.exit(0);
     });
 
   // Default behavior (create project)
