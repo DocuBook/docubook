@@ -2,14 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-Format conventions
-- Use a top-level heading per version. Either `## cli-vX.Y.Z - YYYY-MM-DD` is accepted.
-- Include short sections (Added, Changed, Fixed, Removed) under each version.
-- Keep entries brief — one line per bullet.
-- The CLI will attempt to fetch the section matching the installed tag (e.g. `cli-v0.2.5`). Keeping a heading per version ensures the CLI shows the correct section once after update.
----
-
-## cli-v0.2.6 - TBD
+## cli-v0.2.6 - 2026-03-14
 
 ### Fixed
 - Changelog section extraction regex matching subsection headings (###) instead of only version headings (##)
