@@ -99,7 +99,8 @@ async function showChangelogOnce(pkgName, version) {
     // Print a concise changelog section
     console.log("\n=== DocuBook CLI changelog (new) ===\n");
     console.log(section.trim());
-    console.log("\n(End of changelog)\n");
+    console.log("\nFor full changelog, visit:");
+    console.log(`  https://github.com/DocuBook/docubook/blob/main/CHANGELOG.md\n`);
 
     // Mark as shown
     store[pkgName] = Array.from(new Set([...seen, version]));
