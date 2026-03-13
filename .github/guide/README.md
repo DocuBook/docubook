@@ -45,7 +45,7 @@ pnpm typecheck
 
 ```bash
 # 1. Update version in packages/cli/package.json
-# "version": "0.1.1"
+# "version": "0.2.0"
 
 # 2. Build & test
 pnpm build
@@ -53,8 +53,8 @@ pnpm lint
 pnpm typecheck
 
 # 3. Commit & tag
-git commit -m "chore: release @docubook/cli@0.1.1"
-git tag cli-v0.1.1
+git commit -m "chore: release @docubook/cli@0.2.0"
+git tag cli-v0.2.0
 git push origin main --tags
 
 # 4. GitHub Actions publishes automatically
