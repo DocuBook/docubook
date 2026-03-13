@@ -1,4 +1,4 @@
-import { colors, header, success, info, loading, dim } from './colors.js';
+import { colors, success, info, loading, dim } from './colors.js';
 import { createWelcomeBanner, createScaffoldingBanner, createSuccessBanner } from './ascii.js';
 
 const BORDER_WIDTH = 40;
