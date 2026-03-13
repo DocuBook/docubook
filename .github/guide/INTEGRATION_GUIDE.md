@@ -97,20 +97,8 @@ Detection happens in `src/utils/packageManagerDetect.js`:
 2. Falls back to `npm_config_user_agent` environment variable
 3. Defaults to `npm` if unknown
 
-### 2. Welcome Animation
 
-The CLI displays a beautiful welcome screen using the custom TUI:
-```
-╭──────────────────────────────────────╮
-│                                      │
-│ ✨  DocuBook CLI                      │
-│                                      │
-│ Modern docs scaffold tool            │
-│                                      │
-╰──────────────────────────────────────╯
-```
-
-### 3. Template Selection
+### 2. Template Selection
 
 User is prompted to select a template:
 ```
@@ -121,7 +109,7 @@ User is prompted to select a template:
 
 Available templates are discovered from `packages/cli/dist/` by scanning for `template.config.json`.
 
-### 4. Project Scaffolding
+### 3. Project Scaffolding
 
 The CLI:
 1. Creates the project directory
@@ -130,7 +118,7 @@ The CLI:
 4. Updates `package.json` with project name
 5. (Optional) Installs dependencies
 
-### 5. Success Message
+### 4. Success Message
 
 Shows next steps with relevant commands based on detected package manager.
 
