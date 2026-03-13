@@ -1,209 +1,95 @@
 # DocuBook – Copilot Instructions
 
-## Build & Dev Commands
+## Build, lint, and validation commands
 
-Run from the monorepo root unless noted:
-
-```bash
-pnpm dev              # Start all dev servers (Turborepo)
-pnpm dev:web          # Start only the web app (apps/web)
-pnpm build            # Build all packages
-pnpm lint             # Lint all packages
-pnpm lint:fix         # Auto-fix lint issues
-pnpm format           # Format with Prettier
-pnpm format:check     # Check formatting without writing
-pnpm typecheck        # Type-check all packages
-pnpm clean            # Remove build artifacts
-```
-
-From `apps/web`:
+Run from the monorepo root unless a section says otherwise:
 
 ```bash
-pnpm dev              # next dev
-pnpm build            # next build
-pnpm lint             # eslint .
+pnpm dev                     # Run all Turborepo dev tasks
+pnpm dev:web                 # Run only the Next.js docs app
+pnpm build                   # Build the workspace
+pnpm lint                    # Lint all packages/apps with Turbo
+pnpm lint:fix                # Auto-fix lint issues where scripts exist
+pnpm typecheck               # Run workspace type-check tasks
+pnpm format                  # Prettier write
+pnpm format:check            # Prettier check
+pnpm clean                   # Remove Turbo outputs
 ```
 
-From `packages/cli`:
+Target a single workspace from the root with pnpm filters:
 
 ```bash
-pnpm dev              # node src/index.js
-pnpm build            # node build.js
-pnpm lint             # eslint src/
-pnpm lint:fix         # eslint src/ --fix
+pnpm --filter docubook build
+pnpm --filter docubook lint
+pnpm --filter @docubook/cli lint
+pnpm --filter @docubook/ui typecheck
 ```
 
-**Note**: There are no tests configured in this project.
+Direct workspace commands:
 
-## Architecture Overview
+```bash
+# apps/web
+cd apps/web && pnpm dev
+cd apps/web && pnpm build
+cd apps/web && pnpm lint
 
-This is a pnpm + Turborepo monorepo with one active app (`apps/web`) and shared packages (`packages/eslint-config`, `packages/typescript-config`, `packages/ui`, `packages/cli`).
-
-### CLI Package
-
-The `@docubook/cli` package (`packages/cli/`) provides a terminal-based tool for initializing and managing DocuBook projects.
-
-**Key files & structure**:
-- `src/index.js` — Entry point (via `bin.docubook` in package.json)
-- `src/tui/` — Terminal UI components:
-  - `ascii.js` — ASCII art logos, welcome banner, and boxed messages
-  - `colors.js` — ANSI color codes
-  - `renderer.js` — UI rendering functions
-  - `spinners.js` — Loading spinners
-  - `state.js` — CLI state management
-- `src/utils/` — Utility functions for package manager detection, template detection, logging
-- `build.js` — Build script to compile the CLI
-
-**Important conventions**:
-- Use ES modules (`"type": "module"` in package.json)
-- ASCII logos and TUI components are in `src/tui/`
-- Welcome banner uses magenta borders with cyan logo and gray descriptive text
-- All colors defined in `colors.js` for consistency
-- Boxed messages: use `createBoxedMessage(title, content, color)` for styled alerts (supports `yellow`, `cyan`, `magenta`, `green`)
-
-### Content System
-
-- MDX files live in `apps/web/docs/`
-- The catch-all route `apps/web/app/docs/[[...slug]]/page.tsx` handles all doc pages
-- Content is compiled server-side with `next-mdx-remote/rsc`
-- Supported file patterns: `docs/{slug}.mdx` or `docs/{slug}/index.mdx`
-- YAML frontmatter (via `gray-matter`) provides `title`, `description`, `image`, `date`
-
-### Navigation & Route Config
-
-All navigation, sidebar structure, metadata, and Algolia search config are defined in a single file: `apps/web/docu.json`. The file is validated against a JSON schema (`"$schema": "https://docubook.pro/docu.schema.json"`).
-
-Route entries use this shape (defined in `lib/routes.ts`):
-
-```typescript
-type EachRoute = {
-  title: string;
-  href: string;       // relative segment, e.g. "/introduction"
-  noLink?: true;      // section header — no clickable page
-  context?: { icon: string; description: string; title?: string };
-  items?: EachRoute[];
-};
+# packages/cli
+cd packages/cli && pnpm dev
+cd packages/cli && pnpm lint
 ```
 
-`ROUTES` (exported from `lib/routes.ts`) is the full tree; `page_routes` is its flattened list used for prev/next pagination. Both are derived directly from `docu.json` — editing the JSON is all that's needed to change navigation.
+There is currently no automated test script configured in the workspace packages, so there is no
+full-suite or single-test command to run yet.
 
-### MDX Component Registration
+## High-level architecture
 
-Custom MDX components are registered in `apps/web/lib/markdown.ts` in the `components` object. When adding a new MDX component, export it from `apps/web/components/markdown/` and add it to the `components` map in `markdown.ts`.
+This repository is a pnpm + Turborepo monorepo. The main product is the Next.js docs site in
+`apps/web`; `packages/cli` is a separate terminal tool for scaffolding/managing DocuBook projects;
+`packages/eslint-config` and `packages/typescript-config` provide shared tooling presets.
 
-MDX component files follow the naming pattern `{ComponentName}Mdx.tsx` (e.g., `CardMdx.tsx`, `NoteMdx.tsx`).
+For the web app, `apps/web/docu.json` is the main source of truth for docs navigation and site
+configuration. It drives navbar items, footer data, metadata, repository edit links, search mode,
+and the docs route tree. `apps/web/lib/routes.ts` exports that tree as `ROUTES` and also flattens it
+into `page_routes`, which powers prev/next pagination and related navigation.
 
-Available MDX components (usable directly in `.mdx` files):
+Docs pages are rendered through the catch-all route `apps/web/app/docs/[[...slug]]/page.tsx`. That
+page calls helpers in `apps/web/lib/markdown.ts`, which resolve each slug to either
+`apps/web/docs/{slug}.mdx` or `apps/web/docs/{slug}/index.mdx`, parse YAML frontmatter, compile the
+MDX with `next-mdx-remote/rsc`, extract the table of contents, and expose the source file path for
+the "Edit this page" link.
 
-| Component | Source file |
-|---|---|
-| `<Note>` | `NoteMdx.tsx` |
-| `<Card>`, `<CardGroup>` | `CardMdx.tsx`, `CardGroupMdx.tsx` |
-| `<Accordion>`, `<AccordionGroup>` | `AccordionMdx.tsx`, `AccordionGroupMdx.tsx` |
-| `<Stepper>`, `<StepperItem>` | `StepperMdx.tsx` |
-| `<Tabs>`, `<TabsList>`, `<TabsTrigger>`, `<TabsContent>` | `ui/tabs` |
-| `<Button>` | `ButtonMdx.tsx` |
-| `<Kbd>` | `KeyboardMdx.tsx` |
-| `<Youtube>` | `YoutubeMdx.tsx` |
-| `<Tooltip>` | `TooltipsMdx.tsx` |
-| `<File>`, `<Files>`, `<Folder>` | `FileTreeMdx.tsx` |
-| `<Release>`, `<Changes>` | `ReleaseMdx.tsx` |
-| `<Outlet>` | `OutletMdx.tsx` — renders child route cards for a `noLink` section |
+The MDX pipeline in `apps/web/lib/markdown.ts` is where custom markdown components are wired in. It
+overrides `pre`, `img`, `a`, and table elements globally, and also registers DocuBook-specific
+components such as `Note`, `Card`, `Accordion`, `Stepper`, `Release`, `FileTree`, and `Outlet`.
 
-`<img>`, `<a>`, `<pre>`, and all `<table>` elements are also overridden globally.
+App-wide layout flows through `apps/web/app/layout.tsx`, which wraps the site in `ThemeProvider`,
+`SearchProvider`, navbar, and footer. The docs section adds `Leftbar` and `DocsNavbar` in
+`apps/web/app/docs/layout.tsx`. Search behavior is config-driven: `apps/web/lib/search/config.ts`
+reads `docu.json`, and the Algolia keys come from `NEXT_PUBLIC_ALGOLIA_DOCSEARCH_*` environment
+variables.
 
-### Search
+The CLI package is independent of the Next app. `packages/cli/src/index.js` is the executable entry
+point, and the terminal UI is split under `packages/cli/src/tui/` for color tokens, ASCII banners,
+render helpers, and boxed messages.
 
-Powered by Algolia DocSearch. Config comes entirely from environment variables:
+## Key conventions
 
-```
-NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_ID
-NEXT_PUBLIC_ALGOLIA_DOCSEARCH_API_KEY
-NEXT_PUBLIC_ALGOLIA_DOCSEARCH_INDEX_NAME
-NEXT_PUBLIC_ALGOLIA_DOCSEARCH_ASKAI_ASSISTANT_ID
-```
-
-### Layouts
-
-- `app/layout.tsx` — Root: provides `ThemeProvider`, `SearchProvider`, `Navbar`, `Footer`
-- `app/docs/layout.tsx` — Docs: adds `Leftbar` (sidebar) and `DocsNavbar`
-- `app/docs/[[...slug]]/page.tsx` — Renders MDX content with breadcrumb, TOC, edit link, and prev/next pagination
-
-
-## Key Conventions
-
-### CLI Development (packages/cli)
-
-- Use **ES modules** throughout (CommonJS not supported)
-- Colors are defined in `src/tui/colors.js` — always use the `colors` object for ANSI codes
-- ASCII art components go in `src/tui/ascii.js`; export as named constants (e.g., `DOCUBOOK_LOGO_FULL`)
-- Banner functions (e.g., `createWelcomeBanner`) should return fully formatted strings with ANSI codes
-- Terminal UI always uses: **magenta** for borders, **cyan** for accents/links, **gray** for descriptions
-
-### TypeScript
-
-- Strict mode throughout; avoid `any` (use `unknown`)
-- Prefer `interface` for component props; use `type` for unions and utility types
-- Prefix intentionally unused params with `_` (e.g., `_event`)
-
-### UI Components (Radix-based)
-
-The canonical pattern for `components/ui/` components:
-
-```typescript
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
-
-const buttonVariants = cva("base-classes", {
-  variants: { variant: { default: "..." }, size: { default: "..." } },
-  defaultVariants: { variant: "default", size: "default" },
-})
-
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean
-}
-
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button"
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
-  }
-)
-Button.displayName = "Button"
-
-export { Button, buttonVariants }
-```
-
-Key points: extend the native HTML element's attributes, expose `asChild` via `Slot`, always set `displayName`.
-
-### Components
-
-- Use `React.forwardRef` for components accepting refs; set `displayName`
-- Use `class-variance-authority` (CVA) for variant-based props
-- Use `cn()` (from `lib/utils.ts`) to merge Tailwind classes — `cn` wraps `clsx` + `tailwind-merge`
-
-### Client vs Server Components
-
-Default to Server Components. Add `"use client"` only when using hooks, browser APIs, or client-side event handlers.
-
-### Lucide Icons in MDX
-
-Icon names in MDX props are string-based and resolved dynamically:
-
-```typescript
-const Icon = icon ? (Icons[icon] as React.FC<{ className?: string }>) : null;
-```
-
-Pass the exact Lucide icon name as a string (e.g., `icon="BookOpen"`).
-
-### Imports
-
-Order: external packages → internal aliases (`@/`) → relative paths. Use named exports throughout.
-
-### Styling
-
-Use Tailwind CSS exclusively. Use `@tailwindcss/typography` (`prose` classes) for MDX body content. Custom overrides go in `apps/web/styles/override.css`.
+- Keep docs content under `apps/web/docs/`, and keep the file paths aligned with `docu.json` route
+  `href` segments. A page can live at either `docs/{slug}.mdx` or `docs/{slug}/index.mdx`.
+- Doc frontmatter is expected to provide `title`, `description`, `image`, and `date`. `page.tsx`
+  uses it for metadata, page headers, publish date, and OG image generation.
+- When adding a new MDX component, create it under `apps/web/components/markdown/` and register it
+  in the `components` map in `apps/web/lib/markdown.ts`; adding the component file alone is not
+  enough.
+- `noLink: true` route groups in `docu.json` are section containers rather than standalone pages.
+  The `Outlet` MDX component is used to render cards for child routes of those sections.
+- UI primitives in `apps/web/components/ui/` follow the Radix + CVA pattern: native element props,
+  `asChild` via `Slot`, class composition through `cn()`, and `displayName` set on `forwardRef`
+  components.
+- Prefer Server Components by default in the Next app. Add `"use client"` only when a component
+  needs hooks, browser APIs, or interactive handlers.
+- Tailwind class merging goes through `apps/web/lib/utils.ts` via `cn()`, which wraps `clsx` and
+  `tailwind-merge`.
+- In the CLI package, stay with ES modules, reuse ANSI colors from `packages/cli/src/tui/colors.js`,
+  and keep banners/boxed terminal output centralized in `packages/cli/src/tui/ascii.js` instead of
+  inlining escape codes in command handlers.
