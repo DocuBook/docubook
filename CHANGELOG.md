@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## cli-v0.2.8 - 2026-03-14
+
+### Fixed
+  - Changelog extraction regex now matches only level-2 headings (##) instead of any heading level
+    - Prevents matching subsection headings (###) which was causing duplicate changelog content
+  - Added support for `cli-v` prefix in version headers to match actual changelog format
+    - Now correctly matches patterns: `## cli-v0.2.7`, `## v0.2.7`, or `## 0.2.7`
+  - Changelog now displays only the newly updated version instead of showing multiple versions
+
+---
+
 ## cli-v0.2.7 - 2026-03-14
 
 ### Added
