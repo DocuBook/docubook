@@ -1,3 +1,4 @@
+/* global fetch */
 import { program } from "commander";
 import { collectUserInput } from "./promptHandler.js";
 import { createProject } from "../installer/projectInstaller.js";
@@ -24,10 +25,12 @@ export function initializeProgram(version) {
     .description("Check for updates and install the latest DocuBook CLI globally")
     .action(async () => {
       const pkgName = "@docubook/cli";
+      // declare spinner in outer scope so catch block can safely reference it
+      let spinner;
       try {
         // Fetch package metadata from npm registry
         const encoded = encodeURIComponent(pkgName);
-        const spinner = ora('Checking for updates...').start();
+        spinner = ora('Checking for updates...').start();
         const res = await fetch(`https://registry.npmjs.org/${encoded}`);
         if (!res.ok) {
           spinner.fail(`Failed to fetch registry metadata (status ${res.status})`);
@@ -41,7 +44,7 @@ export function initializeProgram(version) {
         }
 
         // Stop spinner and print a plain "Checking for updates..." line (no check mark)
-        spinner.stop();
+        if (spinner && typeof spinner.stop === 'function') spinner.stop();
         console.log('Checking for updates...');
 
         if (latest === version) {
@@ -64,7 +67,7 @@ export function initializeProgram(version) {
         }
       } catch (err) {
         // ensure spinner is stopped on error
-        try { spinner.stop(); } catch (e) {}
+        if (spinner && typeof spinner.stop === 'function') spinner.stop();
         console.error(err.message || err);
         process.exitCode = 1;
       }
