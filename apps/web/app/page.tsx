@@ -14,9 +14,9 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center px-2 py-8 text-center sm:py-36">
       <Link
-        href="/docs/release" className="flex items-center gap-2 py-6">
+        href="https://www.npmjs.com/package/@docubook/cli" target="_blank" className="flex items-center gap-2 py-6">
         <InteractiveHoverButton>
-          v2.5.2 Available Now!
+          DocuBook CLI - Available Now!
         </InteractiveHoverButton>
       </Link>
       <div className="w-full max-w-[800px] pb-8">
