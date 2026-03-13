@@ -24,11 +24,42 @@ pnpm build            # next build
 pnpm lint             # eslint .
 ```
 
-There are no tests configured in this project.
+From `packages/cli`:
+
+```bash
+pnpm dev              # node src/index.js
+pnpm build            # node build.js
+pnpm lint             # eslint src/
+pnpm lint:fix         # eslint src/ --fix
+```
+
+**Note**: There are no tests configured in this project.
 
 ## Architecture Overview
 
-This is a pnpm + Turborepo monorepo with one active app (`apps/web`) and shared packages (`packages/eslint-config`, `packages/typescript-config`, `packages/ui`).
+This is a pnpm + Turborepo monorepo with one active app (`apps/web`) and shared packages (`packages/eslint-config`, `packages/typescript-config`, `packages/ui`, `packages/cli`).
+
+### CLI Package
+
+The `@docubook/cli` package (`packages/cli/`) provides a terminal-based tool for initializing and managing DocuBook projects.
+
+**Key files & structure**:
+- `src/index.js` — Entry point (via `bin.docubook` in package.json)
+- `src/tui/` — Terminal UI components:
+  - `ascii.js` — ASCII art logos, welcome banner, and boxed messages
+  - `colors.js` — ANSI color codes
+  - `renderer.js` — UI rendering functions
+  - `spinners.js` — Loading spinners
+  - `state.js` — CLI state management
+- `src/utils/` — Utility functions for package manager detection, template detection, logging
+- `build.js` — Build script to compile the CLI
+
+**Important conventions**:
+- Use ES modules (`"type": "module"` in package.json)
+- ASCII logos and TUI components are in `src/tui/`
+- Welcome banner uses magenta borders with cyan logo and gray descriptive text
+- All colors defined in `colors.js` for consistency
+- Boxed messages: use `createBoxedMessage(title, content, color)` for styled alerts (supports `yellow`, `cyan`, `magenta`, `green`)
 
 ### Content System
 
@@ -98,7 +129,16 @@ NEXT_PUBLIC_ALGOLIA_DOCSEARCH_ASKAI_ASSISTANT_ID
 - `app/docs/layout.tsx` — Docs: adds `Leftbar` (sidebar) and `DocsNavbar`
 - `app/docs/[[...slug]]/page.tsx` — Renders MDX content with breadcrumb, TOC, edit link, and prev/next pagination
 
+
 ## Key Conventions
+
+### CLI Development (packages/cli)
+
+- Use **ES modules** throughout (CommonJS not supported)
+- Colors are defined in `src/tui/colors.js` — always use the `colors` object for ANSI codes
+- ASCII art components go in `src/tui/ascii.js`; export as named constants (e.g., `DOCUBOOK_LOGO_FULL`)
+- Banner functions (e.g., `createWelcomeBanner`) should return fully formatted strings with ANSI codes
+- Terminal UI always uses: **magenta** for borders, **cyan** for accents/links, **gray** for descriptions
 
 ### TypeScript
 
