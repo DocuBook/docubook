@@ -18,7 +18,7 @@ npx @docubook/cli@latest
 
 #### command output
 
-![command output](https://github.com/DocuBook/docubook/blob/main/cli-docubook.png)
+![command output](https://github.com/DocuBook/docubook/blob/main/docubook-cli.png)
 
 ---
 
