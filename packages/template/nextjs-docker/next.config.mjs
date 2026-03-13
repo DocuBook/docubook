@@ -9,7 +9,7 @@ const nextConfig = {
         ],
     },
     experimental: {
-        optimizePackageImports: ["lucide-react"],
+        optimizePackageImports: ["lucide-react", "react-icons"],
     },
 }
 
