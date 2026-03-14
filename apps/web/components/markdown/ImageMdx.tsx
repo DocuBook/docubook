@@ -100,7 +100,7 @@ export default function Image({
                                 exit={{ scale: 0.9, opacity: 0 }}
                                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                                 className="relative max-w-7xl w-full h-full flex items-center justify-center"
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={(e: React.MouseEvent) => e.stopPropagation()}
                             >
                                 <div className="relative w-full h-full flex items-center justify-center" onClick={() => setIsOpen(false)}>
                                     <NextImage
