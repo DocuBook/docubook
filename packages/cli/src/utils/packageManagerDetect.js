@@ -1,16 +1,5 @@
-import { execSync } from 'child_process';
-
-// Map argv[1] patterns to package managers
-const PM_DETECTION_MAP = {
-  'npx': 'npm',
-  'npm': 'npm',
-  'bunx': 'bun',
-  'bun': 'bun',
-  'pnpm': 'pnpm',
-  'yarn': 'yarn',
-};
-
-// Environment variable detection
+// Detect package manager from environment and process arguments
+// Used internally for auto-install, not for user prompting
 function detectFromEnv() {
   const userAgent = process.env.npm_config_user_agent;
   if (!userAgent) return null;
@@ -25,36 +14,27 @@ function detectFromEnv() {
 
 // Detect from process argv (how the CLI was invoked)
 function detectFromArgv() {
-  // process.argv[1] contains the command that was used
   const argv1 = process.argv[1] || '';
   
-  for (const [pattern, pm] of Object.entries(PM_DETECTION_MAP)) {
-    if (argv1.includes(pattern)) {
-      return pm;
-    }
-  }
+  if (argv1.includes('bunx') || argv1.includes('bun')) return 'bun';
+  if (argv1.includes('pnpm')) return 'pnpm';
+  if (argv1.includes('yarn')) return 'yarn';
+  if (argv1.includes('npx') || argv1.includes('npm')) return 'npm';
   
   return null;
 }
 
-// Get package manager version
-export function getPackageManagerVersion(pm) {
-  try {
-    const version = execSync(`${pm} --version`, { encoding: 'utf-8' }).trim();
-    return version;
-  } catch {
-    return 'unknown';
-  }
-}
-
-// Detect package manager
-export function detectPackageManager() {
-  // Priority: argv > env > default
-  const detected = detectFromArgv() || detectFromEnv();
+/**
+ * Detect which package manager invoked the CLI
+ * Used internally for auto-install dependency resolution
+ * @returns {string} Package manager name (default: 'npm')
+ */
+export function detectInstalledPackageManager() {
+  const detected = detectFromEnv() || detectFromArgv();
   return detected || 'npm';
 }
 
-// Package manager info (static, cached)
+// Get package manager info (static, cached)
 const PACKAGE_MANAGER_INFO = {
   npm: {
     name: 'npm',
@@ -78,7 +58,11 @@ const PACKAGE_MANAGER_INFO = {
   },
 };
 
-// Get package manager info
+/**
+ * Get package manager info by name
+ * @param {string} pm - Package manager name
+ * @returns {Object} Package manager info
+ */
 export function getPackageManagerInfo(pm) {
   return PACKAGE_MANAGER_INFO[pm] || PACKAGE_MANAGER_INFO.npm;
 }

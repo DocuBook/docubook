@@ -5,7 +5,6 @@ import ora from "ora";
 import chalk from "chalk";
 import { execSync } from "child_process";
 import log from "../utils/logger.js";
-import { configurePackageManager } from "../utils/packageManager.js";
 import { displayManualSteps } from "../utils/display.js";
 import { renderScaffolding } from "../tui/renderer.js";
 import { getTemplate } from "../utils/templateDetect.js";
@@ -18,7 +17,6 @@ export async function createProject(options) {
   const {
     directoryName,
     packageManager,
-    packageManagerVersion,
     template,
     autoInstall,
     docubookVersion,
@@ -46,19 +44,13 @@ export async function createProject(options) {
 
     copyDirectoryRecursive(templatePath, projectPath);
 
-    // 2. Configure package manager specific settings
-    state?.setCurrentStep("Configuring package manager...");
-    renderScaffolding(state || {});
-    configurePackageManager(packageManager, projectPath);
-
-    // 3. Update package.json
+    // 2. Update package.json
     state?.setCurrentStep("Updating project config...");
     renderScaffolding(state || {});
     const pkgPath = path.join(projectPath, "package.json");
     if (fs.existsSync(pkgPath)) {
       const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
       pkg.name = directoryName;
-      pkg.packageManager = `${packageManager}@${packageManagerVersion}`;
       fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
     }
 

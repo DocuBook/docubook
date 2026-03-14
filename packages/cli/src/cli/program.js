@@ -5,7 +5,7 @@ import { handleUpdate } from "./updateHandler.js";
 import log from "../utils/logger.js";
 import { renderWelcome, renderDone, renderError } from "../tui/renderer.js";
 import { CLIState } from "../tui/state.js";
-import { detectPackageManager, getPackageManagerInfo, getPackageManagerVersion } from "../utils/packageManagerDetect.js";
+import { detectInstalledPackageManager, getPackageManagerInfo } from "../utils/packageManagerDetect.js";
 import { getAvailableTemplates, getTemplate, getDefaultTemplate } from "../utils/templateDetect.js";
 
 /**
@@ -46,12 +46,11 @@ export function initializeProgram(version) {
         renderWelcome(version);
         await new Promise(resolve => setTimeout(resolve, 1500));
 
-        // Auto-detect package manager
-        const detectedPM = detectPackageManager();
-        const pmVersion = getPackageManagerVersion(detectedPM);
-        state.setPackageManager(detectedPM);
+        // Detect package manager used to invoke CLI (for auto-install)
+        const packageManager = detectInstalledPackageManager();
+        state.setPackageManager(packageManager);
 
-        // Get user input
+        // Get user input (only project name if not provided)
         const userInput = await collectUserInput(directory);
         state.setProjectName(userInput.directoryName);
 
@@ -75,8 +74,7 @@ export function initializeProgram(version) {
         // Create project with all information
         await createProject({
           directoryName: userInput.directoryName,
-          packageManager: detectedPM,
-          packageManagerVersion: pmVersion,
+          packageManager: packageManager,
           template: selectedTemplate,
           autoInstall: userInput.autoInstall !== false,
           docubookVersion: version,
@@ -84,8 +82,8 @@ export function initializeProgram(version) {
         });
 
         // Show success message
-        const pmInfo = getPackageManagerInfo(detectedPM);
-        renderDone(userInput.directoryName, detectedPM, pmInfo.devCmd, userInput.autoInstall !== false);
+        const pmInfo = getPackageManagerInfo(packageManager);
+        renderDone(userInput.directoryName, packageManager, pmInfo.devCmd, userInput.autoInstall !== false);
       } catch (err) {
         renderError(err.message || "An unexpected error occurred.");
         log.error(err.message || "An unexpected error occurred.");
