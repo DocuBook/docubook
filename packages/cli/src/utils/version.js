@@ -23,7 +23,7 @@ export function getVersion() {
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
     cachedVersion = packageJson.version || "0.1.0";
     return cachedVersion;
-  } catch (error) {
+  } catch {
     console.warn("Failed to read version from package.json, using fallback");
     return "0.1.0";
   }

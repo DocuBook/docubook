@@ -272,12 +272,8 @@ function installGlobal(packageName, version, packageManager) {
     const nodeEcosystemPMs = ["npm", "pnpm", "yarn"];
     if (nodeEcosystemPMs.includes(packageManager)) {
       console.warn(`\n⚠️ Installation with ${packageManager} failed. Retrying with npm...\n`);
-      try {
-        execSync(`npm install -g ${packageName}@${version}`, { stdio: "inherit" });
-        packageManager = "npm"; // Update for cache clearing below
-      } catch (npmError) {
-        throw npmError;
-      }
+      execSync(`npm install -g ${packageName}@${version}`, { stdio: "inherit" });
+      packageManager = "npm"; // Update for cache clearing below
     } else {
       // Bun or unknown - propagate error
       throw error;
