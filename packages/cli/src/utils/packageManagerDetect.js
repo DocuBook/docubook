@@ -54,30 +54,31 @@ export function detectPackageManager() {
   return detected || 'npm';
 }
 
+// Package manager info (static, cached)
+const PACKAGE_MANAGER_INFO = {
+  npm: {
+    name: 'npm',
+    installCmd: 'npm install',
+    devCmd: 'npm run dev',
+  },
+  yarn: {
+    name: 'yarn',
+    installCmd: 'yarn install',
+    devCmd: 'yarn dev',
+  },
+  pnpm: {
+    name: 'pnpm',
+    installCmd: 'pnpm install',
+    devCmd: 'pnpm dev',
+  },
+  bun: {
+    name: 'bun',
+    installCmd: 'bun install',
+    devCmd: 'bun run dev',
+  },
+};
+
 // Get package manager info
 export function getPackageManagerInfo(pm) {
-  const info = {
-    npm: {
-      name: 'npm',
-      installCmd: 'npm install',
-      devCmd: 'npm run dev',
-    },
-    yarn: {
-      name: 'yarn',
-      installCmd: 'yarn install',
-      devCmd: 'yarn dev',
-    },
-    pnpm: {
-      name: 'pnpm',
-      installCmd: 'pnpm install',
-      devCmd: 'pnpm dev',
-    },
-    bun: {
-      name: 'bun',
-      installCmd: 'bun install',
-      devCmd: 'bun run dev',
-    },
-  };
-
-  return info[pm] || info.npm;
+  return PACKAGE_MANAGER_INFO[pm] || PACKAGE_MANAGER_INFO.npm;
 }
