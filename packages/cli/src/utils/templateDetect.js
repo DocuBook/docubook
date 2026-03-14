@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { getDirname } from './dirname.js';
+import log from './logger.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = getDirname(import.meta.url);
 
 // Get list of available templates
 export function getAvailableTemplates() {
@@ -15,8 +15,8 @@ export function getAvailableTemplates() {
       const data = JSON.parse(content);
       return data.templates || [];
     }
-  } catch {
-    // Fallback to directory scanning
+  } catch (error) {
+    log.debug(`Failed to load templates.json: ${error.message}`);
   }
 
   // Fallback: scan template directories
@@ -47,7 +47,7 @@ export function getAvailableTemplates() {
         description: config.description,
         features: config.features,
       });
-    } catch {
+    } catch (error) {
       console.error(`Failed to read template config for ${entry.name}`);
     }
   }

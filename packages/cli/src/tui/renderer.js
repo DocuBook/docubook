@@ -1,19 +1,8 @@
 import { colors, success, info, loading, dim } from './colors.js';
 import { createWelcomeBanner, createScaffoldingBanner, createSuccessBanner, createBoxedMessage } from './ascii.js';
-import { readFileSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
+import { getVersion } from '../utils/version.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const packageJsonPath = join(__dirname, '../../package.json');
-let version = '0.1.0';
-
-try {
-  const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-  version = packageJson.version || '0.1.0';
-} catch {
-  // Fallback to default version if package.json cannot be read
-}
+const version = getVersion();
 
 export function renderWelcome() {
   console.clear();
