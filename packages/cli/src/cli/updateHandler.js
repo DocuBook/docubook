@@ -28,17 +28,25 @@ function _writeChangelogStore(obj) {
 
 /**
  * Detect which package manager was used to install this CLI globally
- * Returns: 'npm', 'bun', or 'yarn'
+ * Returns: 'npm', 'bun', 'yarn', or 'pnpm'
  */
 function detectInstalledPackageManager() {
   try {
-    // Check npm_config_user_agent or _/npm environment variable
+    // Check npm_config_user_agent environment variable
     const userAgent = process.env.npm_config_user_agent || "";
+    if (userAgent.includes("pnpm")) return "pnpm";
     if (userAgent.includes("bun")) return "bun";
     if (userAgent.includes("yarn")) return "yarn";
     if (userAgent.includes("npm")) return "npm";
 
     // Fallback: check what's available in PATH
+    try {
+      execSync("pnpm --version", { stdio: "ignore" });
+      return "pnpm";
+    } catch {
+      // try next
+    }
+
     try {
       execSync("bun --version", { stdio: "ignore" });
       return "bun";
@@ -224,14 +232,17 @@ async function showChangelogOnce(pkgName, version, releaseInfo) {
 
 /**
  * Install package using detected package manager
- * Supports npm, bun, and yarn
+ * Supports npm, bun, yarn, and pnpm
  */
 function installGlobal(packageName, version, packageManager) {
   let cmd;
 
   switch (packageManager) {
+    case "pnpm":
+      cmd = `pnpm add -g ${packageName}@${version}`;
+      break;
     case "bun":
-      cmd = `bun install -g ${packageName}@${version}`;
+      cmd = `bun add -g ${packageName}@${version}`;
       break;
     case "yarn":
       cmd = `yarn global add ${packageName}@${version}`;
