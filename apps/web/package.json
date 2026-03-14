@@ -1,8 +1,9 @@
 {
-  "name": "docubook",
+  "name": "@docubook/web",
   "description": "The Universal Documentation Engine for React Framework.",
   "template": "nextjs-vercel",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -50,9 +51,8 @@
     "unist-util-visit": "^5.0.0"
   },
   "devDependencies": {
-    "@docubook/eslint-config": "workspace:*",
-    "@docubook/typescript-config": "workspace:*",
-    "@tailwindcss/postcss": "^4.1.18",
+    "@eslint/js": "^9.39.3",
+    "@tailwindcss/postcss": "^4.2.1",
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20.19.30",
     "@types/react": "19.2.8",
@@ -64,8 +64,9 @@
     "postcss": "^8.5.6",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.12",
-    "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3"
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1"
   },
   "overrides": {
     "@types/react": "19.2.8",

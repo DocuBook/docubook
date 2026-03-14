@@ -147,7 +147,7 @@ export default function TocObserver({
                     paddingLeft: `${indent}px`,
                     marginLeft: level > 1 ? "12px" : "0",
                   }}
-                  ref={(el) => {
+                  ref={(el: HTMLAnchorElement | null) => {
                     const map = itemRefs.current
                     if (el) {
                       map.set(id, el)

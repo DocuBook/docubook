@@ -33,7 +33,7 @@ type PreProps = ComponentProps<"pre"> & {
 
 // Component to display an icon based on the programming language
 const LanguageIcon = ({ lang }: { lang: string }) => {
-  const iconProps = { className: "w-4 h-4" };
+  const iconProps = { size: 16, className: "w-4 h-4" };
   const languageToIconMap: Record<string, JSX.Element> = {
     gitignore: <SiGit {...iconProps} />,
     docker: <SiDocker {...iconProps} />,
