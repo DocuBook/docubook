@@ -219,7 +219,7 @@ async function showChangelogOnce(pkgName, version, releaseInfo) {
     console.log(`## ${releaseInfo?.tag_name || `cli-v${version}`}`);
     console.log("");
     console.log(changelog);
-    console.log("\nFor full release notes, visit:");
+    console.log("\nFull changelog, visit:");
     console.log(`  ${releaseInfo?.html_url || `https://github.com/DocuBook/docubook/releases/tag/cli-v${version}`}\n`);
 
     // Mark as shown
