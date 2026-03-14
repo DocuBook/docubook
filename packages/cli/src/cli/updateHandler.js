@@ -32,17 +32,18 @@ function _writeChangelogStore(obj) {
  */
 function detectInstalledPackageManager() {
   try {
-    // Check npm_config_user_agent environment variable
+    // Check npm_config_user_agent environment variable (set by package manager when running scripts)
     const userAgent = process.env.npm_config_user_agent || "";
+    if (userAgent.includes("npm")) return "npm";
     if (userAgent.includes("pnpm")) return "pnpm";
     if (userAgent.includes("bun")) return "bun";
     if (userAgent.includes("yarn")) return "yarn";
-    if (userAgent.includes("npm")) return "npm";
 
     // Fallback: check what's available in PATH
+    // Priority: npm > bun > yarn > pnpm (based on common usage and reliability)
     try {
-      execSync("pnpm --version", { stdio: "ignore" });
-      return "pnpm";
+      execSync("npm --version", { stdio: "ignore" });
+      return "npm";
     } catch {
       // try next
     }
@@ -57,6 +58,13 @@ function detectInstalledPackageManager() {
     try {
       execSync("yarn --version", { stdio: "ignore" });
       return "yarn";
+    } catch {
+      // try next
+    }
+
+    try {
+      execSync("pnpm --version", { stdio: "ignore" });
+      return "pnpm";
     } catch {
       // try next
     }
