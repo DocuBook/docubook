@@ -14,7 +14,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,mdx,css}\" --ignore-path .gitignore",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,mdx,css}\" --ignore-path .gitignore",
     "clean": "turbo clean",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "release:notes": "node scripts/generate-release-notes.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.3",
