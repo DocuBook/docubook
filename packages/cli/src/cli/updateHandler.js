@@ -253,7 +253,25 @@ function installGlobal(packageName, version, packageManager) {
       break;
   }
 
-  execSync(cmd, { stdio: "inherit" });
+  try {
+    execSync(cmd, { stdio: "inherit" });
+  } catch (error) {
+    // For Node ecosystem (npm, pnpm, yarn), fallback to npm on failure
+    // Bun is independent and should not fallback
+    const nodeEcosystemPMs = ["npm", "pnpm", "yarn"];
+    if (nodeEcosystemPMs.includes(packageManager)) {
+      console.warn(`\n⚠️ Installation with ${packageManager} failed. Falling back to npm...\n`);
+      try {
+        execSync(`npm install -g ${packageName}@${version}`, { stdio: "inherit" });
+        packageManager = "npm"; // Update for cache clearing below
+      } catch (npmError) {
+        throw npmError;
+      }
+    } else {
+      // Bun or unknown - propagate error
+      throw error;
+    }
+  }
 
   // Clear package manager cache to ensure symlinks are refreshed
   try {
