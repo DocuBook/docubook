@@ -14,8 +14,8 @@ For a faster setup, use the `cli` command to create a new DocuBook project in on
   <TabsList>
     <TabsTrigger value="npm">npm</TabsTrigger>
     <TabsTrigger value="pnpm">pnpm</TabsTrigger>
-    <TabsTrigger value="bun">bun</TabsTrigger>
     <TabsTrigger value="yarn">yarn</TabsTrigger>
+    <TabsTrigger value="bun">bun</TabsTrigger>
   </TabsList>
   <TabsContent value="npm">
     ```shell:npx
@@ -27,15 +27,15 @@ For a faster setup, use the `cli` command to create a new DocuBook project in on
     pnpm dlx @docubook/cli@latest
     ```
   </TabsContent>
-  <TabsContent value="bun">
-    ```shell:bun
-    bunx @docubook/cli@latest
-    ```
-  </TabsContent>
   <TabsContent value="yarn">
     ```shell:yarn
     yarn dlx @docubook/cli@latest
     ```
+  </TabsContent>
+  <TabsContent value="bun">
+  ```shell:bun
+  bunx @docubook/cli@latest
+  ```
   </TabsContent>
 </Tabs>
 
@@ -43,25 +43,46 @@ For a faster setup, use the `cli` command to create a new DocuBook project in on
 
 If you prefer installing the CLI globally so the `docubook` command is available system-wide, use one of the following:
 
-```shell:bash
-# npm
-npm install -g @docubook/cli@latest
-
-# pnpm
-pnpm add -g @docubook/cli@latest
-
-# yarn (classic)
-yarn global add @docubook/cli@latest
-
-# bun
-bun add -g @docubook/cli@latest
-```
+<Tabs defaultValue="npm" className="pt-5 pb-1">
+  <TabsList>
+    <TabsTrigger value="npm-g">npm</TabsTrigger>
+    <TabsTrigger value="pnpm-g">pnpm</TabsTrigger>
+    <TabsTrigger value="yarn-g">yarn</TabsTrigger>
+    <TabsTrigger value="bun-g">bun</TabsTrigger>
+  </TabsList>
+  <TabsContent value="npm-g">
+    ```shell:npx
+    npm install -g @docubook/cli@latest
+    ```
+  </TabsContent>
+  <TabsContent value="pnpm-g">
+    ```shell:pnpm
+    pnpm add -g @docubook/cli@latest
+    ```
+  </TabsContent>
+  <TabsContent value="yarn-g">
+  ```shell:yarn
+  yarn global add @docubook/cli@latest
+  ```
+  </TabsContent>
+  <TabsContent value="bun-g">
+    ```shell:bun
+    bun add -g @docubook/cli@latest
+    ```
+  </TabsContent>
+</Tabs>
 
 After a global install, verify the installation and check the CLI version:
 
 ```shell:bash
+# init
+docubook
+
+# with argumen [projectname]
+docubook my-project
+
 # show version
-docubook --version
+docubook version
 
 # update
 docubook update

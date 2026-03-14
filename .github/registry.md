@@ -85,62 +85,47 @@ Ensure `package.json` defines what gets published:
 Run the following checks:
 
 ```bash
-# Lint the code
-pnpm lint
-
-# Type check (if configured)
+# Type check
 pnpm typecheck
 
-# Test locally
+# Test CLI locally
 cd packages/cli
 node src/index.js --version
-
-# Verify package.json is valid
-cd packages/cli
-node -e "console.log(JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)"
 ```
 
 ### Step 4: Commit & Create Git Tag
 
 ```bash
-# Stage changes
+# Stage and commit changes
 git add packages/cli/package.json
-
-# Commit with semantic message
-git commit -m "chore(cli): release v0.2.3 ;
+git commit -m "chore(cli): release v0.2.3
 
 - Updated CLI to v0.2.3
-- [Optional: List changes here]
-"
+- [List changes here if any]"
 
-# Create annotated tag
+# Create tag and push (triggers workflow)
 git tag -a cli-v0.2.3 -m "Release @docubook/cli v0.2.3"
-
-# Push to GitHub (triggers workflow)
-git push origin main
-git push origin cli-v0.2.3
+git push origin main cli-v0.2.3
 ```
 
 **Tag Format:** Must match `cli-v*.*.*` to trigger publishing workflow.
 
 ### Step 5: Monitor GitHub Actions
 
-1. Go to: https://github.com/DocuBook/docubook/actions
-2. Watch the "Publish @docubook/cli to npm" workflow
-3. Verify all steps pass:
-   - ✅ Build (Node 22.x)
-   - ✅ Lint
-   - ✅ Type check
-   - ✅ Publish to npm
-   - ✅ Create GitHub Release
+Visit https://github.com/DocuBook/docubook/actions and verify the workflow completes successfully with these steps passing:
+- ✅ Build (Node 22.x)
+- ✅ Lint
+- ✅ Type check
+- ✅ Publish to npm
+- ✅ Create GitHub Release
 
 ### Step 6: Verify npm Publication
 
 ```bash
-# Wait ~30 seconds for npm index update
+# Check published package (wait ~30 seconds for npm index)
 npm view @docubook/cli@0.2.3
 
-# Or test installation
+# Or verify installation
 npm install -g @docubook/cli@latest
 docubook --version
 ```
@@ -156,22 +141,19 @@ docubook --version
 ### Configuration Steps
 
 1. **Visit npm Trusted Publishers:**
-   - Go to: https://www.npmjs.com/settings/@docubook/access
-   - Click **Trusted Publishers** tab
+   Go to https://www.npmjs.com/settings/@docubook/access and click the **Trusted Publishers** tab
 
 2. **Add GitHub Actions as Publisher:**
    - Click **Add a publisher**
-   - Select **GitHub Actions** as publisher type
-   - Enter details:
+   - Select **GitHub Actions**
+   - Enter:
      - **Organization/user:** `DocuBook`
      - **Repository:** `docubook`
      - **Workflow filename:** `publish-cli.yml`
-     - **Environment:** (leave empty - no environment required)
    - Click **Set up connection**
 
 3. **Verify Configuration:**
    ```bash
-   # After setup, run a test publish to verify OIDC works
    git tag cli-v0.2.2-test
    git push origin cli-v0.2.2-test
    # Monitor GitHub Actions for successful publish
@@ -186,23 +168,13 @@ GitHub Actions workflow triggered
     ↓
 Runner generates JWT token (signed by GitHub)
     ↓
-Token sent to npm during 'pnpm publish'
+npm verifies signature & token validity
     ↓
-npm verifies:
-   ✓ Signature valid & trusted
-   ✓ From DocuBook organization
-   ✓ From docubook repository
-   ✓ From publish-cli.yml workflow
-    ↓
-npm approves publish ✅
-    ↓
-Package published with provenance
+Package published with provenance ✅
 ```
 
-### Security Benefits
-
-- ❌ No npm tokens stored in GitHub secrets
-- ❌ No plaintext credentials in repository
+**Key Security Benefits:**
+- ✅ No npm tokens stored in GitHub secrets
 - ✅ JWT tokens are short-lived (5 minutes)
 - ✅ Each publish is auditable via GitHub Actions logs
 - ✅ Provenance attestation available at npm
@@ -213,29 +185,11 @@ Package published with provenance
 
 The workflow runs in two jobs:
 
-**Job 1: Build and Test**
-- Checks out code
-- Installs pnpm v10
-- Sets up Node.js 22.x
-- Installs dependencies with frozen lockfile
-- Runs full build
-- Lints all code
-- Type checks
+**Job 1: Build and Test** — Lints, type-checks, and builds the entire workspace
 
-**Job 2: Publish** (depends on Job 1)
-- Checks out code with full history
-- Sets up pnpm v10
-- Sets up Node.js 22.x with npm registry
-- Installs dependencies
-- Publishes `packages/cli` to npm with:
-  - `--access public` (public scope)
-  - `--no-git-checks` (tag-based publishing)
-  - `NPM_CONFIG_PROVENANCE=true` (provenance enabled)
-- Creates GitHub Release with package.json and README.md
+**Job 2: Publish** — Publishes `packages/cli` to npm with provenance enabled, then creates a GitHub Release
 
-**Triggers:**
-- Tag push matching `v*.*.*` (monorepo releases)
-- Tag push matching `cli-v*.*.*` (CLI-specific releases)
+**Triggers:** Tag push matching `cli-v*.*.*` or `v*.*.*`
 
 ### Key Environment Variables
 
@@ -368,7 +322,6 @@ These are NOT published to npm:
 docubook/ (GitHub repo)
 ├─ packages/template/       ← Full template source code
 ├─ packages/ui/             ← UI package
-├─ packages/eslint-config/  ← ESLint configuration
 ├─ packages/typescript-config/
 ├─ apps/web/                ← Documentation website
 ├─ .github/                 ← Workflows & guides
@@ -377,51 +330,27 @@ docubook/ (GitHub repo)
 
 ## Local Development & Testing
 
-### Testing CLI Before Publishing
+### Testing CLI Locally
 
 ```bash
-# Install dependencies
-pnpm install
-
-# Test locally
 cd packages/cli
-node src/index.js
-
-# Test with arguments
-node src/index.js my-test-project
-
-# Check version
-node src/index.js --version
+node src/index.js --version        # Check version
+node src/index.js my-test-project  # Test with arguments
 ```
 
-### Testing npm Package Installation
+### Testing Installed npm Package
 
 ```bash
-# Create a test directory
-mkdir test-publish
-cd test-publish
-
-# Install from npm (after publishing)
-npm install @docubook/cli@latest
-
-# Run installed CLI
-npx docubook test-project
+npm install -g @docubook/cli@latest
+docubook --version
 ```
 
 ### Development Workflow
 
 ```bash
-# Make changes to CLI
+# Edit and test immediately (no build step)
 vim packages/cli/src/index.js
-
-# Test immediately
-cd packages/cli
-node src/index.js
-
-# No build step required (ES modules)
-# Lint before committing
-pnpm lint
-pnpm lint:fix
+cd packages/cli && node src/index.js
 ```
 
 ## Versioning & Release Strategy
@@ -453,8 +382,7 @@ MAJOR.MINOR.PATCH
 Before publishing:
 
 - [ ] Version updated in `package.json`
-- [ ] `pnpm lint` passes without errors
-- [ ] `pnpm typecheck` passes (if configured)
+- [ ] `pnpm typecheck` passes
 - [ ] Manual testing: `node src/index.js`
 - [ ] Templates still downloadable
 - [ ] Git tag created: `cli-v0.2.3`
@@ -465,82 +393,42 @@ Before publishing:
 
 ### Publishing Fails - "Permission Denied"
 
-**Cause:** OIDC trusted publisher not configured.
-
-**Solution:**
-1. Go to: https://www.npmjs.com/settings/@docubook/access
-2. Verify **Trusted Publishers** includes GitHub Actions
-3. Verify settings match:
-   - Organization: `DocuBook`
-   - Repository: `docubook`
-   - Workflow: `publish-cli.yml`
+**Verify OIDC setup:** https://www.npmjs.com/settings/@docubook/access → **Trusted Publishers** tab
+- Organization: `DocuBook`
+- Repository: `docubook`
+- Workflow: `publish-cli.yml`
 
 ### Workflow Doesn't Trigger
 
-**Cause:** Tag format doesn't match trigger patterns.
-
-**Solution:** Tag must match one of:
+**Tag format must match:**
 ```
-cli-v0.2.3    ✅ (CLI-specific release)
-v0.2.3        ✅ (Monorepo release)
-0.2.3         ❌ (Missing 'v' prefix)
-cli-0.2.3     ❌ (Missing 'v' after 'cli-')
+✅ cli-v0.2.3    (CLI-specific release)
+✅ v0.2.3        (Monorepo release)
+❌ 0.2.3         (Missing 'v' prefix)
 ```
 
-**Verify tag:**
+**Delete invalid tag:**
 ```bash
-git tag -l | grep "^cli-v"  # List all CLI tags
-git tag -d cli-v0.2.3       # Delete local tag if wrong
-git push origin :cli-v0.2.3  # Delete remote tag if wrong
+git tag -d cli-v0.2.3            # Delete locally
+git push origin :cli-v0.2.3      # Delete remotely
 ```
 
 ### Templates Not Loading
 
-**Cause:** Invalid `templates.json` or URL incorrect.
-
-**Solution:**
+**Validate templates.json:**
 ```bash
-# Validate JSON syntax
 cat packages/cli/templates.json | jq .
-
-# Verify URLs are correct
-grep -A 1 '"url"' packages/cli/templates.json
-
-# Check template directories exist
-ls -la packages/template/
 ```
 
-### npm publish Fails Locally
-
-**Issue:** You shouldn't publish locally; always use GitHub Actions.
-
-**Why:**
-- Provenance won't work locally
-- Version sync issues
-- Access control problems
-
-**Correct process:**
-```bash
-git tag cli-v0.2.3
-git push origin cli-v0.2.3  # Triggers workflow
-# Monitor GitHub Actions
-```
-
-### Check npm Package After Publishing
+### Verify npm Package After Publishing
 
 ```bash
-# View package info
-npm view @docubook/cli@0.2.3
-
-# View all versions
-npm view @docubook/cli versions
-
-# Check if files are included
-npm pack @docubook/cli@0.2.3 && tar -tzf docubook-cli-0.2.3.tgz | head -20
-
-# Test installation
-npm install -g @docubook/cli@0.2.3
+npm view @docubook/cli@0.2.3           # Check package info
+npm view @docubook/cli versions        # View all versions
+npm install -g @docubook/cli@0.2.3     # Test installation
 ```
+
+**Note:** Never publish locally — always use GitHub Actions (provenance won't work, and access control depends on OIDC).
 
 ## Monitoring & Verification
 
@@ -593,7 +481,6 @@ npm install -g @docubook/cli@0.2.3
 
 ### Quality
 
-- ✅ Run linter before committing
 - ✅ Run typecheck before tagging
 - ✅ Test CLI locally before publishing
 - ✅ Use semantic versioning consistently
