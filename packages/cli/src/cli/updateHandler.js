@@ -254,6 +254,26 @@ function installGlobal(packageName, version, packageManager) {
   }
 
   execSync(cmd, { stdio: "inherit" });
+
+  // Clear package manager cache to ensure symlinks are refreshed
+  try {
+    switch (packageManager) {
+      case "npm":
+        execSync("npm cache clean --force", { stdio: "pipe" });
+        break;
+      case "yarn":
+        execSync("yarn cache clean", { stdio: "pipe" });
+        break;
+      case "pnpm":
+        execSync("pnpm store prune", { stdio: "pipe" });
+        break;
+      case "bun":
+        execSync("bun pm cache rm", { stdio: "pipe" });
+        break;
+    }
+  } catch {
+    // Ignore cache clean errors - they don't affect installation
+  }
 }
 
 /**
