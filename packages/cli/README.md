@@ -22,6 +22,9 @@ Or use directly with npx:
 npx @docubook/cli
 ```
 
+output command :
+![output command](https://github.com/DocuBook/docubook/blob/main/docubook-cli.png)
+
 ## Usage
 
 ### Create a new project
