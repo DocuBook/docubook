@@ -1,0 +1,88 @@
+name: Apply Branch Protection Rules
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/branch-protection.yml"
+  workflow_dispatch:
+
+jobs:
+  protect-main:
+    name: Apply Branch Protection — main
+    runs-on: ubuntu-latest
+    permissions:
+      administration: write
+
+    steps:
+      - name: Apply branch protection rules
+        uses: octokit/request-action@v2.x
+        with:
+          route: PUT /repos/{owner}/{repo}/branches/{branch}/protection
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.event.repository.name }}
+          branch: main
+          mediaType: |
+            previews:
+              - luke-cage
+          required_status_checks: |
+            strict: true
+            contexts:
+              - "Build (Node 22.x)"
+          enforce_admins: true
+          required_pull_request_reviews: |
+            dismiss_stale_reviews: true
+            require_code_owner_reviews: true
+            required_approving_review_count: 1
+            require_last_push_approval: true
+          restrictions: null
+          required_linear_history: true
+          allow_force_pushes: false
+          allow_deletions: false
+          block_creations: false
+          required_conversation_resolution: true
+          lock_branch: false
+          allow_fork_syncing: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  protect-release:
+    name: Apply Branch Protection — release/*
+    runs-on: ubuntu-latest
+    permissions:
+      administration: write
+
+    steps:
+      - name: Get existing release branches
+        id: branches
+        run: |
+          BRANCHES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/branches?per_page=100" \
+            | jq -r '.[].name | select(startswith("release/"))')
+          echo "branches=$BRANCHES" >> $GITHUB_OUTPUT
+
+      - name: Apply branch protection to release/* pattern
+        uses: octokit/request-action@v2.x
+        with:
+          route: PUT /repos/{owner}/{repo}/branches/{branch}/protection
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.event.repository.name }}
+          branch: "release/*"
+          required_status_checks: |
+            strict: true
+            contexts:
+              - "Build (Node 22.x)"
+          enforce_admins: true
+          required_pull_request_reviews: |
+            dismiss_stale_reviews: true
+            require_code_owner_reviews: false
+            required_approving_review_count: 2
+            require_last_push_approval: true
+          restrictions: null
+          required_linear_history: true
+          allow_force_pushes: false
+          allow_deletions: false
+          required_conversation_resolution: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
