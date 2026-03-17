@@ -111,7 +111,7 @@ export function SearchModal({ isOpen, setIsOpen }: SearchModalProps) {
   }, [selectedIndex])
 
   return (
-    <DialogContent className="rounded-md! top-[45%] max-w-[650px] p-0 sm:top-[38%]">
+    <DialogContent className="rounded-md! top-[45%] max-w-162.5 p-0 sm:top-[38%]">
       <DialogHeader>
         <DialogTitle className="sr-only">Search Documentation</DialogTitle>
         <DialogDescription className="sr-only">Search through the documentation</DialogDescription>
@@ -134,7 +134,7 @@ export function SearchModal({ isOpen, setIsOpen }: SearchModalProps) {
           No results found for <span className="text-primary">{`"${searchedInput}"`}</span>
         </p>
       )}
-      <ScrollArea className="max-h-[400px] overflow-y-auto">
+      <ScrollArea className="max-h-100 overflow-y-auto">
         <div className="flex flex-col items-start overflow-y-auto px-1 pb-4 sm:px-2">
           {filteredResults.map((item, index) => {
             const level = (item.href.split("/").slice(1).length - 1) as keyof typeof paddingMap

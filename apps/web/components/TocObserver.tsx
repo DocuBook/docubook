@@ -90,9 +90,9 @@ export default function TocObserver({
                 {level > 1 && (
                   <div
                     className={clsx("absolute top-0 h-full w-6", {
-                      "left-[6px]": indent === 20, // Level 2
-                      "left-[22px]": indent === 40, // Level 3
-                      "left-[38px]": indent === 60, // Level 4
+                      "left-1.5": indent === 20, // Level 2
+                      "left-5.5": indent === 40, // Level 3
+                      "left-9.5": indent === 60, // Level 4
                     })}
                   >
                     {/* Vertical line */}

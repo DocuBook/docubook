@@ -119,7 +119,7 @@ export default function MobToc({ tocs, title }: MobTocProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="start"
-                  className="flex min-w-[160px] flex-col gap-1 p-2"
+                  className="flex min-w-40 flex-col gap-1 p-2"
                 >
                   <NavMenu />
                 </DropdownMenuContent>

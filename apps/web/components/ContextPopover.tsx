@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ROUTES, EachRoute } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -42,6 +42,8 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [activeRoute, setActiveRoute] = useState<EachRoute>();
+  const [triggerWidth, setTriggerWidth] = useState<number | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const contextRoutes = getContextRoutes();
 
   useEffect(() => {
@@ -53,6 +55,12 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
     }
   }, [pathname]);
 
+  useEffect(() => {
+    if (triggerRef.current) {
+      setTriggerWidth(triggerRef.current.offsetWidth);
+    }
+  }, []);
+
   if (!pathname.startsWith("/docs") || contextRoutes.length === 0) {
     return null;
   }
@@ -61,6 +69,7 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
     <Popover>
       <PopoverTrigger asChild>
         <Button
+          ref={triggerRef}
           variant="ghost"
           className={cn(
             "w-full cursor-pointer flex items-center justify-between font-semibold text-foreground px-2 py-4 border border-muted",
@@ -82,9 +91,12 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-64 p-2"
+        className="p-2"
         align="start"
         sideOffset={6}
+        style={{
+          width: triggerWidth ? `${triggerWidth}px` : "auto"
+        }}
       >
         <div className="space-y-1">
           {contextRoutes.map((route) => {
