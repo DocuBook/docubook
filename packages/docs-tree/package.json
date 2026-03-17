@@ -1,0 +1,30 @@
+{
+  "name": "@docubook/docs-tree",
+  "version": "1.0.0",
+  "description": "Prebuild navigation tree for DocuBook documentation",
+  "main": "dist/index.js",
+  "bin": {
+    "@docubook/docs-tree": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "keywords": ["docubook", "navigation", "tree", "docs"],
+  "homepage": "https://docubook.pro/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DocuBook/docubook"
+  },
+  "author": "wildan.nrs",
+  "author-url": "https://wildan.dev",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "fs-extra": "^11.0.0"
+  }
+}
