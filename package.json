@@ -28,7 +28,7 @@
     "typescript-eslint": "^8.56.1"
   },
   "dependencies": {
-    "next": "^16.1.6"
+    "next": "^16.1.7"
   },
   "engines": {
     "pnpm": ">=10"
