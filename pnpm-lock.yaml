@@ -152,8 +152,8 @@ importers:
         version: 5.1.0
     devDependencies:
       '@docubook/docs-tree':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.0.1
+        version: 1.0.1
       '@eslint/js':
         specifier: ^9.39.3
         version: 9.39.4
@@ -417,8 +417,8 @@ packages:
       search-insights:
         optional: true
 
-  '@docubook/docs-tree@1.0.0':
-    resolution: {integrity: sha512-cT6Wd4HAKVAv2zbvq5YB6yLL+7x2E95Ew+QP+CgtrL1AU80oagxMVCre69iyJ3a9W4xxgtK/ceQfDEnPoMmksA==}
+  '@docubook/docs-tree@1.0.1':
+    resolution: {integrity: sha512-AmsrlXeACyWX09RCQF46E/PWHbaTql8OTyBAdz6nKlg4SiZIHi1A4k4ELjw0dZKNfzl1Dt7PUS/E0w52l0al4g==}
     hasBin: true
 
   '@emnapi/core@1.9.0':
@@ -3886,7 +3886,7 @@ snapshots:
       - '@algolia/client-search'
       - algoliasearch
 
-  '@docubook/docs-tree@1.0.0':
+  '@docubook/docs-tree@1.0.1':
     dependencies:
       fs-extra: 11.3.4
 

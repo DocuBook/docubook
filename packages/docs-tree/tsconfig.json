@@ -8,8 +8,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "declaration": true,
-    "preserveShebang": true
+    "declaration": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

@@ -1,6 +1,6 @@
 {
   "name": "@docubook/docs-tree",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Prebuild navigation tree for DocuBook documentation",
   "main": "dist/index.js",
   "bin": {

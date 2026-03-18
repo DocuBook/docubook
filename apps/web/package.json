@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "pnpm run prebuild && next build",
-    "prebuild": "pnpx @docubook/docs-tree ./docs ./docu.json ./lib/docs-tree.json",
+    "prebuild": "pnpm dlx @docubook/docs-tree ./docs ./docu.json ./lib/docs-tree.json",
     "start": "next start",
     "lint": "eslint ."
   },
@@ -52,7 +52,7 @@
     "unist-util-visit": "^5.0.0"
   },
   "devDependencies": {
-    "@docubook/docs-tree": "^1.0.0",
+    "@docubook/docs-tree": "^1.0.1",
     "@eslint/js": "^9.39.3",
     "@tailwindcss/postcss": "^4.2.1",
     "@tailwindcss/typography": "^0.5.19",
