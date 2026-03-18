@@ -69,7 +69,7 @@ export class DocsTreeBuilder {
       }
     }
 
-    return files;
+    return files.sort((a, b) => a.localeCompare(b));
   }
 
   private async buildRoutes(routes: any[], basePath: string = ''): Promise<EachRoute[]> {
