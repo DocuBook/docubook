@@ -56,8 +56,36 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
   }, [pathname]);
 
   useEffect(() => {
-    if (triggerRef.current) {
-      setTriggerWidth(triggerRef.current.offsetWidth);
+    if (!triggerRef.current) return;
+
+    const updateWidth = () => {
+      if (triggerRef.current) {
+        setTriggerWidth(triggerRef.current.offsetWidth);
+      }
+    };
+
+    // Initial measurement
+    updateWidth();
+
+    if (typeof ResizeObserver !== "undefined") {
+      const observer = new ResizeObserver(() => {
+        updateWidth();
+      });
+      observer.observe(triggerRef.current);
+
+      return () => {
+        observer.disconnect();
+      };
+    } else {
+      const handleResize = () => {
+        updateWidth();
+      };
+
+      window.addEventListener("resize", handleResize);
+
+      return () => {
+        window.removeEventListener("resize", handleResize);
+      };
     }
   }, []);
 
