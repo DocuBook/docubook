@@ -53,7 +53,7 @@ export default function TocObserver({
                 <div
                   className={clsx(
                     "flex items-center shrink-0 py-2 px-1 transition-all duration-200",
-                    isActive ? "border-l-3 border-primary -ml-px" : ""
+                    isActive ? "border-l-[3px] border-primary -ml-px" : ""
                   )}
                 >
                   {/* Horizontal line from vertical line to dot */}
@@ -97,7 +97,7 @@ export default function TocObserver({
                     }
                   }}
                 >
-                  <span className="text-sm line-clamp-2 wrap-break-words">{text}</span>
+                  <span className="text-sm line-clamp-2 break-words">{text}</span>
                 </Link>
               </div>
             )
