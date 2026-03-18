@@ -13,14 +13,14 @@ import GitHubButton from "@/components/Github"
 
 export function Leftbar() {
   return (
-    <aside className="sticky top-0 hidden h-screen w-70 shrink-0 flex-col lg:flex">
+    <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 flex-col lg:flex">
       {/* Logo */}
       <div className="flex h-14 shrink-0 items-center px-5">
         <Logo />
       </div>
 
       <div className="flex shrink-0 items-center gap-2 px-4 pb-4">
-        <Search className="min-w-62.5 max-w-62.5" />
+        <Search className="min-w-[250px] max-w-[250px]" />
       </div>
 
       {/* Scrollable Navigation */}
