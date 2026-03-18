@@ -5,7 +5,7 @@ date: 29-11-2024
 image: example-img.png
 ---
 
-Welcome to **DocuBook**! This template provides a modern, flexible, and user-friendly foundation for creating engaging documentation. Whether you're building a knowledge base, project docs, or a personal blog, DocuBook makes it easy to set up and scale.
+Welcome to **DocuBook**! This template provides a modern, flexible, and user-friendly foundation for creating engaging documentation. Whether you're building a knowledge base or project docs, DocuBook makes it easy to set up and scale.
 
 ## Open Source Philosophy
 
@@ -19,12 +19,15 @@ DocuBook is proudly **open-source**! 🎉 We believe in creating an accessible, 
 
 ## Project Overview
 
-**DocuBook** is more than just a documentation template. It's a **complete toolkit** designed for modern web development. Key features include:
+**DocuBook** is more than just a documentation template. It's a **complete ecosystem** designed for modern React development. Key features include:
 
 - **Markdown & MDX Support:** Easily write documentation in Markdown, with the option to include interactive components via MDX.
-- **Customizable Themes:** Designed with a minimalist ShadCN-inspired theme that’s easy to style.
+- **Customizable Themes:** Designed with a minimalist ShadCN-inspired theme that's easy to style.
 - **SEO-Optimized:** Each page is SEO-ready, ensuring search engines can find and rank your content.
 - **Interactive Code Blocks:** Beautifully styled, language-specific code blocks for an enhanced reading experience.
+- **Prebuilt Navigation Tree:** Intelligent caching system that prebuilds navigation structure for optimal performance.
+- **CLI Tools:** Command-line utilities for scaffolding and managing documentation projects.
+- **Multi-Framework Support:** Templates for different React frameworks and deployment strategies.
 
 ### Key Features
 
@@ -39,12 +42,67 @@ DocuBook is proudly **open-source**! 🎉 We believe in creating an accessible, 
 | Custom Markdown Components      | Embed custom, reusable components in your docs.       |
 | Static Site Generation          | Generate a static, high-performance site.             |
 | SEO-Optimized                   | Structured for optimal search engine indexing.        |
+| **Prebuilt Navigation**         | **Prebuild navigation tree with intelligent caching** |
+| **CLI Tools**                   | **Command-line utilities for project management**     |
+| **Multi-Template Support**      | **Templates for different frameworks and deployments**|
 
 ## Technology & Libraries
 
 DocuBook leverages cutting-edge technologies to ensure performance and flexibility:
 
-- **Next.js 16** - The powerful React framework optimized for production.
-- **Tailwind CSS 4** - Utility-first styling for quick, clean designs.
-- **Shadcn-UI** - Elegant, accessible components for a polished look.
-- **next-mdx-remote** - Enables MDX support for dynamic, interactive Markdown content.
+### UI & Styling
+- **Tailwind CSS 4** - Utility-first styling for quick, clean designs
+- **Shadcn-UI** - Elegant, accessible components for a polished look
+- **Radix UI** - Unstyled, accessible UI primitives
+
+### Content & Search
+- **next-mdx-remote** - Enables MDX support for dynamic, interactive Markdown content
+- **Algolia DocSearch** - Powerful search functionality with instant results
+- **@docubook/docs-tree** - CLI tool for prebuilding navigation structures
+
+### Development Tools
+- **TypeScript** - Type-safe development experience
+- **ESLint** - Code linting and formatting
+- **Turbo** - High-performance build system for monorepos
+
+## Available Templates
+
+DocuBook provides **multiple deployment-ready templates** for different use cases:
+
+### 🚀 Next.js Templates
+
+**Next.js + Vercel** (`nextjs-vercel`)
+- **Best for:** Server-side rendering, static site generation
+- **Deployment:** Optimized for Vercel platform
+- **Features:** Edge functions, ISR, API routes
+- **Use case:** Production apps requiring SEO and performance
+
+**Next.js + Docker** (`nextjs-docker`)
+- **Best for:** Containerized deployments
+- **Deployment:** Standalone Docker images
+- **Features:** Self-contained, cloud-agnostic
+- **Use case:** Enterprise deployments, custom infrastructure
+
+### ⚡ React Router Template
+
+**React Router + Vite** (`react-router`) - coming soon
+- **Best for:** Client-side applications, SPAs
+- **Deployment:** Static hosting (Netlify, GitHub Pages, etc.)
+- **Features:** Fast development, modern React patterns
+- **Use case:** Developer portals, lightweight documentation
+
+### Docs-tree
+
+**@docubook/docs-tree**
+- **Purpose:** Prebuild navigation tree for optimal performance
+- **Features:** Intelligent caching, multi-package manager support
+- **Benefits:** Faster builds, reduced runtime computation
+- **Usage:** Automatic prebuild in production deployments
+
+All templates include:
+- ✅ Pre-configured build scripts
+- ✅ Development and production optimizations
+- ✅ SEO-ready configuration
+- ✅ Modern React patterns and best practices
+
+DocuBook transforms documentation from a simple template into a **professional development platform** that scales with your project's needs. 🎯

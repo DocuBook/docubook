@@ -52,9 +52,10 @@ export default function DocsMenu({ isSheet = false, className = "" }: DocsMenuPr
         <li key={contextRoute.title}>
           <SubLink
             {...contextRoute}
-            href={`/docs${contextRoute.href}`}
+            href={contextRoute.href}
             level={0}
             isSheet={isSheet}
+            parentHref="/docs"
           />
         </li>
       </ul>
