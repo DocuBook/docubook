@@ -36,4 +36,7 @@ const builder = new DocsTreeBuilder(
   path.resolve(outputPath)
 );
 
-builder.build().catch(console.error);
+builder.build().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
