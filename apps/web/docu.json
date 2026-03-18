@@ -52,12 +52,12 @@
     "editLink": true
   },
   "sponsor": {
-    "title": "Hosted on",
+    "title": "Sponsor us",
     "item": {
-      "title": "Vercel",
-      "description": "Deploy your DocuBook app with zero configuration.",
-      "image": "/images/vercel.png",
-      "url": "https://vercel.com/import/project?template=https://github.com/DocuBook/docubook"
+        "title": "GitHub Sponsors",
+        "description": "Support us on GitHub Sponsors to help us continue developing and maintaining DocuBook.",
+        "image": "/images/funding.svg",
+        "url": "https://github.com/sponsors/gitfromwildan"
     }
   },
   "routes": [
