@@ -119,7 +119,7 @@ export default function MobToc({ tocs, title }: MobTocProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="start"
-                  className="flex min-w-[160px] flex-col gap-1 p-2"
+                  className="flex min-w-40 flex-col gap-1 p-2"
                 >
                   <NavMenu />
                 </DropdownMenuContent>
@@ -132,7 +132,7 @@ export default function MobToc({ tocs, title }: MobTocProps) {
                 aria-label={isExpanded ? "Collapse table of contents" : "Expand table of contents"}
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium capitalize">{displayTitle}</span>
+                  <span className="text-sm font-medium capitalize line-clamp-1 truncate">{displayTitle}</span>
                 </div>
                 {chevronIcon}
               </Button>
