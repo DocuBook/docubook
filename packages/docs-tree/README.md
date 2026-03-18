@@ -58,7 +58,7 @@ Add to your `package.json` scripts:
 ```json
 {
   "scripts": {
-    "prebuild": "pnpx @docubook/docs-tree ./docs ./docu.json ./lib/docs-tree.json",
+    "prebuild": "pnpm dlx @docubook/docs-tree ./docs ./docu.json ./lib/docs-tree.json",
     "build": "pnpm run prebuild && next build"
   }
 }
