@@ -28,12 +28,31 @@ export class DocsTreeBuilder {
     this.cachePath = path.join(path.dirname(this.outputPath), '.docs-tree-cache.json');
   }
 
+  private async collectDocsMetadata(dir: string, baseDir: string, acc: string[]): Promise<void> {
+    const items = await fs.readdir(dir);
+    items.sort();
+
+    for (const item of items) {
+      const fullPath = path.join(dir, item);
+      const relativePath = path.relative(baseDir, fullPath);
+      const stat = await fs.stat(fullPath);
+
+      if (stat.isDirectory()) {
+        await this.collectDocsMetadata(fullPath, baseDir, acc);
+      } else if (stat.isFile()) {
+        acc.push(`${relativePath}:${stat.mtimeMs}:${stat.size}`);
+      }
+    }
+  }
+
   private async getHash(): Promise<string> {
     const configContent = await fs.readFile(this.configPath, 'utf-8');
-    const docsStats = await fs.stat(this.docsDir);
+    const docsMetadata: string[] = [];
+    await this.collectDocsMetadata(this.docsDir, this.docsDir, docsMetadata);
+
     const hash = crypto.createHash('md5');
     hash.update(configContent);
-    hash.update(docsStats.mtime.toISOString());
+    hash.update(docsMetadata.join('\n'));
     return hash.digest('hex');
   }
 
