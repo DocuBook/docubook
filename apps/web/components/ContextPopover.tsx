@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { ROUTES, EachRoute } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -88,7 +88,9 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
     return () => window.clearTimeout(resetTimer);
   }, [activeRoute?.context?.title, activeRoute?.title]);
 
-  useEffect(() => {
+  // Keep the popover width in sync with the trigger width when the trigger text changes
+  // (e.g. when navigating between docs contexts) and when the window/resizing changes.
+  useLayoutEffect(() => {
     if (!triggerRef.current) return;
 
     const updateWidth = () => {
@@ -97,7 +99,7 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
       }
     };
 
-    // Initial measurement
+    // Make sure the width is updated when the trigger text/route changes.
     updateWidth();
 
     if (typeof ResizeObserver !== "undefined") {
@@ -120,7 +122,7 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
         window.removeEventListener("resize", handleResize);
       };
     }
-  }, []);
+  }, [displayRoute]);
 
   if (!mounted || !pathname.startsWith("/docs") || contextRoutes.length === 0) {
     return null;
@@ -160,7 +162,7 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
         align="start"
         sideOffset={6}
         style={{
-          width: triggerWidth ? `${triggerWidth}px` : "auto"
+          width: triggerWidth !== null ? `${triggerWidth}px` : "auto"
         }}
       >
         <div className="space-y-1">
