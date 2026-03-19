@@ -1,4 +1,6 @@
+import { cache } from "react";
 import { compileMDX } from "next-mdx-remote/rsc";
+import type { ReactNode } from "react";
 import path from "path";
 import { promises as fs } from "fs";
 import remarkGfm from "remark-gfm";
@@ -9,6 +11,7 @@ import rehypeCodeTitles from "rehype-code-titles";
 import { page_routes, ROUTES } from "./routes";
 import { visit } from "unist-util-visit";
 import type { Node, Parent } from "unist";
+import type { TocItem } from "./toc";
 import matter from "gray-matter";
 
 // Type definitions for unist-util-visit
@@ -87,6 +90,60 @@ const components = {
   Outlet,
 };
 
+export type MdxCompileResult<Frontmatter> = {
+  content: ReactNode;
+  frontmatter: Frontmatter;
+  scope?: Record<string, unknown>;
+};
+
+export type DocsForSlugResult = MdxCompileResult<BaseMdxFrontmatter> & {
+  filePath: string;
+  tocs: TocItem[];
+};
+
+// `React.cache` deduplicates calls within a single server-render pass.
+// Both `generateMetadata()` and `DocsPage()` calling `getDocsForSlug(slug)`
+// with the same slug will share one compiled result — no double MDX compile.
+// Each new HTTP request gets its own fresh cache automatically, so
+// dev live-reload works without any extra watcher or cache-clear logic.
+const computeDocsForSlugCached = cache(computeDocsForSlug);
+
+function extractTocsFromRawMdx(rawMdx: string) {
+  // Regex to match code blocks (```...```), standard markdown headings (##), and <Release> tags
+  const combinedRegex = /(```[\s\S]*?```)|^(#{2,4})\s(.+)$|<Release[^>]*version="([^"]+)"/gm;
+
+  let match;
+  const extractedHeadings: TocItem[] = [];
+
+  while ((match = combinedRegex.exec(rawMdx)) !== null) {
+    // match[1] -> Code block content (ignore)
+    if (match[1]) continue;
+
+    // match[2] & match[3] -> Markdown headings
+    if (match[2]) {
+      const headingLevel = match[2].length;
+      const headingText = match[3].trim();
+      const slug = sluggify(headingText);
+      extractedHeadings.push({
+        level: headingLevel,
+        text: headingText,
+        href: `#${slug}`,
+      });
+    }
+    // match[4] -> Release component version
+    else if (match[4]) {
+      const version = match[4];
+      extractedHeadings.push({
+        level: 2,
+        text: `v${version}`,
+        href: `#${version}`,
+      });
+    }
+  }
+
+  return extractedHeadings;
+}
+
 // helper function to handle rehype code titles, since by default we can't inject into the className of rehype-code-titles
 const handleCodeTitles = () => (tree: Node) => {
   visit(tree, "element", (node: Element, index: number | null, parent: Parent | null) => {
@@ -131,7 +188,7 @@ const handleCodeTitles = () => (tree: Node) => {
 };
 
 // can be used for other pages like blogs, Guides etc
-async function parseMdx<Frontmatter>(rawMdx: string) {
+async function parseMdx<Frontmatter>(rawMdx: string): Promise<MdxCompileResult<Frontmatter>> {
   return await compileMDX<Frontmatter>({
     source: rawMdx,
     options: {
@@ -161,55 +218,30 @@ export type BaseMdxFrontmatter = {
   date: string;
 };
 
-export async function getDocsForSlug(slug: string) {
+async function computeDocsForSlug(slug: string): Promise<DocsForSlugResult> {
+  const { content, filePath } = await getRawMdx(slug);
+  const mdx = await parseMdx<BaseMdxFrontmatter>(content);
+  const tocs = extractTocsFromRawMdx(content);
+
+  return {
+    ...mdx,
+    filePath,
+    tocs,
+  };
+}
+
+export async function getDocsForSlug(slug: string): Promise<DocsForSlugResult | undefined> {
   try {
-    const { content, filePath } = await getRawMdx(slug);
-    const mdx = await parseMdx<BaseMdxFrontmatter>(content);
-    return {
-      ...mdx,
-      filePath,
-    };
+    return await computeDocsForSlugCached(slug);
   } catch (err) {
     console.log(err);
   }
 }
 
 export async function getDocsTocs(slug: string) {
-  const { content } = await getRawMdx(slug);
-  const rawMdx = content;
-
-  // Regex to match code blocks (```...```), standard markdown headings (##), and <Release> tags
-  const combinedRegex = /(```[\s\S]*?```)|^(#{2,4})\s(.+)$|<Release[^>]*version="([^"]+)"/gm;
-
-  let match;
-  const extractedHeadings = [];
-
-  while ((match = combinedRegex.exec(rawMdx)) !== null) {
-    // match[1] -> Code block content (ignore)
-    if (match[1]) continue;
-
-    // match[2] & match[3] -> Markdown headings
-    if (match[2]) {
-      const headingLevel = match[2].length;
-      const headingText = match[3].trim();
-      const slug = sluggify(headingText);
-      extractedHeadings.push({
-        level: headingLevel,
-        text: headingText,
-        href: `#${slug}`,
-      });
-    }
-    // match[4] -> Release component version
-    else if (match[4]) {
-      const version = match[4];
-      extractedHeadings.push({
-        level: 2,
-        text: `v${version}`,
-        href: `#${version}`,
-      });
-    }
-  }
-  return extractedHeadings;
+  const res = await getDocsForSlug(slug);
+  if (!res) return [];
+  return res.tocs;
 }
 
 export function getPreviousNext(path: string) {
