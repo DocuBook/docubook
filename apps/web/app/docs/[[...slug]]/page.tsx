@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { getDocsForSlug, getDocsTocs } from "@/lib/markdown"
+import { getDocsForSlug } from "@/lib/markdown"
 import DocsBreadcrumb from "@/components/DocsBreadcrumb"
 import Pagination from "@/components/pagination"
 import Toc from "@/components/toc"
@@ -76,7 +76,7 @@ export default async function DocsPage(props: PageProps) {
 
   const { title, description, image: _image, date } = res.frontmatter
   const filePath = res.filePath
-  const tocs = await getDocsTocs(pathName)
+  const tocs = res.tocs
 
   return (
     <div className="flex w-full flex-1 px-0 pb-4 lg:px-8 lg:pb-8 lg:h-[calc(100vh-4rem)]">
