@@ -41,10 +41,15 @@ function getIcon(name: string) {
 export default function ContextPopover({ className }: ContextPopoverProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [activeRoute, setActiveRoute] = useState<EachRoute>();
   const [triggerWidth, setTriggerWidth] = useState<number | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const contextRoutes = getContextRoutes();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (pathname.startsWith("/docs")) {
@@ -89,7 +94,7 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
     }
   }, []);
 
-  if (!pathname.startsWith("/docs") || contextRoutes.length === 0) {
+  if (!mounted || !pathname.startsWith("/docs") || contextRoutes.length === 0) {
     return null;
   }
 
