@@ -59,6 +59,10 @@ DocuBook leverages cutting-edge technologies to ensure performance and flexibili
 - **next-mdx-remote** - Enables MDX support for dynamic, interactive Markdown content
 - **Algolia DocSearch** - Powerful search functionality with instant results
 - **@docubook/docs-tree** - CLI tool for prebuilding navigation structures
+  - **Purpose:** Prebuild navigation tree for optimal performance
+  - **Features:** Intelligent caching, multi-package manager support
+  - **Benefits:** Faster builds, reduced runtime computation
+  - **Usage:** Automatic prebuild in production deployments
 
 ### Development Tools
 - **TypeScript** - Type-safe development experience
@@ -91,18 +95,101 @@ DocuBook provides **multiple deployment-ready templates** for different use case
 - **Features:** Fast development, modern React patterns
 - **Use case:** Developer portals, lightweight documentation
 
-### Docs-tree
-
-**@docubook/docs-tree**
-- **Purpose:** Prebuild navigation tree for optimal performance
-- **Features:** Intelligent caching, multi-package manager support
-- **Benefits:** Faster builds, reduced runtime computation
-- **Usage:** Automatic prebuild in production deployments
 
 All templates include:
 - ✅ Pre-configured build scripts
 - ✅ Development and production optimizations
 - ✅ SEO-ready configuration
 - ✅ Modern React patterns and best practices
+
+## MDX Processing Comparison (Before vs After Optimization)
+
+To make the docs runtime more efficient, DocuBook now separates metadata reading from full MDX compilation and deduplicates repeated calls in the same request.
+
+<Note title="Why this matters">
+  Docs pages are one of the most frequently visited routes in most projects.
+  Reducing repeated MDX work improves server response time and lowers CPU usage,
+  especially when traffic increases.
+</Note>
+
+### Before Optimization
+
+In the old flow, a single page request repeated work multiple times:
+
+```text
+request page
+  ↓
+generateMetadata()
+  ↓
+getDocsForSlug()
+  ↓
+read mdx file
+  ↓
+parse frontmatter
+  ↓
+compile MDX
+
+DocsPage()
+  ↓
+getDocsForSlug()  (called again)
+  ↓
+compile MDX again
+
+getDocsTocs()
+  ↓
+read mdx file again
+  ↓
+parse headings
+```
+
+### After Optimization
+
+The current flow avoids unnecessary compilation and duplicate reads:
+
+```text
+request page
+  ↓
+generateMetadata()
+  ↓
+getDocsFrontmatterForSlug()
+  ↓
+getDocsRawForSlugCached()
+  ↓
+read mdx file + parse frontmatter + extract TOC
+
+DocsPage()
+  ↓
+getDocsForSlug()
+  ↓
+computeDocsForSlugCached()
+  ↓
+reuse getDocsRawForSlugCached() data
+  ↓
+compile MDX once
+
+getDocsTocs()
+  ↓
+reuse getDocsRawForSlugCached() result
+  ↓
+no extra file read
+```
+
+### Quick Metrics (Per Request)
+
+| Metric | Before | After                                                    |
+| ---    | ---    | ---                                                      |
+| MDX file reads | 3x | 1x                                                   |
+| Frontmatter parsing | 2x | 1x                                              |
+| MDX compilation | 2x | 1x                                                  |
+| TOC extraction | 1x (separate read path) | 1x (from shared raw cache) |
+
+> Note: The current optimization uses two cache layers (`getDocsRawForSlugCached` and `computeDocsForSlugCached`) so metadata, page content, and TOC all share the same raw MDX processing in one request.
+
+### Practical Impact
+
+- Less CPU work for metadata generation (no unnecessary MDX compile).
+- No repeated file-system reads during a single docs page render.
+- Better performance consistency for docs routes under load.
+- Cleaner separation of concerns between metadata and full content rendering.
 
 DocuBook transforms documentation from a simple template into a **professional development platform** that scales with your project's needs. 🎯
