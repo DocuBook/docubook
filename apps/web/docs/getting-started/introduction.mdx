@@ -187,7 +187,7 @@ To make the docs runtime more efficient, DocuBook now separates metadata reading
 | MDX compilation     | 2x                      | 1x                         |
 | TOC extraction      | 1x (separate read path) | 1x (from shared raw cache) |
 
-> Note: The current optimization uses two cache layers (`getDocsRawForSlugCached` and `computeDocsForSlugCached`) so metadata, page content, and TOC all share the same raw MDX processing in one request.
+> Note: The current optimization uses two cache layers! so metadata, page content, and TOC all share the same raw MDX processing in one request.
 
 ### Practical Impact
 
