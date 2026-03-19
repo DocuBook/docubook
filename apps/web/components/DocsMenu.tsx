@@ -34,7 +34,10 @@ export default function DocsMenu({ isSheet = false, className = "" }: DocsMenuPr
   if (!pathname.startsWith("/docs")) return null;
 
   // Get the current context
-  const currentContext = getCurrentContext(pathname);
+  const isDocsRoot = pathname === "/docs" || pathname === "/docs/";
+  const currentContext = isDocsRoot
+    ? ROUTES[0]?.href.replace(/^\/+|\/+$/g, "")
+    : getCurrentContext(pathname);
 
   // Get the route for the current context
   const contextRoute = currentContext ? getContextRoute(currentContext) : undefined;

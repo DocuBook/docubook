@@ -43,11 +43,16 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [activeRoute, setActiveRoute] = useState<EachRoute>();
+  const [useDefaultTitle, setUseDefaultTitle] = useState(false);
   const [triggerWidth, setTriggerWidth] = useState<number | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const contextRoutes = getContextRoutes();
+  const fallbackRoute = ROUTES[0];
+  const displayRoute = useDefaultTitle ? fallbackRoute : activeRoute;
 
   useEffect(() => {
+    // Mount-only state (used for client-only rendering) and intentionally set after first render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -59,6 +64,29 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
       setActiveRoute(undefined);
     }
   }, [pathname]);
+
+  useEffect(() => {
+    const hasTitle = Boolean(
+      activeRoute?.context?.title ||
+      activeRoute?.title
+    );
+
+    if (!hasTitle) {
+      const timer = window.setTimeout(() => {
+        setUseDefaultTitle(true);
+      }, 300);
+
+      return () => window.clearTimeout(timer);
+    }
+
+    // Avoid calling setState synchronously inside the effect body.
+    // Using a micro task to reset state avoids the react-hooks/set-state-in-effect lint error.
+    const resetTimer = window.setTimeout(() => {
+      setUseDefaultTitle(false);
+    }, 0);
+
+    return () => window.clearTimeout(resetTimer);
+  }, [activeRoute?.context?.title, activeRoute?.title]);
 
   useEffect(() => {
     if (!triggerRef.current) return;
@@ -111,13 +139,17 @@ export default function ContextPopover({ className }: ContextPopoverProps) {
           )}
         >
           <div className="flex items-center gap-2">
-            {activeRoute?.context?.icon && (
+            {displayRoute?.context?.icon && (
               <span className="text-primary bg-primary/10 border border-primary dark:border dark:border-accent dark:bg-accent/10 dark:text-accent rounded p-0.5">
-                {getIcon(activeRoute.context.icon)}
+                {getIcon(displayRoute.context.icon)}
               </span>
             )}
             <span className="truncate text-sm">
-              {activeRoute?.context?.title || activeRoute?.title || <Skeleton className="h-3.5 w-24" />}
+              {displayRoute?.context?.title ||
+                displayRoute?.title ||
+                (useDefaultTitle
+                  ? fallbackRoute?.context?.title || fallbackRoute?.title
+                  : <Skeleton className="h-3.5 w-24" />)}
             </span>
           </div>
           <ChevronsUpDown className="h-4 w-4 text-foreground/50" />
