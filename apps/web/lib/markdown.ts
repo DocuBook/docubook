@@ -218,6 +218,15 @@ export type BaseMdxFrontmatter = {
   date: string;
 };
 
+export async function getDocsFrontmatterForSlug(slug: string): Promise<BaseMdxFrontmatter | undefined> {
+  try {
+    const { content } = await getRawMdx(slug);
+    return justGetFrontmatterFromMD<BaseMdxFrontmatter>(content);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 async function computeDocsForSlug(slug: string): Promise<DocsForSlugResult> {
   const { content, filePath } = await getRawMdx(slug);
   const mdx = await parseMdx<BaseMdxFrontmatter>(content);
