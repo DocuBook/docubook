@@ -276,9 +276,14 @@ export async function getDocsTocs(slug: string) {
 }
 
 export function getDocsStaticParams() {
-  return page_routes.map((page) => ({
-    slug: page.href.split("/").filter(Boolean),
-  }));
+  // Ensure the root docs page (docs/index.mdx) is statically generated at /docs.
+  // This page is not part of the generated docs tree routes by default.
+  return [
+    { slug: [] },
+    ...page_routes.map((page) => ({
+      slug: page.href.split("/").filter(Boolean),
+    })),
+  ];
 }
 
 export function getPreviousNext(path: string) {
