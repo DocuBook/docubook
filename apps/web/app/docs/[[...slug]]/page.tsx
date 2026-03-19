@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { getDocsForSlug, getDocsFrontmatterForSlug } from "@/lib/markdown"
+import { getDocsForSlug, getDocsFrontmatterForSlug, getDocsStaticParams } from "@/lib/markdown"
 import DocsBreadcrumb from "@/components/DocsBreadcrumb"
 import Pagination from "@/components/pagination"
 import Toc from "@/components/toc"
@@ -16,6 +16,8 @@ type PageProps = {
     slug: string[]
   }>
 }
+
+export const dynamicParams = false
 
 // Function to generate metadata dynamically
 export async function generateMetadata(props: PageProps) {
@@ -62,6 +64,10 @@ export async function generateMetadata(props: PageProps) {
       images: [ogImage],
     },
   }
+}
+
+export async function generateStaticParams() {
+  return getDocsStaticParams()
 }
 
 export default async function DocsPage(props: PageProps) {
