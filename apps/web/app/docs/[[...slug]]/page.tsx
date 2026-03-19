@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { getDocsForSlug } from "@/lib/markdown"
+import { getDocsForSlug, getDocsFrontmatterForSlug } from "@/lib/markdown"
 import DocsBreadcrumb from "@/components/DocsBreadcrumb"
 import Pagination from "@/components/pagination"
 import Toc from "@/components/toc"
@@ -24,16 +24,16 @@ export async function generateMetadata(props: PageProps) {
   const { slug = [] } = params
 
   const pathName = slug.join("/")
-  const res = await getDocsForSlug(pathName)
+  const frontmatter = await getDocsFrontmatterForSlug(pathName)
 
-  if (!res) {
+  if (!frontmatter) {
     return {
       title: "Page Not Found",
       description: "The requested page was not found.",
     }
   }
 
-  const { title, description, image } = res.frontmatter
+  const { title, description, image } = frontmatter
 
   // Absolute URL for og:image
   const ogImage = image ? `${meta.baseURL}/images/${image}` : `${meta.baseURL}/images/og-image.png`
