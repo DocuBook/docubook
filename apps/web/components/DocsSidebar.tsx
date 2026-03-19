@@ -127,11 +127,11 @@ export default function MobToc({ tocs, title }: MobTocProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="-mx-1 h-auto flex-1 justify-between rounded-md px-2 py-2 hover:bg-transparent hover:text-inherit"
+                className="-mx-1 h-auto flex-1 justify-between rounded-md px-2 py-2 hover:bg-transparent hover:text-inherit min-w-0"
                 onClick={toggleExpanded}
                 aria-label={isExpanded ? "Collapse table of contents" : "Expand table of contents"}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                   <span className="text-sm font-medium capitalize line-clamp-1 truncate">{displayTitle}</span>
                 </div>
                 {chevronIcon}
