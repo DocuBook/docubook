@@ -45,14 +45,14 @@ export default function TocObserver({
               <div
                 key={href}
                 className={clsx(
-                  "relative flex items-start transition-all duration-200",
+                  "relative flex items-center transition-all duration-200",
                   isActive ? "bg-primary/5 dark:bg-primary/10" : ""
                 )}
               >
                 {/* Horizontal line connected to vertical line + Dot */}
                 <div
                   className={clsx(
-                    "flex items-start shrink-0 pt-2 px-1 transition-all duration-200",
+                    "flex items-center shrink-0 pt-2 pb-2 px-1 transition-all duration-200",
                     isActive ? "border-l-[3px] border-primary -ml-px" : ""
                   )}
                 >
