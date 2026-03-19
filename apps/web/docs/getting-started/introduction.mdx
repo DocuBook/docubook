@@ -31,20 +31,21 @@ DocuBook is proudly **open-source**! 🎉 We believe in creating an accessible, 
 
 ### Key Features
 
-| **Feature**                     | **Description**                                       |
-| ------------------------------- | ----------------------------------------------------- |
-| MDX Support                     | Write interactive documentation with MDX.             |
-| Nested Pages                    | Organize content in a nested, hierarchical structure. |
-| Pagination                      | Split content across multiple pages.                  |
-| Syntax Highlighting             | Highlight code for better readability.                |
-| Code Line Highlighting & Titles | Highlight specific lines with descriptive titles.     |
-| Interactive Code Blocks         | Language-specific and interactive code display.       |
-| Custom Markdown Components      | Embed custom, reusable components in your docs.       |
-| Static Site Generation          | Generate a static, high-performance site.             |
-| SEO-Optimized                   | Structured for optimal search engine indexing.        |
-| **Prebuilt Navigation**         | **Prebuild navigation tree with intelligent caching** |
-| **CLI Tools**                   | **Command-line utilities for project management**     |
-| **Multi-Template Support**      | **Templates for different frameworks and deployments**|
+|           **Feature**           |                                         **Description**                                          |
+| ------------------------------- | ------------------------------------------------------------------------------------------------ |
+| MDX Support                     | Write interactive documentation with MDX.                                                        |
+| Nested Pages                    | Organize content in a nested, hierarchical structure.                                            |
+| Pagination                      | Split content across multiple pages.                                                             |
+| Syntax Highlighting             | Highlight code for better readability.                                                           |
+| Code Line Highlighting & Titles | Highlight specific lines with descriptive titles.                                                |
+| Interactive Code Blocks         | Language-specific and interactive code display.                                                  |
+| Custom Markdown Components      | Embed custom, reusable components in your docs.                                                  |
+| Static Site Generation          | Generate a static, high-performance site.                                                        |
+| SEO-Optimized                   | Structured for optimal search engine indexing.                                                   |
+| **Prebuilt Navigation**         | Prebuild navigation tree with intelligent caching                                                |
+| **CLI Tools**                   | Command-line utilities for project management                                                    |
+| **Multi-Template Support**      | Templates for different frameworks and deployments                                               |
+| **MDX Cache Compilation**       | Efficient reuse of parsed MDX across metadata and page rendering to avoid duplicated compilation |
 
 ## Technology & Libraries
 
@@ -112,76 +113,75 @@ To make the docs runtime more efficient, DocuBook now separates metadata reading
   especially when traffic increases.
 </Note>
 
-### Before Optimization
+<AccordionGroup>
+  <Accordion title="Before Optimization" icon="Loader">
+    In the old flow, a single page request repeated work multiple times:
+      ```text
+      request page
+        ↓
+      generateMetadata()
+        ↓
+      getDocsForSlug()
+        ↓
+      read mdx file
+        ↓
+      parse frontmatter
+        ↓
+      compile MDX
 
-In the old flow, a single page request repeated work multiple times:
+      DocsPage()
+        ↓
+      getDocsForSlug()  (called again)
+        ↓
+      compile MDX again
 
-```text
-request page
-  ↓
-generateMetadata()
-  ↓
-getDocsForSlug()
-  ↓
-read mdx file
-  ↓
-parse frontmatter
-  ↓
-compile MDX
+      getDocsTocs()
+        ↓
+      read mdx file again
+        ↓
+      parse headings
+      ```
+  </Accordion>
+  <Accordion title="After Optimization" icon="Zap">
+    The current flow avoids unnecessary compilation and duplicate reads:
+      ```text
+      request page
+        ↓
+      generateMetadata()
+        ↓
+      getDocsFrontmatterForSlug()
+        ↓
+      getDocsRawForSlugCached()
+        ↓
+      read mdx file + parse frontmatter + extract TOC
 
-DocsPage()
-  ↓
-getDocsForSlug()  (called again)
-  ↓
-compile MDX again
+      DocsPage()
+        ↓
+      getDocsForSlug()
+        ↓
+      computeDocsForSlugCached()
+        ↓
+      reuse getDocsRawForSlugCached() data
+        ↓
+      compile MDX once
 
-getDocsTocs()
-  ↓
-read mdx file again
-  ↓
-parse headings
-```
-
-### After Optimization
-
-The current flow avoids unnecessary compilation and duplicate reads:
-
-```text
-request page
-  ↓
-generateMetadata()
-  ↓
-getDocsFrontmatterForSlug()
-  ↓
-getDocsRawForSlugCached()
-  ↓
-read mdx file + parse frontmatter + extract TOC
-
-DocsPage()
-  ↓
-getDocsForSlug()
-  ↓
-computeDocsForSlugCached()
-  ↓
-reuse getDocsRawForSlugCached() data
-  ↓
-compile MDX once
-
-getDocsTocs()
-  ↓
-reuse getDocsRawForSlugCached() result
-  ↓
-no extra file read
-```
+      getDocsTocs()
+        ↓
+      reuse getDocsRawForSlugCached() result
+        ↓
+      no extra file read
+      ```
+  </Accordion>
+</AccordionGroup>
 
 ### Quick Metrics (Per Request)
 
-| Metric | Before | After                                                    |
-| ---    | ---    | ---                                                      |
-| MDX file reads | 3x | 1x                                                   |
-| Frontmatter parsing | 2x | 1x                                              |
-| MDX compilation | 2x | 1x                                                  |
-| TOC extraction | 1x (separate read path) | 1x (from shared raw cache) |
+|       Metric        |         Before          |           After            |
+| ------------------- | ----------------------- | -------------------------- |
+| MDX file reads      | 3x                      | 1x                         |
+| Frontmatter parsing | 2x                      | 1x                         |
+| MDX compilation     | 2x                      | 1x                         |
+| TOC extraction      | 1x (separate read path) | 1x (from shared raw cache) |
 
 > Note: The current optimization uses two cache layers (`getDocsRawForSlugCached` and `computeDocsForSlugCached`) so metadata, page content, and TOC all share the same raw MDX processing in one request.
 
