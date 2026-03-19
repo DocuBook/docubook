@@ -101,11 +101,17 @@ export type DocsForSlugResult = MdxCompileResult<BaseMdxFrontmatter> & {
   tocs: TocItem[];
 };
 
+type DocsRawResult = {
+  content: string;
+  filePath: string;
+  frontmatter: BaseMdxFrontmatter;
+  tocs: TocItem[];
+};
+
 // `React.cache` deduplicates calls within a single server-render pass.
-// Both `generateMetadata()` and `DocsPage()` calling `getDocsForSlug(slug)`
-// with the same slug will share one compiled result — no double MDX compile.
-// Each new HTTP request gets its own fresh cache automatically, so
-// dev live-reload works without any extra watcher or cache-clear logic.
+// We cache a raw layer and a compiled layer so metadata + page rendering
+// can share one file read/frontmatter parse per request.
+const getDocsRawForSlugCached = cache(getDocsRawForSlug);
 const computeDocsForSlugCached = cache(computeDocsForSlug);
 
 function extractTocsFromRawMdx(rawMdx: string) {
@@ -220,22 +226,35 @@ export type BaseMdxFrontmatter = {
 
 export async function getDocsFrontmatterForSlug(slug: string): Promise<BaseMdxFrontmatter | undefined> {
   try {
-    const { content } = await getRawMdx(slug);
-    return justGetFrontmatterFromMD<BaseMdxFrontmatter>(content);
+    const raw = await getDocsRawForSlugCached(slug);
+    return raw.frontmatter;
   } catch (err) {
     console.log(err);
   }
 }
 
-async function computeDocsForSlug(slug: string): Promise<DocsForSlugResult> {
+async function getDocsRawForSlug(slug: string): Promise<DocsRawResult> {
   const { content, filePath } = await getRawMdx(slug);
-  const mdx = await parseMdx<BaseMdxFrontmatter>(content);
+  const frontmatter = justGetFrontmatterFromMD<BaseMdxFrontmatter>(content);
   const tocs = extractTocsFromRawMdx(content);
 
   return {
-    ...mdx,
+    content,
     filePath,
+    frontmatter,
     tocs,
+  };
+}
+
+async function computeDocsForSlug(slug: string): Promise<DocsForSlugResult> {
+  const raw = await getDocsRawForSlugCached(slug);
+  const mdx = await parseMdx<BaseMdxFrontmatter>(raw.content);
+
+  return {
+    ...mdx,
+    frontmatter: raw.frontmatter,
+    filePath: raw.filePath,
+    tocs: raw.tocs,
   };
 }
 
@@ -248,9 +267,12 @@ export async function getDocsForSlug(slug: string): Promise<DocsForSlugResult | 
 }
 
 export async function getDocsTocs(slug: string) {
-  const res = await getDocsForSlug(slug);
-  if (!res) return [];
-  return res.tocs;
+  try {
+    const raw = await getDocsRawForSlugCached(slug);
+    return raw.tocs;
+  } catch {
+    return [];
+  }
 }
 
 export function getPreviousNext(path: string) {
