@@ -4,7 +4,9 @@ import Link from "next/link";
 import { getMetadata } from "@/app/layout";
 import { CopyCommand } from "@/components/home/copycommand";
 import { Mascot } from "@/components/home/Mascot";
-import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
+import AnimatedShinyText from "@/components/ui/animated-shiny-text";
+import { ArrowUpRightIcon, TerminalSquare } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const metadata = getMetadata({
   title: "Home",
@@ -14,10 +16,22 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center px-2 py-8 text-center sm:py-36">
       <Link
-        href="https://www.npmjs.com/package/@docubook/cli" target="_blank" className="flex items-center gap-2 py-6">
-        <InteractiveHoverButton>
-          DocuBook CLI - Available Now!
-        </InteractiveHoverButton>
+        href="https://www.npmjs.com/package/@docubook/cli" target="_blank"
+        className="mb-5 sm:text-lg flex items-center gap-2 underline underline-offset-4 sm:-mt-12"
+      >
+        <div className="z-10 flex min-h-10 items-center justify-center max-[800px]:mt-10">
+          <div
+            className={cn(
+              "group rounded-full border border-black/5 bg-black/5 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-accent dark:border-white/5 dark:bg-transparent dark:hover:bg-accent",
+            )}
+          >
+            <AnimatedShinyText className="inline-flex items-center justify-center px-4 py-1 transition ease-out hover:text-neutral-100 hover:duration-300 hover:dark:text-neutral-200">
+              <TerminalSquare className="size-4 mr-2 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
+              <span>DocuBook CLI</span>
+              <ArrowUpRightIcon className="size-4 ml-2 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
+            </AnimatedShinyText>
+          </div>
+        </div>
       </Link>
       <div className="w-full max-w-[800px] pb-8">
         <h1 className="mb-4 text-2xl font-bold sm:text-5xl">
@@ -51,7 +65,7 @@ export default function Home() {
         </Link>
       </div>
       <CopyCommand />
-      <Mascot />
+      <Mascot className="py-8" />
     </div>
   );
 }

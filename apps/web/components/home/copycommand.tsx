@@ -1,11 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { TerminalSquareIcon, ClipboardIcon, CheckIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const commands = {
+  npm: "npx @docubook/cli@latest",
+  pnpm: "pnpm dlx @docubook/cli@latest",
+  yarn: "yarn dlx @docubook/cli@latest",
+  bun: "bunx @docubook/cli@latest",
+} as const;
+
+const tabKeys = ["npm", "pnpm","yarn", "bun"] as const;
 
 export function CopyCommand() {
+  const [packageManager, setPackageManager] = useState<keyof typeof commands>("npm");
   const [copied, setCopied] = useState(false);
-  const command = "npx @docubook/cli";
+
+  const command = useMemo(() => commands[packageManager], [packageManager]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(command);
@@ -14,19 +26,56 @@ export function CopyCommand() {
   };
 
   return (
-    <div className="relative flex flex-row items-center justify-center sm:gap-2 gap-0.5 text-muted-foreground text-md mt-10 mb-12 font-code text-base font-medium group">
-      <TerminalSquareIcon className="w-5 h-5 mr-1 mt-0.5" />
-      <span className="select-all">{command}</span>
-      <button
-        onClick={copyToClipboard}
-        className="p-1 ml-1 transition-opacity rounded-md opacity-0 group-hover:opacity-100 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-copy"
-      >
-        {copied ? (
-          <CheckIcon className="w-4 h-4 text-green-500" />
-        ) : (
-          <ClipboardIcon className="w-4 h-4" />
-        )}
-      </button>
+    <div className="w-full max-w-[540px] mt-10 mb-12 overflow-hidden rounded-2xl border border-border/20 bg-card/40 shadow-lg backdrop-blur-xl">
+      <div className="flex items-center justify-between gap-3 bg-card/50 px-4 py-3 backdrop-blur">
+        <div className="flex flex-1 items-center gap-3 min-w-0">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-border/10 text-muted-foreground shadow-sm">
+            <TerminalSquareIcon className="w-5 h-5" />
+          </div>
+
+          <div className="flex flex-1 min-w-0">
+            <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden rounded-full bg-white/10 px-2 py-1 shadow-sm border border-white/10">
+              {tabKeys.map((key) => {
+                const active = key === packageManager;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setPackageManager(key)}
+                    className={cn(
+                      "flex items-center justify-center whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition",
+                      active
+                        ? "bg-card text-primary shadow-sm"
+                        : "text-muted-foreground hover:bg-white/10",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background/20"
+                    )}
+                  >
+                    {key}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={copyToClipboard}
+          className="flex h-9 w-9 cursor-copy items-center justify-center rounded-xl border border-border/20 bg-border/10 text-muted-foreground shadow-sm transition hover:bg-border/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-card/40"
+          aria-label="Copy command"
+        >
+          {copied ? (
+            <CheckIcon className="w-4 h-4 text-emerald-500" />
+          ) : (
+            <ClipboardIcon className="w-4 h-4" />
+          )}
+        </button>
+      </div>
+
+      <div className="border-t border-border/20 px-4 py-3">
+        <div className="rounded-xl bg-card/30 px-4 py-3 font-mono text-sm text-left text-muted-foreground shadow-sm backdrop-blur">
+          <pre className="whitespace-pre-wrap break-words">{command}</pre>
+        </div>
+      </div>
     </div>
   );
 }
