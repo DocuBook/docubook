@@ -48,4 +48,4 @@ next-env.d.ts
 *.cer
 .logs
 .agent
-
+prompts
