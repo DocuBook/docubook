@@ -11,7 +11,7 @@
     "logoText": "DocuBook",
     "menu": [
       { "title": "Home", "href": "/" },
-      { "title": "Docs", "href": "/docs/getting-started/introduction" },
+      { "title": "Docs", "href": "/docs" },
       { "title": "Showcase", "href": "/showcase" }
     ]
   },

@@ -5,7 +5,11 @@ date: 29-11-2024
 image: example-img.png
 ---
 
-Welcome to **DocuBook**! This template provides a modern, flexible, and user-friendly foundation for creating engaging documentation. Whether you're building a knowledge base or project docs, DocuBook makes it easy to set up and scale.
+## Why DocuBook Exists
+
+For years, I worked on documentation projects where the biggest effort was not writing content, but getting the theme and styling right. Most of the time was eaten by configuring CMS plugins and tweaking layouts instead of focusing on the actual documentation.
+
+That frustration inspired me to build a `docs framework` from the ground up in the React ecosystem—one that keeps the writing experience front and center. DocuBook is designed to let you focus on content while giving you a flexible, developer-friendly foundation that’s also open source.
 
 ## Open Source Philosophy
 
@@ -31,20 +35,21 @@ DocuBook is proudly **open-source**! 🎉 We believe in creating an accessible, 
 
 ### Key Features
 
-| **Feature**                     | **Description**                                       |
-| ------------------------------- | ----------------------------------------------------- |
-| MDX Support                     | Write interactive documentation with MDX.             |
-| Nested Pages                    | Organize content in a nested, hierarchical structure. |
-| Pagination                      | Split content across multiple pages.                  |
-| Syntax Highlighting             | Highlight code for better readability.                |
-| Code Line Highlighting & Titles | Highlight specific lines with descriptive titles.     |
-| Interactive Code Blocks         | Language-specific and interactive code display.       |
-| Custom Markdown Components      | Embed custom, reusable components in your docs.       |
-| Static Site Generation          | Generate a static, high-performance site.             |
-| SEO-Optimized                   | Structured for optimal search engine indexing.        |
-| **Prebuilt Navigation**         | **Prebuild navigation tree with intelligent caching** |
-| **CLI Tools**                   | **Command-line utilities for project management**     |
-| **Multi-Template Support**      | **Templates for different frameworks and deployments**|
+|           **Feature**           |                                         **Description**                                          |
+| ------------------------------- | ------------------------------------------------------------------------------------------------ |
+| MDX Support                     | Write interactive documentation with MDX.                                                        |
+| Nested Pages                    | Organize content in a nested, hierarchical structure.                                            |
+| Pagination                      | Split content across multiple pages.                                                             |
+| Syntax Highlighting             | Highlight code for better readability.                                                           |
+| Code Line Highlighting & Titles | Highlight specific lines with descriptive titles.                                                |
+| Interactive Code Blocks         | Language-specific and interactive code display.                                                  |
+| Custom Markdown Components      | Embed custom, reusable components in your docs.                                                  |
+| Static Site Generation          | Generate a static, high-performance site.                                                        |
+| SEO-Optimized                   | Structured for optimal search engine indexing.                                                   |
+| **Prebuilt Navigation**         | Prebuild navigation tree with intelligent caching                                                |
+| **CLI Tools**                   | Command-line utilities for project management                                                    |
+| **Multi-Template Support**      | Templates for different frameworks and deployments                                               |
+| **MDX Cache Compilation**       | Efficient reuse of parsed MDX across metadata and page rendering to avoid duplicated compilation |
 
 ## Technology & Libraries
 
@@ -59,6 +64,10 @@ DocuBook leverages cutting-edge technologies to ensure performance and flexibili
 - **next-mdx-remote** - Enables MDX support for dynamic, interactive Markdown content
 - **Algolia DocSearch** - Powerful search functionality with instant results
 - **@docubook/docs-tree** - CLI tool for prebuilding navigation structures
+  - **Purpose:** Prebuild navigation tree for optimal performance
+  - **Features:** Intelligent caching, multi-package manager support
+  - **Benefits:** Faster builds, reduced runtime computation
+  - **Usage:** Automatic prebuild in production deployments
 
 ### Development Tools
 - **TypeScript** - Type-safe development experience
@@ -91,18 +100,100 @@ DocuBook provides **multiple deployment-ready templates** for different use case
 - **Features:** Fast development, modern React patterns
 - **Use case:** Developer portals, lightweight documentation
 
-### Docs-tree
-
-**@docubook/docs-tree**
-- **Purpose:** Prebuild navigation tree for optimal performance
-- **Features:** Intelligent caching, multi-package manager support
-- **Benefits:** Faster builds, reduced runtime computation
-- **Usage:** Automatic prebuild in production deployments
 
 All templates include:
 - ✅ Pre-configured build scripts
 - ✅ Development and production optimizations
 - ✅ SEO-ready configuration
 - ✅ Modern React patterns and best practices
+
+## MDX Processing Comparison (Before vs After Optimization)
+
+To make the docs runtime more efficient, DocuBook now separates metadata reading from full MDX compilation and deduplicates repeated calls in the same request.
+
+<Note title="Why this matters">
+  Docs pages are one of the most frequently visited routes in most projects.
+  Reducing repeated MDX work improves server response time and lowers CPU usage,
+  especially when traffic increases.
+</Note>
+
+<AccordionGroup>
+  <Accordion title="Before Optimization" icon="Loader">
+    In the old flow, a single page request repeated work multiple times:
+      ```text
+      request page
+        ↓
+      generateMetadata()
+        ↓
+      getDocsForSlug()
+        ↓
+      read mdx file
+        ↓
+      parse frontmatter
+        ↓
+      compile MDX
+
+      DocsPage()
+        ↓
+      getDocsForSlug()  (called again)
+        ↓
+      compile MDX again
+
+      getDocsTocs()
+        ↓
+      read mdx file again
+        ↓
+      parse headings
+      ```
+  </Accordion>
+  <Accordion title="After Optimization" icon="Zap">
+    The current flow avoids unnecessary compilation and duplicate reads:
+      ```text
+      request page
+        ↓
+      generateMetadata()
+        ↓
+      getDocsFrontmatterForSlug()
+        ↓
+      getDocsRawForSlugCached()
+        ↓
+      read mdx file + parse frontmatter + extract TOC
+
+      DocsPage()
+        ↓
+      getDocsForSlug()
+        ↓
+      computeDocsForSlugCached()
+        ↓
+      reuse getDocsRawForSlugCached() data
+        ↓
+      compile MDX once
+
+      getDocsTocs()
+        ↓
+      reuse getDocsRawForSlugCached() result
+        ↓
+      no extra file read
+      ```
+  </Accordion>
+</AccordionGroup>
+
+### Quick Metrics (Per Request)
+
+|       Metric        |         Before          |           After            |
+| ------------------- | ----------------------- | -------------------------- |
+| MDX file reads      | 3x                      | 1x                         |
+| Frontmatter parsing | 2x                      | 1x                         |
+| MDX compilation     | 2x                      | 1x                         |
+| TOC extraction      | 1x (separate read path) | 1x (from shared raw cache) |
+
+> Note: The current optimization uses two cache layers! so metadata, page content, and TOC all share the same raw MDX processing in one request.
+
+### Practical Impact
+
+- Less CPU work for metadata generation (no unnecessary MDX compile).
+- No repeated file-system reads during a single docs page render.
+- Better performance consistency for docs routes under load.
+- Cleaner separation of concerns between metadata and full content rendering.
 
 DocuBook transforms documentation from a simple template into a **professional development platform** that scales with your project's needs. 🎯

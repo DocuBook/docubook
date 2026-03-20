@@ -47,5 +47,5 @@ next-env.d.ts
 *.crt
 *.cer
 .logs
-.agent
-
+*.agent
+*.agents

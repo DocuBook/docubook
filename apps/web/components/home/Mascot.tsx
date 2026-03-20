@@ -47,7 +47,7 @@ export function Mascot({ size = 320, className = "" }: MascotProps) {
 
   return (
     <div className={`relative flex items-center justify-center ${className}`}>
-      <div className="pointer-events-none absolute bottom-[140px] z-0 h-[380px] w-[380px] sm:-right-[120px] sm:-top-[60px]">
+      <div className="pointer-events-none absolute bottom-[140px] z-0 h-[380px] w-[380px] mb-20">
         <IconCloud images={[...images, "/images/bun.svg", "/images/nextjs.svg", "/images/github.svg", "/images/mdx.svg", "/images/shadcn.svg"]} />
       </div>
 
