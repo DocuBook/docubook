@@ -32,25 +32,31 @@ interface TextNode extends Node {
   value: string;
 }
 
-// custom components imports
+import dynamic from "next/dynamic"; // custom components - dynamically imported to reduce initial bundle
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import Pre from "@/components/markdown/PreMdx";
-import Note from "@/components/markdown/NoteMdx";
-import { Stepper, StepperItem } from "@/components/markdown/StepperMdx";
-import Image from "@/components/markdown/ImageMdx";
 import Link from "@/components/markdown/LinkMdx";
-import Outlet from "@/components/markdown/OutletMdx";
-import Youtube from "@/components/markdown/YoutubeMdx";
-import Tooltip from "@/components/markdown/TooltipsMdx";
-import Card from "@/components/markdown/CardMdx";
-import Button from "@/components/markdown/ButtonMdx";
-import Accordion from "@/components/markdown/AccordionMdx";
-import CardGroup from "@/components/markdown/CardGroupMdx";
-import Kbd from "@/components/markdown/KeyboardMdx";
-import { Release, Changes } from "@/components/markdown/ReleaseMdx";
-import { File, Files, Folder } from "@/components/markdown/FileTreeMdx";
-import AccordionGroup from "@/components/markdown/AccordionGroupMdx";
+import Image from "@/components/markdown/ImageMdx";
+
+// Lazy load heavy interactive components
+const Note = dynamic(() => import("@/components/markdown/NoteMdx"));
+const Stepper = dynamic(() => import("@/components/markdown/StepperMdx").then(m => ({ default: m.Stepper })));
+const StepperItem = dynamic(() => import("@/components/markdown/StepperMdx").then(m => ({ default: m.StepperItem })));
+const Outlet = dynamic(() => import("@/components/markdown/OutletMdx"));
+const Youtube = dynamic(() => import("@/components/markdown/YoutubeMdx"));
+const Tooltip = dynamic(() => import("@/components/markdown/TooltipsMdx"));
+const Card = dynamic(() => import("@/components/markdown/CardMdx"));
+const Button = dynamic(() => import("@/components/markdown/ButtonMdx"));
+const Accordion = dynamic(() => import("@/components/markdown/AccordionMdx"));
+const CardGroup = dynamic(() => import("@/components/markdown/CardGroupMdx"));
+const Kbd = dynamic(() => import("@/components/markdown/KeyboardMdx"));
+const Release = dynamic(() => import("@/components/markdown/ReleaseMdx").then(m => ({ default: m.Release })));
+const Changes = dynamic(() => import("@/components/markdown/ReleaseMdx").then(m => ({ default: m.Changes })));
+const File = dynamic(() => import("@/components/markdown/FileTreeMdx").then(m => ({ default: m.File })));
+const Files = dynamic(() => import("@/components/markdown/FileTreeMdx").then(m => ({ default: m.Files })));
+const Folder = dynamic(() => import("@/components/markdown/FileTreeMdx").then(m => ({ default: m.Folder })));
+const AccordionGroup = dynamic(() => import("@/components/markdown/AccordionGroupMdx"));
 
 // add custom components
 const components = {
@@ -109,10 +115,10 @@ type DocsRawResult = {
 };
 
 // `React.cache` deduplicates calls within a single server-render pass.
-// We cache a raw layer and a compiled layer so metadata + page rendering
-// can share one file read/frontmatter parse per request.
-const getDocsRawForSlugCached = cache(getDocsRawForSlug);
-const computeDocsForSlugCached = cache(computeDocsForSlug);
+// Layer 1: Parse markdown file (read + extract frontmatter/tocs)
+// Layer 2: Compile MDX (expensive rehype/remark processing)
+const parseMarkdownFileCached = cache(parseMarkdownFile);
+const compileMarkdownToCached = cache(compileMarkdownTo);
 
 function extractTocsFromRawMdx(rawMdx: string) {
   // Regex to match code blocks (```...```), standard markdown headings (##), and <Release> tags
@@ -226,16 +232,20 @@ export type BaseMdxFrontmatter = {
 
 export async function getDocsFrontmatterForSlug(slug: string): Promise<BaseMdxFrontmatter | undefined> {
   try {
-    const raw = await getDocsRawForSlugCached(slug);
-    return raw.frontmatter;
+    const parsed = await parseMarkdownFileCached(slug);
+    return parsed.frontmatter;
   } catch (err) {
     console.log(err);
   }
 }
 
-async function getDocsRawForSlug(slug: string): Promise<DocsRawResult> {
-  const { content, filePath } = await getRawMdx(slug);
-  const frontmatter = justGetFrontmatterFromMD<BaseMdxFrontmatter>(content);
+/**
+ * Parse markdown file: read file system, extract frontmatter and TOCs
+ * Does NOT compile MDX (expensive operation)
+ */
+async function parseMarkdownFile(slug: string): Promise<DocsRawResult> {
+  const { content, filePath } = await readMarkdownFile(slug);
+  const frontmatter = extractFrontmatter<BaseMdxFrontmatter>(content);
   const tocs = extractTocsFromRawMdx(content);
 
   return {
@@ -246,30 +256,41 @@ async function getDocsRawForSlug(slug: string): Promise<DocsRawResult> {
   };
 }
 
-async function computeDocsForSlug(slug: string): Promise<DocsForSlugResult> {
-  const raw = await getDocsRawForSlugCached(slug);
-  const mdx = await parseMdx<BaseMdxFrontmatter>(raw.content);
+/**
+ * Compile markdown to JSX: parse into MDX with rehype/remark plugins
+ * Assumes markdown file is already parsed
+ */
+async function compileMarkdownTo(slug: string): Promise<DocsForSlugResult> {
+  const parsed = await parseMarkdownFileCached(slug);
+  const compiled = await parseMdx<BaseMdxFrontmatter>(parsed.content);
 
   return {
-    ...mdx,
-    frontmatter: raw.frontmatter,
-    filePath: raw.filePath,
-    tocs: raw.tocs,
+    ...compiled,
+    frontmatter: parsed.frontmatter,
+    filePath: parsed.filePath,
+    tocs: parsed.tocs,
   };
 }
 
+/**
+ * Get full compiled documentation (public API)
+ * Returns: JSX content, frontmatter, TOCs, file path
+ */
 export async function getDocsForSlug(slug: string): Promise<DocsForSlugResult | undefined> {
   try {
-    return await computeDocsForSlugCached(slug);
+    return await compileMarkdownToCached(slug);
   } catch (err) {
     console.log(err);
   }
 }
 
+/**
+ * Get only table of contents for a slug
+ */
 export async function getDocsTocs(slug: string) {
   try {
-    const raw = await getDocsRawForSlugCached(slug);
-    return raw.tocs;
+    const parsed = await parseMarkdownFileCached(slug);
+    return parsed.tocs;
   } catch {
     return [];
   }
@@ -278,11 +299,14 @@ export async function getDocsTocs(slug: string) {
 export function getDocsStaticParams() {
   // Ensure the root docs page (docs/index.mdx) is statically generated at /docs.
   // This page is not part of the generated docs tree routes by default.
+  // Filter out routes marked as noLink (parent categories that don't have their own page)
   return [
     { slug: [] },
-    ...page_routes.map((page) => ({
-      slug: page.href.split("/").filter(Boolean),
-    })),
+    ...page_routes
+      .map((page) => ({
+        slug: page.href.split("/").filter(Boolean),
+      }))
+      .filter(({ slug }) => slug.length > 0), // Exclude empty slugs
   ];
 }
 
@@ -299,7 +323,11 @@ function sluggify(text: string) {
   return slug.replace(/[^a-z0-9-]/g, "");
 }
 
-async function getRawMdx(slug: string) {
+/**
+ * Read markdown file from disk
+ * Returns: raw content and resolved file path
+ */
+async function readMarkdownFile(slug: string) {
   const commonPath = path.join(process.cwd(), "/docs/");
   const paths = [
     path.join(commonPath, `${slug}.mdx`),
@@ -321,8 +349,12 @@ async function getRawMdx(slug: string) {
   throw new Error(`Could not find mdx file for slug: ${slug}`);
 }
 
-function justGetFrontmatterFromMD<Frontmatter>(rawMd: string): Frontmatter {
-  return matter(rawMd).data as Frontmatter;
+/**
+ * Extract frontmatter from markdown content
+ * Pure function: no side effects
+ */
+function extractFrontmatter<Frontmatter>(content: string): Frontmatter {
+  return matter(content).data as Frontmatter;
 }
 
 export async function getAllChilds(pathString: string) {
@@ -341,9 +373,9 @@ export async function getAllChilds(pathString: string) {
   return await Promise.all(
     page_routes_copy.map(async (it) => {
       const slug = path.join(prevHref, it.href);
-      const { content } = await getRawMdx(slug);
+      const { content } = await readMarkdownFile(slug);
       return {
-        ...justGetFrontmatterFromMD<BaseMdxFrontmatter>(content),
+        ...extractFrontmatter<BaseMdxFrontmatter>(content),
         href: `/docs${prevHref}${it.href}`,
       };
     })
