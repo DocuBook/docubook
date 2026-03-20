@@ -11,7 +11,7 @@ const commands = {
   bun: "bunx @docubook/cli@latest",
 } as const;
 
-const tabKeys = ["npm", "pnpm","yarn", "bun"] as const;
+const tabKeys = ["npm", "pnpm", "yarn", "bun"] as const;
 
 export function CopyCommand() {
   const [packageManager, setPackageManager] = useState<keyof typeof commands>("npm");
@@ -29,12 +29,12 @@ export function CopyCommand() {
     <div className="w-full max-w-[540px] mt-10 mb-12 overflow-hidden rounded-2xl border border-border/20 bg-card/40 shadow-lg backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3 bg-card/50 px-4 py-3 backdrop-blur">
         <div className="flex flex-1 items-center gap-3 min-w-0">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-border/10 text-muted-foreground shadow-sm">
+          <div className="flex h-6 w-6 items-center justify-center rounded-sm bg-border/10 text-muted-foreground shadow-sm">
             <TerminalSquareIcon className="w-5 h-5" />
           </div>
 
           <div className="flex flex-1 min-w-0">
-            <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden rounded-full bg-white/10 px-2 py-1 shadow-sm border border-white/10">
+            <div className="flex min-w-0 flex-1 items-center gap-0 overflow-hidden py-0.5">
               {tabKeys.map((key) => {
                 const active = key === packageManager;
                 return (
@@ -43,10 +43,10 @@ export function CopyCommand() {
                     type="button"
                     onClick={() => setPackageManager(key)}
                     className={cn(
-                      "flex items-center justify-center whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition",
+                      "flex items-center justify-center whitespace-nowrap rounded-xl px-2 py-1.5 text-sm font-medium transition",
                       active
                         ? "bg-card text-primary shadow-sm"
-                        : "text-muted-foreground hover:bg-white/10",
+                        : "text-muted-foreground hover:text-foreground",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background/20"
                     )}
                   >
@@ -60,7 +60,7 @@ export function CopyCommand() {
 
         <button
           onClick={copyToClipboard}
-          className="flex h-9 w-9 cursor-copy items-center justify-center rounded-xl border border-border/20 bg-border/10 text-muted-foreground shadow-sm transition hover:bg-border/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-card/40"
+          className="flex h-6 w-6 cursor-copy items-center justify-center rounded-sm border border-border/20 bg-border/10 text-muted-foreground shadow-sm transition hover:bg-border/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-card/40"
           aria-label="Copy command"
         >
           {copied ? (

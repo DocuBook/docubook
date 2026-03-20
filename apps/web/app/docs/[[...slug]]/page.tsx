@@ -26,6 +26,8 @@ export async function generateMetadata(props: PageProps) {
   const { slug = [] } = params
 
   const pathName = slug.join("/")
+  // React.cache() deduplicates within this request, so if the page component
+  // also calls getDocsFrontmatterForSlug, they share the same file read
   const frontmatter = await getDocsFrontmatterForSlug(pathName)
 
   if (!frontmatter) {
@@ -37,11 +39,11 @@ export async function generateMetadata(props: PageProps) {
 
   const { title, description, image } = frontmatter
 
-  // Absolute URL for og:image
+  // Absolute URL for og:image - compute once
   const ogImage = image ? `${meta.baseURL}/images/${image}` : `${meta.baseURL}/images/og-image.png`
 
   return {
-    title: `${title}`,
+    title,
     description,
     openGraph: {
       title,
