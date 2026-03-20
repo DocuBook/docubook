@@ -70,7 +70,7 @@ jobs:
       - name: Publish @docubook/cli to npm
         run: pnpm publish packages/cli --access public --no-git-checks
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} # Not needed when using setup-node with registry-url and scope
           NPM_CONFIG_PROVENANCE: true
 
       - name: Create Release

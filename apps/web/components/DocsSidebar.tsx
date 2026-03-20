@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronDown, ChevronUp, PanelRight, MoreVertical } from "lucide-react"
+import { ChevronDown, ChevronUp, PanelRight, MoreVertical, FileText } from "lucide-react"
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTrigger } from "@/components/ui/sheet"
 import DocsMenu from "@/components/DocsMenu"
 import { ModeToggle } from "@/components/ThemeToggle"
@@ -127,11 +127,11 @@ export default function MobToc({ tocs, title }: MobTocProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="-mx-1 h-auto flex-1 justify-between rounded-md px-2 py-2 hover:bg-transparent hover:text-inherit"
+                className="-mx-1 h-auto flex-1 justify-between rounded-md px-2 py-2 hover:bg-transparent hover:text-inherit min-w-0"
                 onClick={toggleExpanded}
                 aria-label={isExpanded ? "Collapse table of contents" : "Expand table of contents"}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                   <span className="text-sm font-medium capitalize line-clamp-1 truncate">{displayTitle}</span>
                 </div>
                 {chevronIcon}
@@ -172,7 +172,7 @@ export default function MobToc({ tocs, title }: MobTocProps) {
               {isExpanded && (
                 <motion.div
                   ref={contentRef}
-                  className="-mx-1 mt-2 max-h-[60vh] overflow-y-auto px-1 pb-2"
+                  className="px-4 mt-2 max-h-[60vh] overflow-y-auto pb-2"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
@@ -181,7 +181,13 @@ export default function MobToc({ tocs, title }: MobTocProps) {
                   {tocs?.length ? (
                     <TocObserver data={tocs} activeId={activeId} onActiveIdChange={setActiveId} />
                   ) : (
-                    <p className="text-muted-foreground py-2 text-sm">No headings</p>
+                    <div className="flex flex-col items-center justify-center py-8 px-2 text-center">
+                      <FileText className="text-muted-foreground/40 h-8 w-8 mb-3" />
+                      <p className="text-muted-foreground text-sm font-medium mb-1">No headings</p>
+                      <p className="text-muted-foreground/70 text-xs leading-relaxed">
+                        {`This page doesn't have section headings yet.`}
+                      </p>
+                    </div>
                   )}
                 </motion.div>
               )}

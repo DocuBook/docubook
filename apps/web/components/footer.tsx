@@ -84,7 +84,7 @@ export function MadeWith() {
       <span className="text-muted-foreground">Built by </span>
       <span className="text-primary">
         <Link href="https://github.com/gitfromwildan" target="_blank" rel="noopener noreferrer">
-          <AuroraText>Wildan.nrs</AuroraText>
+          <AuroraText>wildan.dev</AuroraText>
         </Link></span>
     </>
   );
