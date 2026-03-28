@@ -328,7 +328,7 @@ function sluggify(text: string) {
  * Returns: raw content and resolved file path
  */
 async function readMarkdownFile(slug: string) {
-  const commonPath = path.join(process.cwd(), "/docs/");
+  const commonPath = path.join(/*turbopackIgnore: true*/ process.cwd(), "docs");
   const paths = [
     path.join(commonPath, `${slug}.mdx`),
     path.join(commonPath, slug, "index.mdx"),
@@ -336,7 +336,7 @@ async function readMarkdownFile(slug: string) {
 
   for (const p of paths) {
     try {
-      const content = await fs.readFile(p, "utf-8");
+      const content = await fs.readFile(/*turbopackIgnore: true*/ p, "utf-8");
       return {
         content,
         filePath: `docs/${path.relative(commonPath, p)}`,
