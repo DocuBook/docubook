@@ -1,5 +1,5 @@
 {
-  "buildCommand": "bun turbo build --filter=@docubook/web",
+  "buildCommand": "pnpm turbo build --filter=@docubook/web",
   "outputDirectory": "apps/web/.next",
-  "installCommand": "bun install"
+  "installCommand": "pnpm install"
 }

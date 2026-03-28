@@ -11,9 +11,6 @@
     "dev:next:docker": "turbo dev --filter=docubook-next-docker",
     "dev:next:vercel": "turbo dev --filter=docubook-next",
     "lint": "turbo lint",
-    "lint:fix": "turbo lint:fix",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,mdx,css}\" --ignore-path .gitignore",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,mdx,css}\" --ignore-path .gitignore",
     "clean": "turbo clean",
     "typecheck": "turbo typecheck",
     "release:notes": "node packages/scripts/cli-release.mjs"
@@ -31,12 +28,16 @@
     "next": "^16.2.1"
   },
   "engines": {
-    "bun": ">=1"
+    "node": ">=18.0.0"
   },
-  "packageManager": "bun@1.3.11",
-  "bun": {
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
     "overrides": {
       "flatted": ">=3.4.2"
-    }
+    },
+    "ignoredBuiltDependencies": [
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }

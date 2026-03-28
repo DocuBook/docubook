@@ -7,8 +7,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "bun run prebuild && next build",
-    "prebuild": "bunx @docubook/docs-tree ./docs ./docu.json ./lib/docs-tree.json",
+    "build": "pnpm run prebuild && next build",
+    "prebuild": "pnpm dlx @docubook/docs-tree ./docs ./docu.json ./lib/docs-tree.json",
     "start": "next start",
     "lint": "eslint ."
   },
