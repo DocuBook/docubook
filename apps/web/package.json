@@ -15,6 +15,7 @@
   "dependencies": {
     "@docsearch/css": "^4.6.2",
     "@docsearch/react": "^4.6.2",
+    "@docubook/core": "^1.1.0",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-collapsible": "^1.1.12",
@@ -33,7 +34,6 @@
     "cmdk": "^1.1.1",
     "framer-motion": "^12.38.0",
     "geist": "^1.7.0",
-    "gray-matter": "^4.0.3",
     "lucide-react": "^0.511.0",
     "next": "^16.2.1",
     "next-mdx-remote": "^6.0.0",
@@ -41,15 +41,9 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-icons": "^5.6.0",
-    "rehype-autolink-headings": "^7.1.0",
-    "rehype-code-titles": "^1.2.1",
-    "rehype-prism-plus": "^2.0.2",
-    "rehype-slug": "^6.0.0",
-    "remark-gfm": "^4.0.1",
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.6.1",
-    "tailwindcss-animate": "^1.0.7",
-    "unist-util-visit": "^5.1.0"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@docubook/docs-tree": "^1.0.1",
