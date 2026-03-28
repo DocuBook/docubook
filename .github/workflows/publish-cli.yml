@@ -8,34 +8,26 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    name: Build (Node 22.x)
+    name: Build (Bun)
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 10
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "pnpm"
+      - name: Set up Bun
+        uses: oven-sh/bun-action@v2
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install
 
       - name: Build
-        run: pnpm build
+        run: bun run build
 
       - name: Lint
-        run: pnpm lint
+        run: bun run lint
 
       - name: Type check
-        run: pnpm typecheck
+        run: bun run typecheck
 
   publish:
     needs: build-and-test
