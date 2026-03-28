@@ -8,6 +8,7 @@ import { lt } from "semver";
 
 // Changelog store to avoid showing same version multiple times
 const _CHANGELOG_STORE = path.join(os.homedir(), ".docubook_cli_seen_changelogs.json");
+const _PREFERENCES_FILE = path.join(os.homedir(), ".docubook_cli_prefs.json");
 
 function _readChangelogStore() {
   try {
@@ -24,6 +25,36 @@ function _writeChangelogStore(obj) {
   } catch {
     // non-fatal
   }
+}
+
+function _readPreferences() {
+  try {
+    const raw = fs.readFileSync(_PREFERENCES_FILE, "utf8");
+    return JSON.parse(raw || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function _writePreferences(obj) {
+  try {
+    fs.writeFileSync(_PREFERENCES_FILE, JSON.stringify(obj, null, 2), { mode: 0o600 });
+  } catch {
+    // non-fatal
+  }
+}
+
+function getPreferredPackageManager() {
+  const prefs = _readPreferences();
+  if (prefs.packageManager) return prefs.packageManager;
+  return detectInstalledPackageManager();
+}
+
+function setPreferredPackageManager(pm) {
+  if (!pm) return;
+  const prefs = _readPreferences();
+  prefs.packageManager = pm;
+  _writePreferences(prefs);
 }
 
 /**
@@ -298,8 +329,12 @@ export async function handleUpdate(currentVersion) {
   let spinner;
 
   try {
-    // Detect package manager
-    const packageManager = detectInstalledPackageManager();
+    // Detect package manager (in preference order: persisted > env/argv)
+    const packageManager = getPreferredPackageManager();
+    setPreferredPackageManager(packageManager);
+
+    // Print a Terminal UI friendly note
+    console.log(`Package manager used for update: ${packageManager}`);
 
     // Fetch package metadata from npm registry
     const encoded = encodeURIComponent(pkgName);
