@@ -64,23 +64,6 @@ jobs:
           scope: "@docubook"
           always-auth: true
 
-      - name: Prepare pnpm workspace & allow pnpm install
-        run: |
-          node -e "
-          const fs = require('fs');
-          const pkgPath = './package.json';
-          if (!fs.existsSync(pkgPath)) process.exit(0);
-          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-          let workspaces = [];
-          if (Array.isArray(pkg.workspaces)) workspaces = pkg.workspaces;
-          else if (pkg.workspaces && Array.isArray(pkg.workspaces.packages)) workspaces = pkg.workspaces.packages;
-          if (workspaces.length) {
-            const out = 'packages:\n' + workspaces.map((s) => '  - ' + s).join('\n') + '\n';
-            fs.writeFileSync('pnpm-workspace.yaml', out);
-            console.log('Created pnpm-workspace.yaml');
-          }
-          "
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
