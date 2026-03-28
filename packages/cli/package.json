@@ -1,6 +1,6 @@
 {
   "name": "@docubook/cli",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "DocuBook CLI tool that helps you initialize, update, and deploy documentation directly from your terminal.",
   "type": "module",
   "files": [
@@ -42,6 +42,7 @@
     "node": ">=18.0.0"
   },
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   }
 }
