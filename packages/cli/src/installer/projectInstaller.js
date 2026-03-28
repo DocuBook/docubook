@@ -4,6 +4,7 @@ import { URL } from "url";
 import ora from "ora";
 import chalk from "chalk";
 import { execSync } from "child_process";
+import prompts from "prompts";
 import log from "../utils/logger.js";
 import { displayManualSteps } from "../utils/display.js";
 import { renderScaffolding } from "../tui/renderer.js";
@@ -32,8 +33,8 @@ export async function createProject(options) {
   log.info(`Creating a new DocuBook project in ${chalk.green(projectPath)}...`);
 
   try {
-    // 1. Create project directory and get/download template
-    state?.setCurrentStep("Creating directories...");
+    state?.setStage('scaffolding');
+    state?.setCurrentStep('Creating directories...');
     renderScaffolding(state || {});
 
     const templatePath = await getOrDownloadTemplate(template, state);
@@ -55,9 +56,14 @@ export async function createProject(options) {
     }
 
     if (autoInstall) {
-      state?.setCurrentStep("Installing dependencies...");
+      state?.setCurrentStep("Installing dependencies (this may take a few minutes)...");
       renderScaffolding(state || {});
-      await installDependencies(directoryName, packageManager, projectPath);
+      await installDependencies(directoryName, packageManager, projectPath, state);
+      state?.setCurrentStep("Dependencies installed successfully.");
+      renderScaffolding(state || {});
+    } else {
+      state?.setCurrentStep("Skipped automatic dependency installation.");
+      renderScaffolding(state || {});
     }
 
     log.info(chalk.green(`Successfully created DocuBook project v${docubookVersion}`));
@@ -219,17 +225,38 @@ function copyDirectoryRecursive(source, destination, depth = 0) {
  * @param {string} directoryName - Project directory name.
  * @param {string} packageManager - Package manager to use.
  * @param {string} projectPath - Path to the project directory.
+ * @param {Object} state - CLI state for progress updates
  */
-async function installDependencies(directoryName, packageManager, projectPath) {
+async function installDependencies(directoryName, packageManager, projectPath, state) {
   log.info("Installing dependencies...");
+  state?.setCurrentStep(`Installing dependencies with ${packageManager}...`);
+  renderScaffolding(state || {});
+
   const installSpinner = ora(`Running ${chalk.green(`${packageManager} install`)}...`).start();
 
   try {
-    execSync(`${packageManager} install`, { cwd: projectPath, stdio: "ignore" });
+    execSync(`${packageManager} install`, { cwd: projectPath, stdio: "inherit" });
     installSpinner.succeed("Dependencies installed successfully.");
-  } catch {
+  } catch (err) {
     installSpinner.fail("Failed to install dependencies.");
+    state?.setError("Dependency installation failed.");
+    renderScaffolding(state || {});
+
+    // Offer retry if not in silent mode
+    if (!state?.silent && !state?.json) {
+      const answer = await prompts({
+        type: 'confirm',
+        name: 'retry',
+        message: 'Would you like to retry installing dependencies?',
+        initial: true,
+      });
+
+      if (answer.retry) {
+        return installDependencies(directoryName, packageManager, projectPath, state);
+      }
+    }
+
     displayManualSteps(directoryName, packageManager);
-    throw new Error("Dependency installation failed.");
+    throw new Error("Dependency installation failed. Please run the commands above manually.");
   }
 }

@@ -38,19 +38,25 @@ export function initializeProgram(version) {
   // Default behavior (create project)
   program
     .argument("[directory]", "The name of the project directory")
-    .action(async (directory) => {
-      const state = new CLIState();
+    .option("--silent", "Silent mode (no interactive output)")
+    .option("--json", "Output as JSON")
+    .option("--no-clear", "Don't clear terminal (useful for debugging)")
+    .action(async (directory, options) => {
+      const state = new CLIState(options);
 
       try {
-        // Render welcome screen with version
-        renderWelcome(version);
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Render welcome screen with version (skip if silent)
+        if (!state.silent && !state.json) {
+          renderWelcome(version);
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        }
 
         // Detect package manager used to invoke CLI (for auto-install)
         const packageManager = detectInstalledPackageManager();
         state.setPackageManager(packageManager);
 
         // Get user input (only project name if not provided)
+        state.setStage('input');
         const userInput = await collectUserInput(directory);
         state.setProjectName(userInput.directoryName);
 
@@ -83,9 +89,9 @@ export function initializeProgram(version) {
 
         // Show success message
         const pmInfo = getPackageManagerInfo(packageManager);
-        renderDone(userInput.directoryName, packageManager, pmInfo.devCmd, userInput.autoInstall !== false);
+        renderDone(userInput.directoryName, packageManager, pmInfo.devCmd, userInput.autoInstall !== false, state);
       } catch (err) {
-        renderError(err.message || "An unexpected error occurred.");
+        renderError(err.message || "An unexpected error occurred.", state);
         log.error(err.message || "An unexpected error occurred.");
         process.exit(1);
       }
