@@ -10,7 +10,12 @@
     "build": "tsc",
     "dev": "tsc --watch"
   },
-  "keywords": ["docubook", "navigation", "tree", "docs"],
+  "keywords": [
+    "docubook",
+    "navigation",
+    "tree",
+    "docs"
+  ],
   "homepage": "https://docubook.pro/",
   "repository": {
     "type": "git",
@@ -20,11 +25,11 @@
   "author-url": "https://wildan.dev",
   "license": "MIT",
   "devDependencies": {
-    "@types/fs-extra": "^11.0.0",
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0"
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.19.37",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "fs-extra": "^11.0.0"
+    "fs-extra": "^11.3.4"
   }
 }
