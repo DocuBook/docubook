@@ -145,7 +145,5 @@ export function createBoxedMessage(title, content, color = colors.green) {
  * Create success banner
  */
 export function createSuccessBanner() {
-  return `
-${colors.green}✓ Project Created${colors.reset}
-  `;
+  return "";
 }

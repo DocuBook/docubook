@@ -1,4 +1,6 @@
 import prompts from "prompts";
+import path from "path";
+import fs from "fs";
 import { getAvailableTemplates } from "../utils/templateDetect.js";
 import log from "../utils/logger.js";
 
@@ -18,7 +20,16 @@ export async function collectUserInput(cliProvidedDir) {
       name: "directoryName",
       message: "What is your project named?",
       initial: "my-docs",
-      validate: (name) => name.trim().length > 0 ? true : "Project name cannot be empty.",
+      validate: (name) => {
+        const trimmed = name.trim();
+        if (trimmed.length === 0) {
+          return "Project name cannot be empty.";
+        }
+        if (fs.existsSync(path.resolve(process.cwd(), trimmed))) {
+          return `The directory \"${trimmed}\" already exists. Choose a different name.`;
+        }
+        return true;
+      },
     },
     {
       type: "select",
