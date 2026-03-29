@@ -16,72 +16,36 @@ That frustration inspired me to build a `docs framework` from the ground up in t
 DocuBook is proudly **open-source**! 🎉 We believe in creating an accessible, collaborative platform that thrives on community contributions.
 
 <Note title="Contribute">
-  Interested in helping us improve? Check out our [GitHub
-  repository](https://github.com/DocuBook/docubook) to get started! From
-  feature suggestions to bug fixes, all contributions are welcome.
+  Want to contribute? Visit our [GitHub repository](https://github.com/DocuBook/docubook).
+  Feature ideas, bug reports, and pull requests are welcome.
 </Note>
 
 ## Project Overview
 
-**DocuBook** is more than just a documentation template. It's a **complete ecosystem** designed for modern React development. Key features include:
+DocuBook is a complete docs ecosystem for modern React projects.
 
-- **Markdown & MDX Support:** Easily write documentation in Markdown, with the option to include interactive components via MDX.
-- **Customizable Themes:** Designed with a minimalist ShadCN-inspired theme that's easy to style.
-- **SEO-Optimized:** Each page is SEO-ready, ensuring search engines can find and rank your content.
-- **Interactive Code Blocks:** Beautifully styled, language-specific code blocks for an enhanced reading experience.
-- **Prebuilt Navigation Tree:** Intelligent caching system that prebuilds navigation structure for optimal performance.
-- **CLI Tools:** Command-line utilities for scaffolding and managing documentation projects.
-- **Multi-Framework Support:** Templates for different React frameworks and deployment strategies.
-
-### Key Features
-
-|           **Feature**           |                                         **Description**                                          |
-| ------------------------------- | ------------------------------------------------------------------------------------------------ |
-| MDX Support                     | Write interactive documentation with MDX.                                                        |
-| Nested Pages                    | Organize content in a nested, hierarchical structure.                                            |
-| Pagination                      | Split content across multiple pages.                                                             |
-| Syntax Highlighting             | Highlight code for better readability.                                                           |
-| Code Line Highlighting & Titles | Highlight specific lines with descriptive titles.                                                |
-| Interactive Code Blocks         | Language-specific and interactive code display.                                                  |
-| Custom Markdown Components      | Embed custom, reusable components in your docs.                                                  |
-| Static Site Generation          | Generate a static, high-performance site.                                                        |
-| SEO-Optimized                   | Structured for optimal search engine indexing.                                                   |
-| **Prebuilt Navigation**         | Prebuild navigation tree with intelligent caching                                                |
-| **CLI Tools**                   | Command-line utilities for project management                                                    |
-| **Multi-Template Support**      | Templates for different frameworks and deployments                                               |
-| **MDX Cache Compilation**       | Efficient reuse of parsed MDX across metadata and page rendering to avoid duplicated compilation |
+- MDX-based documentation with reusable components
+- Clean, customizable UI built on modern React tooling
+- SEO-ready pages and static generation support
+- Prebuilt navigation tree via CLI
+- Multi-template support for different deployment targets
 
 ## Technology & Libraries
 
-DocuBook leverages cutting-edge technologies to ensure performance and flexibility:
+Core stack:
 
-### UI & Styling
-- **Tailwind CSS 4** - Utility-first styling for quick, clean designs
-- **Shadcn-UI** - Elegant, accessible components for a polished look
-- **Radix UI** - Unstyled, accessible UI primitives
-
-### Content & Search
-- **next-mdx-remote** - Enables MDX support for dynamic, interactive Markdown content
-- **Algolia DocSearch** - Powerful search functionality with instant results
-- **@docubook/docs-tree** - CLI tool for prebuilding navigation structures
-  - **Purpose:** Prebuild navigation tree for optimal performance
-  - **Features:** Intelligent caching, multi-package manager support
-  - **Benefits:** Faster builds, reduced runtime computation
-  - **Usage:** Automatic prebuild in production deployments
-
-### Development Tools
-- **TypeScript** - Type-safe development experience
-- **ESLint** - Code linting and formatting
-- **Turbo** - High-performance build system for monorepos
+- **@docubook/core** - MDX compile pipeline and markdown utilities
+- **@docubook/docs-tree** - CLI for prebuilding docs navigation
+- **Tailwind CSS + Radix UI + Shadcn patterns** - UI foundation
+- **Algolia DocSearch** - fast documentation search
 
 ## MDX Processing Comparison (Before vs After Optimization)
 
-To make the docs runtime more efficient, DocuBook now separates metadata reading from full MDX compilation and deduplicates repeated calls in the same request.
+DocuBook separates metadata reads from full MDX compilation and reuses cached results within one request.
 
 <Note title="Why this matters">
-  Docs pages are one of the most frequently visited routes in most projects.
-  Reducing repeated MDX work improves server response time and lowers CPU usage,
-  especially when traffic increases.
+  This reduces repeated file reads and repeated compilation,
+  improving response time and lowering CPU usage.
 </Note>
 
 <AccordionGroup>
@@ -154,7 +118,7 @@ To make the docs runtime more efficient, DocuBook now separates metadata reading
 | MDX compilation     | 2x                      | 1x                         |
 | TOC extraction      | 1x (separate read path) | 1x (from shared raw cache) |
 
-> Note: The current optimization uses two cache layers! so metadata, page content, and TOC all share the same raw MDX processing in one request.
+> Metadata, page content, and TOC now share the same raw MDX processing in one request.
 
 ### Practical Impact
 
@@ -163,4 +127,4 @@ To make the docs runtime more efficient, DocuBook now separates metadata reading
 - Better performance consistency for docs routes under load.
 - Cleaner separation of concerns between metadata and full content rendering.
 
-DocuBook transforms documentation from a simple template into a **professional development platform** that scales with your project's needs. 🎯
+DocuBook gives you a practical docs platform that scales with your project.

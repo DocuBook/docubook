@@ -32,32 +32,118 @@ Bun (independent runtime/package manager):
 bun add @docubook/core
 ```
 
-## Dependency Management Policy
-
-Dependencies required for markdown processing are managed in this package and updated by the DocuBook author.
-
-This means app-level users should focus on content and integration. Plugin upgrades, compatibility checks, and pipeline maintenance are handled centrally by DocuBook.
-
-### Managed Markdown Dependencies
-
-- gray-matter
-- rehype-autolink-headings
-- rehype-code-titles
-- rehype-prism-plus
-- rehype-slug
-- remark-gfm
-- unist-util-visit
-
-The most important part is the `remark` and `rehype` plugin stack, which is intentionally owned by this package to avoid dependency drift across apps.
-
-## Why This Matters
-
-- Consistent behavior across all DocuBook-based projects
-- Easier maintenance and safer upgrades
-- Less dependency duplication in app-level package.json files
-- Faster onboarding for users who only need to write docs
-
 ## Usage
+
+### Quick Start (Recommended)
+
+```ts
+import { cache } from "react";
+import { createMdxContentService } from "@docubook/core";
+
+type Frontmatter = {
+  title: string;
+  description: string;
+  image: string;
+  date: string;
+};
+
+type TocItem = {
+  level: number;
+  text: string;
+  href: string;
+};
+
+const components = {
+  // your MDX components
+};
+
+const docsService = createMdxContentService<Frontmatter, TocItem>({
+  parseOptions: { components },
+  cacheFn: cache,
+});
+
+const doc = await docsService.getCompiledForSlug("getting-started/introduction");
+const frontmatter = await docsService.getFrontmatterForSlug("getting-started/introduction");
+const tocs = await docsService.getTocsForSlug("getting-started/introduction");
+```
+
+### Importable APIs and What They Do
+
+#### Runtime APIs
+
+- `parseMdx`: Compile raw MDX string with optional custom parse options. Returns `MdxCompileResult<Frontmatter>`.
+- `createMdxContentService`: Create slug-based docs service (`getParsedForSlug`, `getCompiledForSlug`, `getFrontmatterForSlug`, `getTocsForSlug`). Returns a service object.
+- `readMdxFileBySlug`: Read `slug.mdx` or `slug/index.mdx` from docs directory. Returns `ReadMdxFileResult`.
+- `parseMdxFile`: Convert raw file result into `frontmatter`, `tocs`, `content`, `filePath`. Returns `ParsedMdxFile<Frontmatter, TocItem>`.
+- `compileParsedMdxFile`: Compile parsed MDX while preserving metadata and TOCs. Returns `CompiledMdxFile<Frontmatter, TocItem>`.
+- `extractFrontmatter`: Parse frontmatter only from raw markdown/MDX. Returns `Frontmatter`.
+- `extractTocsFromRawMdx`: Extract headings for table of contents generation. Returns `TocItem[]`.
+- `sluggify`: Convert heading text into URL-safe slug. Returns `string`.
+- `createDefaultRehypePlugins`: Get default DocuBook rehype plugin stack. Returns `unknown[]`.
+- `createDefaultRemarkPlugins`: Get default DocuBook remark plugin stack. Returns `unknown[]`.
+- `preProcess`: Add pre-processing behavior for code blocks (advanced customization). Returns a transformer function.
+- `postProcess`: Add post-processing behavior for code blocks (advanced customization). Returns a transformer function.
+- `handleCodeTitles`: Move code title metadata to `<pre>` attributes (advanced customization). Returns a transformer function.
+
+#### Type Exports
+
+|               Type               |                    Purpose                    |
+| -------------------------------- | --------------------------------------------- |
+| `MdxCompileResult`               | Result shape for compiled MDX content         |
+| `TocItem`                        | Heading item structure used by TOC extraction |
+| `ParseMdxOptions`                | Options for `parseMdx` compile behavior       |
+| `ReadMdxFileResult`              | Return type for `readMdxFileBySlug`           |
+| `ParsedMdxFile`                  | Parsed file structure before compile          |
+| `CompiledMdxFile`                | Compiled file structure with metadata and TOC |
+| `CreateMdxContentServiceOptions` | Options for creating the content service      |
+
+### Quick Import Recipes
+
+#### 1. Compile raw MDX only
+
+```ts
+import { parseMdx } from "@docubook/core";
+```
+
+Use this when your source is already in memory and you only need compiled content.
+
+#### 2. Read frontmatter only
+
+```ts
+import { extractFrontmatter } from "@docubook/core";
+```
+
+Use this for metadata pages where full MDX compilation is unnecessary.
+
+#### 3. Build TOC from raw content
+
+```ts
+import { extractTocsFromRawMdx } from "@docubook/core";
+```
+
+Use this when you need heading navigation from markdown/MDX text.
+
+#### 4. Slug-based docs service (recommended for app integration)
+
+```ts
+import { createMdxContentService } from "@docubook/core";
+```
+
+Use this as the default app-level integration for frontmatter, TOC, and compiled docs in one service.
+
+#### 5. Low-level file pipeline (advanced)
+
+```ts
+import {
+  readMdxFileBySlug,
+  parseMdxFile,
+  compileParsedMdxFile,
+} from "@docubook/core";
+```
+
+Use this when you need full control over each pipeline step.
+
+### Basic Compile Helpers
 
 ```ts
 import {
@@ -109,20 +195,38 @@ const docsService = createMdxContentService<Frontmatter>({
 const doc = await docsService.getCompiledForSlug("getting-started/introduction");
 ```
 
-## API Overview
+## Dependency Management Policy
 
-- `parseMdx` - Compiles raw MDX with default or custom plugin options
-- `createMdxContentService` - Unified high-level API for read/parse/compile/getters
-- `readMdxFileBySlug` - Reads `slug.mdx` or `slug/index.mdx` from docs directory
-- `parseMdxFile` - Converts raw file result into `frontmatter` + `tocs` + `content`
-- `compileParsedMdxFile` - Compiles a parsed document while preserving metadata
-- `extractFrontmatter` - Parses frontmatter from raw markdown/MDX
-- `extractTocsFromRawMdx` - Extracts headings for TOC generation
-- `sluggify` - Converts heading text into URL-friendly slugs
+Dependencies required for markdown processing are managed in this package and updated by the DocuBook author.
+
+This means app-level users should focus on content and integration. Plugin upgrades, compatibility checks, and pipeline maintenance are handled centrally by DocuBook.
+
+### Managed Markdown Dependencies
+
+- gray-matter
+- rehype-autolink-headings
+- rehype-code-titles
+- rehype-prism-plus
+- rehype-slug
+- remark-gfm
+- unist-util-visit
+
+The `remark` and `rehype` plugin stack is intentionally owned by this package to avoid dependency drift across apps.
+
+## Why This Matters
+
+- Consistent behavior across all DocuBook-based projects
+- Easier maintenance and safer upgrades
+- Less dependency duplication in app-level package.json files
+- Faster onboarding for users who only need to write docs
 
 ## Notes
 
-If your app uses `next-mdx-remote` directly for rendering in custom components, keep that direct dependency in the app.
+`@docubook/core` already includes and manages the MDX runtime/compile dependencies (including `next-mdx-remote`) as part of the package contract.
+
+In most integrations, users only need to install `@docubook/core` and use the core APIs.
+
+Only add `next-mdx-remote` directly in your app if your app explicitly imports it in app-level code.
 
 For compile pipeline plugins (especially `remark` and `rehype` plugins), rely on this package and avoid re-declaring them at app level unless you have a specific override requirement.
 
