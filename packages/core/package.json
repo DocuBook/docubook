@@ -32,6 +32,9 @@
         "type": "git",
         "url": "git+https://github.com/DocuBook/docubook"
     },
+    "publishConfig": {
+        "access": "public"
+    },
     "author": "wildan.nrs",
     "author-url": "https://wildan.dev",
     "license": "MIT",
