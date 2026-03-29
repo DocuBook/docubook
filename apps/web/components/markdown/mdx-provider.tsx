@@ -1,29 +1,24 @@
-'use client';
-
-import { MDXRemote } from 'next-mdx-remote/rsc';
+import { parseMdx } from '@docubook/core';
+import type { ComponentType, HTMLAttributes } from 'react';
 import { Kbd } from './KeyboardMdx';
 
 // Define components mapping
 const components = {
   // Keyboard components
-  Kbd: Kbd as React.ComponentType<React.HTMLAttributes<HTMLElement> & { type?: 'window' | 'mac' }>,
-  kbd: Kbd as React.ComponentType<React.HTMLAttributes<HTMLElement> & { type?: 'window' | 'mac' }>,
+  Kbd: Kbd as ComponentType<HTMLAttributes<HTMLElement> & { type?: 'window' | 'mac' }>,
+  kbd: Kbd as ComponentType<HTMLAttributes<HTMLElement> & { type?: 'window' | 'mac' }>,
 };
 
 interface MDXProviderWrapperProps {
   source: string;
 }
 
-export function MDXProviderWrapper({ source }: MDXProviderWrapperProps) {
+export async function MDXProviderWrapper({ source }: MDXProviderWrapperProps) {
+  const { content } = await parseMdx(source, { components });
+
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <MDXRemote
-        source={source}
-        components={components}
-        options={{
-          parseFrontmatter: true,
-        }}
-      />
+      {content}
     </div>
   );
 }
