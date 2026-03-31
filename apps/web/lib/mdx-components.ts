@@ -3,9 +3,7 @@ import {
     type MdxComponentMap,
     AccordionGroupMdx,
     AccordionMdx,
-    ButtonMdx,
     CardGroupMdx,
-    CardMdx,
     ChangesMdx,
     CodeBlock,
     FileMdx,
@@ -30,7 +28,7 @@ import {
     TooltipMdx,
     YoutubeMdx,
 } from "@docubook/mdx-content";
-import { ImageMdx, LinkMdx } from "@docubook/mdx-content/next";
+import { ImageMdx, LinkMdx, ButtonMdx, CardMdx } from "@docubook/mdx-content/next";
 import { customMdxComponents } from "@/lib/mdx";
 
 const builtInOverrides: MdxComponentMap = {
