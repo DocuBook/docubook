@@ -6,6 +6,9 @@ date: 14-12-2024
 
 ## Preview
 
+<Note type="tip" title="Tip">
+  This is a tip to suggests a helpful.
+</Note>
 <Note type="note" title="Note">
   This is a general note to convey information to the user.
 </Note>
@@ -21,14 +24,17 @@ date: 14-12-2024
 
 ## Props
 
-| Prop    | Type                                           | Default | Description                              |
-| ------- | ---------------------------------------------- | ------- | ---------------------------------------- |
-| `title` | string                                       | "Note"  | Sets the title of the note.              |
-| `type`  | "note" "danger" "success" "warning" | undefined | Determines the visual style of the note. |
+|  Prop   |                   Type                    |              Default              |               Description                |
+| ------- | ----------------------------------------- | --------------------------------- | ---------------------------------------- |
+| `title` | string                                    | fallback to "type" with Uppercase | Sets the title of the note.              |
+| `type`  | "note" "danger" "success" "warning" "tip" | undefined                         | Determines the visual style of the note. |
 
 ## Output Markdown
 
 ```markdown:mdx
+<Note type="tip" title="Tip">
+  This is a tip to suggests a helpful.
+</Note>
 <Note type="note" title="Note">
   This is a general note to convey information to the user.
 </Note>
