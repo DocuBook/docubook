@@ -10,7 +10,7 @@
         "declaration": true,
         "declarationMap": true,
         "sourceMap": true,
-        "jsx": "preserve",
+        "jsx": "react-jsx",
         "noEmit": false,
         "allowJs": false,
         "skipLibCheck": true,
