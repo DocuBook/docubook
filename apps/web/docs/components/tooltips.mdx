@@ -9,14 +9,25 @@ I have implemented the `tooltips` component into markdown which allows you to ad
 ## Usage
 You can use tooltips in your Markdown content to provide additional information when hovering over a word or phrase.
 
-### Preview
+This a tooltip <Tooltip text="Hover me show on top" tip="npx @docubook/create@latest" side="top" /> and <Tooltip text="Hover me show on bottom" tip="npx @docubook/create@latest" side="bottom" /> thanks you.
 
-What do you know about <Tooltip text="DocuBook" tip="npx @docubook/create@latest" /> ? Create interactive nested documentations using MDX.
+## Props
 
-### Output Markdown
+|    Prop     |      Type       |  Default   |                         Description                          |
+| ----------- | --------------- | ---------- | ------------------------------------------------------------ |
+| `text`      | `ReactNode`     | `"?"`      | The displayed trigger text that can be hovered/focused.      |
+| `tip`       | `ReactNode`     | `""`       | The tooltip content that appears when the trigger is active. |
+| `side`      | `"top"`         | `"bottom"` | `"top"` The tooltip's position relative to the trigger.      |
+| `className` | `string`        | `-`        | Additional classes for the tooltip wrapper.                  |
+| `style`     | `CSSProperties` | `-`        | Additional inline styles for the tooltip wrapper.            |
+
+Tooltip also inherits the built-in props `HTMLAttributes<HTMLSpanElement>`.
+
+
+## Output Markdown
 
 The above Markdown is converted to:
 
 ```markdown:mdx
-What do you know about <Tooltip text="DocuBook" tip="npx @docubook/create@latest" /> ? Create interactive nested documentations using MDX.
+This a tooltip <Tooltip text="Hover me show on top" tip="npx @docubook/create@latest" side="top" /> and <Tooltip text="Hover me show on bottom" tip="npx @docubook/create@latest" side="bottom" /> thanks you.
 ```
