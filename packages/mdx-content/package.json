@@ -1,0 +1,75 @@
+{
+    "name": "@docubook/mdx-content",
+    "version": "1.0.0",
+    "description": "Portable MDX components and framework adapters for DocuBook",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./client": {
+            "types": "./dist/client.d.ts",
+            "import": "./dist/client.js",
+            "default": "./dist/client.js"
+        },
+        "./server": {
+            "types": "./dist/server.d.ts",
+            "import": "./dist/server.js",
+            "default": "./dist/server.js"
+        },
+        "./next": {
+            "types": "./dist/adapters/next/index.d.ts",
+            "import": "./dist/adapters/next/index.js",
+            "default": "./dist/adapters/next/index.js"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "rm -rf dist tsconfig.tsbuildinfo && tsc -p tsconfig.json",
+        "clean": "rm -rf dist tsconfig.tsbuildinfo",
+        "typecheck": "tsc -p tsconfig.json --noEmit",
+        "prepublishOnly": "pnpm run clean && pnpm run build"
+    },
+    "keywords": [
+        "docubook",
+        "mdx",
+        "react",
+        "components",
+        "mdx-components"
+    ],
+    "homepage": "https://docubook.pro/",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/DocuBook/docubook"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "author": "wildan.nrs",
+    "author-url": "https://wildan.dev",
+    "license": "MIT",
+    "peerDependencies": {
+        "react": ">=18",
+        "react-dom": ">=18",
+        "react-icons": "^5.0.0",
+        "lucide-react": "^1.7.0"
+    },
+    "peerDependenciesMeta": {
+        "next": {
+            "optional": true
+        }
+    },
+    "devDependencies": {
+        "@types/react": "19.2.8",
+        "@types/react-dom": "19.2.3",
+        "lucide-react": "^1.7.0",
+        "react-icons": "^5.0.0",
+        "typescript": "^5.9.3"
+    }
+}
