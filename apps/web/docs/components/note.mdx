@@ -15,8 +15,8 @@ date: 14-12-2024
 <Note type="danger" title="Danger">
   This is a danger alert to notify the user of a critical issue.
 </Note>
-<Note type="warning" title="Warning">
-  This is a warning alert for issues that require attention.
+<Note type="warning">
+  This note uses default title and default icon from its type.
 </Note>
 <Note type="success" title="Success">
   This is a success message to inform the user of successful actions.
@@ -24,10 +24,11 @@ date: 14-12-2024
 
 ## Props
 
-|  Prop   |                   Type                    |              Default              |               Description                |
-| ------- | ----------------------------------------- | --------------------------------- | ---------------------------------------- |
-| `title` | string                                    | fallback to "type" with Uppercase | Sets the title of the note.              |
-| `type`  | "note" "danger" "success" "warning" "tip" | undefined                         | Determines the visual style of the note. |
+|  Prop   |                   Type                    |              Default              |                              Description                              |
+| ------- | ----------------------------------------- | --------------------------------- | --------------------------------------------------------------------- |
+| `title` | string                                    | fallback to "type" with Uppercase | Sets the title of the note.                                             |
+| `type`  | "note" "danger" "success" "warning" "tip" | `"note"`                         | Determines the visual style of the note.                                |
+| `icon`  | string                                    | fallback icon based on `type`     | Optional Lucide icon name. If empty/undefined, icon automatically follows `type`. |
 
 ## Output Markdown
 
@@ -41,10 +42,13 @@ date: 14-12-2024
 <Note type="danger" title="Danger">
   This is a danger alert to notify the user of a critical issue.
 </Note>
-<Note type="warning" title="Warning">
-  This is a warning alert for issues that require attention.
+<Note type="warning">
+  This note uses default title and default icon from its type.
 </Note>
 <Note type="success" title="Success">
   This is a success message to inform the user of successful actions.
+</Note>
+<Note type="warning">
+  This note uses default title and default icon from its type.
 </Note>
 ```
