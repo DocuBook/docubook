@@ -10,7 +10,7 @@ Use this guide to add your own MDX components in the current DocuBook setup.
 
 <Stepper>
   <StepperItem title="Step 1: Create a custom component in lib/mdx">
-    ```tsx:lib/mdx/Callout.tsx
+    ````tsx:lib/mdx/Callout.tsx
     export default function Callout({ children }: { children: React.ReactNode }) {
       return (
         <div className="rounded-md border px-4 py-3">
@@ -18,11 +18,11 @@ Use this guide to add your own MDX components in the current DocuBook setup.
         </div>
       );
     }
-    ```
+    ````
   </StepperItem>
 
   <StepperItem title="Step 2: Register it in lib/mdx/index.ts">
-    ```ts:lib/mdx/index.ts
+    ````ts:lib/mdx/index.ts
     import type { MdxComponentMap } from "@docubook/mdx-content";
     import Outlet from "@/lib/mdx/Outlet";
     import Callout from "@/lib/mdx/Callout";
@@ -31,11 +31,11 @@ Use this guide to add your own MDX components in the current DocuBook setup.
       Outlet,
       Callout,
     };
-    ```
+    ````
   </StepperItem>
 
   <StepperItem title="Step 3: Merge custom and built-in components in lib/mdx-components.ts">
-    ```ts:lib/mdx-components.ts
+    ````ts:lib/mdx-components.ts
     import { createMdxComponents } from "@docubook/mdx-content";
     import { customMdxComponents } from "@/lib/mdx";
 
@@ -43,15 +43,15 @@ Use this guide to add your own MDX components in the current DocuBook setup.
       ...builtInOverrides,
       ...customMdxComponents,
     });
-    ```
+    ````
   </StepperItem>
 
   <StepperItem title="Step 4: Use your custom component in MDX">
-    ```mdx:docs/example.mdx
+    ````md:docs/example.mdx
     <Callout>
       This content is rendered by a custom MDX component.
     </Callout>
-    ```
+    ````
   </StepperItem>
 </Stepper>
 
