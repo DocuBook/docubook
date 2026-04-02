@@ -1,5 +1,8 @@
 name: Publish @docubook/cli to npm
 
+permissions:
+  contents: read
+
 on:
   push:
     tags:
