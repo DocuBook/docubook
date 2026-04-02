@@ -1,38 +1,80 @@
 ---
 title: Custom Components
-description: How to create custom components for Markdown.
+description: How to create and register custom MDX components with the current setup.
 date: 14-12-2024
 ---
 
-To add custom components in DocuBook, follow these steps:
+Use this guide to add your own MDX components in the current DocuBook setup.
 
-1. **Create Your Component**: First, create your custom component in the `@components/markdown` folder. For example, you might create a file named `Outlet.tsx`.
+## Current Flow
 
-2. **Import Your Component**: Next, open the `@lib/markdown.ts` file. This is where you'll register your custom component for use in Markdown.
+<Stepper>
+  <StepperItem title="Step 1: Create a custom component in lib/mdx">
+    ````tsx:lib/mdx/Callout.tsx
+    export default function Callout({ children }: { children: React.ReactNode }) {
+      return (
+        <div className="rounded-md border px-4 py-3">
+          {children}
+        </div>
+      );
+    }
+    ````
+  </StepperItem>
 
-3. **Add Your Component to the Components Object**: In the `@lib/markdown.ts` file, import your custom component and add it to the `components` object. Here’s how to do it:
+  <StepperItem title="Step 2: Register it in lib/mdx/index.ts">
+    ````ts:lib/mdx/index.ts
+    import type { MdxComponentMap } from "@docubook/mdx-content";
+    import Outlet from "@/lib/mdx/Outlet";
+    import Callout from "@/lib/mdx/Callout";
 
-```ts
-import Outlet from "@/components/markdown/outlet";
+    export const customMdxComponents: MdxComponentMap = {
+      Outlet,
+      Callout,
+    };
+    ````
+  </StepperItem>
 
-// Add custom components
-const components = {
-  Outlet,
-};
-```
+  <StepperItem title="Step 3: Merge custom and built-in components in lib/mdx-components.ts">
+    ````ts:lib/mdx-components.ts
+    import { createMdxComponents } from "@docubook/mdx-content";
+    import { customMdxComponents } from "@/lib/mdx";
 
-4. **Using Your Custom Component in Markdown**: After registering your component, you can now use it anywhere in your Markdown content. For instance, if your `Outlet` component is designed to display additional information, you can use it as follows:
+    export const mdxComponents = createMdxComponents({
+      ...builtInOverrides,
+      ...customMdxComponents,
+    });
+    ````
+  </StepperItem>
 
-### Markdown Example
+  <StepperItem title="Step 4: Use your custom component in MDX">
+    ````md:docs/example.mdx
+    <Callout>
+      This content is rendered by a custom MDX component.
+    </Callout>
+    ````
+  </StepperItem>
+</Stepper>
 
-```markdown
-<Outlet>
-  This is some custom content rendered by the Outlet component!
-</Outlet>
-```
+## Folder Structure
 
-### Rendered Output
+Recommended structure for this flow:
 
-This will render the content inside the `Outlet` component, allowing you to create reusable and dynamic Markdown content.
+<Files>
+  <Folder name="lib">
+    <File name="mdx-components.ts" />
+    <Folder name="mdx">
+      <File name="index.ts" />
+      <File name="Outlet.tsx" />
+      <File name="Callout.tsx" />
+    </Folder>
+  </Folder>
+  <Folder name="docs">
+    <File name="example.mdx" />
+  </Folder>
+</Files>
 
-By following these steps, you can extend the capabilities of your Markdown documentation and create a more engaging user experience.
+## Notes
+
+- Do not register custom components in `lib/markdown.ts`.
+- Keep all custom component registration in `lib/mdx/index.ts`.
+- Keep all MDX map composition in `lib/mdx-components.ts`.
