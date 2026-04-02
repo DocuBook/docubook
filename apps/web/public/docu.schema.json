@@ -4,7 +4,6 @@
   "title": "DocuBook Configuration",
   "description": "Schema for the docu.json configuration file used by DocuBook.",
   "type": "object",
-
   "definitions": {
     "routeItem": {
       "type": "object",
@@ -26,21 +25,30 @@
           "type": "object",
           "description": "Additional contextual information for the navigation group.",
           "properties": {
-            "icon": { "type": "string" },
-            "description": { "type": "string" },
-            "title": { "type": "string" }
+            "icon": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            }
           }
         },
         "items": {
           "type": "array",
           "description": "Sub-menu for this navigation item.",
-          "items": { "$ref": "#/definitions/routeItem" }
+          "items": {
+            "$ref": "#/definitions/routeItem"
+          }
         }
       },
-      "required": ["title"]
+      "required": [
+        "title"
+      ]
     }
   },
-
   "properties": {
     "navbar": {
       "type": "object",
@@ -49,21 +57,37 @@
         "logo": {
           "type": "object",
           "properties": {
-            "src": { "type": "string" },
-            "alt": { "type": "string" }
+            "src": {
+              "type": "string"
+            },
+            "alt": {
+              "type": "string"
+            }
           },
-          "required": ["src", "alt"]
+          "required": [
+            "src",
+            "alt"
+          ]
         },
-        "logoText": { "type": "string" },
+        "logoText": {
+          "type": "string"
+        },
         "menu": {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "title": { "type": "string" },
-              "href": { "type": "string" }
+              "title": {
+                "type": "string"
+              },
+              "href": {
+                "type": "string"
+              }
             },
-            "required": ["title", "href"]
+            "required": [
+              "title",
+              "href"
+            ]
           }
         }
       }
@@ -72,17 +96,39 @@
       "type": "object",
       "description": "Configuration for the site footer section.",
       "properties": {
-        "copyright": { "type": "string" },
+        "copyright": {
+          "type": "string"
+        },
         "social": {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "name": { "type": "string" },
-              "url": { "type": "string", "format": "uri" },
-              "iconName": { "type": "string" }
+              "name": {
+                "type": "string",
+                "enum": [
+                  "Facebook",
+                  "Instagram",
+                  "Twitter",
+                  "X",
+                  "Youtube",
+                  "Threads",
+                  "GitHub",
+                  "GitLab",
+                  "Discord",
+                  "npm",
+                  "Telegram"
+                ]
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              }
             },
-            "required": ["name", "url", "iconName"]
+            "required": [
+              "name",
+              "url"
+            ]
           }
         }
       }
@@ -91,32 +137,63 @@
       "type": "object",
       "description": "Metadata for SEO and site information.",
       "properties": {
-        "baseURL": { "type": "string", "format": "uri" },
-        "title": { "type": "string" },
-        "description": { "type": "string" },
-        "favicon": { "type": "string" }
+        "baseURL": {
+          "type": "string",
+          "format": "uri"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "favicon": {
+          "type": "string"
+        }
       },
-      "required": ["baseURL", "title", "description"]
+      "required": [
+        "baseURL",
+        "title",
+        "description"
+      ]
     },
     "repository": {
       "type": "object",
       "properties": {
-        "url": { "type": "string", "format": "uri" },
-        "editPathTemplate": { "type": "string" },
-        "editLink": { "type": "boolean" }
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "editPathTemplate": {
+          "type": "string"
+        },
+        "editLink": {
+          "type": "boolean"
+        }
       }
     },
     "sponsor": {
       "type": "object",
       "properties": {
-        "title": { "type": "string" },
+        "title": {
+          "type": "string"
+        },
         "item": {
           "type": "object",
           "properties": {
-            "title": { "type": "string" },
-            "description": { "type": "string" },
-            "image": { "type": "string" },
-            "url": { "type": "string", "format": "uri" }
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "image": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            }
           }
         }
       }
@@ -127,7 +204,10 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["default", "algolia"],
+          "enum": [
+            "default",
+            "algolia"
+          ],
           "default": "default",
           "description": "Search engine to use. 'default' uses built-in search, 'algolia' uses Algolia DocSearch."
         }
@@ -136,8 +216,15 @@
     "routes": {
       "type": "array",
       "description": "Main navigation structure for the documentation sidebar.",
-      "items": { "$ref": "#/definitions/routeItem" }
+      "items": {
+        "$ref": "#/definitions/routeItem"
+      }
     }
   },
-  "required": ["navbar", "footer", "meta", "routes"]
+  "required": [
+    "navbar",
+    "footer",
+    "meta",
+    "routes"
+  ]
 }
