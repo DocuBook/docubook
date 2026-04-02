@@ -30,7 +30,7 @@ export default function SubLink({
   const [isOpen, setIsOpen] = useState(level === 0);
 
   // Full path including parent's href
-  const fullHref = `${parentHref}${href}`;
+  const fullHref = parentHref ? `${parentHref}${href}` : `/docs${href}`;
 
   // Check if any child is active (for parent items)
   const hasActiveChild = useMemo(() => {
