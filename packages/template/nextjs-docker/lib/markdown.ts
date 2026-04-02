@@ -1,159 +1,24 @@
-import { compileMDX } from "next-mdx-remote/rsc";
+import {
+  createMdxContentService,
+  extractFrontmatter,
+  readMdxFileBySlug,
+  type MdxCompileResult as CoreMdxCompileResult,
+} from "@docubook/core";
+import { cache } from "react";
 import path from "path";
-import { promises as fs } from "fs";
-import remarkGfm from "remark-gfm";
-import rehypePrism from "rehype-prism-plus";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
-import rehypeSlug from "rehype-slug";
-import rehypeCodeTitles from "rehype-code-titles";
 import { page_routes, ROUTES } from "./routes";
-import { visit } from "unist-util-visit";
-import type { Node, Parent } from "unist";
-import matter from "gray-matter";
+import type { TocItem } from "./toc";
+import { mdxComponents as components } from "./mdx-components";
 
-// Type definitions for unist-util-visit
-interface Element extends Node {
-  type: string;
-  tagName?: string;
-  properties?: Record<string, unknown> & {
-    className?: string[];
-    raw?: string;
-  };
-  children?: Node[];
-  value?: string;
-  raw?: string; // For internal use in processing
-}
+export type MdxCompileResult<Frontmatter> = CoreMdxCompileResult<Frontmatter>;
 
-interface TextNode extends Node {
-  type: 'text';
-  value: string;
-}
-
-// custom components imports
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import Pre from "@/components/markdown/PreMdx";
-import Note from "@/components/markdown/NoteMdx";
-import { Stepper, StepperItem } from "@/components/markdown/StepperMdx";
-import Image from "@/components/markdown/ImageMdx";
-import Link from "@/components/markdown/LinkMdx";
-import Outlet from "@/components/markdown/OutletMdx";
-import Youtube from "@/components/markdown/YoutubeMdx";
-import Tooltip from "@/components/markdown/TooltipsMdx";
-import Card from "@/components/markdown/CardMdx";
-import Button from "@/components/markdown/ButtonMdx";
-import Accordion from "@/components/markdown/AccordionMdx";
-import CardGroup from "@/components/markdown/CardGroupMdx";
-import Kbd from "@/components/markdown/KeyboardMdx";
-import { Release, Changes } from "@/components/markdown/ReleaseMdx";
-import { File, Files, Folder } from "@/components/markdown/FileTreeMdx";
-import AccordionGroup from "@/components/markdown/AccordionGroupMdx";
-
-// add custom components
-const components = {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-  Youtube,
-  Tooltip,
-  Card,
-  Button,
-  Accordion,
-  AccordionGroup,
-  CardGroup,
-  Kbd,
-  // Table Components
-  table: Table,
-  thead: TableHeader,
-  tbody: TableBody,
-  tfoot: TableFooter,
-  tr: TableRow,
-  th: TableHead,
-  td: TableCell,
-  // Release Note Components
-  Release,
-  Changes,
-  // File Tree Components
-  File,
-  Files,
-  Folder,
-  pre: Pre,
-  Note,
-  Stepper,
-  StepperItem,
-  img: Image,
-  a: Link,
-  Outlet,
+export type DocsForSlugResult = MdxCompileResult<BaseMdxFrontmatter> & {
+  filePath: string;
+  tocs: TocItem[];
 };
 
-// helper function to handle rehype code titles, since by default we can't inject into the className of rehype-code-titles
-const handleCodeTitles = () => (tree: Node) => {
-  visit(tree, "element", (node: Element, index: number | null, parent: Parent | null) => {
-    // Ensure the visited node is valid
-    if (!parent || index === null || node.tagName !== 'div') {
-      return;
-    }
-
-    // Check if this is the title div from rehype-code-titles
-    const isTitleDiv = node.properties?.className?.includes('rehype-code-title');
-    if (!isTitleDiv) {
-      return;
-    }
-
-    // Find the next <pre> element, skipping over other nodes like whitespace text
-    let nextElement = null;
-    for (let i = index + 1; i < parent.children.length; i++) {
-      const sibling = parent.children[i];
-      if (sibling.type === 'element') {
-        nextElement = sibling as Element;
-        break;
-      }
-    }
-
-    // If the next element is a <pre>, move the title to it
-    if (nextElement && nextElement.tagName === 'pre') {
-      const titleNode = node.children?.[0] as TextNode;
-      if (titleNode && titleNode.type === 'text') {
-        if (!nextElement.properties) {
-          nextElement.properties = {};
-        }
-        nextElement.properties['data-title'] = titleNode.value;
-
-        // Remove the original title div
-        parent.children.splice(index, 1);
-
-        // Return the same index to continue visiting from the correct position
-        return index;
-      }
-    }
-  });
-};
-
-// can be used for other pages like blogs, Guides etc
-async function parseMdx<Frontmatter>(rawMdx: string) {
-  return await compileMDX<Frontmatter>({
-    source: rawMdx,
-    options: {
-      parseFrontmatter: true,
-      mdxOptions: {
-        rehypePlugins: [
-          preProcess,
-          rehypeCodeTitles,
-          handleCodeTitles,
-          rehypePrism,
-          rehypeSlug,
-          rehypeAutolinkHeadings,
-          postProcess,
-        ],
-        remarkPlugins: [remarkGfm],
-      },
-    },
-    components,
-  });
-}
-
-// logic for docs
+// Shared frontmatter shape used by docs pages.
+// Keep this close to exported result types for easier discovery.
 export type BaseMdxFrontmatter = {
   title: string;
   description: string;
@@ -161,57 +26,61 @@ export type BaseMdxFrontmatter = {
   date: string;
 };
 
-export async function getDocsForSlug(slug: string) {
+// `React.cache` deduplicates calls within a single server-render pass.
+// Keep request-level cache in app layer, while markdown pipeline lives in core.
+const docsService = createMdxContentService<BaseMdxFrontmatter, TocItem>({
+  parseOptions: { components },
+  cacheFn: cache,
+});
+
+// Return frontmatter only for a docs slug.
+export async function getDocsFrontmatterForSlug(slug: string): Promise<BaseMdxFrontmatter | undefined> {
   try {
-    const { content, filePath } = await getRawMdx(slug);
-    const mdx = await parseMdx<BaseMdxFrontmatter>(content);
-    return {
-      ...mdx,
-      filePath,
-    };
+    return await docsService.getFrontmatterForSlug(slug);
   } catch (err) {
     console.log(err);
   }
 }
 
-export async function getDocsTocs(slug: string) {
-  const { content } = await getRawMdx(slug);
-  const rawMdx = content;
-
-  // Regex to match code blocks (```...```), standard markdown headings (##), and <Release> tags
-  const combinedRegex = /(```[\s\S]*?```)|^(#{2,4})\s(.+)$|<Release[^>]*version="([^"]+)"/gm;
-
-  let match;
-  const extractedHeadings = [];
-
-  while ((match = combinedRegex.exec(rawMdx)) !== null) {
-    // match[1] -> Code block content (ignore)
-    if (match[1]) continue;
-
-    // match[2] & match[3] -> Markdown headings
-    if (match[2]) {
-      const headingLevel = match[2].length;
-      const headingText = match[3].trim();
-      const slug = sluggify(headingText);
-      extractedHeadings.push({
-        level: headingLevel,
-        text: headingText,
-        href: `#${slug}`,
-      });
-    }
-    // match[4] -> Release component version
-    else if (match[4]) {
-      const version = match[4];
-      extractedHeadings.push({
-        level: 2,
-        text: `v${version}`,
-        href: `#${version}`,
-      });
-    }
+/**
+ * Get full compiled documentation (public API)
+ * Returns: JSX content, frontmatter, TOCs, file path
+ */
+export async function getDocsForSlug(slug: string): Promise<DocsForSlugResult | undefined> {
+  try {
+    return await docsService.getCompiledForSlug(slug);
+  } catch (err) {
+    console.log(err);
   }
-  return extractedHeadings;
 }
 
+/**
+ * Get only table of contents for a slug
+ */
+export async function getDocsTocs(slug: string) {
+  try {
+    return await docsService.getTocsForSlug(slug);
+  } catch {
+    return [];
+  }
+}
+
+// Build static params for the docs route segment.
+export function getDocsStaticParams() {
+  // Ensure the root docs page (docs/index.mdx) is statically generated at /docs.
+  // This page is not part of the generated docs tree routes by default.
+  // Filter out routes marked as noLink (parent categories that don't have their own page)
+  return [
+    { slug: [] },
+    ...page_routes
+      .map((page) => ({
+        slug: page.href.split("/").filter(Boolean),
+      }))
+      .filter(({ slug }) => slug.length > 0), // Exclude empty slugs
+  ];
+}
+
+// Get previous and next page entries from the route list.
 export function getPreviousNext(path: string) {
   const index = page_routes.findIndex(({ href }) => href == `/${path}`);
   return {
@@ -220,85 +89,29 @@ export function getPreviousNext(path: string) {
   };
 }
 
-function sluggify(text: string) {
-  const slug = text.toLowerCase().replace(/\s+/g, "-");
-  return slug.replace(/[^a-z0-9-]/g, "");
-}
-
-async function getRawMdx(slug: string) {
-  const commonPath = path.join(process.cwd(), "/docs/");
-  const paths = [
-    path.join(commonPath, `${slug}.mdx`),
-    path.join(commonPath, slug, "index.mdx"),
-  ];
-
-  for (const p of paths) {
-    try {
-      const content = await fs.readFile(p, "utf-8");
-      return {
-        content,
-        filePath: `docs/${path.relative(commonPath, p)}`,
-      };
-    } catch {
-      // ignore and try next
-    }
-  }
-
-  throw new Error(`Could not find mdx file for slug: ${slug}`);
-}
-
-function justGetFrontmatterFromMD<Frontmatter>(rawMd: string): Frontmatter {
-  return matter(rawMd).data as Frontmatter;
-}
-
+// Collect frontmatter of direct child pages under the given docs path.
 export async function getAllChilds(pathString: string) {
   const items = pathString.split("/").filter((it) => it !== "");
-  let page_routes_copy = ROUTES;
+  let nestedRoutes = ROUTES;
 
-  let prevHref = "";
+  // Resolve the nested route branch for the requested path.
+  let resolvedHref = "";
   for (const it of items) {
-    const found = page_routes_copy.find((innerIt) => innerIt.href == `/${it}`);
+    const found = nestedRoutes.find((innerIt) => innerIt.href == `/${it}`);
     if (!found) break;
-    prevHref += found.href;
-    page_routes_copy = found.items ?? [];
+    resolvedHref += found.href;
+    nestedRoutes = found.items ?? [];
   }
-  if (!prevHref) return [];
+  if (!resolvedHref) return [];
 
   return await Promise.all(
-    page_routes_copy.map(async (it) => {
-      const slug = path.join(prevHref, it.href);
-      const { content } = await getRawMdx(slug);
+    nestedRoutes.map(async (it) => {
+      const slug = path.join(resolvedHref, it.href);
+      const { content } = await readMdxFileBySlug(slug);
       return {
-        ...justGetFrontmatterFromMD<BaseMdxFrontmatter>(content),
-        href: `/docs${prevHref}${it.href}`,
+        ...extractFrontmatter<BaseMdxFrontmatter>(content),
+        href: `/docs${resolvedHref}${it.href}`,
       };
     })
   );
 }
-
-// for copying the code in pre
-const preProcess = () => (tree: Node) => {
-  visit(tree, (node: Node) => {
-    const element = node as Element;
-    if (element?.type === "element" && element?.tagName === "pre" && element.children) {
-      const [codeEl] = element.children as Element[];
-      if (codeEl.tagName !== "code" || !codeEl.children?.[0]) return;
-
-      const textNode = codeEl.children[0] as TextNode;
-      if (textNode.type === 'text' && textNode.value) {
-        element.raw = textNode.value;
-      }
-    }
-  });
-};
-
-const postProcess = () => (tree: Node) => {
-  visit(tree, "element", (node: Node) => {
-    const element = node as Element;
-    if (element?.type === "element" && element?.tagName === "pre") {
-      if (element.properties && element.raw) {
-        element.properties.raw = element.raw;
-      }
-    }
-  });
-};
