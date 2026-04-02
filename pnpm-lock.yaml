@@ -46,8 +46,8 @@ importers:
         specifier: ^4.6.2
         version: 4.6.2(@algolia/client-search@5.50.0)(@types/react@19.2.8)(algoliasearch@5.50.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(search-insights@2.17.3)
       '@docubook/core':
-        specifier: ^1.1.1
-        version: 1.1.1(@types/react@19.2.8)(react@19.2.3)
+        specifier: ^1.1.2
+        version: 1.1.2(@types/react@19.2.8)(react@19.2.3)
       '@docubook/mdx-content':
         specifier: ^1.0.1
         version: 1.0.1(lucide-react@1.7.0(react@19.2.3))(next@16.2.1(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react-icons@5.6.0(react@19.2.3))(react@19.2.3)
@@ -461,8 +461,8 @@ packages:
       search-insights:
         optional: true
 
-  '@docubook/core@1.1.1':
-    resolution: {integrity: sha512-on6AxhKXIOErC2L+qqoZ9vImp/kodiCG29Wvrb+0mt5izPYTVgcxG31hAFMv1p900YkRWuXxzeN7/VsT8k/GbQ==}
+  '@docubook/core@1.1.2':
+    resolution: {integrity: sha512-h6j4hYz1ggK3CxkWj4iwHimsCEUyjafUkhaBC5Q4q9vgEVO5KX84/MhtCiU8wdL/hTN/Yk2EZ6MxIfiuWo7O7w==}
 
   '@docubook/docs-tree@1.0.1':
     resolution: {integrity: sha512-AmsrlXeACyWX09RCQF46E/PWHbaTql8OTyBAdz6nKlg4SiZIHi1A4k4ELjw0dZKNfzl1Dt7PUS/E0w52l0al4g==}
@@ -3951,7 +3951,7 @@ snapshots:
       - '@algolia/client-search'
       - algoliasearch
 
-  '@docubook/core@1.1.1(@types/react@19.2.8)(react@19.2.3)':
+  '@docubook/core@1.1.2(@types/react@19.2.8)(react@19.2.3)':
     dependencies:
       gray-matter: 4.0.3
       next-mdx-remote: 6.0.0(@types/react@19.2.8)(react@19.2.3)
