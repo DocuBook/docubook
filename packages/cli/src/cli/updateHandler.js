@@ -1,5 +1,5 @@
 /* global fetch */
-import { execSync } from "child_process";
+import { execSync, execFileSync } from "child_process";
 import ora from "ora";
 import fs from "fs";
 import os from "os";
@@ -274,27 +274,32 @@ async function showChangelogOnce(pkgName, version, releaseInfo) {
  * Supports npm, bun, yarn, and pnpm
  */
 function installGlobal(packageName, version, packageManager) {
-  let cmd;
+  let command;
+  let args;
 
   switch (packageManager) {
     case "pnpm":
-      cmd = `pnpm add -g ${packageName}@${version}`;
+      command = "pnpm";
+      args = ["add", "-g", `${packageName}@${version}`];
       break;
     case "bun":
-      cmd = `bun add -g ${packageName}@${version}`;
+      command = "bun";
+      args = ["add", "-g", `${packageName}@${version}`];
       break;
     case "yarn":
-      cmd = `yarn global add ${packageName}@${version}`;
+      command = "yarn";
+      args = ["global", "add", `${packageName}@${version}`];
       break;
     case "npm":
     default:
-      cmd = `npm install -g ${packageName}@${version}`;
+      command = "npm";
+      args = ["install", "-g", `${packageName}@${version}`];
       break;
   }
 
   try {
     // Show full output during installation
-    execSync(cmd, { stdio: "inherit" });
+    execFileSync(command, args, { stdio: "inherit" });
   } catch (error) {
     // Propagate error - respect user's chosen PM
     throw error;
