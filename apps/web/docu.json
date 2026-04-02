@@ -20,23 +20,19 @@
     "social": [
       {
         "name": "Instagram",
-        "url": "https://www.instagram.com/wildan.nrs",
-        "iconName": "InstagramIcon"
+        "url": "https://www.instagram.com/wildan.nrs"
       },
       {
         "name": "Facebook",
-        "url": "https://www.facebook.com/wildan.nrsh",
-        "iconName": "FacebookIcon"
+        "url": "https://www.facebook.com/wildan.nrsh"
       },
       {
         "name": "Twitter",
-        "url": "https://x.com/wildan_nrss",
-        "iconName": "TwitterIcon"
+        "url": "https://x.com/wildan_nrss"
       },
       {
         "name": "Youtube",
-        "url": "https://www.youtube.com/@wildandotdev",
-        "iconName": "YoutubeIcon"
+        "url": "https://www.youtube.com/@wildandotdev"
       }
     ]
   },
@@ -74,7 +70,6 @@
         { "title": "Introduction", "href": "/introduction" },
         { "title": "Installation", "href": "/installation" },
         { "title": "Quick Start Guide", "href": "/quick-start-guide" },
-        { "title": "Customize", "href": "/customize" },
         { "title": "Themes", "href": "/themes" },
         {
           "title": "Search",

@@ -1,0 +1,72 @@
+import type { ComponentType } from "react";
+import {
+    AccordionMdx,
+    AccordionGroupMdx,
+    ButtonMdx,
+    CardGroupMdx,
+    CardMdx,
+    CodeBlock,
+    FileMdx,
+    FilesMdx,
+    FolderMdx,
+    ImageMdx,
+    KbdMdx,
+    LinkMdx,
+    NoteMdx,
+    ReleaseMdx,
+    ChangesMdx,
+    StepperItemMdx,
+    StepperMdx,
+    TooltipMdx,
+    YoutubeMdx,
+} from "../components";
+import {
+    TableBodyMdx,
+    TableCellMdx,
+    TableFooterMdx,
+    TableHeadMdx,
+    TableHeaderMdx,
+    TableMdx,
+    TableRowMdx,
+} from "../components/TableMdx";
+import { TabsContentMdx, TabsListMdx, TabsMdx, TabsTriggerMdx } from "../components/TabsMdx";
+
+export type MdxComponentMap = Record<string, ComponentType<any>>;
+
+export function createMdxComponents(customComponents: MdxComponentMap = {}): MdxComponentMap {
+    return {
+        Tabs: TabsMdx,
+        TabsList: TabsListMdx,
+        TabsTrigger: TabsTriggerMdx,
+        TabsContent: TabsContentMdx,
+        table: TableMdx,
+        thead: TableHeaderMdx,
+        tbody: TableBodyMdx,
+        tfoot: TableFooterMdx,
+        tr: TableRowMdx,
+        th: TableHeadMdx,
+        td: TableCellMdx,
+        pre: CodeBlock,
+        a: LinkMdx,
+        Link: LinkMdx,
+        Card: CardMdx,
+        Button: ButtonMdx,
+        Note: NoteMdx,
+        Stepper: StepperMdx,
+        StepperItem: StepperItemMdx,
+        Accordion: AccordionMdx,
+        AccordionGroup: AccordionGroupMdx,
+        CardGroup: CardGroupMdx,
+        Kbd: KbdMdx,
+        Release: ReleaseMdx,
+        Changes: ChangesMdx,
+        File: FileMdx,
+        Files: FilesMdx,
+        Folder: FolderMdx,
+        Image: ImageMdx,
+        img: ImageMdx,
+        Youtube: YoutubeMdx,
+        Tooltip: TooltipMdx,
+        ...customComponents,
+    };
+}
