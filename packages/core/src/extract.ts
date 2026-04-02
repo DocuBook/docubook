@@ -8,7 +8,7 @@ export function sluggify(text: string): string {
 
 export function extractTocsFromRawMdx(rawMdx: string): TocItem[] {
     // Match code blocks, markdown headings, and <Release version="x.y.z" />.
-    const combinedRegex = /(```[\s\S]*?```)|^(#{2,4})\s(.+)$|<Release[^>]*version="([^"]+)"/gm;
+    const combinedRegex = /(```[\s\S]*?```)|^(#{2,4})\s(.+)$|<Release\s+version="([^"]+)"/gm;
     const extractedHeadings: TocItem[] = [];
 
     let match: RegExpExecArray | null;
