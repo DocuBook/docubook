@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { getDocsForSlug, getDocsTocs } from "@/lib/markdown"
+import { getDocsForSlug, getDocsFrontmatterForSlug, getDocsStaticParams } from "@/lib/markdown"
 import DocsBreadcrumb from "@/components/DocsBreadcrumb"
 import Pagination from "@/components/pagination"
 import Toc from "@/components/toc"
@@ -17,6 +17,8 @@ type PageProps = {
   }>
 }
 
+export const dynamicParams = true
+
 // Function to generate metadata dynamically
 export async function generateMetadata(props: PageProps) {
   const params = await props.params
@@ -24,22 +26,24 @@ export async function generateMetadata(props: PageProps) {
   const { slug = [] } = params
 
   const pathName = slug.join("/")
-  const res = await getDocsForSlug(pathName)
+  // React.cache() deduplicates within this request, so if the page component
+  // also calls getDocsFrontmatterForSlug, they share the same file read
+  const frontmatter = await getDocsFrontmatterForSlug(pathName)
 
-  if (!res) {
+  if (!frontmatter) {
     return {
       title: "Page Not Found",
       description: "The requested page was not found.",
     }
   }
 
-  const { title, description, image } = res.frontmatter
+  const { title, description, image } = frontmatter
 
-  // Absolute URL for og:image
+  // Absolute URL for og:image - compute once
   const ogImage = image ? `${meta.baseURL}/images/${image}` : `${meta.baseURL}/images/og-image.png`
 
   return {
-    title: `${title}`,
+    title,
     description,
     openGraph: {
       title,
@@ -64,6 +68,10 @@ export async function generateMetadata(props: PageProps) {
   }
 }
 
+export async function generateStaticParams() {
+  return getDocsStaticParams()
+}
+
 export default async function DocsPage(props: PageProps) {
   const params = await props.params
 
@@ -76,7 +84,7 @@ export default async function DocsPage(props: PageProps) {
 
   const { title, description, image: _image, date } = res.frontmatter
   const filePath = res.filePath
-  const tocs = await getDocsTocs(pathName)
+  const tocs = res.tocs
 
   return (
     <div className="flex w-full flex-1 px-0 pb-4 lg:px-8 lg:pb-8 lg:h-[calc(100vh-4rem)]">
