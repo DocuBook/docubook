@@ -233,8 +233,17 @@ async function showChangelogOnce(pkgName, version, releaseInfo) {
     try {
       // Get the previous release tag
       const currentTag = `cli-v${version}`;
-      const prevTagCmd = `git describe --tags --abbrev=0 ${currentTag}^ 2>/dev/null || echo ""`;
-      const prevTag = execSync(prevTagCmd, { encoding: "utf-8", stdio: ["pipe", "pipe", "ignore"] }).trim();
+      let prevTag = "";
+      try {
+        prevTag = execFileSync(
+          "git",
+          ["describe", "--tags", "--abbrev=0", `${currentTag}^`],
+          { encoding: "utf-8", stdio: ["pipe", "pipe", "ignore"] }
+        ).trim();
+      } catch {
+        // If git describe fails, treat as no previous tag (equivalent to `|| echo ""`)
+        prevTag = "";
+      }
 
       if (prevTag && prevTag.startsWith("cli-v")) {
         const generatedChangelog = await generateChangelogFromCommits(prevTag, currentTag);
