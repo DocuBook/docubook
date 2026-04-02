@@ -23,18 +23,31 @@ Here is a basic example of using the Release Note component:
 </Release>
 ```
 
+<Accordion title="Click to Preview" icon="Eye">
+  <Release version="1.10.1" date="2025-05-24" title="Accessibility Improvements and Bug Fixes">
+    <Changes type="added">
+      - New feature to improve accessibility
+      - Keyboard navigation support for dialog components
+    </Changes>
+    <Changes type="fixed">
+      - Bug fix for mobile menu
+      - Fixed loading issues on documentation pages
+    </Changes>
+  </Release>
+</Accordion>
+
 ## Release Component
 
 The `Release` component is used to display key information about a release version, such as version number, release date, and title.
 
 ### Release Props
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `version` | string | ✅ | Version number to display (without "v" prefix) |
-| `title` | string | ✅ | Title or name of the release |
-| `date` | string | ❌ | Release date in a valid format (example: "2025-05-24") |
-| `children` | ReactNode | ✅ | Child content, typically `Changes` components |
+|    Prop    |   Type    | Required |                      Description                       |
+| ---------- | --------- | -------- | ------------------------------------------------------ |
+| `version`  | string    | ✅        | Version number to display (without "v" prefix)         |
+| `title`    | string    | ✅        | Title or name of the release                           |
+| `date`     | string    | ❌        | Release date in a valid format (example: "2025-05-24") |
+| `children` | ReactNode | ✅        | Child content, typically `Changes` components          |
 
 ## Changes Component
 
@@ -42,20 +55,20 @@ The `Changes` component is used to group changes by category with appropriate ic
 
 ### Changes Props
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `type` | string | ✅ | Type of change: 'added', 'fixed', 'improved', 'deprecated', or 'removed' |
-| `children` | ReactNode | ✅ | List of changes, can be text with Markdown formatting |
+|    Prop    |   Type    | Required |                               Description                                |
+| ---------- | --------- | -------- | ------------------------------------------------------------------------ |
+| `type`     | string    | ✅        | Type of change: 'added', 'fixed', 'improved', 'deprecated', or 'removed' |
+| `children` | ReactNode | ✅        | List of changes, can be text with Markdown formatting                    |
 
 ### Changes Note
 
-| Category | Description |
-|----------|-------------|
-| `added` | New features or functionality added |
-| `fixed` | Bugs or issues that have been fixed |
-| `improved` | Enhancements or optimizations to existing features |
+|   Category   |                          Description                           |
+| ------------ | -------------------------------------------------------------- |
+| `added`      | New features or functionality added                            |
+| `fixed`      | Bugs or issues that have been fixed                            |
+| `improved`   | Enhancements or optimizations to existing features             |
 | `deprecated` | Features that are not recommended and may be removed in future |
-| `removed` | Features that have been completely removed |
+| `removed`    | Features that have been completely removed                     |
 
 ## Complete Implementation
 
