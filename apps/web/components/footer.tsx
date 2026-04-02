@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { ModeToggle } from "@/components/ThemeToggle";
 import docuData from "@/docu.json";
-import * as LucideIcons from "lucide-react";
 import AuroraText from "@/components/ui/aurora";
+import { getSocialIconByName } from "@/lib/icon";
 
 // Define types for docu.json
 interface SocialItem {
   name: string;
   url: string;
-  iconName: string;
 }
 
 interface FooterConfig {
@@ -49,7 +48,7 @@ export function Footer({ id }: FooterProps) {
 export function FooterButtons() {
   const footer = docuConfig?.footer;
 
-  // Jangan render apapun jika tidak ada data sosial
+  // Don't render anything if there is no social data
   if (!footer || !Array.isArray(footer.social) || footer.social.length === 0) {
     return null;
   }
@@ -57,9 +56,7 @@ export function FooterButtons() {
   return (
     <>
       {footer.social.map((item) => {
-        const IconComponent =
-          (LucideIcons[item.iconName as keyof typeof LucideIcons] ??
-            LucideIcons["Globe"]) as React.FC<{ className?: string }>;
+        const IconComponent = getSocialIconByName(item.name);
 
         return (
           <Link
