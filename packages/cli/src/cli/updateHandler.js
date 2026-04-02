@@ -150,9 +150,18 @@ async function fetchLatestReleaseFromGitHub() {
  */
 async function generateChangelogFromCommits(fromTag, toTag) {
   try {
-    // Get commits between two tags
-    const cmd = `git log ${fromTag}..${toTag} --pretty=format:"%H|%s|%b" -- packages/cli/ 2>/dev/null || echo ""`;
-    const output = execSync(cmd, { encoding: "utf-8", stdio: ["pipe", "pipe", "ignore"] });
+    // Get commits between two tags without invoking a shell
+    let output = "";
+    try {
+      output = execFileSync(
+        "git",
+        ["log", `${fromTag}..${toTag}`, '--pretty=format:%H|%s|%b', "--", "packages/cli/"],
+        { encoding: "utf-8", stdio: ["ignore", "pipe", "ignore"] }
+      );
+    } catch {
+      // If git log fails, treat as no commits (equivalent to `|| echo ""`)
+      output = "";
+    }
 
     if (!output || output.trim() === "") {
       return null;
