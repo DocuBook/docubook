@@ -8,69 +8,7 @@ import { cache } from "react";
 import path from "path";
 import { page_routes, ROUTES } from "./routes";
 import type { TocItem } from "./toc";
-import dynamic from "next/dynamic"; // custom components - dynamically imported to reduce initial bundle
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import Pre from "@/components/markdown/PreMdx";
-import Link from "@/components/markdown/LinkMdx";
-import Image from "@/components/markdown/ImageMdx";
-
-// Lazy load heavy interactive components
-const Note = dynamic(() => import("@/components/markdown/NoteMdx"));
-const Stepper = dynamic(() => import("@/components/markdown/StepperMdx").then(m => ({ default: m.Stepper })));
-const StepperItem = dynamic(() => import("@/components/markdown/StepperMdx").then(m => ({ default: m.StepperItem })));
-const Outlet = dynamic(() => import("@/components/markdown/OutletMdx"));
-const Youtube = dynamic(() => import("@/components/markdown/YoutubeMdx"));
-const Tooltip = dynamic(() => import("@/components/markdown/TooltipsMdx"));
-const Card = dynamic(() => import("@/components/markdown/CardMdx"));
-const Button = dynamic(() => import("@/components/markdown/ButtonMdx"));
-const Accordion = dynamic(() => import("@/components/markdown/AccordionMdx"));
-const CardGroup = dynamic(() => import("@/components/markdown/CardGroupMdx"));
-const Kbd = dynamic(() => import("@/components/markdown/KeyboardMdx"));
-const Release = dynamic(() => import("@/components/markdown/ReleaseMdx").then(m => ({ default: m.Release })));
-const Changes = dynamic(() => import("@/components/markdown/ReleaseMdx").then(m => ({ default: m.Changes })));
-const File = dynamic(() => import("@/components/markdown/FileTreeMdx").then(m => ({ default: m.File })));
-const Files = dynamic(() => import("@/components/markdown/FileTreeMdx").then(m => ({ default: m.Files })));
-const Folder = dynamic(() => import("@/components/markdown/FileTreeMdx").then(m => ({ default: m.Folder })));
-const AccordionGroup = dynamic(() => import("@/components/markdown/AccordionGroupMdx"));
-
-// add custom components
-const components = {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-  Youtube,
-  Tooltip,
-  Card,
-  Button,
-  Accordion,
-  AccordionGroup,
-  CardGroup,
-  Kbd,
-  // Table Components
-  table: Table,
-  thead: TableHeader,
-  tbody: TableBody,
-  tfoot: TableFooter,
-  tr: TableRow,
-  th: TableHead,
-  td: TableCell,
-  // Release Note Components
-  Release,
-  Changes,
-  // File Tree Components
-  File,
-  Files,
-  Folder,
-  pre: Pre,
-  Note,
-  Stepper,
-  StepperItem,
-  img: Image,
-  a: Link,
-  Outlet,
-};
+import { mdxComponents as components } from "./mdx-components";
 
 export type MdxCompileResult<Frontmatter> = CoreMdxCompileResult<Frontmatter>;
 
