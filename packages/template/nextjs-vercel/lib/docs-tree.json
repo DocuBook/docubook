@@ -1,0 +1,106 @@
+[
+  {
+    "title": "Getting Started",
+    "href": "/getting-started",
+    "noLink": true,
+    "context": {
+      "icon": "Book",
+      "description": "Set up your Documentation",
+      "title": "Guides"
+    },
+    "items": [
+      {
+        "title": "Introduction",
+        "href": "/introduction"
+      },
+      {
+        "title": "Quick Start Guide",
+        "href": "/quick-start-guide"
+      }
+    ]
+  },
+  {
+    "title": "Components",
+    "href": "/components",
+    "noLink": true,
+    "context": {
+      "icon": "Layers",
+      "description": "Write with Markdown",
+      "title": "Markdown"
+    },
+    "items": [
+      {
+        "title": "Accordion",
+        "href": "/accordion"
+      },
+      {
+        "title": "Accordion Group",
+        "href": "/accordion-group"
+      },
+      {
+        "title": "Button",
+        "href": "/button"
+      },
+      {
+        "title": "Card",
+        "href": "/card"
+      },
+      {
+        "title": "Card Group",
+        "href": "/card-group"
+      },
+      {
+        "title": "Code Block",
+        "href": "/code-block"
+      },
+      {
+        "title": "File Tree",
+        "href": "/file-tree"
+      },
+      {
+        "title": "Image",
+        "href": "/image"
+      },
+      {
+        "title": "Keyboard",
+        "href": "/keyboard"
+      },
+      {
+        "title": "Link",
+        "href": "/link"
+      },
+      {
+        "title": "Note",
+        "href": "/note"
+      },
+      {
+        "title": "Release Note",
+        "href": "/release-note"
+      },
+      {
+        "title": "Stepper",
+        "href": "/stepper"
+      },
+      {
+        "title": "Tabs",
+        "href": "/tabs"
+      },
+      {
+        "title": "Tooltips",
+        "href": "/tooltips"
+      },
+      {
+        "title": "Tables",
+        "href": "/tables"
+      },
+      {
+        "title": "Youtube",
+        "href": "/youtube"
+      },
+      {
+        "title": "Custom",
+        "href": "/custom"
+      }
+    ]
+  }
+]
