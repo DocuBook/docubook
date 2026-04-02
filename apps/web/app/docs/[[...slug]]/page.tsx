@@ -17,7 +17,7 @@ type PageProps = {
   }>
 }
 
-export const dynamicParams = false
+export const dynamicParams = true
 
 // Function to generate metadata dynamically
 export async function generateMetadata(props: PageProps) {
