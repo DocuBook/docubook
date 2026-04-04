@@ -8,9 +8,6 @@
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
   "ignore": [
-    "@docubook/web",
-    "@docubook/monorepo",
-    "docubook-next-docker",
-    "docubook-next"
+    "@docubook/web"
   ]
 }
