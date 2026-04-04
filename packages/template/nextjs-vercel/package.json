@@ -7,8 +7,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run prebuild && next build",
-    "prebuild": "npx @docubook/docs-tree ./docs ./docu.json ./lib/docs-tree.json",
+    "build": "next build",
+    "prebuild": "docs-tree ./docs ./docu.json ./lib/docs-tree.json",
     "start": "next start",
     "lint": "eslint ."
   },
