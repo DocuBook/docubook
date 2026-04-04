@@ -1,6 +1,6 @@
 # Berkontribusi ke DocuBook
 
-Bahasa: [EN](CONTRIBUTING.md)
+Bahasa: Indonesia | [EN](CONTRIBUTING.md)
 
 Terima kasih atas minat Anda untuk berkontribusi ke DocuBook.
 
