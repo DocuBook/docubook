@@ -71,7 +71,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Publish @docubook/cli to npm
-        run: pnpm publish packages/cli --access public --no-git-checks --otp ${{ secrets.NPM_OTP }}
+        run: pnpm publish packages/cli --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
