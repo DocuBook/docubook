@@ -88,6 +88,32 @@ pnpm clean
 
 ## Panduan Pull Request
 
+
+### Pastikan Branch Anda Terupdate
+
+Sebelum membuat pull request, **pastikan branch Anda sudah di-merge dengan branch `main` terbaru**. Ini membantu menghindari konflik dan memastikan integrasi berjalan lancar.
+
+#### Cara Merge dengan `main`
+##### Selalu Gunakan Merge untuk Update Branch
+
+Untuk repository ini, **selalu gunakan merge** untuk memperbarui branch Anda dengan `main` sebelum membuat pull request. Ini menjaga riwayat commit tetap transparan dan aman untuk kolaborasi open source.
+
+- **Merge** menjaga riwayat commit dan membuat commit baru yang menggabungkan perubahan dari kedua branch. Grafik commit akan memperlihatkan percabangan dan titik penggabungan.
+
+Untuk merge branch `main` terbaru ke branch Anda:
+
+```bash
+git fetch origin
+git checkout nama-branch-anda
+git merge origin/main
+```
+
+Jika ada konflik, selesaikan terlebih dahulu. Setelah itu, lakukan push ke branch Anda sendiri (bukan ke `main`):
+
+```bash
+git push origin nama-branch-anda
+```
+
 ### Judul PR
 
 Gunakan judul yang ringkas dan deskriptif. Gaya Conventional disarankan.

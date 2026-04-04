@@ -88,6 +88,32 @@ pnpm clean
 
 ## Pull Request Guidelines
 
+
+### Keep Your Branch Up to Date
+
+Before opening a pull request, **make sure your branch is rebased or merged with the latest `main` branch**. This helps avoid conflicts and ensures a smooth integration.
+
+#### How to Merge with `main`
+##### Always Use Merge to Update Your Branch
+
+For this repository, **always use merge** to update your branch with the latest `main` before opening a pull request. This keeps the commit history transparent and avoids rewriting history, which is safer for open source collaboration.
+
+- **Merge** keeps the full history and creates a new commit that combines changes from both branches. The commit graph will show a branch and merge point.
+
+To merge the latest `main` into your branch:
+
+```bash
+git fetch origin
+git checkout your-branch
+git merge origin/main
+```
+
+Resolve any conflicts if prompted, then push your branch to your own feature branch (not to `main`):
+
+```bash
+git push origin your-branch
+```
+
 ### PR Title
 
 Use concise, descriptive titles. Conventional style is preferred.
