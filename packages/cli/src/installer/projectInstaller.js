@@ -52,6 +52,10 @@ export async function createProject(options) {
     if (fs.existsSync(pkgPath)) {
       const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
       pkg.name = directoryName;
+      const packageManagerSpec = getPackageManagerSpec(packageManager);
+      if (packageManagerSpec) {
+        pkg.packageManager = packageManagerSpec;
+      }
       fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
     }
 
@@ -73,6 +77,22 @@ export async function createProject(options) {
       fs.rmSync(projectPath, { recursive: true, force: true });
     }
     throw err;
+  }
+}
+
+function getPackageManagerSpec(packageManager) {
+  try {
+    const versionOutput = execSync(`${packageManager} --version`, {
+      stdio: ["ignore", "pipe", "pipe"],
+      encoding: "utf8",
+    }).trim();
+
+    const version = versionOutput.split(/\r?\n/).at(-1)?.trim();
+    if (!version) return null;
+
+    return `${packageManager}@${version}`;
+  } catch {
+    return null;
   }
 }
 
