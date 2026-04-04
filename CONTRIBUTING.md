@@ -30,9 +30,6 @@ If you report sensitive issues (security, abuse, private data), avoid public dis
 - For non-trivial changes, open an issue/discussion first to align scope
 - Keep pull requests focused: one concern per PR
 
-> [!NOTE]
-> Because this project has a small maintainer team, the owner may use automated agents like GitHub Copilot and Anthropic Claude for work. Some funds may be used to pay for API token subscriptions needed by those agents.
-
 ## Development Setup
 
 ### Requirements
@@ -199,6 +196,9 @@ Fairness is a priority:
 - everyone gets the same review process
 - sponsorship is not a shortcut to merge or priority treatment
 - transparency about fund usage builds trust
+
+> [!NOTE]
+> Because this project has a small maintainer team, the owner may use automated agents like GitHub Copilot and Anthropic Claude for work. Some funds may be used to pay for API token subscriptions needed by those agents.
 
 ## Recognition
 
