@@ -54,6 +54,24 @@ export function renderScaffolding(state) {
 }
 
 export function renderDone(projectName, packageManager, nextCommand, installDependencies = true, state = {}) {
+  const installCommand =
+    packageManager === 'yarn' ? 'yarn install' :
+      packageManager === 'pnpm' ? 'pnpm install' :
+        packageManager === 'bun' ? 'bun install' :
+          'npm install';
+
+  const buildCommand =
+    packageManager === 'yarn' ? 'yarn build' :
+      packageManager === 'pnpm' ? 'pnpm build' :
+        packageManager === 'bun' ? 'bun run build' :
+          'npm run build';
+
+  const startCommand =
+    packageManager === 'yarn' ? 'yarn start' :
+      packageManager === 'pnpm' ? 'pnpm start' :
+        packageManager === 'bun' ? 'bun run start' :
+          'npm run start';
+
   if (state.json) {
     // JSON output mode
     console.log(JSON.stringify({
@@ -65,8 +83,10 @@ export function renderDone(projectName, packageManager, nextCommand, installDepe
       history: state.history,
       nextSteps: {
         cd: projectName,
-        install: installDependencies ? null : (packageManager === 'yarn' ? 'yarn install' : packageManager === 'pnpm' ? 'pnpm install' : packageManager === 'bun' ? 'bun install' : 'npm install'),
+        install: installDependencies ? null : installCommand,
         dev: nextCommand,
+        build: buildCommand,
+        start: startCommand,
       },
     }, null, 2));
     return;
@@ -97,13 +117,6 @@ export function renderDone(projectName, packageManager, nextCommand, installDepe
 
   console.log(createBoxedMessage('Completion Summary', completedLines, colors.cyan));
 
-  // Determine install command based on package manager
-  const installCommand =
-    packageManager === 'yarn' ? 'yarn install' :
-      packageManager === 'pnpm' ? 'pnpm install' :
-        packageManager === 'bun' ? 'bun install' :
-          'npm install';
-
   const nextSteps = [
     `${colors.cyan}cd${colors.reset} ${projectName}`,
   ];
@@ -113,7 +126,12 @@ export function renderDone(projectName, packageManager, nextCommand, installDepe
     nextSteps.push(`${colors.cyan}${installCommand}${colors.reset}`);
   }
 
+  nextSteps.push(`${dim('Development:')}`);
   nextSteps.push(`${colors.cyan}${nextCommand}${colors.reset}`);
+  nextSteps.push('');
+  nextSteps.push(`${dim('Production:')}`);
+  nextSteps.push(`${colors.cyan}${buildCommand}${colors.reset}`);
+  nextSteps.push(`${colors.cyan}${startCommand}${colors.reset}`);
   nextSteps.push('');
   nextSteps.push(`${dim('📚 Documentation: https://docubook.pro')}`);
 
