@@ -30,8 +30,8 @@ Jika Anda melaporkan isu sensitif (keamanan, penyalahgunaan, data privat), hinda
 - Untuk perubahan non-sepele, buka issue/diskusi terlebih dahulu untuk menyelaraskan scope
 - Jaga pull request tetap fokus: satu concern per PR
 
-[!CATATAN]
-Karena keterbatasan tim maintainer, owner proyek ini kadang bekerja dengan agen seperti GitHub Copilot dan Anthropic Claude. Sebagian dana mungkin digunakan untuk membayar langganan token API yang diperlukan agen tersebut.
+> [!CATATAN]
+> Karena keterbatasan tim maintainer, owner proyek ini kadang bekerja dengan agen seperti GitHub Copilot dan Anthropic Claude. Sebagian dana mungkin digunakan untuk membayar langganan token API yang diperlukan agen tersebut.
 
 ## Setup Pengembangan
 
