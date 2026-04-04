@@ -1,6 +1,6 @@
 # Berkontribusi ke DocuBook
 
-Bahasa: [English](CONTRIBUTING.md) | Bahasa Indonesia
+Bahasa: [EN](CONTRIBUTING.md)
 
 Terima kasih atas minat Anda untuk berkontribusi ke DocuBook.
 
@@ -150,6 +150,26 @@ Dengan berkontribusi, Anda ikut:
 - Menjaga stabilitas rilis lewat kualitas perubahan dan budaya review
 - Memperkuat pengetahuan bersama melalui docs, contoh, dan diskusi issue
 - Membangun rekam jejak open-source melalui kontribusi publik yang bermakna
+
+## Sponsor dan Keadilan
+
+DocuBook menerima sponsor dan donasi untuk mendukung pemeliharaan, dokumentasi, dan aktivitas komunitas.
+
+CI/CD sudah di-handle oleh GitHub Actions, dan situs dokumentasi utama di-host gratis di Vercel. Dana sponsor terutama digunakan untuk mendukung kontributor aktif, koordinasi komunitas, dan biaya domain.
+
+Dukungan sponsor dihargai, tetapi tidak memengaruhi proses review kontribusi. Semua issue dan pull request dinilai berdasarkan kualitas teknis, kelayakan, dan kesesuaian dengan tujuan proyek.
+
+Manfaat sponsor dapat meliputi:
+
+- ucapan terima kasih publik di repo atau catatan rilis
+- akses ke ringkasan roadmap atau pembaruan sponsor
+- undangan ke channel komunitas atau sesi sponsor
+
+Keadilan adalah prioritas:
+
+- semua orang mendapat proses review yang sama
+- sponsor bukan jalan pintas untuk merge atau prioritas khusus
+- transparansi penggunaan dana menjaga kepercayaan
 
 ## Apresiasi
 
