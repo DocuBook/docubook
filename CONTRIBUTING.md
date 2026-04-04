@@ -1,6 +1,6 @@
 # Contributing to DocuBook
 
-Language: English | [Bahasa Indonesia](CONTRIBUTING.id.md)
+Language: EN | [IN](CONTRIBUTING.id.md)
 
 Thanks for your interest in contributing to DocuBook.
 
@@ -150,6 +150,26 @@ By contributing, you help:
 - Protect release stability through better quality and review culture
 - Strengthen shared knowledge through docs, examples, and issue discussions
 - Build your open-source track record through meaningful public contributions
+
+## Sponsorship and Fairness
+
+DocuBook welcomes sponsorship and donations to support ongoing maintenance, documentation, and community activities.
+
+CI/CD is handled through GitHub Actions, and the main documentation site is hosted for free on Vercel. Sponsor funds are therefore primarily intended to help cover support for active contributors, community coordination, and domain costs.
+
+Sponsor support is appreciated, but it does not affect the contribution review process. All issues and pull requests are evaluated on their technical merit, quality, and alignment with project goals.
+
+Sponsor benefits may include:
+
+- public thank-you in the repository or release notes
+- access to roadmap summaries or sponsorship updates
+- invitation to community channels or sponsor-only briefs
+
+Fairness is a priority:
+
+- everyone gets the same review process
+- sponsorship is not a shortcut to merge or priority treatment
+- transparency about fund usage builds trust
 
 ## Recognition
 
