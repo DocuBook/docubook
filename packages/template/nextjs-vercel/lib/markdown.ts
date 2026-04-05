@@ -5,6 +5,7 @@ import {
   type MdxCompileResult as CoreMdxCompileResult,
 } from "@docubook/core";
 import { cache } from "react";
+import { promises as fsPromises } from "fs";
 import path from "path";
 import { page_routes, ROUTES } from "./routes";
 import type { TocItem } from "./toc";
@@ -23,14 +24,37 @@ export type BaseMdxFrontmatter = {
   title: string;
   description: string;
   image: string;
-  date: string;
+  date?: string | Date;
 };
 
 // `React.cache` deduplicates calls within a single server-render pass.
 // Keep request-level cache in app layer, while markdown pipeline lives in core.
+
+/**
+ * Return the mtime of an MDX file as a Date object.
+ * Caller receives the Date directly — no string round-trip, no re-parse needed.
+ */
+async function getFileLastModifiedDate(absoluteFilePath: string): Promise<Date | undefined> {
+  try {
+    const stat = await fsPromises.stat(absoluteFilePath);
+    return stat.mtime;
+  } catch {
+    return undefined;
+  }
+}
+
 const docsService = createMdxContentService<BaseMdxFrontmatter, TocItem>({
   parseOptions: { components },
   cacheFn: cache,
+  // Backward-compatible: if `date` is absent in frontmatter, fall back to
+  // the filesystem last-modified time of that MDX file (resolved at build time).
+  frontmatterEnricher: async (frontmatter, absoluteFilePath) => {
+    if (!frontmatter.date) {
+      const fileDate = await getFileLastModifiedDate(absoluteFilePath);
+      if (fileDate) return { ...frontmatter, date: fileDate };
+    }
+    return frontmatter;
+  },
 });
 
 // Return frontmatter only for a docs slug.
