@@ -24,21 +24,20 @@ export type BaseMdxFrontmatter = {
   title: string;
   description: string;
   image: string;
-  date: string;
+  date?: string | Date;
 };
 
 // `React.cache` deduplicates calls within a single server-render pass.
 // Keep request-level cache in app layer, while markdown pipeline lives in core.
 
 /**
- * Resolve the last-modified date of an MDX file from the filesystem mtime.
- * Returns ISO 8601 string or undefined on error.
- * Non-blocking async — works in all environments including Vercel build.
+ * Return the mtime of an MDX file as a Date object.
+ * Caller receives the Date directly — no string round-trip, no re-parse needed.
  */
-async function getFileLastModifiedDate(absoluteFilePath: string): Promise<string | undefined> {
+async function getFileLastModifiedDate(absoluteFilePath: string): Promise<Date | undefined> {
   try {
     const stat = await fsPromises.stat(absoluteFilePath);
-    return stat.mtime.toISOString();
+    return stat.mtime;
   } catch {
     return undefined;
   }
