@@ -34,6 +34,7 @@ DocuBook is a complete docs ecosystem for modern React projects.
 Core stack:
 
 - **@docubook/core** - MDX compile pipeline and markdown utilities
+- **@doubook/mdx-content** - Portable MDX components and framework adapters for DocuBook
 - **@docubook/docs-tree** - CLI for prebuilding docs navigation
 - **Tailwind CSS + Radix UI + Shadcn patterns** - UI foundation
 - **Algolia DocSearch** - fast documentation search
@@ -47,7 +48,7 @@ DocuBook separates metadata reads from full MDX compilation and reuses cached re
   improving response time and lowering CPU usage.
 </Note>
 
-<AccordionGroup>
+<Accordions>
   <Accordion title="Before Optimization" icon="Loader">
     In the old flow, a single page request repeated work multiple times:
       ```text
@@ -106,7 +107,7 @@ DocuBook separates metadata reads from full MDX compilation and reuses cached re
       no extra file read
       ```
   </Accordion>
-</AccordionGroup>
+</Accordions>
 
 ### Quick Metrics (Per Request)
 

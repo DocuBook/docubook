@@ -3,11 +3,11 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { AccordionGroupContext } from "./AccordionContext";
 
-type AccordionGroupMdxProps = {
+type AccordionsMdxProps = {
     children?: ReactNode;
 };
 
-export function AccordionGroupMdx({ children }: AccordionGroupMdxProps) {
+export function AccordionsMdx({ children }: AccordionsMdxProps) {
     const [openTitle, setOpenTitle] = useState<string | null>(null);
 
     const value = useMemo(
@@ -29,4 +29,9 @@ export function AccordionGroupMdx({ children }: AccordionGroupMdxProps) {
             </div>
         </AccordionGroupContext.Provider>
     );
+}
+
+/** @deprecated Use `AccordionsMdx` instead. */
+export function AccordionGroupMdx(props: AccordionsMdxProps) {
+    return <AccordionsMdx {...props} />;
 }

@@ -20,26 +20,28 @@ with icon (lucide icon name string only) :
 ## accordion group
 
 for example :
-<AccordionGroup>
-<Accordion title="Basic Usage">
-    This accordion includes a [Lucide Icon](https://lucide.dev/icons/) because the `icon` prop is provided.
-</Accordion>
+<Accordions>
+  <Accordion title="Basic Usage">
+      This accordion includes a [Lucide Icon](https://lucide.dev/icons/) because the `icon` prop is provided.
+  </Accordion>
 
-<Accordion title="With icon props" icon="MousePointerClick">
-    This accordion includes a Lucide icon because the `icon` prop is provided.
-</Accordion>
+  <Accordion title="With icon props" icon="MousePointerClick">
+      This accordion includes a Lucide icon because the `icon` prop is provided.
+  </Accordion>
 
-<Accordion title="With Code Block">
-    You can put other components inside Accordions.
-```jsx:helloword.jsx
-class HelloWorld {
-public static void main(String[] args) {
-        System.out.println("Hello, World!");
-        }
-}
-```
-</Accordion>
-</AccordionGroup>
+  <Accordion title="With Code Block">
+      You can put other components inside Accordions.
+  ```jsx:helloword.jsx
+  class HelloWorld {
+  public static void main(String[] args) {
+          System.out.println("Hello, World!");
+          }
+  }
+  ```
+  </Accordion>
+</Accordions>
+
+deprecated alias: `AccordionGroup`
 
 ## button
 
@@ -64,20 +66,22 @@ for example :
 ## card group
 
 for example :
-<CardGroup cols={2}>
-<Card title="Heading 1" icon="Heading1">
-  This is an example of card content with columns.
-</Card>
-<Card title="Heading 2" icon="Heading2">
-  This is an example of card content with columns.
-</Card>
-<Card title="Grid Card" icon="Grid" horizontal>
-    This is a horizontal card layout.
-</Card>
-<Card title="Horizontal Card" icon="Layout" horizontal>
-    This is a horizontal card layout.
-</Card>
-</CardGroup>
+<Cards cols={2}>
+  <Card title="Heading 1" icon="Heading1">
+    This is an example of card content with columns.
+  </Card>
+  <Card title="Heading 2" icon="Heading2">
+    This is an example of card content with columns.
+  </Card>
+  <Card title="Grid Card" icon="Grid" horizontal>
+      This is a horizontal card layout.
+  </Card>
+  <Card title="Horizontal Card" icon="Layout" horizontal>
+      This is a horizontal card layout.
+  </Card>
+</Cards>
+
+deprecated alias: `CardGroup`
 
 
 ## code block
@@ -162,33 +166,33 @@ for example :
 ## stepper
 
 for example :
-<Stepper>
-  <StepperItem title="Step 1: Clone the DocuBook Repository">
+<Steps>
+  <Step title="Step 1: Clone the DocuBook Repository">
     ```bash
     git clone https://github.com/DocuBook/docubook.git
     ```
-  </StepperItem>
-  <StepperItem title="Step 2: Access the Project Directory">
+  </Step>
+  <Step title="Step 2: Access the Project Directory">
     ```bash
     cd docubook
     ```
-  </StepperItem>
-  <StepperItem title="Step 3: Install Required Dependencies">
+  </Step>
+  <Step title="Step 3: Install Required Dependencies">
     ```bash
     pnpm install
     ```
-  </StepperItem>
-</Stepper>
+  </Step>
+</Steps>
+
+deprecated aliases: `Stepper`, `StepperItem`
 
 ## tabs
 
+default active tab will use the first `Tab` item.
+
 for example :
-<Tabs defaultValue="java" className="pt-5 pb-1">
-  <TabsList>
-    <TabsTrigger value="java">Java</TabsTrigger>
-    <TabsTrigger value="typescript">TypeScript</TabsTrigger>
-  </TabsList>
-  <TabsContent value="java">
+<Tabs className="pt-5 pb-1">
+  <Tab title="Java">
     ```java:HelloWorld.java
     // HelloWorld.java
     public class HelloWorld {
@@ -197,8 +201,8 @@ for example :
         }
     }
     ```
-  </TabsContent>
-  <TabsContent value="typescript">
+  </Tab>
+  <Tab title="TypeScript">
     ```typescript:helloWorld.ts
     // helloWorld.ts
     function helloWorld(): void {
@@ -206,8 +210,10 @@ for example :
     }
     helloWorld();
     ```
-  </TabsContent>
+  </Tab>
 </Tabs>
+
+deprecated legacy API: `TabsList`, `TabsTrigger`, `TabsContent`
 
 ## tooltips
 
@@ -217,10 +223,10 @@ What do you know about <Tooltip text="DocuBook" tip="npx @docubook/create@latest
 ## tables
 
 for example :
-| Property | Description | Type | Default |
-| --- | --- | --- | --- |
-| `title` | The title of the table | `string` | - |
-| `description` | The description of the table | `string` | - |
+|   Property    |         Description          |   Type   | Default |
+| ------------- | ---------------------------- | -------- | ------- |
+| `title`       | The title of the table       | `string` | -       |
+| `description` | The description of the table | `string` | -       |
 
 | Left | Center | Right |
 | :--- | :---: | ---: |

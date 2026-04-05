@@ -6,13 +6,13 @@ description: for writing multiple accordions and grouping them together
 An accordion is like a button that opens and closes information. To avoid clutter, long information
 can be hidden first and then revealed when clicked.
 
-<Note type="note" title="Note">
-  Group related accordions together using `<AccordionGroup>`. This creates a cohesive section of accordions that can be individually expanded or collapsed.
+<Note type="danger" icon="GitBranchMinus" title="Deprecated in v2">
+    Legacy tag `<AccordionGroup>` is deprecated in v2 and kept only for migration compatibility. Use `<Accordions>` for new content.
 </Note>
 
 ## Usage
 
-<AccordionGroup>
+<Accordions>
 <Accordion title="Basic Usage">
     example of using regular paragraph content inside the accordion component
 </Accordion>
@@ -32,7 +32,7 @@ public static void main(String[] args) {
 }
 ```
 </Accordion>
-</AccordionGroup>
+</Accordions>
 
 ## Props
 
@@ -45,7 +45,7 @@ public static void main(String[] args) {
 ## Output Markdown
 
 ````plaintext
-<AccordionGroup>
+<Accordions>
 <Accordion title="Basic Usage">
     This accordion includes a [Lucide Icon](https://lucide.dev/icons/) because the `icon` prop is provided.
 </Accordion>
@@ -64,5 +64,5 @@ public static void main(String[] args) {
 }
 ```
 </Accordion>
-</AccordionGroup>
+</Accordions>
 ````

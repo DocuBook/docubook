@@ -12,12 +12,8 @@ DocuBook comes with a carefully designed color system that ensures consistency a
 
 > The theme color with a modern blue concept is used by the official DocuBook website.
 
-<Tabs defaultValue="g-default" className="pt-2 pb-1">
-  <TabsList>
-    <TabsTrigger value="g-default">globals.css</TabsTrigger>
-    <TabsTrigger value="o-default">overrides.css</TabsTrigger>
-  </TabsList>
-  <TabsContent value="g-default">
+<Tabs className="pt-2 pb-1">
+  <Tab title="globals.css">
 ```css:globals.css
 /* Modern Blue Theme - start here */
 @layer base {
@@ -79,9 +75,9 @@ DocuBook comes with a carefully designed color system that ensures consistency a
   }
 }
 ```
-</TabsContent>
+</Tab>
 
-  <TabsContent value="o-default">
+  <Tab title="overrides.css">
 ```css:overrides.css
 /* Modern Blue Theme - start here */
 .keyword {
@@ -174,19 +170,15 @@ DocuBook comes with a carefully designed color system that ensures consistency a
   /* Lighter gray for dark mode */
 }
 ```
-</TabsContent>
+</Tab>
 </Tabs>
 
 ## Freshlime
 
 > The warm feel of the lime theme is designed for better contrast in dark mode.
 
-<Tabs defaultValue="g-freshlime" className="pt-2 pb-1">
-  <TabsList>
-    <TabsTrigger value="g-freshlime">globals.css</TabsTrigger>
-    <TabsTrigger value="o-freshlime">overrides.css</TabsTrigger>
-  </TabsList>
-  <TabsContent value="g-freshlime">
+<Tabs className="pt-2 pb-1">
+  <Tab title="globals.css">
 ```css:globals.css
 /* Fresh Lime Theme - start here */
 @layer base {
@@ -248,9 +240,9 @@ DocuBook comes with a carefully designed color system that ensures consistency a
     }
 }
 ```
-</TabsContent>
+</Tab>
 
-  <TabsContent value="o-freshlime">
+  <Tab title="overrides.css">
 ```css:overrides.css
 /* Fresh Lime Theme - start here */
 .keyword {
@@ -327,19 +319,15 @@ DocuBook comes with a carefully designed color system that ensures consistency a
   color: hsl(85 20% 70%); /* Light gray-green */
 }
 ```
-</TabsContent>
+</Tab>
 </Tabs>
 
 ## Coffee
 
 > The brown color with coffee elements is elegant but looks simple and has an expensive impression.
 
-<Tabs defaultValue="g-coffee" className="pt-2 pb-1">
-  <TabsList>
-    <TabsTrigger value="g-coffee">globals.css</TabsTrigger>
-    <TabsTrigger value="o-coffee">overrides.css</TabsTrigger>
-  </TabsList>
-  <TabsContent value="g-coffee">
+<Tabs className="pt-2 pb-1">
+  <Tab title="globals.css">
 ```css:globals.css
 /* Rich Coffee Theme - start here */
 @layer base {
@@ -401,9 +389,9 @@ DocuBook comes with a carefully designed color system that ensures consistency a
     }
 }
 ```
-</TabsContent>
+</Tab>
 
-  <TabsContent value="o-coffee">
+  <Tab title="overrides.css">
 ```css:overrides.css
 /* Rich Coffee Theme - Start here */
 .keyword {
@@ -483,7 +471,7 @@ DocuBook comes with a carefully designed color system that ensures consistency a
   opacity: 0.9;
 }
 ```
-</TabsContent>
+</Tab>
 </Tabs>
 
 ## Llms
@@ -499,17 +487,17 @@ This document explains how to create and implement custom color themes using AI 
 
 ### Generate New Theme
 
-<Stepper>
-  <StepperItem title="Step 1: Access LLM for Color Generation">
+<Steps>
+  <Step title="Step 1: Access LLM for Color Generation">
     Ensure you have access to a language model (LLM) that supports color palette generation
-  </StepperItem>
-  <StepperItem title="Step 2: Prepare Color Context">
+  </Step>
+  <Step title="Step 2: Prepare Color Context">
     Share the content of the [llms.txt](/llms.txt) file with the AI to provide the current color scheme context.
-  </StepperItem>
-  <StepperItem title="Step 3: Define Color Requirements">
+  </Step>
+  <Step title="Step 3: Define Color Requirements">
     Determine your preferred color scheme or theme requirements
-  </StepperItem>
-  <StepperItem title="Step 4: Generate New Theme">
+  </Step>
+  <Step title="Step 4: Generate New Theme">
     Use the following prompt to request a new theme from the AI:
 
     ```
@@ -520,8 +508,8 @@ This document explains how to create and implement custom color themes using AI 
     4. Keep the same structure as the provided context
     ```
     > changes the value of Hex color `#2281E3` into your brand colors.
-  </StepperItem>
-</Stepper>
+  </Step>
+</Steps>
 
 ### Implementation
 After receiving the new color palette:
