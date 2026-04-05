@@ -63,8 +63,8 @@ pnpm version-packages
 git add .
 git commit -m "chore: release patch"
 
-# 5. Build and publish to npm
-pnpm release
+# 5. Push your branch and open a Pull Request
+git push <branch-name>
 ```
 
 </details>
@@ -89,8 +89,8 @@ pnpm version-packages
 git add .
 git commit -m "chore: release minor"
 
-# 5. Build and publish to npm
-pnpm release
+# 5. Push your branch and open a Pull Request
+git push <branch-name>
 ```
 
 </details>
@@ -115,8 +115,8 @@ pnpm version-packages
 git add .
 git commit -m "chore: release major"
 
-# 5. Build and publish to npm
-pnpm release
+# 5. Push your branch and open a Pull Request
+git push <branch-name>
 ```
 
 </details>
@@ -143,8 +143,8 @@ pnpm version-packages
 git add .
 git commit -m "chore: release packages"
 
-# 5. Build and publish all changed packages
-pnpm release
+# 5. Push your branch and open a Pull Request
+git push <branch-name>
 ```
 
 > [!NOTE]
