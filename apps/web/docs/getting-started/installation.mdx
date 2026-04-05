@@ -9,66 +9,54 @@ Setting up DocuBook is straightforward, with options to clone the repository or 
 
 For a faster setup, use the `cli` command to create a new DocuBook project in one step:
 
-<Tabs defaultValue="npm" className="pt-5 pb-1">
-  <TabsList>
-    <TabsTrigger value="npm">npm</TabsTrigger>
-    <TabsTrigger value="pnpm">pnpm</TabsTrigger>
-    <TabsTrigger value="yarn">yarn</TabsTrigger>
-    <TabsTrigger value="bun">bun</TabsTrigger>
-  </TabsList>
-  <TabsContent value="npm">
+<Tabs className="pt-5 pb-1">
+  <Tab title="npm">
     ```shell:npx
     npx @docubook/cli@latest
     ```
-  </TabsContent>
-  <TabsContent value="pnpm">
+  </Tab>
+  <Tab title="pnpm">
     ```shell:pnpm
     pnpm dlx @docubook/cli@latest
     ```
-  </TabsContent>
-  <TabsContent value="yarn">
+  </Tab>
+  <Tab title="yarn">
     ```shell:yarn
     yarn dlx @docubook/cli@latest
     ```
-  </TabsContent>
-  <TabsContent value="bun">
+  </Tab>
+  <Tab title="bun">
   ```shell:bun
   bunx @docubook/cli@latest
   ```
-  </TabsContent>
+  </Tab>
 </Tabs>
 
 ## Installing the CLI Globally
 
 If you prefer installing the CLI globally so the `docubook` command is available system-wide, use one of the following:
 
-<Tabs defaultValue="npm-g" className="pt-5 pb-1">
-  <TabsList>
-    <TabsTrigger value="npm-g">npm</TabsTrigger>
-    <TabsTrigger value="pnpm-g">pnpm</TabsTrigger>
-    <TabsTrigger value="yarn-g">yarn</TabsTrigger>
-    <TabsTrigger value="bun-g">bun</TabsTrigger>
-  </TabsList>
-  <TabsContent value="npm-g">
+<Tabs className="pt-5 pb-1">
+  <Tab title="npm">
     ```shell:npx
     npm install -g @docubook/cli@latest
     ```
-  </TabsContent>
-  <TabsContent value="pnpm-g">
+  </Tab>
+  <Tab title="pnpm">
     ```shell:pnpm
     pnpm add -g @docubook/cli@latest
     ```
-  </TabsContent>
-  <TabsContent value="yarn-g">
+  </Tab>
+  <Tab title="yarn">
   ```shell:yarn
   yarn global add @docubook/cli@latest
   ```
-  </TabsContent>
-  <TabsContent value="bun-g">
+  </Tab>
+  <Tab title="bun">
     ```shell:bun
     bun add -g @docubook/cli@latest
     ```
-  </TabsContent>
+  </Tab>
 </Tabs>
 
 After a global install, verify the installation and check the CLI version:

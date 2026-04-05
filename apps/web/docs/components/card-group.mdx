@@ -3,9 +3,13 @@ title: Card Group
 description: A component used to create card groups that can be used to display multiple cards in a compact and organized way.
 ---
 
+<Note type="danger" icon="GitBranchMinus" title="Deprecated in v2">
+  Legacy tag `<CardGroup>` is deprecated in v2 and kept only for migration compatibility. Use `<Cards>` for new content.
+</Note>
+
 ## Preview
 
-<CardGroup cols={2}>
+<Cards cols={2}>
 <Card title="Heading 1" icon="Heading1">
   This is an example of card content with columns.
 </Card>
@@ -18,29 +22,29 @@ description: A component used to create card groups that can be used to display 
 <Card title="Horizontal Card" icon="Layout" horizontal>
     This is a horizontal card layout.
 </Card>
-</CardGroup>
+</Cards>
 
 ## Props
 
-| Prop          | Type     | Default | Description                                             |
-| ------------- | -------- | ------- | ------------------------------------------------------- |
-| `cols`       | number | `{2}`   | By default 2 The number of columns per row                                |
+|  Prop  |  Type  | Default |                Description                 |
+| ------ | ------ | ------- | ------------------------------------------ |
+| `cols` | number | `{2}`   | By default 2 The number of columns per row |
 
 ## Output Markdown
 
 ```markdown
-<CardGroup cols={2}>
-<Card title="Heading 1" icon="Heading1">
-  This is an example of card content with columns.
-</Card>
-<Card title="Heading 2" icon="Heading2">
-  This is an example of card content with columns.
-</Card>
-<Card title="Grid Card" icon="Grid" horizontal>
-    This is a horizontal card layout.
-</Card>
-<Card title="Horizontal Card" icon="Layout" horizontal>
-    This is a horizontal card layout.
-</Card>
-</CardGroup>
+<Cards cols={2}>
+  <Card title="Heading 1" icon="Heading1">
+    This is an example of card content with columns.
+  </Card>
+  <Card title="Heading 2" icon="Heading2">
+    This is an example of card content with columns.
+  </Card>
+  <Card title="Grid Card" icon="Grid" horizontal>
+      This is a horizontal card layout.
+  </Card>
+  <Card title="Horizontal Card" icon="Layout" horizontal>
+      This is a horizontal card layout.
+  </Card>
+</Cards>
 ```
