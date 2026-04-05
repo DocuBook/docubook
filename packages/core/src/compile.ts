@@ -32,6 +32,13 @@ export type ParseMdxOptions = {
     components?: CompileMdxInput["components"];
     rehypePlugins?: CompilerMdxOptions["rehypePlugins"];
     remarkPlugins?: CompilerMdxOptions["remarkPlugins"];
+    /**
+     * Whether to parse frontmatter during MDX compilation.
+     * Set to `false` when frontmatter is already extracted separately
+     * (e.g. via gray-matter) to avoid redundant parsing.
+     * Defaults to `true`.
+     */
+    parseFrontmatter?: boolean;
 };
 
 export const handleCodeTitles = () => (tree: Node) => {
@@ -120,7 +127,7 @@ export async function parseMdx<Frontmatter>(
     return await compileMDX<Frontmatter>({
         source: rawMdx,
         options: {
-            parseFrontmatter: true,
+            parseFrontmatter: options.parseFrontmatter ?? true,
             mdxOptions: {
                 rehypePlugins,
                 remarkPlugins,

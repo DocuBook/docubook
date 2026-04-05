@@ -42,3 +42,15 @@ export function extractTocsFromRawMdx(rawMdx: string): TocItem[] {
 export function extractFrontmatter<Frontmatter>(content: string): Frontmatter {
     return matter(content).data as Frontmatter;
 }
+
+/**
+ * Extract frontmatter and return both the parsed data and the content
+ * with the frontmatter block stripped. Avoids a second parse by compileMDX.
+ */
+export function extractFrontmatterWithContent<Frontmatter>(content: string): {
+    frontmatter: Frontmatter;
+    strippedContent: string;
+} {
+    const { data, content: strippedContent } = matter(content);
+    return { frontmatter: data as Frontmatter, strippedContent };
+}
