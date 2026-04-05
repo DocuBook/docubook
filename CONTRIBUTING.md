@@ -1,8 +1,18 @@
 # Contributing to DocuBook
 
-Language: EN | [IN](CONTRIBUTING.id.md)
+Language: English | [IN](CONTRIBUTING.id.md)
 
-Thanks for your interest in contributing to DocuBook.
+Thank you for your interest in contributing to DocuBook!
+
+## Quick Contribution Flow
+
+1. **Check existing issues**: Before starting any work, always check the [issues](https://github.com/docubook-repo/issues) in the repository. If your idea, bug, or feature is not already listed, create a new issue with the appropriate label (e.g., `bug`, `feature`, `docs`).
+2. **Create a branch**: Once your issue is created, create a branch with a descriptive name based on the issue (see branch naming guidelines below).
+3. **Open a Pull Request (PR)**: After pushing your branch, open a PR referencing the issue. Do not open a PR without an associated issue.
+
+---
+
+## About DocuBook
 
 DocuBook is a documentation platform built as a monorepo to help teams create, manage, and publish technical docs efficiently.
 
@@ -24,11 +34,13 @@ If you report sensitive issues (security, abuse, private data), avoid public dis
 - Submit pull requests for fixes or enhancements
 - Help review issues and PR discussions
 
+
 ## Before You Start
 
-- Search existing issues and pull requests before opening a new one
-- For non-trivial changes, open an issue/discussion first to align scope
-- Keep pull requests focused: one concern per PR
+- **Always search existing issues and pull requests before opening a new one.**
+- If no similar issue exists, create a new issue with a clear description and the correct label.
+- For non-trivial changes, open an issue/discussion first to align scope.
+- Keep pull requests focused: one concern per PR.
 
 ## Development Setup
 
@@ -83,15 +95,16 @@ pnpm clean
   - `fix(cli): handle invalid template name`
   - `docs: clarify release steps`
 
+
 ## Pull Request Guidelines
 
+### Before Opening a PR
 
-### Keep Your Branch Up to Date
-
-Before opening a pull request, **make sure your branch is rebased or merged with the latest `main` branch**. This helps avoid conflicts and ensures a smooth integration.
+1. **Read the issues list**: Only open a PR if there is an existing issue describing your change. If not, create a new issue first and wait for confirmation or discussion.
+2. **Create a branch**: Name your branch according to the issue and guidelines below.
+3. **Keep your branch up to date**: Always merge the latest `main` branch into your feature branch before opening a PR.
 
 #### How to Merge with `main`
-##### Always Use Merge to Update Your Branch
 
 For this repository, **always use merge** to update your branch with the latest `main` before opening a pull request. This keeps the commit history transparent and avoids rewriting history, which is safer for open source collaboration.
 

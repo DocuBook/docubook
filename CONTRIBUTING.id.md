@@ -2,7 +2,17 @@
 
 Bahasa: Indonesia | [EN](CONTRIBUTING.md)
 
-Terima kasih atas minat Anda untuk berkontribusi ke DocuBook.
+Terima kasih atas minat Anda untuk berkontribusi ke DocuBook!
+
+## Alur Kontribusi Cepat
+
+1. **Cek issues yang ada**: Sebelum mulai bekerja, selalu cek daftar [issues](https://github.com/docubook-repo/issues) di repository. Jika ide, bug, atau fitur Anda belum ada, buat issue baru dengan label yang sesuai (misal: `bug`, `feature`, `docs`).
+2. **Buat branch**: Setelah issue Anda dibuat, buat branch dengan nama deskriptif sesuai issue (lihat panduan penamaan branch di bawah).
+3. **Buka Pull Request (PR)**: Setelah push branch Anda, buka PR dan referensikan issue terkait. Jangan buka PR tanpa issue yang terkait.
+
+---
+
+## Tentang DocuBook
 
 DocuBook adalah platform dokumentasi berbasis monorepo untuk membantu tim membuat, mengelola, dan mempublikasikan dokumentasi teknis secara efisien.
 
@@ -24,11 +34,13 @@ Jika Anda melaporkan isu sensitif (keamanan, penyalahgunaan, data privat), hinda
 - Kirim pull request untuk perbaikan atau enhancement
 - Bantu review diskusi issue dan PR
 
+
 ## Sebelum Memulai
 
-- Cari issue dan pull request yang sudah ada sebelum membuka yang baru
-- Untuk perubahan non-sepele, buka issue/diskusi terlebih dahulu untuk menyelaraskan scope
-- Jaga pull request tetap fokus: satu concern per PR
+- **Selalu cari issue dan pull request yang sudah ada sebelum membuka yang baru.**
+- Jika belum ada issue serupa, buat issue baru dengan deskripsi jelas dan label yang tepat.
+- Untuk perubahan non-sepele, buka issue/diskusi terlebih dahulu untuk menyelaraskan scope.
+- Jaga pull request tetap fokus: satu concern per PR.
 
 ## Setup Pengembangan
 
@@ -83,17 +95,18 @@ pnpm clean
   - `fix(cli): handle invalid template name`
   - `docs: clarify release steps`
 
+
 ## Panduan Pull Request
 
+### Sebelum Membuka PR
 
-### Pastikan Branch Anda Terupdate
-
-Sebelum membuat pull request, **pastikan branch Anda sudah di-merge dengan branch `main` terbaru**. Ini membantu menghindari konflik dan memastikan integrasi berjalan lancar.
+1. **Baca daftar issues**: Hanya buka PR jika sudah ada issue yang mendeskripsikan perubahan Anda. Jika belum ada, buat issue baru terlebih dahulu dan tunggu konfirmasi atau diskusi.
+2. **Buat branch**: Namai branch Anda sesuai issue dan panduan di bawah.
+3. **Pastikan branch Anda terupdate**: Selalu merge branch `main` terbaru ke branch fitur Anda sebelum membuka PR.
 
 #### Cara Merge dengan `main`
-##### Selalu Gunakan Merge untuk Update Branch
 
-Untuk repository ini, **selalu gunakan merge** untuk memperbarui branch Anda dengan `main` sebelum membuat pull request. Ini menjaga riwayat commit tetap transparan dan aman untuk kolaborasi open source.
+Untuk repository ini, **selalu gunakan merge** untuk memperbarui branch Anda dengan branch `main` sebelum membuka pull request. Ini menjaga riwayat commit tetap transparan dan aman untuk kolaborasi open source.
 
 - **Merge** menjaga riwayat commit dan membuat commit baru yang menggabungkan perubahan dari kedua branch. Grafik commit akan memperlihatkan percabangan dan titik penggabungan.
 
@@ -124,6 +137,7 @@ Sertakan:
 - Scope dan package yang terdampak
 - Screenshot atau output terminal (jika relevan)
 - Issue terkait (contoh `Closes #123`)
+
 
 ### Checklist Sebelum PR
 
