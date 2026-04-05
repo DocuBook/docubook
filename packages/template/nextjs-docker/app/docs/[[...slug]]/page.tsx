@@ -103,7 +103,7 @@ export default async function DocsPage(props: PageProps) {
               {docuConfig.repository?.editLink && <EditThisPage filePath={filePath} />}
               {date && (
                 <p className="text-muted-foreground text-[13px]">
-                  Published on {formatDate2(date)}
+                  Last updated {formatDate2(date)}
                 </p>
               )}
             </div>

@@ -1,7 +1,6 @@
 ---
 title: Keyboard
 description: Display keyboard keys with platform-specific styling for Windows and macOS.
-date : 19-05-2025
 ---
 
 The `Keyboard` component automatically renders platform-appropriate key symbols for macOS and Windows. It's perfect for documenting keyboard shortcuts in your application.
@@ -40,10 +39,10 @@ Renders as:
 For custom key labels, provide children:
 
 ```tsx
-<Kbd show="custom">Custom</Kbd>
+<Kbd show="custom" />
 ```
 
-Renders as: <Kbd show="custom">Custom</Kbd>
+Renders as: <Kbd show="custom" />
 
 ### Arrow Key
 
@@ -55,28 +54,27 @@ Render as: <Kbd show="up" /> <Kbd show="down" /> <Kbd show="left" /> <Kbd show="
 
 ## Props
 
-| Prop      | Type                | Default    | Description |
-|-----------|---------------------|------------|-------------|
-| `show`    | string            | (required) | The key identifier (e.g., 'cmd', 'ctrl', 'a') |
-| `type`    | string | `window` | for device type `mac` or `window` | Platform style or custom content |
-| `children`| ReactNode         | -          | Custom content to display (overrides automatic rendering) |
+|  Prop  |  Type  |  Default   |                  Description                  |                                  |
+| ------ | ------ | ---------- | --------------------------------------------- | -------------------------------- |
+| `show` | string | (required) | The key identifier (e.g., 'cmd', 'ctrl', 'a') |                                  |
+| `type` | string | `window`   | for device type `mac` or `window`             | Platform style or custom content |
 
 ## Supported Keys
 
 The component includes special handling for common keys:
 
-| Key Name    | Windows | macOS |
-|-------------|---------|-------|
-| command/cmd | `Win`   | `⌘`   |
-| option/alt  | `Alt`   | `⌥`   |
-| shift       | `Shift` | `⇧`   |
-| ctrl/control| `Ctrl`  | `⌃`   |
-| tab         | `Tab`   | `⇥`   |
-| enter/return| `Enter` | `⏎`   |
-| delete      | `Del`   | `⌫`   |
-| escape/esc  | `Esc`   | `⎋`   |
-| up/down/left/right  | `↑` `↓` `←` `→` | `↑` `↓` `←` `→` |
-| space       | `Space` | `␣`   |
+|      Key Name      |     Windows     |      macOS      |
+| ------------------ | --------------- | --------------- |
+| command/cmd        | `Win`           | `⌘`             |
+| option/alt         | `Alt`           | `⌥`             |
+| shift              | `Shift`         | `⇧`             |
+| ctrl/control       | `Ctrl`          | `⌃`             |
+| tab                | `Tab`           | `⇥`             |
+| enter/return       | `Enter`         | `⏎`             |
+| delete             | `Del`           | `⌫`             |
+| escape/esc         | `Esc`           | `⎋`             |
+| up/down/left/right | `↑` `↓` `←` `→` | `↑` `↓` `←` `→` |
+| space              | `Space`         | `␣`             |
 
 ## Best Practices
 
