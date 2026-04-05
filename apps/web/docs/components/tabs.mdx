@@ -5,14 +5,14 @@ description: Organize content into multiple sections with switchable tabs.
 
 The `Tabs` component allows you to organize content into multiple sections, enabling users to switch between them easily. This is particularly useful for displaying related content in a compact manner.
 
+<Note type="danger" icon="GitBranchMinus" title="Deprecated in v2">
+  Legacy tags `<TabsList>`, `<TabsTrigger>`, and `<TabsContent>` are deprecated in v2 and kept only for migration compatibility. Use `<Tabs>` with `<Tab title="...">` for new content.
+</Note>
+
 ## Preview
 
-<Tabs defaultValue="java" className="pt-5 pb-1">
-  <TabsList>
-    <TabsTrigger value="java">Java</TabsTrigger>
-    <TabsTrigger value="typescript">TypeScript</TabsTrigger>
-  </TabsList>
-  <TabsContent value="java">
+<Tabs className="pt-5 pb-1">
+  <Tab title="Java">
     ```java:HelloWorld.java
     // HelloWorld.java
     public class HelloWorld {
@@ -21,8 +21,8 @@ The `Tabs` component allows you to organize content into multiple sections, enab
         }
     }
     ```
-  </TabsContent>
-  <TabsContent value="typescript">
+  </Tab>
+  <Tab title="TypeScript">
     ```typescript:helloWorld.ts
     // helloWorld.ts
     function helloWorld(): void {
@@ -30,25 +30,20 @@ The `Tabs` component allows you to organize content into multiple sections, enab
     }
     helloWorld();
     ```
-  </TabsContent>
+  </Tab>
 </Tabs>
 
 ## Props
 
-| Prop           | Type     | Default | Description                                            |
-| -------------- | -------- | ------- | ------------------------------------------------------ |
-| `defaultValue` | string   | null    | The value of the tab that is selected by default.      |
-| `className`    | string   | null    | Additional CSS classes for styling the Tabs component. |
+| Prop        | Type   | Default | Description                                            |
+| ----------- | ------ | ------- | ------------------------------------------------------ |
+| `className` | string | null    | Additional CSS classes for styling the Tabs component. |
 
 ## Output Markdown
 
 ````markdown:mdx
-<Tabs defaultValue="java" className="pt-5 pb-1">
-  <TabsList>
-    <TabsTrigger value="java">Java</TabsTrigger>
-    <TabsTrigger value="typescript">TypeScript</TabsTrigger>
-  </TabsList>
-  <TabsContent value="java">
+<Tabs className="pt-5 pb-1">
+  <Tab title="Java">
     ```java:HelloWorld.java
     // HelloWorld.java
     public class HelloWorld {
@@ -57,8 +52,8 @@ The `Tabs` component allows you to organize content into multiple sections, enab
         }
     }
     ```
-  </TabsContent>
-  <TabsContent value="typescript">
+  </Tab>
+  <Tab title="TypeScript">
     ```typescript:helloWorld.ts
     // helloWorld.ts
     function helloWorld(): void {
@@ -66,6 +61,6 @@ The `Tabs` component allows you to organize content into multiple sections, enab
     }
     helloWorld();
     ```
-  </TabsContent>
+  </Tab>
 </Tabs>
 ````
