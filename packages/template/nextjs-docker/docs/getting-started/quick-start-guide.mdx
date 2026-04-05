@@ -1,18 +1,17 @@
 ---
 title : Quick Start Guide
 description : a quick way to understand how to use it
-date : 10-12-2024
 ---
 
 ## Adding a Route
 
 To add a new page to your documentation, you need to register it in the `docu.json` file.
 
-<Stepper>
-  <StepperItem title="Create the MDX file">
+<Steps>
+  <Step title="Create the MDX file">
     Create a new `.mdx` file in the `docs` directory. For example, `docs/my-new-page.mdx`.
-  </StepperItem>
-  <StepperItem title="Register in docu.json">
+  </Step>
+  <Step title="Register in docu.json">
     Open `docu.json` and add an entry to the `routes` array.
 
     ```json
@@ -21,8 +20,8 @@ To add a new page to your documentation, you need to register it in the `docu.js
       "href": "/my-new-page"
     }
     ```
-  </StepperItem>
-</Stepper>
+  </Step>
+</Steps>
 
 ## Writing Content
 
@@ -36,14 +35,14 @@ Here are some common components you can use:
 
 Use cards to highlight important links or features.
 
-<CardGroup cols={2}>
+<Cards cols={2}>
   <Card title="Installation" icon="Download" href="#">
     Learn how to install DocuBook.
   </Card>
   <Card title="Configuration" icon="Settings" href="#">
     Configure your documentation site.
   </Card>
-</CardGroup>
+</Cards>
 
 #### Notes
 

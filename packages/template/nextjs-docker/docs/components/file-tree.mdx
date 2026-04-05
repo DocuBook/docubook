@@ -1,7 +1,6 @@
 ---
 title: File Tree
 description: A customizable file tree component for displaying hierarchical file structures in your documentation.
-date: 28-05-2025
 ---
 
 The File Tree component allows you to display hierarchical file structures in your documentation with collapsible folders and files.
@@ -43,22 +42,22 @@ Render As:
 
 ## Props
 
-<Stepper>
-  <StepperItem title="Files">
+<Steps>
+  <Step title="Files">
     > The root component that wraps the entire file tree.
-  </StepperItem>
-  <StepperItem title="Folder">
+  </Step>
+  <Step title="Folder">
     | Prop     | Type     | Required | Description                           |
     |----------|----------|----------|---------------------------------------|
     | `name`     | string   | Yes      | The name of the folder                |
     | `children` | ReactNode | No      | Child elements (File or Folder)       |
-  </StepperItem>
-  <StepperItem title="File">
+  </Step>
+  <Step title="File">
     | Prop | Type   | Required | Description                |
     |------|--------|----------|----------------------------|
     | `name` | string | Yes      | The name of the file       |
-  </StepperItem>
-</Stepper>
+  </Step>
+</Steps>
 
 ## Best Practices
 

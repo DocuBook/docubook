@@ -1,49 +1,52 @@
 ---
 title: Stepper
 description: A component used to display step-by-step instructions directly within the markdown render.
-date: 14-12-2024
 ---
 
-In this guide, we utilize a custom `Stepper` component, specifically designed for DocuBook, which enables users to display step-by-step instructions directly within the markdown render.
+In this guide, we utilize custom `Steps` and `Step` components, specifically designed for DocuBook, to display step-by-step instructions directly within markdown.
+
+<Note type="danger" icon="GitBranchMinus" title="Deprecated in v2">
+  Legacy tags `<Stepper>` and `<StepperItem>` are deprecated in v2 and kept only for migration compatibility. Use `<Steps>` and `<Step>` for new content.
+</Note>
 
 ## Preview
 
-<Stepper>
-  <StepperItem title="Step 1: Clone the DocuBook Repository">
+<Steps>
+  <Step title="Step 1: Clone the DocuBook Repository">
     ```bash
     git clone https://github.com/DocuBook/docubook.git
     ```
-  </StepperItem>
-  <StepperItem title="Step 2: Access the Project Directory">
+  </Step>
+  <Step title="Step 2: Access the Project Directory">
     ```bash
     cd docubook
     ```
-  </StepperItem>
-  <StepperItem title="Step 3: Install Required Dependencies">
+  </Step>
+  <Step title="Step 3: Install Required Dependencies">
     ```bash
     pnpm install
     ```
-  </StepperItem>
-</Stepper>
+  </Step>
+</Steps>
 
 ## Output Markdown
 
 ````markdown:mdx
-<Stepper>
-  <StepperItem title="Step 1: Clone the DocuBook Repository">
+<Steps>
+  <Step title="Step 1: Clone the DocuBook Repository">
     ```bash
     git clone https://github.com/DocuBook/docubook.git
     ```
-  </StepperItem>
-  <StepperItem title="Step 2: Access the Project Directory">
+  </Step>
+  <Step title="Step 2: Access the Project Directory">
     ```bash
     cd docubook
     ```
-  </StepperItem>
-  <StepperItem title="Step 3: Install Required Dependencies">
+  </Step>
+  <Step title="Step 3: Install Required Dependencies">
     ```bash
     pnpm install
     ```
-  </StepperItem>
-</Stepper>
+  </Step>
+</Steps>
 ````
