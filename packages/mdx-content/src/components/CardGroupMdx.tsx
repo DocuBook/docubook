@@ -1,12 +1,12 @@
 import type { CSSProperties, ReactNode } from "react";
 
-type CardGroupMdxProps = {
+type CardsMdxProps = {
     cols?: number;
     children?: ReactNode;
     style?: CSSProperties;
 };
 
-export function CardGroupMdx({ cols = 2, children, style }: CardGroupMdxProps) {
+export function CardsMdx({ cols = 2, children, style }: CardsMdxProps) {
     const columnCount = Math.max(1, Math.min(4, cols));
 
     return (
@@ -41,4 +41,9 @@ export function CardGroupMdx({ cols = 2, children, style }: CardGroupMdxProps) {
             `}</style>
         </>
     );
+}
+
+/** @deprecated Use `CardsMdx` instead. */
+export function CardGroupMdx(props: CardsMdxProps) {
+    return <CardsMdx {...props} />;
 }
