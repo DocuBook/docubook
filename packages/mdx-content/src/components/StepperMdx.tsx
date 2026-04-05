@@ -1,22 +1,22 @@
 import { Children, cloneElement, isValidElement, type CSSProperties, type HTMLAttributes, type LiHTMLAttributes, type ReactElement, type ReactNode } from "react";
 
-type StepperMdxProps = HTMLAttributes<HTMLOListElement> & {
+type StepsMdxProps = HTMLAttributes<HTMLOListElement> & {
     children?: ReactNode;
     style?: CSSProperties;
 };
 
-type StepperItemMdxProps = LiHTMLAttributes<HTMLLIElement> & {
+type StepMdxProps = LiHTMLAttributes<HTMLLIElement> & {
     title: string;
     children?: ReactNode;
     style?: CSSProperties;
 };
 
 // Internal props including stepNumber (auto-injected)
-type InternalStepperItemProps = StepperItemMdxProps & {
+type InternalStepProps = StepMdxProps & {
     stepNumber?: number;
 };
 
-export function StepperMdx({ children, style, className, ...props }: StepperMdxProps) {
+export function StepsMdx({ children, style, className, ...props }: StepsMdxProps) {
     const items = Children.toArray(children);
 
     return (
@@ -38,7 +38,7 @@ export function StepperMdx({ children, style, className, ...props }: StepperMdxP
                     return child;
                 }
 
-                const item = child as ReactElement<InternalStepperItemProps>;
+                const item = child as ReactElement<InternalStepProps>;
 
                 return cloneElement(item, {
                     stepNumber: index + 1,
@@ -63,8 +63,8 @@ export function StepperMdx({ children, style, className, ...props }: StepperMdxP
     );
 }
 
-export function StepperItemMdx({ title, children, style, className, ...props }: InternalStepperItemProps) {
-    const { stepNumber, ...liProps } = props as InternalStepperItemProps;
+export function StepMdx({ title, children, style, className, ...props }: InternalStepProps) {
+    const { stepNumber, ...liProps } = props as InternalStepProps;
 
     return (
         <li
@@ -124,4 +124,14 @@ export function StepperItemMdx({ title, children, style, className, ...props }: 
             ) : null}
         </li>
     );
+}
+
+/** @deprecated Use `StepsMdx` instead. */
+export function StepperMdx(props: StepsMdxProps) {
+    return <StepsMdx {...props} />;
+}
+
+/** @deprecated Use `StepMdx` instead. */
+export function StepperItemMdx(props: StepMdxProps) {
+    return <StepMdx {...props} />;
 }
