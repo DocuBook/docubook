@@ -7,7 +7,7 @@ export {
     createDefaultRehypePlugins,
     createDefaultRemarkPlugins,
 } from "./compile";
-export { extractFrontmatter, extractTocsFromRawMdx, sluggify } from "./extract";
+export { extractFrontmatter, extractFrontmatterWithContent, extractTocsFromRawMdx, sluggify } from "./extract";
 export type { ParseMdxOptions } from "./compile";
 export {
     readMdxFileBySlug,

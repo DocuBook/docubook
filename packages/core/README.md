@@ -71,31 +71,33 @@ const tocs = await docsService.getTocsForSlug("getting-started/introduction");
 
 #### Runtime APIs
 
-- `parseMdx`: Compile raw MDX string with optional custom parse options. Returns `MdxCompileResult<Frontmatter>`.
-- `createMdxContentService`: Create slug-based docs service (`getParsedForSlug`, `getCompiledForSlug`, `getFrontmatterForSlug`, `getTocsForSlug`). Returns a service object.
-- `readMdxFileBySlug`: Read `slug.mdx` or `slug/index.mdx` from docs directory. Returns `ReadMdxFileResult`.
-- `parseMdxFile`: Convert raw file result into `frontmatter`, `tocs`, `content`, `filePath`. Returns `ParsedMdxFile<Frontmatter, TocItem>`.
-- `compileParsedMdxFile`: Compile parsed MDX while preserving metadata and TOCs. Returns `CompiledMdxFile<Frontmatter, TocItem>`.
-- `extractFrontmatter`: Parse frontmatter only from raw markdown/MDX. Returns `Frontmatter`.
-- `extractTocsFromRawMdx`: Extract headings for table of contents generation. Returns `TocItem[]`.
-- `sluggify`: Convert heading text into URL-safe slug. Returns `string`.
-- `createDefaultRehypePlugins`: Get default DocuBook rehype plugin stack. Returns `unknown[]`.
-- `createDefaultRemarkPlugins`: Get default DocuBook remark plugin stack. Returns `unknown[]`.
-- `preProcess`: Add pre-processing behavior for code blocks (advanced customization). Returns a transformer function.
-- `postProcess`: Add post-processing behavior for code blocks (advanced customization). Returns a transformer function.
-- `handleCodeTitles`: Move code title metadata to `<pre>` attributes (advanced customization). Returns a transformer function.
+| Function | Description | Returns |
+| -------- | ----------- | ------- |
+| `parseMdx` | Compile raw MDX string with optional custom parse options | `MdxCompileResult<Frontmatter>` |
+| `createMdxContentService` | Create slug-based docs service (`getParsedForSlug`, `getCompiledForSlug`, `getFrontmatterForSlug`, `getTocsForSlug`). Accepts optional `frontmatterEnricher` to inject computed or fallback values after parsing | service object |
+| `readMdxFileBySlug` | Read `slug.mdx` or `slug/index.mdx` from docs directory | `ReadMdxFileResult` |
+| `parseMdxFile` | Convert raw file result into `frontmatter`, `tocs`, `content`, `filePath` | `ParsedMdxFile<Frontmatter, TocItem>` |
+| `compileParsedMdxFile` | Compile parsed MDX while preserving metadata and TOCs | `CompiledMdxFile<Frontmatter, TocItem>` |
+| `extractFrontmatter` | Parse frontmatter only from raw markdown/MDX | `Frontmatter` |
+| `extractTocsFromRawMdx` | Extract headings for table of contents generation | `TocItem[]` |
+| `sluggify` | Convert heading text into URL-safe slug | `string` |
+| `createDefaultRehypePlugins` | Get default DocuBook rehype plugin stack | `unknown[]` |
+| `createDefaultRemarkPlugins` | Get default DocuBook remark plugin stack | `unknown[]` |
+| `preProcess` | Add pre-processing behavior for code blocks (advanced) | transformer function |
+| `postProcess` | Add post-processing behavior for code blocks (advanced) | transformer function |
+| `handleCodeTitles` | Move code title metadata to `<pre>` attributes (advanced) | transformer function |
 
 #### Type Exports
 
-|               Type               |                    Purpose                    |
-| -------------------------------- | --------------------------------------------- |
-| `MdxCompileResult`               | Result shape for compiled MDX content         |
-| `TocItem`                        | Heading item structure used by TOC extraction |
-| `ParseMdxOptions`                | Options for `parseMdx` compile behavior       |
-| `ReadMdxFileResult`              | Return type for `readMdxFileBySlug`           |
-| `ParsedMdxFile`                  | Parsed file structure before compile          |
-| `CompiledMdxFile`                | Compiled file structure with metadata and TOC |
-| `CreateMdxContentServiceOptions` | Options for creating the content service      |
+|               Type               |                                  Purpose                                  |
+| -------------------------------- | ------------------------------------------------------------------------- |
+| `MdxCompileResult`               | Result shape for compiled MDX content                                     |
+| `TocItem`                        | Heading item structure used by TOC extraction                             |
+| `ParseMdxOptions`                | Options for `parseMdx` compile behavior                                   |
+| `ReadMdxFileResult`              | Return type for `readMdxFileBySlug`                                       |
+| `ParsedMdxFile`                  | Parsed file structure before compile                                      |
+| `CompiledMdxFile`                | Compiled file structure with metadata and TOC                             |
+| `CreateMdxContentServiceOptions` | Options for creating the content service, including `frontmatterEnricher` |
 
 ### Quick Import Recipes
 
@@ -131,7 +133,28 @@ import { createMdxContentService } from "@docubook/core";
 
 Use this as the default app-level integration for frontmatter, TOC, and compiled docs in one service.
 
-#### 5. Low-level file pipeline (advanced)
+#### 5. Frontmatter enrichment (date fallback, computed fields)
+
+```ts
+import { createMdxContentService } from "@docubook/core";
+
+const docsService = createMdxContentService<Frontmatter, TocItem>({
+  parseOptions: { components },
+  cacheFn: cache,
+  frontmatterEnricher: async (frontmatter, absoluteFilePath) => {
+    if (!frontmatter.date) {
+      const { promises: fs } = await import("fs");
+      const stat = await fs.stat(absoluteFilePath);
+      return { ...frontmatter, date: stat.mtime };
+    }
+    return frontmatter;
+  },
+});
+```
+
+Use this to inject computed or fallback values into frontmatter after parsing — such as a last-modified date from the filesystem or a git commit timestamp. The enricher receives the already-parsed frontmatter and the absolute path of the MDX file on disk, and runs once per slug before caching.
+
+#### 6. Low-level file pipeline (advanced)
 
 ```ts
 import {
