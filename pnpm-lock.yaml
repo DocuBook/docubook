@@ -58,8 +58,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0(@types/react@19.2.8)(react@19.2.3)
       '@docubook/mdx-content':
-        specifier: ^1.0.1
-        version: 1.0.1(lucide-react@1.7.0(react@19.2.3))(next@16.2.1(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react-icons@5.6.0(react@19.2.3))(react@19.2.3)
+        specifier: ^2.0.0
+        version: 2.0.0(lucide-react@1.7.0(react@19.2.3))(next@16.2.1(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react-icons@5.6.0(react@19.2.3))(react@19.2.3)
       '@radix-ui/react-accordion':
         specifier: ^1.2.12
         version: 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -536,8 +536,8 @@ packages:
     resolution: {integrity: sha512-AmsrlXeACyWX09RCQF46E/PWHbaTql8OTyBAdz6nKlg4SiZIHi1A4k4ELjw0dZKNfzl1Dt7PUS/E0w52l0al4g==}
     hasBin: true
 
-  '@docubook/mdx-content@1.0.1':
-    resolution: {integrity: sha512-2GIj7IloTsugdmte3ZRMYLfgZlqzOLYRSmm3OMnLvj/261pFRAHBrjBm7iSMpKJTsoUu18OXtoYebKML4iU01w==}
+  '@docubook/mdx-content@2.0.0':
+    resolution: {integrity: sha512-kFdVv1Vt0vzIPogZ94Wg6N/yB2th/73aSJkREpkWFg1h5fJSVFDd9EAJkubsfypWVUCJDlxl4ITgBNGLzT9ptw==}
     peerDependencies:
       lucide-react: ^1.7.0
       next: '*'
@@ -4425,7 +4425,7 @@ snapshots:
     dependencies:
       fs-extra: 11.3.4
 
-  '@docubook/mdx-content@1.0.1(lucide-react@1.7.0(react@19.2.3))(next@16.2.1(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react-icons@5.6.0(react@19.2.3))(react@19.2.3)':
+  '@docubook/mdx-content@2.0.0(lucide-react@1.7.0(react@19.2.3))(next@16.2.1(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react-icons@5.6.0(react@19.2.3))(react@19.2.3)':
     dependencies:
       lucide-react: 1.7.0(react@19.2.3)
       react: 19.2.3

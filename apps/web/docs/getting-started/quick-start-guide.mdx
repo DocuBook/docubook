@@ -9,17 +9,17 @@ Welcome to DocuBook! This guide will help you set up and customize your document
 
 Before we begin, ensure you have the following installed:
 
-<Stepper>
-  <StepperItem title="Install Git">
+<Steps>
+  <Step title="Install Git">
     install [Git-scm](https://git-scm.com/)
-  </StepperItem>
-  <StepperItem title="Runtime JavaScript">
+  </Step>
+  <Step title="Runtime JavaScript">
     install [Node.js 18+](https://nodejs.org/) or [Bun 1.0+](https://bun.sh/)
-  </StepperItem>
-  <StepperItem title="Use PM">
+  </Step>
+  <Step title="Use PM">
     A package manager (npm, yarn, or pnpm)
-  </StepperItem>
-</Stepper>
+  </Step>
+</Steps>
 
 ## Installation
 
@@ -31,20 +31,20 @@ Before we begin, ensure you have the following installed:
 
 ### Configuration
 
-<Stepper>
-  <StepperItem title="Add Favicon">
+<Steps>
+  <Step title="Add Favicon">
     Place your favicon at `public/favicon.ico` for browser tab display.
-  </StepperItem>
-  <StepperItem title="Add Logo">
+  </Step>
+  <Step title="Add Logo">
     Add your logo at `public/images/docu.svg` (SVG format recommended for scalability).
-  </StepperItem>
-  <StepperItem title="Update Site Information">
+  </Step>
+  <Step title="Update Site Information">
     Customize your site's metadata in `docu.json`:
     - Site title and description
     - Navigation structure
     - Default theme settings
-  </StepperItem>
-</Stepper>
+  </Step>
+</Steps>
 
 ## Content Management
 
@@ -63,17 +63,17 @@ docs/                    # Main documentation directory
 
 ### Creating New Content
 
-<Stepper>
-  <StepperItem title="1. Create Content Directory">
+<Steps>
+  <Step title="1. Create Content Directory">
     Organize your documentation by creating a new directory:
     
     Example for an API reference:
     ```bash
     mkdir -p docs/api/authentication.mdx
     ```
-  </StepperItem>
+  </Step>
 
-  <StepperItem title="2. Create MDX Content">
+  <Step title="2. Create MDX Content">
 
     ````markdown
     ---
@@ -88,9 +88,9 @@ docs/                    # Main documentation directory
 
     Start by setting up your authentication provider...
     ````
-  </StepperItem>
+  </Step>
 
-  <StepperItem title="3. Update Navigation">
+  <Step title="3. Update Navigation">
     Add your new section to the navigation in `docu.json`. Here's how to add the authentication section we created earlier:
 
     ```json:docu.json showLineNumbers {4-16}
@@ -115,8 +115,8 @@ docs/                    # Main documentation directory
     ```
 
     This will add a new "API" section with an "Authentication" page under it. The `context` object defines how this section appears in the navigation, including its icon and description.
-  </StepperItem>
-</Stepper>
+  </Step>
+</Steps>
 
 ## Development Workflow
 

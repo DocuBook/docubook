@@ -31,15 +31,15 @@ This will automatically apply Algolia search across all search components in you
 Algolia provides `DocSearch` for open-source projects for free. To apply:
 
 <div className="pl-4">
-<Stepper>
-  <StepperItem title="Step 1: Visit the DocSearch">
+<Steps>
+  <Step title="Step 1: Visit the DocSearch">
     Visit [DocSearch Application](https://docsearch.algolia.com/apply/ ) to register your
     application.
-  </StepperItem>
-  <StepperItem title="Step 2: Fill out the form with details about your documentation:">
+  </Step>
+  <Step title="Step 2: Fill out the form with details about your documentation:">
     - Your website URL - The selectors for headings and content
-  </StepperItem>
-  <StepperItem title="Step 3: Submit your request. Once approved, Algolia will provide:">
+  </Step>
+  <Step title="Step 3: Submit your request. Once approved, Algolia will provide:">
     - Application ID
     - Search API Key
     - Index Name
@@ -50,8 +50,8 @@ Algolia provides `DocSearch` for open-source projects for free. To apply:
     >    NEXT_PUBLIC_ALGOLIA_DOCSEARCH_INDEX_NAME="your_index_name"
     >    NEXT_PUBLIC_ALGOLIA_DOCSEARCH_ASKAI_ASSISTANT_ID="your_assistant_id" // optional
     >  ```
-  </StepperItem>
-</Stepper>
+  </Step>
+</Steps>
 </div>
 
 ## Crawler Editor
@@ -59,23 +59,23 @@ Algolia provides `DocSearch` for open-source projects for free. To apply:
 Now we will customize the crawler to follow the hierarchy of the docs created by DocuBook :
 
 <div className="pl-4">
-<Stepper>
-  <StepperItem title="Step 1: Dashboard Algolia">
+<Steps>
+  <Step title="Step 1: Dashboard Algolia">
     Visit the [Algolia DocSearch dashboard](https://dashboard.algolia.com/)
-  </StepperItem>
-  <StepperItem title="Step 2: Navigate to Data Sources">
+  </Step>
+  <Step title="Step 2: Navigate to Data Sources">
     On the Algolia dashboard page, navigate to the "Data Sources" menu.
-  </StepperItem>
-  <StepperItem title="Step 3: In the Data Sources menu">
+  </Step>
+  <Step title="Step 3: In the Data Sources menu">
     Please navigate to the "Crawler" tab, where you will see a list of crawlers. Then, click on the name of the crawler you want to customize.
 
     > make sure to add your domain in the `domains` tab in the crawler settings
 
-  </StepperItem>
-  <StepperItem title="Step 4: Editor">
+  </Step>
+  <Step title="Step 4: Editor">
     On the crawler page, open the `setup` dropdown and select `editor`.
-  </StepperItem>
-</Stepper>
+  </Step>
+</Steps>
 </div>
 
 copy the entire crawler code below :

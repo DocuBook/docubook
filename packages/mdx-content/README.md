@@ -42,9 +42,9 @@ Create `lib/mdx-components.ts` to define the full component map. Import built-in
 import {
     createMdxComponents,
     type MdxComponentMap,
-    AccordionGroupMdx,
+    AccordionsMdx,
     AccordionMdx,
-    CardGroupMdx,
+    CardsMdx,
     ChangesMdx,
     CodeBlock,
     FileMdx,
@@ -53,8 +53,10 @@ import {
     KbdMdx,
     NoteMdx,
     ReleaseMdx,
-    StepperItemMdx,
-    StepperMdx,
+    StepsMdx,
+    StepMdx,
+    TabMdx,
+    TabsMdx,
     TableBodyMdx,
     TableCellMdx,
     TableFooterMdx,
@@ -62,21 +64,23 @@ import {
     TableHeaderMdx,
     TableMdx,
     TableRowMdx,
-    TabsContentMdx,
-    TabsListMdx,
-    TabsMdx,
-    TabsTriggerMdx,
     TooltipMdx,
     YoutubeMdx,
+    // Legacy components (deprecated, kept for migration compatibility)
+    TabsContentMdx,
+    TabsListMdx,
+    TabsTriggerMdx,
+    AccordionGroupMdx,
+    CardGroupMdx,
+    StepperItemMdx,
+    StepperMdx,
 } from "@docubook/mdx-content";
 import { ImageMdx, LinkMdx, ButtonMdx, CardMdx } from "@docubook/mdx-content/next";
 import { customMdxComponents } from "@/lib/mdx";
 
 const builtInOverrides: MdxComponentMap = {
     Tabs: TabsMdx,
-    TabsContent: TabsContentMdx,
-    TabsList: TabsListMdx,
-    TabsTrigger: TabsTriggerMdx,
+    Tab: TabMdx,
     table: TableMdx,
     thead: TableHeaderMdx,
     tbody: TableBodyMdx,
@@ -85,14 +89,14 @@ const builtInOverrides: MdxComponentMap = {
     th: TableHeadMdx,
     td: TableCellMdx,
     pre: CodeBlock,
-    Card: CardMdx,
     Button: ButtonMdx,
     Note: NoteMdx,
-    Stepper: StepperMdx,
-    StepperItem: StepperItemMdx,
+    Step: StepMdx,
+    Steps: StepsMdx,
     Accordion: AccordionMdx,
-    AccordionGroup: AccordionGroupMdx,
-    CardGroup: CardGroupMdx,
+    Accordions: AccordionsMdx,
+    Card: CardMdx,
+    Cards: CardsMdx,
     Kbd: KbdMdx,
     Release: ReleaseMdx,
     Changes: ChangesMdx,
@@ -104,6 +108,15 @@ const builtInOverrides: MdxComponentMap = {
     img: ImageMdx,
     a: LinkMdx,
     Link: LinkMdx,
+
+    // Legacy aliases (deprecated, kept for migration compatibility)
+    Stepper: StepperMdx,
+    StepperItem: StepperItemMdx,
+    AccordionGroup: AccordionGroupMdx,
+    CardGroup: CardGroupMdx,
+    TabsContent: TabsContentMdx,
+    TabsList: TabsListMdx,
+    TabsTrigger: TabsTriggerMdx,
 };
 
 export const mdxComponents = createMdxComponents({
@@ -182,15 +195,27 @@ export const customMdxComponents: MdxComponentMap = {
 
 ---
 
+## API Migration Policy
+
+The current rename rollout uses a migration phase, not an immediate hard-breaking change:
+
+- New tags are the primary API (`Accordions`, `Cards`, `Steps`, `Step`).
+- Legacy tags are still supported as deprecated aliases for backward compatibility (`AccordionGroup`, `CardGroup`, `Stepper`, `StepperItem`).
+- A true breaking change happens when deprecated aliases are removed in a future major release.
+
+For migration examples, see [components.md](./components.md).
+
+---
+
 ## Available Components
 
 For full usage examples of all built-in components, refer to [components.md](./components.md).
 
 Components included out of the box:
 
-- `Accordion` / `AccordionGroup`
+- `Accordion` / `Accordions` (legacy alias for migration: `AccordionGroup`)
 - `Button`
-- `Card` / `CardGroup`
+- `Card` / `Cards` (legacy alias for migration: `CardGroup`)
 - Code Block (`pre`)
 - `Files` / `Folder` / `File`
 - `Image` / `img`
@@ -198,8 +223,8 @@ Components included out of the box:
 - `Link` / `a`
 - `Note`
 - `Release` / `Changes`
-- `Stepper` / `StepperItem`
-- `Tabs` / `TabsList` / `TabsTrigger` / `TabsContent`
+- `Steps` / `Step` (legacy aliases for migration: `Stepper` / `StepperItem`)
+- `Tabs` / `Tab` (legacy aliases for migration: `TabsList` / `TabsTrigger` / `TabsContent`)
 - `Tooltip`
 - `Youtube`
 - Table (`table`, `thead`, `tbody`, `tfoot`, `tr`, `th`, `td`)

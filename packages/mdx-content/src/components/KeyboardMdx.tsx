@@ -1,9 +1,8 @@
 import type { CSSProperties, ReactNode } from "react";
 
 type KeyboardMdxProps = {
-    show?: string;
+    show: string;
     type?: "window" | "mac";
-    children?: ReactNode;
     style?: CSSProperties;
 };
 
@@ -38,15 +37,14 @@ const aliases: Record<string, string> = {
     right: "→",
 };
 
-function normalize(show?: string, children?: ReactNode) {
-    if (typeof children === "string" && children.trim()) return children;
+
+function normalize(show: string) {
     const token = (show || "").toLowerCase();
     return aliases[token] || show || "Key";
 }
 
-export function KbdMdx({ show, type = "window", children, style }: KeyboardMdxProps) {
-    const label = normalize(show, children);
+export function KbdMdx({ show, type = "window", style }: KeyboardMdxProps) {
+    const label = normalize(show);
     const prefix = type === "mac" && label === "Ctrl" ? "Cmd" : label;
-
     return <kbd style={{ ...wrapperStyle, ...style }}>{prefix}</kbd>;
 }
