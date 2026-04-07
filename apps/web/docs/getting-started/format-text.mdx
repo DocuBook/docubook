@@ -1,0 +1,115 @@
+---
+title: Format text
+description: Format text in your docs with Markdown formatting like headings, bold, italic, links, blockquotes and other inline styling options in MDX.
+---
+
+<Note type="warning">
+<p className="text-foreground">
+Do not add indentation, extra spaces, or any formatting inside code blocks or MDX tags that can cause MDX compile errors.
+
+Use quad backticks (````) or triple backticks (```) for code blocks and make sure there is no leading/trailing whitespace or indentation before/after the backticks.
+</p>
+</Note>
+
+## Headers
+
+Headers organize your content and create navigation anchors. They appear in the table of contents and help users scan your documentation.
+
+````markdown
+## Heading 2 - main section header
+### Heading 3 - subsection header
+#### Heading 4 - sub-subsection header
+````
+
+## Typography
+
+<Tabs className="pt-5 pb-1">
+<Tab title="format">
+````markdown
+**Bold** - Bold text
+
+_Italic_ - Italic text
+
+~strikethrough~ - strikethrough text
+
+> This is one line blockquotes
+
+`inline code`
+
+> This is the first paragraph of a multi-line block quote.
+>
+> This is the second paragraph, separated by an empty line with `>`.
+
+[Create internal Link](/docs)
+
+[Create external Link](https://docubook.pro)
+````
+</Tab>
+<Tab title="render">
+**Bold** - Bold text
+
+_Italic_ - Italic text
+
+~strikethrough~ - strikethrough text
+
+> This is one line blockquotes
+
+> This is the first paragraph of a multi-line block quote.
+>
+> This is the second paragraph, separated by an empty line with `>`.
+
+`inline code`
+
+[Create internal Link](/docs)
+
+[Create external Link](https://docubook.pro)
+</Tab>
+</Tabs>
+
+## List
+
+<Tabs className="pt-5 pb-1">
+<Tab title="format">
+````markdown
+- one line
+- two line
+- three line
+    - sub three line
+---
+1. number one
+2. number two
+3. number three
+````
+</Tab>
+<Tab title="render">
+- one line
+- two line
+- three line
+    - sub three line
+---
+1. number one
+2. number two
+3. number three
+</Tab>
+</Tabs>
+
+## Paragraph breaks
+
+<Tabs className="pt-5 pb-1">
+<Tab title="format">
+````markdown
+This is the first paragraph.
+
+This is the second paragraph, separated by a blank line.
+````
+</Tab>
+<Tab title="render">
+This is the first paragraph.
+
+This is the second paragraph, separated by a blank line.
+</Tab>
+</Tabs>
+
+<Note type="tip" title="MDX Components" icon="Component">
+    Provides a collection of ready-to-use React [components](/docs/components) designed for MDX-based documentation sites, with built-in support for Next.js adapters.
+</Note>
