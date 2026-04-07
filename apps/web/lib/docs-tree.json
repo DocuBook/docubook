@@ -34,6 +34,14 @@
             "href": "/algolia"
           }
         ]
+      },
+      {
+        "title": "Format text",
+        "href": "/format-text"
+      },
+      {
+        "title": "Frontmatter",
+        "href": "/frontmatter"
       }
     ]
   },
