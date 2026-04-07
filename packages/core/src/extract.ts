@@ -1,23 +1,70 @@
 import matter from "gray-matter";
 import type { TocItem } from "./types";
 
+const FENCE_MARKER_REGEX = /^(````|```)(?!`)/;
+const HEADING_REGEX = /^(#{2,4})\s+(.+)$/;
+const RELEASE_VERSION_ATTR_REGEX = /\bversion\s*=\s*"([^"]+)"/;
+
 export function sluggify(text: string): string {
     const slug = text.toLowerCase().replace(/\s+/g, "-");
     return slug.replace(/[^a-z0-9-]/g, "");
 }
 
+function parseReleaseVersionFromLine(line: string): string | null {
+    const releaseStart = line.indexOf("<Release");
+    if (releaseStart === -1) {
+        return null;
+    }
+
+    // Parse only the first tag fragment on the line to avoid broad regex scans.
+    const fragment = line.slice(releaseStart, releaseStart + 512);
+    const closingIndex = fragment.indexOf(">");
+    if (closingIndex === -1) {
+        return null;
+    }
+
+    const tag = fragment.slice(0, closingIndex + 1);
+    if (!/^<Release\b/.test(tag)) {
+        return null;
+    }
+
+    const attrMatch = RELEASE_VERSION_ATTR_REGEX.exec(tag);
+    const version = attrMatch?.[1] ?? "";
+    return version.trim() || null;
+}
+
 export function extractTocsFromRawMdx(rawMdx: string): TocItem[] {
-    // Match code blocks, markdown headings, and <Release version="x.y.z" />.
-    const combinedRegex = /(```[\s\S]*?```)|^(#{2,4})\s(.+)$|<Release\s+version="([^"]+)"/gm;
     const extractedHeadings: TocItem[] = [];
 
-    let match: RegExpExecArray | null;
-    while ((match = combinedRegex.exec(rawMdx)) !== null) {
-        if (match[1]) continue;
+    const lines = rawMdx.split(/\r?\n/);
+    let inFence = false;
+    let fenceLength = 0;
 
-        if (match[2]) {
-            const headingLevel = match[2].length;
-            const headingText = match[3].trim();
+    for (const line of lines) {
+        const trimmed = line.trimStart();
+
+        const fenceMatch = FENCE_MARKER_REGEX.exec(trimmed);
+        if (fenceMatch) {
+            const marker = fenceMatch[1];
+
+            if (!inFence) {
+                inFence = true;
+                fenceLength = marker.length;
+            } else if (marker.length === fenceLength) {
+                inFence = false;
+            }
+
+            continue;
+        }
+
+        if (inFence) {
+            continue;
+        }
+
+        const headingMatch = HEADING_REGEX.exec(trimmed);
+        if (headingMatch) {
+            const headingLevel = headingMatch[1].length;
+            const headingText = headingMatch[2].trim().replace(/\s+#+\s*$/, "");
             extractedHeadings.push({
                 level: headingLevel,
                 text: headingText,
@@ -26,8 +73,8 @@ export function extractTocsFromRawMdx(rawMdx: string): TocItem[] {
             continue;
         }
 
-        if (match[4]) {
-            const version = match[4];
+        const version = parseReleaseVersionFromLine(line);
+        if (version) {
             extractedHeadings.push({
                 level: 2,
                 text: `v${version}`,

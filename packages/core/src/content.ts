@@ -1,6 +1,6 @@
 import path from "path";
 import { promises as fs } from "fs";
-import { extractFrontmatter, extractFrontmatterWithContent, extractTocsFromRawMdx } from "./extract";
+import { extractFrontmatterWithContent, extractTocsFromRawMdx } from "./extract";
 import { parseMdx, type ParseMdxOptions } from "./compile";
 import type { MdxCompileResult, TocItem } from "./types";
 
@@ -49,8 +49,10 @@ export async function readMdxFileBySlug(slug: string, options: ReadMdxBySlugOpti
         path.join(/*turbopackIgnore: true*/ docsRoot, `${slug}.mdx`),
         path.join(/*turbopackIgnore: true*/ docsRoot, slug, "index.mdx"),
     ];
+    const attempted: string[] = [];
 
     for (const p of paths) {
+        attempted.push(p);
         // Guard: reject any path that escapes the docs root.
         const resolvedP = path.resolve(/*turbopackIgnore: true*/ p);
         if (!resolvedP.startsWith(resolvedRoot + path.sep) && resolvedP !== resolvedRoot) {
