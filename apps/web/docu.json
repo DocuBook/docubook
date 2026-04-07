@@ -70,6 +70,8 @@
         { "title": "Introduction", "href": "/introduction" },
         { "title": "Installation", "href": "/installation" },
         { "title": "Quick Start Guide", "href": "/quick-start-guide" },
+        { "title": "Format text", "href": "/format-text" },
+        { "title": "Frontmatter", "href": "/frontmatter" },
         { "title": "Themes", "href": "/themes" },
         {
           "title": "Search",
@@ -77,9 +79,7 @@
           "items": [
             { "title": "Algolia", "href": "/algolia" }
           ]
-        },
-        { "title": "Format text", "href": "/format-text" },
-        { "title": "Frontmatter", "href": "/frontmatter" }
+        }
       ]
     },
     {

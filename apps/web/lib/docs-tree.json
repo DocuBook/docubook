@@ -22,6 +22,14 @@
         "href": "/quick-start-guide"
       },
       {
+        "title": "Format text",
+        "href": "/format-text"
+      },
+      {
+        "title": "Frontmatter",
+        "href": "/frontmatter"
+      },
+      {
         "title": "Themes",
         "href": "/themes"
       },
@@ -34,14 +42,6 @@
             "href": "/algolia"
           }
         ]
-      },
-      {
-        "title": "Format text",
-        "href": "/format-text"
-      },
-      {
-        "title": "Frontmatter",
-        "href": "/frontmatter"
       }
     ]
   },
