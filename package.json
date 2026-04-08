@@ -13,7 +13,6 @@
     "lint": "turbo lint",
     "clean": "turbo clean",
     "typecheck": "turbo typecheck",
-    "release:notes": "node packages/scripts/cli-release.mjs",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "changeset publish"
