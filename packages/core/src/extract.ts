@@ -6,7 +6,8 @@ const HEADING_REGEX = /^(#{2,4})\s+(.+)$/;
 const RELEASE_VERSION_ATTR_REGEX = /\bversion\s*=\s*"([^"]+)"/;
 
 export function sluggify(text: string): string {
-    const slug = text.toLowerCase().replace(/\s+/g, "-");
+    const normalized = text.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // Remove accents
+    const slug = normalized.toLowerCase().replace(/\s+/g, "-");
     return slug.replace(/[^a-z0-9-]/g, "");
 }
 
@@ -87,7 +88,12 @@ export function extractTocsFromRawMdx(rawMdx: string): TocItem[] {
 }
 
 export function extractFrontmatter<Frontmatter>(content: string): Frontmatter {
-    return matter(content).data as Frontmatter;
+    try {
+        return matter(content).data as Frontmatter;
+    } catch (error) {
+        console.error('Failed to extract frontmatter:', error);
+        return {} as Frontmatter; // Return empty object as fallback
+    }
 }
 
 /**

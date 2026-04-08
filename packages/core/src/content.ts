@@ -61,13 +61,10 @@ export async function readMdxFileBySlug(slug: string, options: ReadMdxBySlugOpti
 
         try {
             const content = await fs.readFile(/*turbopackIgnore: true*/ p, "utf-8");
-            return {
-                content,
-                filePath: `${docsDir}/${path.relative(/*turbopackIgnore: true*/ docsRoot, p)}`,
-                absoluteFilePath: p,
-            };
-        } catch {
-            // ignore and try next candidate
+            return { content, filePath: `${docsDir}/${path.relative(/*turbopackIgnore: true*/ docsRoot, p)}`, absoluteFilePath: p };
+        } catch (error) {
+            console.error(`Failed to read file ${p}:`, error);
+            throw new Error(`Could not read mdx file: ${slug}`);
         }
     }
 
