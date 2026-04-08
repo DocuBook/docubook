@@ -35,9 +35,14 @@ export type BaseMdxFrontmatter = {
  * Caller receives the Date directly — no string round-trip, no re-parse needed.
  */
 async function getFileLastModifiedDate(absoluteFilePath: string): Promise<Date | undefined> {
+  if (fileMtimeCache.has(absoluteFilePath)) {
+    return fileMtimeCache.get(absoluteFilePath);
+  }
   try {
     const stat = await fsPromises.stat(absoluteFilePath);
-    return stat.mtime;
+    const mtime = stat.mtime;
+    fileMtimeCache.set(absoluteFilePath, mtime); // Cache result for future calls
+    return mtime;
   } catch {
     return undefined;
   }
