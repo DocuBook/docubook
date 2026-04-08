@@ -30,6 +30,8 @@ export type BaseMdxFrontmatter = {
 // `React.cache` deduplicates calls within a single server-render pass.
 // Keep request-level cache in app layer, while markdown pipeline lives in core.
 
+const fileMtimeCache = new Map<string, Date>();
+
 /**
  * Return the mtime of an MDX file as a Date object.
  * Caller receives the Date directly — no string round-trip, no re-parse needed.
