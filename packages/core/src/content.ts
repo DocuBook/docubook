@@ -33,6 +33,10 @@ type ReadMdxBySlugOptions = {
 };
 
 export async function readMdxFileBySlug(slug: string, options: ReadMdxBySlugOptions = {}): Promise<ReadMdxFileResult> {
+    if (!slug || slug.trim() === "") {
+        // Handle root slug as "index"
+        slug = "index";
+    }
     const docsDir = options.docsDir ?? "docs";
     // Keep file-system path operations ignored by Turbopack tracing.
     // The runtime path is constrained to docsDir and slug candidates below.
@@ -41,7 +45,6 @@ export async function readMdxFileBySlug(slug: string, options: ReadMdxBySlugOpti
         : path.join(/*turbopackIgnore: true*/ process.cwd(), docsDir);
 
     // Resolve once for path-traversal guard — all candidate paths must stay
-    // inside docsRoot. This prevents "../../etc/passwd" style slugs from
     // escaping the docs directory, especially important with dynamicParams=true.
     const resolvedRoot = path.resolve(/*turbopackIgnore: true*/ docsRoot);
 
@@ -49,6 +52,7 @@ export async function readMdxFileBySlug(slug: string, options: ReadMdxBySlugOpti
         path.join(/*turbopackIgnore: true*/ docsRoot, `${slug}.mdx`),
         path.join(/*turbopackIgnore: true*/ docsRoot, slug, "index.mdx"),
     ];
+    // console.log(`Attempting to read slug: "${slug}", paths:`, paths); // Debug log
     const attempted: string[] = [];
 
     for (const p of paths) {
@@ -63,8 +67,8 @@ export async function readMdxFileBySlug(slug: string, options: ReadMdxBySlugOpti
             const content = await fs.readFile(/*turbopackIgnore: true*/ p, "utf-8");
             return { content, filePath: `${docsDir}/${path.relative(/*turbopackIgnore: true*/ docsRoot, p)}`, absoluteFilePath: p };
         } catch (error) {
-            console.error(`Failed to read file ${p}:`, error);
-            throw new Error(`Could not read mdx file: ${slug}`);
+            // Continue to next path if this one fails
+            continue;
         }
     }
 
