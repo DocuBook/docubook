@@ -7,8 +7,6 @@
   ],
   "scripts": {
     "build": "turbo build",
-    "build:next:docker": "turbo build --filter=docubook-next-docker",
-    "build:next:vercel": "turbo build --filter=docubook-next",
     "dev:web": "turbo dev --filter=@docubook/web",
     "lint": "turbo lint",
     "clean": "turbo clean",
