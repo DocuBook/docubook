@@ -47,5 +47,4 @@ next-env.d.ts
 *.crt
 *.cer
 .logs
-*.agent
-*.agents
+.vscode
