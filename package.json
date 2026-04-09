@@ -8,8 +8,6 @@
   "scripts": {
     "build": "turbo build",
     "dev:web": "turbo dev --filter=@docubook/web",
-    "dev:next:docker": "turbo dev --filter=docubook-next-docker",
-    "dev:next:vercel": "turbo dev --filter=docubook-next",
     "lint": "turbo lint",
     "clean": "turbo clean",
     "typecheck": "turbo typecheck",
