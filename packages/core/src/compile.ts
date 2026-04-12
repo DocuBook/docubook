@@ -1,5 +1,5 @@
 import { compileMDX } from "next-mdx-remote/rsc"
-import type { Node, Parent } from "unist"
+import type { Node } from "unist"
 import { visit } from "unist-util-visit"
 import remarkGfm from "remark-gfm"
 import rehypePrism from "rehype-prism-plus"
@@ -9,19 +9,7 @@ import rehypeCodeTitles from "rehype-code-titles"
 import { handleCodeTitles } from "./plugins/handleCodeTitles"
 import { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/handleCodeExpandable"
 import type { MdxCompileResult } from "./types"
-
-interface Element extends Node {
-  type: string
-  tagName?: string
-  properties?: Record<string, unknown> & {
-    className?: string[] | string
-    raw?: string
-  }
-  children?: Node[]
-  raw?: string
-  language?: string
-  codeTitle?: string
-}
+import type { ElementNode } from "./utils"
 
 interface TextNode extends Node {
   type: "text"
@@ -47,9 +35,9 @@ export type ParseMdxOptions = {
 
 export const preProcess = () => (tree: Node) => {
   visit(tree, (node: Node) => {
-    const element = node as Element
+    const element = node as ElementNode
     if (element?.type === "element" && element?.tagName === "pre" && element.children) {
-      const [codeEl] = element.children as Element[]
+      const [codeEl] = element.children as ElementNode[]
       if (codeEl.tagName !== "code" || !codeEl.children?.[0]) return
 
       const className = codeEl.properties?.className
@@ -69,11 +57,13 @@ export const preProcess = () => (tree: Node) => {
       }
     }
   })
+
+  return tree
 }
 
 export const postProcess = () => (tree: Node) => {
   visit(tree, "element", (node: Node) => {
-    const element = node as Element
+    const element = node as ElementNode
     if (element?.type === "element" && element?.tagName === "pre") {
       if (element.properties && element.raw) {
         element.properties.raw = element.raw
@@ -86,6 +76,8 @@ export const postProcess = () => (tree: Node) => {
       }
     }
   })
+
+  return tree
 }
 
 export function createDefaultRehypePlugins(): unknown[] {
@@ -93,9 +85,9 @@ export function createDefaultRehypePlugins(): unknown[] {
     preProcess,
     rehypeCodeTitles,
     handleCodeTitles,
-    handleCodeExpandable,
+    handleCodeExpandable, // Copy expandable metadata from <code> to <pre> before prism transforms nodes.
     rehypePrism,
-    handleCodeExpandable,
+    handleCodeExpandable, // Re-apply expandable attrs after prism tokenization.
     rehypeSlug,
     rehypeAutolinkHeadings,
     postProcess,
