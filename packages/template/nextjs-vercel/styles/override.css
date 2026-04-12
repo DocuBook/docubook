@@ -90,34 +90,6 @@
   /* Lighter gray for dark mode */
 }
 
-/* ======================================================================== */
-/* Custom styling for youtube blocks */
-/* ======================================================================== */
-.youtube {
-  position: relative;
-  padding-bottom: 56.25%;
-  /* Aspect Ratio 16:9 */
-  height: 0;
-  overflow: hidden;
-  background: #000;
-  /* Black background to blend the player */
-  border-radius: 8px;
-  /* Rounded corners */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  /* Soft shadow */
-}
-
-.youtube iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
-  border-radius: 8px;
-  /* Rounded corners on iframe */
-}
-
 /* Hide main navbar and footer when docs layout is active */
 body:has(.docs-layout) #main-navbar,
 body:has(.docs-layout) #main-footer {
