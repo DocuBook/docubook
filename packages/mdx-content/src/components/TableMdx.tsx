@@ -1,87 +1,93 @@
-import type { CSSProperties, HTMLAttributes, TableHTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from "react";
+import type {
+  CSSProperties,
+  HTMLAttributes,
+  TableHTMLAttributes,
+  TdHTMLAttributes,
+  ThHTMLAttributes,
+} from "react";
 
 const tableShellStyle: CSSProperties = {
-    position: "relative",
-    width: "100%",
-    overflowX: "auto",
-    overflowY: "hidden",
-    border: "1px solid hsl(var(--border, 210 14% 94%))",
-    borderRadius: 10,
-    margin: "1rem 0",
+  position: "relative",
+  width: "100%",
+  overflowX: "auto",
+  overflowY: "hidden",
+  border: "1px solid hsl(var(--border, 210 20% 85%))",
+  borderRadius: 10,
+  margin: "1rem 0",
 };
 
 const cellBaseStyle: CSSProperties = {
-    padding: "0.6rem 0.75rem",
-    verticalAlign: "middle",
-    borderBottom: "1px solid hsl(var(--border, 210 14% 94%))",
+  padding: "0.6rem 0.75rem",
+  verticalAlign: "middle",
+  borderBottom: "1px solid hsl(var(--border, 210 20% 85%))",
 };
 
 export function TableMdx({ style, ...props }: TableHTMLAttributes<HTMLTableElement>) {
-    return (
-        <div style={{ ...tableShellStyle }}>
-            <table
-                {...props}
-                style={{
-                    width: "100%",
-                    fontSize: "0.925rem",
-                    borderCollapse: "collapse",
-                    margin: 0,
-                    ...style,
-                }}
-            />
-        </div>
+  return (
+    <div style={{ ...tableShellStyle }}>
+      <table
+        {...props}
+        style={{
+          width: "100%",
+          fontSize: "0.925rem",
+          borderCollapse: "collapse",
+          margin: 0,
+          ...style,
+        }}
+      />
+    </div>
     );
 }
 
 export function TableHeaderMdx(props: HTMLAttributes<HTMLTableSectionElement>) {
-    return (
-        <thead
-            {...props}
-            style={{
-                background: "hsl(var(--muted, 210 12% 96%))",
-                ...props.style,
-            }}
-        />
+  return (
+    <thead
+      {...props}
+      style={{
+        background: "hsl(var(--muted, 210 20% 92%))",
+        ...props.style,
+      }}
+    />
     );
 }
 
 export function TableBodyMdx(props: HTMLAttributes<HTMLTableSectionElement>) {
-    return <tbody {...props} />;
+  return <tbody {...props} />;
 }
 
 export function TableFooterMdx(props: HTMLAttributes<HTMLTableSectionElement>) {
-    return (
-        <tfoot
-            {...props}
-            style={{
-                background: "hsl(var(--muted, 210 12% 96%))",
-                borderTop: "1px solid hsl(var(--border, 210 14% 94%))",
-                ...props.style,
-            }}
-        />
+  return (
+    <tfoot
+      {...props}
+      style={{
+        background: "hsl(var(--muted, 210 20% 92%))",
+        borderTop: "1px solid hsl(var(--border, 210 20% 85%))",
+        ...props.style,
+      }}
+    />
     );
 }
 
 export function TableRowMdx(props: HTMLAttributes<HTMLTableRowElement>) {
-    return <tr {...props} />;
+  return <tr {...props} />;
 }
 
 export function TableHeadMdx(props: ThHTMLAttributes<HTMLTableCellElement>) {
-    return (
-        <th
-            scope={props.scope ?? "col"}
-            {...props}
-            style={{
-                ...cellBaseStyle,
-                textAlign: "left",
-                color: "hsl(var(--muted-foreground, 215 20% 65%))",
-                fontWeight: 600,
-                ...props.style,
-            }}
-        />
+  return (
+    <th
+      scope={props.scope ?? "col"}
+      {...props}
+      style={{
+        ...cellBaseStyle,
+        textAlign: "left",
+        color: "hsl(var(--muted-foreground, 220 15% 50%))",
+        fontWeight: 600,
+        ...props.style,
+      }}
+    />
     );
 }
 
 export function TableCellMdx(props: TdHTMLAttributes<HTMLTableCellElement>) {
-    return <td {...props} style={{ ...cellBaseStyle, ...props.style }} />;
+  return <td {...props} style={{ ...cellBaseStyle, ...props.style }} />;
 }
