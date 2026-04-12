@@ -1,5 +1,16 @@
 # @docubook/core
 
+## 1.4.0
+
+### Minor Changes
+
+- 824acc3: feat(core): add expandable code block support ;
+  - Extract handleCodeTitles plugin to separate file
+  - Add handleCodeExpandableRemark to parse "Expandable" keyword from MDX code fence
+  - Add handleCodeExpandable (rehype) to copy expandable attributes to pre element
+  - Integrate both plugins in createDefaultRehypePlugins and createDefaultRemarkPlugins
+  - Add handleCodeTitles.ts to plugins
+
 ## 1.3.2
 
 ### Patch Changes

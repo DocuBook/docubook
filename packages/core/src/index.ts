@@ -3,10 +3,11 @@ export {
     parseMdx,
     preProcess,
     postProcess,
-    handleCodeTitles,
     createDefaultRehypePlugins,
     createDefaultRemarkPlugins,
 } from "./compile";
+export { handleCodeTitles } from "./plugins/handleCodeTitles";
+export { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/handleCodeExpandable";
 export { extractFrontmatter, extractFrontmatterWithContent, extractTocsFromRawMdx, sluggify } from "./extract";
 export type { ParseMdxOptions } from "./compile";
 export {
