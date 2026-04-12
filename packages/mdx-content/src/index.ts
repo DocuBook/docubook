@@ -4,6 +4,7 @@ export { ButtonMdx } from "./components/ButtonMdx";
 export { CardMdx } from "./components/CardMdx";
 export { CardsMdx, CardGroupMdx } from "./components/CardGroupMdx";
 export { CodeBlock } from "./components/CodeBlock";
+export { ExpandableCode } from "./components/ExpandableCode";
 export { FileMdx, FilesMdx, FolderMdx } from "./components/FileTreeMdx";
 export { ImageMdx, type ImageMdxProps } from "./components/ImageMdx";
 export { KbdMdx } from "./components/KeyboardMdx";
