@@ -1,6 +1,6 @@
 {
     "name": "@docubook/mdx-content",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "description": "Portable MDX components and framework adapters for DocuBook",
     "type": "module",
     "main": "./dist/index.js",
