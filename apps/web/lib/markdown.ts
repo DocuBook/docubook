@@ -7,6 +7,8 @@ import {
 import { cache } from "react";
 import { promises as fsPromises } from "fs";
 import path from "path";
+import { execFile } from "child_process";
+import { promisify } from "util";
 import { page_routes, ROUTES } from "./routes";
 import type { TocItem } from "./toc";
 import { mdxComponents as components } from "./mdx-components";
@@ -31,6 +33,66 @@ export type BaseMdxFrontmatter = {
 // Keep request-level cache in app layer, while markdown pipeline lives in core.
 
 const fileMtimeCache = new Map<string, Date>();
+const fileGitDateCache = new Map<string, Date | undefined>();
+let gitRootCache: string | undefined;
+const execFileAsync = promisify(execFile);
+
+async function getGitRootDir(): Promise<string | undefined> {
+  if (gitRootCache !== undefined) return gitRootCache
+
+  try {
+    const { stdout } = await execFileAsync("git", ["rev-parse", "--show-toplevel"])
+    gitRootCache = stdout.trim() || ""
+    return gitRootCache || undefined
+  } catch {
+    gitRootCache = ""
+    return undefined
+  }
+}
+
+async function getFileLastCommitDate(absoluteFilePath: string): Promise<Date | undefined> {
+  if (fileGitDateCache.has(absoluteFilePath)) {
+    return fileGitDateCache.get(absoluteFilePath)
+  }
+
+  try {
+    const gitRoot = await getGitRootDir()
+    if (!gitRoot) {
+      fileGitDateCache.set(absoluteFilePath, undefined)
+      return undefined
+    }
+
+    const relativePath = path.relative(gitRoot, absoluteFilePath)
+    if (relativePath.startsWith("..")) {
+      fileGitDateCache.set(absoluteFilePath, undefined)
+      return undefined
+    }
+
+    const { stdout } = await execFileAsync(
+      "git",
+      ["log", "-1", "--format=%cI", "--", relativePath],
+      { cwd: gitRoot }
+    )
+
+    const rawDate = stdout.trim()
+    if (!rawDate) {
+      fileGitDateCache.set(absoluteFilePath, undefined)
+      return undefined
+    }
+
+    const parsed = new Date(rawDate)
+    if (Number.isNaN(parsed.getTime())) {
+      fileGitDateCache.set(absoluteFilePath, undefined)
+      return undefined
+    }
+
+    fileGitDateCache.set(absoluteFilePath, parsed)
+    return parsed
+  } catch {
+    fileGitDateCache.set(absoluteFilePath, undefined)
+    return undefined
+  }
+}
 
 /**
  * Return the mtime of an MDX file as a Date object.
@@ -54,9 +116,12 @@ const docsService = createMdxContentService<BaseMdxFrontmatter, TocItem>({
   parseOptions: { components },
   cacheFn: cache,
   // Backward-compatible: if `date` is absent in frontmatter, fall back to
-  // the filesystem last-modified time of that MDX file (resolved at build time).
+  // Git commit date first, then filesystem mtime as final fallback.
   frontmatterEnricher: async (frontmatter, absoluteFilePath) => {
     if (!frontmatter.date) {
+      const gitDate = await getFileLastCommitDate(absoluteFilePath);
+      if (gitDate) return { ...frontmatter, date: gitDate };
+
       const fileDate = await getFileLastModifiedDate(absoluteFilePath);
       if (fileDate) return { ...frontmatter, date: fileDate };
     }
@@ -65,7 +130,9 @@ const docsService = createMdxContentService<BaseMdxFrontmatter, TocItem>({
 });
 
 // Return frontmatter only for a docs slug.
-export async function getDocsFrontmatterForSlug(slug: string): Promise<BaseMdxFrontmatter | undefined> {
+export async function getDocsFrontmatterForSlug(
+  slug: string
+): Promise<BaseMdxFrontmatter | undefined> {
   try {
     return await docsService.getFrontmatterForSlug(slug);
   } catch (err) {
