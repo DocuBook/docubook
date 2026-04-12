@@ -55,11 +55,11 @@ importers:
         specifier: ^4.6.2
         version: 4.6.2(@algolia/client-search@5.50.0)(@types/react@19.2.8)(algoliasearch@5.50.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(search-insights@2.17.3)
       '@docubook/core':
-        specifier: workspace:*
-        version: link:../../packages/core
+        specifier: ^1.4.0
+        version: 1.4.0(@types/react@19.2.8)(react@19.2.3)
       '@docubook/mdx-content':
-        specifier: workspace:*
-        version: link:../../packages/mdx-content
+        specifier: ^2.1.0
+        version: 2.1.0(lucide-react@1.7.0(react@19.2.3))(next@16.2.3(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react-icons@5.6.0(react@19.2.3))(react@19.2.3)
       '@radix-ui/react-accordion':
         specifier: ^1.2.12
         version: 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -529,9 +529,24 @@ packages:
       search-insights:
         optional: true
 
+  '@docubook/core@1.4.0':
+    resolution: {integrity: sha512-B6oy2r5cuZNpCQTH47CrLeBKMVtq2OEX6+z10OIZ5CHqxi3mzCtGBAwaMGjxEWRL1uizwaP0MGnGhAYb8Xaxjw==}
+
   '@docubook/docs-tree@1.0.1':
     resolution: {integrity: sha512-AmsrlXeACyWX09RCQF46E/PWHbaTql8OTyBAdz6nKlg4SiZIHi1A4k4ELjw0dZKNfzl1Dt7PUS/E0w52l0al4g==}
     hasBin: true
+
+  '@docubook/mdx-content@2.1.0':
+    resolution: {integrity: sha512-NfSaBcCA40VvSeZHjG649JIyD1oRpYogO3Ay2Icn8sz0LmLqXuFkD/TplLqYRWY9JKVo/QM4oUoMRPz4P9NYjg==}
+    peerDependencies:
+      lucide-react: ^1.7.0
+      next: '*'
+      react: '>=18'
+      react-dom: '>=18'
+      react-icons: ^5.0.0
+    peerDependenciesMeta:
+      next:
+        optional: true
 
   '@emnapi/core@1.9.1':
     resolution: {integrity: sha512-mukuNALVsoix/w1BJwFzwXBN/dHeejQtuVzcDsfOEsdpCumXb/E9j8w11h5S54tT1xhifGfbbSm/ICrObRb3KA==}
@@ -4394,9 +4409,33 @@ snapshots:
       - '@algolia/client-search'
       - algoliasearch
 
+  '@docubook/core@1.4.0(@types/react@19.2.8)(react@19.2.3)':
+    dependencies:
+      gray-matter: 4.0.3
+      next-mdx-remote: 6.0.0(@types/react@19.2.8)(react@19.2.3)
+      rehype-autolink-headings: 7.1.0
+      rehype-code-titles: 1.2.1
+      rehype-prism-plus: 2.0.2
+      rehype-slug: 6.0.0
+      remark-gfm: 4.0.1
+      unist-util-visit: 5.1.0
+    transitivePeerDependencies:
+      - '@types/react'
+      - react
+      - supports-color
+
   '@docubook/docs-tree@1.0.1':
     dependencies:
       fs-extra: 11.3.4
+
+  '@docubook/mdx-content@2.1.0(lucide-react@1.7.0(react@19.2.3))(next@16.2.3(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react-icons@5.6.0(react@19.2.3))(react@19.2.3)':
+    dependencies:
+      lucide-react: 1.7.0(react@19.2.3)
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+      react-icons: 5.6.0(react@19.2.3)
+    optionalDependencies:
+      next: 16.2.3(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
 
   '@emnapi/core@1.9.1':
     dependencies:
@@ -4656,6 +4695,12 @@ snapshots:
       vfile: 6.0.3
     transitivePeerDependencies:
       - supports-color
+
+  '@mdx-js/react@3.1.1(@types/react@19.2.8)(react@19.2.3)':
+    dependencies:
+      '@types/mdx': 2.0.13
+      '@types/react': 19.2.8
+      react: 19.2.3
 
   '@mdx-js/react@3.1.1(@types/react@19.2.8)(react@19.2.4)':
     dependencies:
@@ -7297,6 +7342,20 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
+  next-mdx-remote@6.0.0(@types/react@19.2.8)(react@19.2.3):
+    dependencies:
+      '@babel/code-frame': 7.29.0
+      '@mdx-js/mdx': 3.1.1
+      '@mdx-js/react': 3.1.1(@types/react@19.2.8)(react@19.2.3)
+      react: 19.2.3
+      unist-util-remove: 4.0.0
+      unist-util-visit: 5.1.0
+      vfile: 6.0.3
+      vfile-matter: 5.0.1
+    transitivePeerDependencies:
+      - '@types/react'
+      - supports-color
+
   next-mdx-remote@6.0.0(@types/react@19.2.8)(react@19.2.4):
     dependencies:
       '@babel/code-frame': 7.29.0
@@ -7578,6 +7637,10 @@ snapshots:
     dependencies:
       react: 19.2.4
       scheduler: 0.27.0
+
+  react-icons@5.6.0(react@19.2.3):
+    dependencies:
+      react: 19.2.3
 
   react-icons@5.6.0(react@19.2.4):
     dependencies:
