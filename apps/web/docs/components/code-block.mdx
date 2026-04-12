@@ -37,6 +37,7 @@ function isRocketAboutToCrash() {
 - **Line Numbers**: Enable line numbers by adding `showLineNumbers` after the opening backticks.
 - **Highlight Lines**: Specify lines to highlight using curly braces (e.g., `{3-4}`).
 - **Syntax Highlighting**: Use the appropriate language for syntax highlighting.
+- **Expandable** : Allow users to expand and collapse long code blocks using `Expandable`
 
 ## Language Support
 
@@ -64,3 +65,77 @@ function isRocketAboutToCrash() {
 | **gitignore**        | `gitignore:.git`         |
 | **bash**             | `bash:install.sh`        |
 | **markdown**         | `md:readme.md`           |
+
+## Expandable Code
+
+You can make code blocks expandable when they contain many lines of code. The component will show a
+collapsed view with a "See all N lines" button.
+
+### Usage
+
+Add the `Expandable` keyword after the opening backticks:
+
+````markdown
+```javascript:index.js Expandable
+// Your long code here...
+// Line 1
+// Line 2
+// ... many more lines
+```
+````
+
+### Example
+
+```javascript:long-file.js showLineNumbers Expandable
+function processData(data) {
+    // Initialize result array
+    const result = [];
+
+    // Process each item in the data
+    for (let i = 0; i < data.length; i++) {
+        const item = data[i];
+
+        // Transform the item
+        const transformed = {
+            id: item.id,
+            name: item.name,
+            value: item.value * 2,
+            timestamp: new Date().toISOString()
+        };
+
+        // Add transformed item to result
+        result.push(transformed);
+    }
+
+    // Return the processed result
+    return result;
+}
+
+function validateInput(input) {
+    if (!input) {
+        return false;
+    }
+
+    if (typeof input !== 'object') {
+        return false;
+    }
+
+    return true;
+}
+
+function formatOutput(data) {
+    return JSON.stringify(data, null, 2);
+}
+
+module.exports = {
+    processData,
+    validateInput,
+    formatOutput
+};
+```
+
+### Default Behavior
+
+- **Default visible lines**: 20 lines
+- **Threshold**: Code blocks with more than 20 lines will show the expandable button
+- **Button text**: Shows "See all N lines" (collapsed) or "Collapse" (expanded)
