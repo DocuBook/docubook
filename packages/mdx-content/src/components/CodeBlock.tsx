@@ -1,4 +1,4 @@
-import { isValidElement, type ComponentProps, type ReactNode } from "react"
+import { isValidElement, type ComponentProps, type ReactNode } from "react";
 import {
   SiJavascript,
   SiTypescript,
@@ -21,11 +21,11 @@ import {
   SiGit,
   SiGnubash,
   SiMarkdown,
-} from "react-icons/si"
-import { FaJava, FaCode, FaRegFileAlt } from "react-icons/fa"
-import { TbJson } from "react-icons/tb"
-import { CopyButton } from "./CopyButton"
-import { ExpandableCode } from "./ExpandableCode"
+} from "react-icons/si";
+import { FaJava, FaCode, FaRegFileAlt } from "react-icons/fa";
+import { TbJson } from "react-icons/tb";
+import { CopyButton } from "./CopyButton";
+import { ExpandableCode } from "./ExpandableCode";
 
 type CodeBlockProps = ComponentProps<"pre"> & {
   raw?: string
@@ -153,7 +153,7 @@ export function CodeBlock({ children, raw, ...rest }: CodeBlockProps) {
       style={{
         position: "relative",
         margin: "1.5rem 0",
-        border: "1px solid hsl(var(--border))",
+        border: "1px solid hsl(var(--border, 210 20% 85%))",
         overflow: "hidden",
         fontSize: "0.875rem",
         borderRadius: "0.75rem",
@@ -166,10 +166,10 @@ export function CodeBlock({ children, raw, ...rest }: CodeBlockProps) {
           alignItems: "center",
           justifyContent: "space-between",
           gap: "0.75rem",
-          background: "hsl(var(--muted, 210 12% 96%))",
+          background: "hsl(var(--muted, 210 20% 92%))",
           padding: "0.5rem 1rem",
-          borderBottom: "1px solid hsl(var(--border, 210 14% 94%))",
-          color: "hsl(var(--muted-foreground, 210 12% 40%))",
+          borderBottom: "1px solid hsl(var(--border, 210 20% 85%))",
+          color: "hsl(var(--muted-foreground, 220 15% 50%))",
           fontFamily: "monospace",
           fontSize: "0.8rem",
         }}
@@ -180,7 +180,7 @@ export function CodeBlock({ children, raw, ...rest }: CodeBlockProps) {
             alignItems: "center",
             gap: 6,
             fontSize: "0.78rem",
-            color: "hsl(var(--muted-foreground, 210 12% 40%))",
+            color: "hsl(var(--muted-foreground, 220 15% 50%))",
           }}
         >
           {getLanguageIcon(language)}
@@ -197,7 +197,7 @@ export function CodeBlock({ children, raw, ...rest }: CodeBlockProps) {
           >
             <div
               style={{
-                color: "hsl(var(--muted-foreground))",
+                color: "hsl(var(--muted-foreground, 220 15% 50%))",
                 transition: "color 0.2s ease-in-out",
               }}
             >
@@ -211,7 +211,7 @@ export function CodeBlock({ children, raw, ...rest }: CodeBlockProps) {
         style={
           {
             overflowY: "visible",
-            backgroundColor: "hsl(var(--background))",
+            backgroundColor: "hsl(var(--background, 210 40% 98%))",
             willChange: "transform",
             borderBottom: "none",
           } as React.CSSProperties

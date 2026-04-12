@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useEffect, useState, useRef, type ReactNode } from "react"
-import { Ellipsis } from "lucide-react"
+import { useEffect, useState, useRef, type ReactNode } from "react";
+import { Ellipsis } from "lucide-react";
 
 type ExpandableCodeProps = {
   isExpandable: boolean
@@ -105,8 +105,8 @@ export function ExpandableCode({
             alignItems: "center",
             justifyContent: "center",
             padding: "0.6rem",
-            background: "hsl(var(--muted, 210 12% 96%))",
-            borderTop: "1px solid hsl(var(--border, 210 14% 94%))",
+            background: "hsl(var(--muted, 210 20% 92%))",
+            borderTop: "1px solid hsl(var(--border, 210 20% 85%))",
           }}
         >
           <button
@@ -117,10 +117,10 @@ export function ExpandableCode({
               alignItems: "center",
               gap: "0.5rem",
               padding: "0.4rem 0.8rem",
-              border: "1px solid hsl(var(--border, 210 14% 94%))",
+              border: "1px solid hsl(var(--border, 210 20% 85%))",
               borderRadius: 6,
-              background: "hsl(var(--background, 0 0% 100%))",
-              color: "hsl(var(--foreground, 222 12% 12%))",
+              background: "hsl(var(--background, 210 40% 98%))",
+              color: "hsl(var(--foreground, 220 30% 15%))",
               fontSize: "0.85rem",
               fontWeight: 500,
               cursor: "pointer",
