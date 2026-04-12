@@ -4,6 +4,7 @@ export { ButtonMdx } from "./ButtonMdx";
 export { CardMdx } from "./CardMdx";
 export { CardsMdx, CardGroupMdx } from "./CardGroupMdx";
 export { CodeBlock } from "./CodeBlock";
+export { ExpandableCode } from "./ExpandableCode";
 export { CopyButton } from "./CopyButton";
 export { FileMdx, FilesMdx, FolderMdx } from "./FileTreeMdx";
 export { ImageMdx } from "./ImageMdx";
