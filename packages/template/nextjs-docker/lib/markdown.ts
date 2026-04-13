@@ -1,7 +1,5 @@
 import {
   createMdxContentService,
-  extractFrontmatter,
-  readMdxFileBySlug,
   type MdxCompileResult as CoreMdxCompileResult,
 } from "@docubook/core";
 import { cache } from "react";
@@ -195,21 +193,28 @@ export async function getAllChilds(pathString: string) {
   // Resolve the nested route branch for the requested path.
   let resolvedHref = "";
   for (const it of items) {
-    const found = nestedRoutes.find((innerIt) => innerIt.href == `/${it}`);
+    const found = nestedRoutes.find((innerIt) => innerIt.href === `/${it}`);
     if (!found) break;
     resolvedHref += found.href;
     nestedRoutes = found.items ?? [];
   }
   if (!resolvedHref) return [];
 
-  return await Promise.all(
+  const children = await Promise.all(
     nestedRoutes.map(async (it) => {
-      const slug = path.join(resolvedHref, it.href);
-      const { content } = await readMdxFileBySlug(slug);
+      const slug = `${resolvedHref}${it.href}`.replace(/^\/+/, "");
+      const frontmatter = await docsService.getFrontmatterForSlug(slug).catch(() => undefined);
+
+      if (!frontmatter) {
+        return null
+      }
+
       return {
-        ...extractFrontmatter<BaseMdxFrontmatter>(content),
+        ...frontmatter,
         href: `/docs${resolvedHref}${it.href}`,
       };
     })
   );
+
+  return children.filter((child): child is BaseMdxFrontmatter & { href: string } => child !== null)
 }
