@@ -145,90 +145,25 @@ async function fetchLatestReleaseFromGitHub() {
 }
 
 /**
- * Generate changelog from git commits between two versions
- * Parses conventional commits and categorizes them
+ * Extract first 5 non-empty lines from changelog text
+ * Empty lines are skipped and don't count toward the limit
+ * @param {string} text - Full changelog text
+ * @returns {string} - First 5 non-empty lines joined with newline
  */
-async function generateChangelogFromCommits(fromTag, toTag) {
-  try {
-    // Get commits between two tags without invoking a shell
-    let output = "";
-    try {
-      output = execFileSync(
-        "git",
-        ["log", `${fromTag}..${toTag}`, '--pretty=format:%H|%s|%b', "--", "packages/cli/"],
-        { encoding: "utf-8", stdio: ["ignore", "pipe", "ignore"] }
-      );
-    } catch {
-      // If git log fails, treat as no commits (equivalent to `|| echo ""`)
-      output = "";
-    }
+function extractFirst5Lines(text) {
+  if (!text) return "";
 
-    if (!output || output.trim() === "") {
-      return null;
-    }
+  const lines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
 
-    const commits = output.trim().split("\n").filter(Boolean).map((line) => {
-      const [hash, subject] = line.split("|");
-      return { hash: hash.slice(0, 7), subject };
-    });
-
-    if (commits.length === 0) {
-      return null;
-    }
-
-    // Categorize commits by conventional commit type
-    const categories = {
-      added: [],
-      fixed: [],
-      improved: [],
-      deprecated: [],
-      removed: [],
-    };
-
-    commits.forEach(({ hash, subject }) => {
-      const repoUrl = "https://github.com/DocuBook/docubook/commit";
-      const link = `[${hash}](${repoUrl}/${hash})`;
-
-      if (subject.startsWith("feat") || subject.startsWith("feat:")) {
-        categories.added.push(`- ${subject.replace(/^feat(\(.*?\))?:\s*/, "")} ${link}`);
-      } else if (subject.startsWith("fix") || subject.startsWith("fix:")) {
-        categories.fixed.push(`- ${subject.replace(/^fix(\(.*?\))?:\s*/, "")} ${link}`);
-      } else if (subject.startsWith("perf") || subject.startsWith("refactor")) {
-        categories.improved.push(`- ${subject.replace(/^(perf|refactor)(\(.*?\))?:\s*/, "")} ${link}`);
-      } else if (subject.startsWith("deprecate")) {
-        categories.deprecated.push(`- ${subject.replace(/^deprecate(\(.*?\))?:\s*/, "")} ${link}`);
-      } else if (subject.startsWith("remove") || subject.startsWith("remove:")) {
-        categories.removed.push(`- ${subject.replace(/^remove(\(.*?\))?:\s*/, "")} ${link}`);
-      }
-    });
-
-    // Build markdown
-    let markdown = "";
-    if (categories.added.length > 0) {
-      markdown += `### Added\n${categories.added.join("\n")}\n\n`;
-    }
-    if (categories.fixed.length > 0) {
-      markdown += `### Fixed\n${categories.fixed.join("\n")}\n\n`;
-    }
-    if (categories.improved.length > 0) {
-      markdown += `### Improved\n${categories.improved.join("\n")}\n\n`;
-    }
-    if (categories.deprecated.length > 0) {
-      markdown += `### Deprecated\n${categories.deprecated.join("\n")}\n\n`;
-    }
-    if (categories.removed.length > 0) {
-      markdown += `### Removed\n${categories.removed.join("\n")}\n\n`;
-    }
-
-    return markdown.trim() || null;
-  } catch {
-    return null;
-  }
+  return lines.slice(0, 5).join("\n");
 }
 
 /**
  * Fetch and display changelog from GitHub release
- * Uses git commits for structured changelog if available
+ * Shows only the first 5 non-empty lines from release body
  */
 async function showChangelogOnce(pkgName, version, releaseInfo) {
   try {
@@ -236,48 +171,17 @@ async function showChangelogOnce(pkgName, version, releaseInfo) {
     const seen = Array.isArray(store[pkgName]) ? store[pkgName] : [];
     if (seen.includes(version)) return;
 
-    let changelog = "";
+    // Use release body only
+    if (!releaseInfo || !releaseInfo.body) return;
 
-    // Try to generate from git commits first
-    try {
-      // Get the previous release tag
-      const currentTag = `cli-v${version}`;
-      let prevTag = "";
-      try {
-        prevTag = execFileSync(
-          "git",
-          ["describe", "--tags", "--abbrev=0", `${currentTag}^`],
-          { encoding: "utf-8", stdio: ["pipe", "pipe", "ignore"] }
-        ).trim();
-      } catch {
-        // If git describe fails, treat as no previous tag (equivalent to `|| echo ""`)
-        prevTag = "";
-      }
+    const changelogPreview = extractFirst5Lines(releaseInfo.body);
+    if (!changelogPreview) return;
 
-      if (prevTag && prevTag.startsWith("cli-v")) {
-        const generatedChangelog = await generateChangelogFromCommits(prevTag, currentTag);
-        if (generatedChangelog) {
-          changelog = generatedChangelog;
-        }
-      }
-    } catch {
-      // fallback to release body
-    }
-
-    // Fallback to release body if no commits found
-    if (!changelog && releaseInfo && releaseInfo.body) {
-      changelog = releaseInfo.body.slice(0, 2000);
-    }
-
-    if (!changelog) return;
-
-    // Print changelog
-    console.log("\n===========================================================\n");
-    console.log(`## ${releaseInfo?.tag_name || `cli-v${version}`}`);
+    // Print changelog preview
     console.log("");
-    console.log(changelog);
-    console.log("\nFull changelog, visit:");
-    console.log(`  ${releaseInfo?.html_url || `https://github.com/DocuBook/docubook/releases/tag/cli-v${version}`}\n`);
+    console.log(changelogPreview);
+    console.log("");
+    console.log(`Full changelog: ${releaseInfo.html_url}\n`);
 
     // Mark as shown
     store[pkgName] = Array.from(new Set([...seen, version]));
