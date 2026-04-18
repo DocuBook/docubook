@@ -14,7 +14,7 @@ import { getAvailableTemplates, getTemplate, getDefaultTemplate } from "../utils
  */
 export function initializeProgram(version) {
   program
-    .version(version)
+    .version(version, '-v, --version')
     .description("CLI to create a new DocuBook project");
 
   // Add `update` command: check npm registry and install latest globally if needed
