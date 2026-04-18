@@ -1,18 +1,15 @@
 <!--
   Sync Impact Report
   ===================
-  Version change: 0.0.0 → 1.0.0 (MAJOR — initial ratification)
-  Modified principles: N/A (first version)
+  Version change: 1.0.0 → 1.1.0 (MINOR — package development roadmap)
+  Modified principles: None (existing 7 principles unchanged)
   Added sections:
-    - Core Principles (7 principles)
-    - Technology Stack & Constraints
-    - Development Workflow & Quality Gates
-    - Governance
-  Removed sections: N/A
+    - Development Cycle Roadmap (Q2 2026: Package Enhancement Initiative)
+  Removed sections: None
   Templates requiring updates:
-    - .specify/templates/plan-template.md ✅ aligned (Constitution Check section exists)
-    - .specify/templates/spec-template.md ✅ aligned (user story priority model matches)
-    - .specify/templates/tasks-template.md ✅ aligned (phase structure compatible)
+    - .specify/templates/plan-template.md ✅ aligned
+    - .specify/templates/spec-template.md ✅ aligned
+    - .specify/templates/tasks-template.md ✅ aligned
   Follow-up TODOs: none
 -->
 
@@ -145,6 +142,81 @@ Prefer the simplest solution that satisfies the requirement.
 7. **Release**: `pnpm version-packages && pnpm release` publishes
    bumped packages to npm.
 
+## Development Cycle Roadmap: Q2 2026 Package Enhancement Initiative
+
+This section documents the strategic focus areas for the current development
+cycle. All work within these areas MUST remain aligned with the Core Principles
+above.
+
+### Focus Packages & Objectives
+
+**1. @docubook/core — MDX Pipeline Enhancement**
+- Objective: Strengthen MDX compilation pipeline with improved error handling,
+  plugin architecture, and performance optimization.
+- Constraints: MUST maintain 100% backward compatibility with existing
+  compiled outputs; all plugin hooks MUST be documented with examples.
+- Quality Gate: `pnpm build && pnpm test` MUST pass with >85% code coverage.
+- Deliverables: TypeScript strict mode compliance, enhanced error messages,
+  benchmarks for pipeline throughput.
+
+**2. @docubook/mdx-content — Built-In Components Registry**
+- Objective: Expand component library with semantic, accessible components
+  that leverage Radix UI primitives and Tailwind CSS.
+- Constraints: Every component MUST be framework-agnostic (adapter layer
+  handles framework differences); components MUST be documented with usage
+  examples and Storybook stories.
+- Quality Gate: All components MUST pass WCAG 2.1 AA accessibility audit;
+  visual regression tests required for all new components.
+- Deliverables: Component registry with live documentation, TypeScript
+  generics for framework adaptation, Storybook integration.
+
+**3. @docubook/template — Starter Templates**
+- Objective: Provide production-ready, opinionated starter templates that
+  follow project design system (Radix + Tailwind) and reduce time-to-first-doc.
+- Constraints: All templates MUST use consistent UI patterns, styling
+  approach, and component compositions; templates MUST scaffold from
+  `@docubook/cli` with `npx @docubook/cli@latest init`.
+- Quality Gate: Each template MUST be deployable to Vercel and Docker
+  with zero configuration changes; accessibility and performance budgets
+  MUST be met (Lighthouse ≥90).
+- Deliverables: `nextjs-vercel`, `nextjs-docker`, `react-router` templates,
+  template validation tests, documentation for extending templates.
+
+**4. @docubook/cli — Scaffold & Command Interface**
+- Objective: Build a comprehensive CLI that reduces onboarding friction:
+  interactive setup wizard, project scaffolding, and development server
+  commands.
+- Constraints: Zero mandatory configuration; all prompts MUST have sensible
+  defaults; CLI MUST work offline (except npm registry fetch).
+- Quality Gate: All commands MUST produce helpful error messages with
+  recovery suggestions; CLI MUST complete scaffolding in <30 seconds on
+  typical hardware.
+- Deliverables: `init`, `dev`, `build`, `preview` commands; interactive TUI
+  setup wizard; comprehensive CLI help and examples.
+
+**5. @docubook/docs-tree — Deterministic Cache & Tree Generation**
+- Objective: Generate deterministic, cacheable directory trees for docs to
+  enable efficient static generation and incremental builds.
+- Constraints: Output MUST be deterministic for the same input filesystem;
+  cache invalidation strategy MUST be documented and tested;
+  tree generation MUST complete in <500ms for 1000+ doc files.
+- Quality Gate: Snapshot tests for tree output; cache hit rate tests for
+  incremental builds; performance benchmarks with results tracked.
+- Deliverables: Deterministic tree generation algorithm, cache layer with
+  validation, integration tests with `@docubook/core`.
+
+### Cross-Package Principles for This Cycle
+
+- **API Contracts**: Any new public export from these packages MUST follow
+  Principle II (API Stability); breaking changes prohibited without MAJOR
+  version bump via Changesets.
+- **Developer Experience**: Every feature MUST reduce friction; default
+  configurations MUST work for 90% of common use cases (Principle IV).
+- **Testing Discipline**: New features MUST include unit + integration tests;
+  snapshot tests for deterministic outputs (tree, compiled MDX).
+- **Documentation**: Every new feature MUST have a corresponding entry in
+  `apps/web/docs/` with code examples and reasoning.
+
 ## Governance
 
 This constitution is the highest-authority document for the DocuBook
@@ -164,4 +236,4 @@ decisions MUST comply with the principles defined above.
 - **Runtime Guidance**: See `CONTRIBUTING.md` for day-to-day
   development guidance that operationalizes these principles.
 
-**Version**: 1.0.0 | **Ratified**: 2026-04-09 | **Last Amended**: 2026-04-09
+**Version**: 1.1.0 | **Ratified**: 2026-04-09 | **Last Amended**: 2026-04-18
