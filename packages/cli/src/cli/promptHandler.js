@@ -2,7 +2,6 @@ import prompts from "prompts";
 import path from "path";
 import fs from "fs";
 import { getAvailableTemplates } from "../utils/templateDetect.js";
-import log from "../utils/logger.js";
 
 /**
  * Collects user input for project creation
@@ -10,9 +9,28 @@ import log from "../utils/logger.js";
  * @returns {Promise<Object>} User answers
  */
 export async function collectUserInput(cliProvidedDir) {
+  const normalizedCliDir =
+    typeof cliProvidedDir === "string" ? cliProvidedDir.trim() : cliProvidedDir;
+
+  if (typeof normalizedCliDir === "string") {
+    if (normalizedCliDir.length === 0) {
+      throw new Error("Project name cannot be empty.");
+    }
+    if (fs.existsSync(path.resolve(process.cwd(), normalizedCliDir))) {
+      throw new Error(
+        `The directory "${normalizedCliDir}" already exists. Choose a different name.`
+      );
+    }
+  }
+
   let answers = {
-    directoryName: cliProvidedDir
+    directoryName: normalizedCliDir,
   };
+
+  const availableTemplates = getAvailableTemplates();
+  if (availableTemplates.length === 0) {
+    throw new Error("No templates available.");
+  }
 
   const questions = [
     {
@@ -26,7 +44,7 @@ export async function collectUserInput(cliProvidedDir) {
           return "Project name cannot be empty.";
         }
         if (fs.existsSync(path.resolve(process.cwd(), trimmed))) {
-          return `The directory \"${trimmed}\" already exists. Choose a different name.`;
+          return `The directory "${trimmed}" already exists. Choose a different name.`;
         }
         return true;
       },
@@ -35,10 +53,10 @@ export async function collectUserInput(cliProvidedDir) {
       type: "select",
       name: "template",
       message: "Select your template:",
-      choices: getAvailableTemplates().map(t => ({
-        title: `${t.name}`,
-        description: t.description,
-        value: t.id
+      choices: availableTemplates.map((template) => ({
+        title: template.name,
+        description: template.description,
+        value: template.id,
       })),
       initial: 0,
     },
@@ -50,18 +68,29 @@ export async function collectUserInput(cliProvidedDir) {
     },
   ];
 
+  let wasCancelled = false;
   const promptAnswers = await prompts(questions, {
     onCancel: () => {
-      log.error("Scaffolding cancelled.");
-      process.exit(0);
+      wasCancelled = true;
+      return false;
     },
   });
 
+  if (wasCancelled) {
+    throw new Error("Scaffolding cancelled.");
+  }
+
   answers = { ...answers, ...promptAnswers };
+  const directoryName =
+    typeof answers.directoryName === "string" ? answers.directoryName.trim() : "";
+
+  if (!directoryName) {
+    throw new Error("Project name cannot be empty.");
+  }
 
   // Return all answers
   return {
-    directoryName: answers.directoryName.trim(),
+    directoryName,
     template: answers.template,
     autoInstall: answers.autoInstall !== false,
   };
