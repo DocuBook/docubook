@@ -43,15 +43,19 @@ export async function createProject(options) {
       throw new Error(`Template "${template}" could not be found or downloaded.`);
     }
 
-    copyDirectoryRecursive(templatePath, projectPath);
+    try {
+      copyDirectoryRecursive(templatePath, projectPath);
+    } finally {
+      cleanupTemplate?.();
+    }
 
-    // 2. Update package.json
+    // Update package.json
     state?.setCurrentStep("Updating project config...");
     renderScaffolding(state || {});
     const pkgPath = path.join(projectPath, "package.json");
     if (fs.existsSync(pkgPath)) {
       const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
-      pkg.name = directoryName;
+      pkg.name = directoryName
       const packageManagerSpec = getPackageManagerSpec(packageManager);
       if (packageManagerSpec) {
         pkg.packageManager = packageManagerSpec;
@@ -71,12 +75,12 @@ export async function createProject(options) {
     }
 
     log.info(chalk.green(`Successfully created DocuBook project v${docubookVersion}`));
-  } catch (err) {
+  } catch (error) {
     // Cleanup created directory on failure
     if (fs.existsSync(projectPath)) {
       fs.rmSync(projectPath, { recursive: true, force: true });
     }
-    throw err;
+    throw error;
   }
 }
 
@@ -87,7 +91,7 @@ function getPackageManagerSpec(packageManager) {
       encoding: "utf8",
     }).trim();
 
-    const version = versionOutput.split(/\r?\n/).at(-1)?.trim();
+    const version = versionOutput.split(/\r?\n/).at(-1)?.trim()
     if (!version) return null;
 
     return `${packageManager}@${version}`;
@@ -106,7 +110,10 @@ async function getOrDownloadTemplate(templateId, state) {
   // Try local path first (for dev environment)
   const localPath = getLocalTemplatePath(templateId);
   if (localPath && fs.existsSync(localPath)) {
-    return localPath;
+    return {
+      templatePath: localPath,
+      cleanup: null,
+    };
   }
 
   // Download from GitHub
@@ -127,7 +134,7 @@ async function getOrDownloadTemplate(templateId, state) {
  * @returns {string|null} Path to local template or null
  */
 function getLocalTemplatePath(templateId) {
-  const currentDir = new URL(".", import.meta.url).pathname;
+  const currentDir = fileURLToPath(new URL(".", import.meta.url));
 
   // Check dist/ folder first (if built)
   const distPath = path.join(currentDir, "..", "..", "dist", templateId);
@@ -151,7 +158,7 @@ function getLocalTemplatePath(templateId) {
  * @returns {Promise<string>} Path to downloaded template
  */
 async function downloadTemplateFromGitHub(templateId, templateUrl) {
-  const tempDir = fs.mkdtempSync(path.join("/tmp", "docubook-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "docubook-"));
 
   try {
     // Build archive URL from template URL
@@ -162,7 +169,10 @@ async function downloadTemplateFromGitHub(templateId, templateUrl) {
       throw new Error(`Invalid template URL: ${templateUrl}`);
     }
 
-    const archiveUrl = `https://github.com/${repoMatch[1]}/archive/refs/heads/main.tar.gz`;
+    const branchMatch = templateUrl.match(/\/tree\/([^/]+)\//)
+    const branch = branchMatch?.[1] || "main"
+
+    const archiveUrl = `https://github.com/${repoMatch[1]}/archive/refs/heads/${branch}.tar.gz`;
     const archivePath = path.join(tempDir, "repo.tar.gz");
 
     // Show progress for download
@@ -171,9 +181,9 @@ async function downloadTemplateFromGitHub(templateId, templateUrl) {
     try {
       execSync(`curl -L -o "${archivePath}" "${archiveUrl}"`, { stdio: "pipe" });
       downloadSpinner.succeed("Template downloaded");
-    } catch (err) {
+    } catch (error) {
       downloadSpinner.fail("Failed to download template");
-      throw err;
+      throw error;
     }
 
     // Show progress for extraction
@@ -182,23 +192,32 @@ async function downloadTemplateFromGitHub(templateId, templateUrl) {
     try {
       execSync(`tar -xzf "${archivePath}" -C "${tempDir}"`, { stdio: "pipe" });
       extractSpinner.succeed("Template extracted");
-    } catch (err) {
+    } catch (error) {
       extractSpinner.fail("Failed to extract template");
-      throw err;
+      throw error;
     }
 
     // Find template in extracted repo
-    const repoName = repoMatch[1].split('/')[1];
+    const repoName = repoMatch[1].split("/")[1]
     const extractedDir = path.join(tempDir, `${repoName}-main`, "packages", "template", templateId);
 
     if (!fs.existsSync(extractedDir)) {
       throw new Error(`Template "${templateId}" not found in repository.`);
     }
 
-    return extractedDir;
-  } catch (err) {
+    return {
+      templatePath: extractedDir,
+      cleanup: () => {
+        try {
+          fs.rmSync(tempDir, { recursive: true, force: true })
+        } catch {
+          // non-fatal
+        }
+      },
+    }
+  } catch (error) {
     fs.rmSync(tempDir, { recursive: true, force: true });
-    throw new Error(`Failed to download template: ${err.message}`);
+    throw new Error(`Failed to download template: ${error.message}`);
   }
 }
 
@@ -218,7 +237,10 @@ function copyDirectoryRecursive(source, destination, depth = 0) {
     const destPath = path.join(destination, entry.name);
 
     // Skip build artifacts and node_modules at root level
-    if (['node_modules', '.next', '.turbo', 'dist', 'build', '.cache'].includes(entry.name) && depth === 0) {
+    if (
+      ["node_modules", ".next", ".turbo", "dist", "build", ".cache"].includes(entry.name) &&
+      depth === 0
+    ) {
       continue;
     }
 
@@ -255,7 +277,19 @@ async function installDependencies(directoryName, packageManager, projectPath, s
   const installSpinner = ora(`Running ${chalk.green(`${packageManager} install`)}...`).start();
 
   try {
-    execSync(`${packageManager} install`, { cwd: projectPath, stdio: "inherit" });
+    const installCommands = {
+      npm: { command: "npm", args: ["install"] },
+      pnpm: { command: "pnpm", args: ["install"] },
+      yarn: { command: "yarn", args: ["install"] },
+      bun: { command: "bun", args: ["install"] },
+    }
+
+    const selected = installCommands[packageManager]
+    if (!selected) {
+      throw new Error(`Unsupported package manager: ${packageManager}`)
+    }
+
+    execFileSync(selected.command, selected.args, { cwd: projectPath, stdio: "inherit" });
     installSpinner.succeed("Dependencies installed successfully.");
   } catch (err) {
     installSpinner.fail("Failed to install dependencies.");
@@ -265,9 +299,9 @@ async function installDependencies(directoryName, packageManager, projectPath, s
     // Offer retry if not in silent mode
     if (!state?.silent && !state?.json) {
       const answer = await prompts({
-        type: 'confirm',
-        name: 'retry',
-        message: 'Would you like to retry installing dependencies?',
+        type: "confirm",
+        name: "retry",
+        message: "Would you like to retry installing dependencies?",
         initial: true,
       });
 
