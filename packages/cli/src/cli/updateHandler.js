@@ -1,4 +1,3 @@
-/* global fetch */
 import { execSync, execFileSync } from "child_process";
 import ora from "ora";
 import fs from "fs";
@@ -311,7 +310,7 @@ export async function handleUpdate(currentVersion) {
       }
     } catch (installErr) {
       // If install fails, provide a helpful message
-      const cmd = `${packageManager === "bun" ? "bun install -g" : packageManager === "yarn" ? "yarn global add" : "npm install -g"} ${pkgName}@${latest}`;
+      const cmd = `${packageManager === "bun" ? "bun install -g" : packageManager === "pnpm" ? "pnpm install -g" : packageManager === "yarn" ? "yarn global add" : "npm install -g"} ${pkgName}@${latest}`;
       console.error(`Update failed: ${installErr.message || installErr}`);
       console.error(
         `Try running the following command manually:\n  ${cmd}\n` +
