@@ -1,5 +1,11 @@
 # @docubook/cli
 
+## 0.4.3
+
+### Patch Changes
+
+- 43813f0: Fix scaffold installer runtime errors in CLI
+
 ## 0.4.2
 
 ### Patch Changes

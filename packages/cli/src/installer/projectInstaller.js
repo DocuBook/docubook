@@ -1,9 +1,10 @@
 import path from "path";
 import fs from "fs";
-import { URL } from "url";
+import os from "os";
+import { URL, fileURLToPath } from "url";
 import ora from "ora";
 import chalk from "chalk";
-import { execSync } from "child_process";
+import { execSync, execFileSync } from "child_process";
 import prompts from "prompts";
 import log from "../utils/logger.js";
 import { displayManualSteps } from "../utils/display.js";
@@ -37,7 +38,7 @@ export async function createProject(options) {
     state?.setCurrentStep('Creating directories...');
     renderScaffolding(state || {});
 
-    const templatePath = await getOrDownloadTemplate(template, state);
+    const { templatePath, cleanup } = await getOrDownloadTemplate(template, state);
 
     if (!templatePath || !fs.existsSync(templatePath)) {
       throw new Error(`Template "${template}" could not be found or downloaded.`);
@@ -46,7 +47,7 @@ export async function createProject(options) {
     try {
       copyDirectoryRecursive(templatePath, projectPath);
     } finally {
-      cleanupTemplate?.();
+      cleanup?.();
     }
 
     // Update package.json
