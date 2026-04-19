@@ -5,17 +5,26 @@ import { handleUpdate } from "./updateHandler.js";
 import log from "../utils/logger.js";
 import { renderWelcome, renderDone, renderError } from "../tui/renderer.js";
 import { CLIState } from "../tui/state.js";
-import { detectInstalledPackageManager, getPackageManagerInfo } from "../utils/packageManagerDetect.js";
+import {
+  detectInstalledPackageManager,
+  getPackageManagerInfo,
+} from "../utils/packageManagerDetect.js";
 import { getAvailableTemplates, getTemplate, getDefaultTemplate } from "../utils/templateDetect.js";
+
+let isProgramInitialized = false;
 
 /**
  * Initializes the CLI program
  * @param {string} version - Package version
  */
 export function initializeProgram(version) {
-  program
-    .version(version, '-v, --version')
-    .description("CLI to create a new DocuBook project");
+  if (isProgramInitialized) {
+    return program;
+  }
+
+  isProgramInitialized = true;
+
+  program.version(version, "-v, --version").description("CLI to create a new DocuBook project");
 
   // Add `update` command: check npm registry and install latest globally if needed
   program
@@ -27,12 +36,12 @@ export function initializeProgram(version) {
 
   // Expose a `version` subcommand: `docubook version`
   program
-    .command('version')
-    .description('Print the DocuBook CLI version')
+    .command("version")
+    .description("Print the DocuBook CLI version")
     .action(() => {
       console.log(`DocuBook CLI ${version}`);
       console.log("Run 'docubook update' to check for updates.");
-      process.exit(0);
+      return;
     });
 
   // Default behavior (create project)
@@ -48,7 +57,7 @@ export function initializeProgram(version) {
         // Render welcome screen with version (skip if silent)
         if (!state.silent && !state.json) {
           renderWelcome(version);
-          await new Promise(resolve => setTimeout(resolve, 1500));
+          await new Promise((resolve) => setTimeout(resolve, 1500));
         }
 
         // Detect package manager used to invoke CLI (for auto-install)
@@ -56,7 +65,7 @@ export function initializeProgram(version) {
         state.setPackageManager(packageManager);
 
         // Get user input (only project name if not provided)
-        state.setStage('input');
+        state.setStage("input");
         const userInput = await collectUserInput(directory);
         state.setProjectName(userInput.directoryName);
 
@@ -71,8 +80,22 @@ export function initializeProgram(version) {
         } else if (templates.length > 1) {
           // Multiple templates, let user choose
           selectedTemplate = userInput.template || getDefaultTemplate()?.id;
+
+          if (!selectedTemplate) {
+            throw new Error("No default template configured. Please choose a template explicitly.");
+          }
+
           const tmpl = getTemplate(selectedTemplate);
-          state.setTemplate(tmpl?.name || selectedTemplate);
+          if (!tmpl) {
+            const availableTemplateIds = templates
+              .map((templateItem) => templateItem.id)
+              .join(", ");
+            throw new Error(
+              `Invalid template \"${selectedTemplate}\". Available templates: ${availableTemplateIds}`
+            );
+          }
+
+          state.setTemplate(tmpl.name);
         } else {
           throw new Error("No templates available");
         }
@@ -89,10 +112,16 @@ export function initializeProgram(version) {
 
         // Show success message
         const pmInfo = getPackageManagerInfo(packageManager);
-        renderDone(userInput.directoryName, packageManager, pmInfo.devCmd, userInput.autoInstall !== false, state);
-      } catch (err) {
-        renderError(err.message || "An unexpected error occurred.", state);
-        log.error(err.message || "An unexpected error occurred.");
+        renderDone(
+          userInput.directoryName,
+          packageManager,
+          pmInfo.devCmd,
+          userInput.autoInstall !== false,
+          state
+        );
+      } catch (error) {
+        renderError(error.message || "An unexpected error occurred.", state);
+        log.error(error.message || "An unexpected error occurred.");
         process.exit(1);
       }
     });
