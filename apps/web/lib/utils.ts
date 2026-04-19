@@ -43,3 +43,8 @@ export function formatDate2(dateStrOrDate: string | Date): string {
 export function stringToDate(date: string | Date) {
   return date instanceof Date ? date : parseDate(date);
 }
+
+export function toIsoDateOnly(dateStrOrDate: string | Date): string {
+  const date = stringToDate(dateStrOrDate)
+  return date.toISOString().slice(0, 10)
+}

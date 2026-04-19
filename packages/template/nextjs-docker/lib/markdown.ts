@@ -3,13 +3,13 @@ import {
   type MdxCompileResult as CoreMdxCompileResult,
 } from "@docubook/core";
 import { cache } from "react";
-import { promises as fsPromises } from "fs";
 import path from "path";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import { page_routes, ROUTES } from "./routes";
 import type { TocItem } from "./toc";
 import { mdxComponents as components } from "./mdx-components";
+import { toIsoDateOnly } from "./utils";
 
 export type MdxCompileResult<Frontmatter> = CoreMdxCompileResult<Frontmatter>;
 
@@ -30,8 +30,8 @@ export type BaseMdxFrontmatter = {
 // `React.cache` deduplicates calls within a single server-render pass.
 // Keep request-level cache in app layer, while markdown pipeline lives in core.
 
-const fileMtimeCache = new Map<string, Date>();
 const fileGitDateCache = new Map<string, Date | undefined>();
+let repoLastCommitDateCache: Date | undefined | null = null;
 let gitRootCache: string | undefined;
 const execFileAsync = promisify(execFile);
 
@@ -92,20 +92,38 @@ async function getFileLastCommitDate(absoluteFilePath: string): Promise<Date | u
   }
 }
 
-/**
- * Return the mtime of an MDX file as a Date object.
- * Caller receives the Date directly — no string round-trip, no re-parse needed.
- */
-async function getFileLastModifiedDate(absoluteFilePath: string): Promise<Date | undefined> {
-  if (fileMtimeCache.has(absoluteFilePath)) {
-    return fileMtimeCache.get(absoluteFilePath);
+async function getRepoLastCommitDate(): Promise<Date | undefined> {
+  if (repoLastCommitDateCache !== null) {
+    return repoLastCommitDateCache ?? undefined
   }
+
   try {
-    const stat = await fsPromises.stat(absoluteFilePath);
-    const mtime = stat.mtime;
-    fileMtimeCache.set(absoluteFilePath, mtime); // Cache result for future calls
-    return mtime;
+    const gitRoot = await getGitRootDir()
+    if (!gitRoot) {
+      repoLastCommitDateCache = undefined
+      return undefined
+    }
+
+    const { stdout } = await execFileAsync("git", ["log", "-1", "--format=%cI"], {
+      cwd: gitRoot,
+    })
+
+    const rawDate = stdout.trim()
+    if (!rawDate) {
+      repoLastCommitDateCache = undefined
+      return undefined
+    }
+
+    const parsed = new Date(rawDate)
+    if (Number.isNaN(parsed.getTime())) {
+      repoLastCommitDateCache = undefined
+      return undefined
+    }
+
+    repoLastCommitDateCache = parsed
+    return parsed
   } catch {
+    repoLastCommitDateCache = undefined
     return undefined;
   }
 }
@@ -113,15 +131,16 @@ async function getFileLastModifiedDate(absoluteFilePath: string): Promise<Date |
 const docsService = createMdxContentService<BaseMdxFrontmatter, TocItem>({
   parseOptions: { components },
   cacheFn: cache,
-  // Backward-compatible: if `date` is absent in frontmatter, fall back to
-  // Git commit date first, then filesystem mtime as final fallback.
   frontmatterEnricher: async (frontmatter, absoluteFilePath) => {
     if (!frontmatter.date) {
       const gitDate = await getFileLastCommitDate(absoluteFilePath);
-      if (gitDate) return { ...frontmatter, date: gitDate };
+      if (gitDate) return { ...frontmatter, date: toIsoDateOnly(gitDate) };
 
-      const fileDate = await getFileLastModifiedDate(absoluteFilePath);
-      if (fileDate) return { ...frontmatter, date: fileDate };
+      const repoDate = await getRepoLastCommitDate();
+      if (repoDate) return { ...frontmatter, date: toIsoDateOnly(repoDate) };
+
+      // Keep `date` non-empty even outside git context.
+      return { ...frontmatter, date: "12-12-2025" };
     }
     return frontmatter;
   },
@@ -133,8 +152,8 @@ export async function getDocsFrontmatterForSlug(
 ): Promise<BaseMdxFrontmatter | undefined> {
   try {
     return await docsService.getFrontmatterForSlug(slug);
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    console.log(error);
   }
 }
 
@@ -145,8 +164,8 @@ export async function getDocsFrontmatterForSlug(
 export async function getDocsForSlug(slug: string): Promise<DocsForSlugResult | undefined> {
   try {
     return await docsService.getCompiledForSlug(slug);
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    console.log(error);
   }
 }
 
