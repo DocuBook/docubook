@@ -66,8 +66,8 @@ function detectInstalledPackageManager() {
     const userAgent = process.env.npm_config_user_agent || "";
     if (userAgent.includes("npm")) return "npm";
     if (userAgent.includes("pnpm")) return "pnpm";
-    if (userAgent.includes("bun")) return "bun";
     if (userAgent.includes("yarn")) return "yarn";
+    if (userAgent.includes("bun")) return "bun";
 
     // Fallback: check what's available in PATH
     // Priority: npm > bun > yarn > pnpm (based on common usage and reliability)
@@ -79,8 +79,8 @@ function detectInstalledPackageManager() {
     }
 
     try {
-      execSync("bun --version", { stdio: "ignore" });
-      return "bun";
+      execSync("pnpm --version", { stdio: "ignore" });
+      return "pnpm";
     } catch {
       // try next
     }
@@ -93,8 +93,8 @@ function detectInstalledPackageManager() {
     }
 
     try {
-      execSync("pnpm --version", { stdio: "ignore" });
-      return "pnpm";
+      execSync("bun --version", { stdio: "ignore" });
+      return "bun";
     } catch {
       // try next
     }
@@ -117,7 +117,7 @@ async function fetchLatestReleaseFromGitHub() {
     const url = `https://api.github.com/repos/${owner}/${repo}/releases/latest`;
 
     const res = await fetch(url, {
-      headers: { "Accept": "application/vnd.github.v3+json" }
+      headers: { Accept: "application/vnd.github.v3+json" },
     });
 
     if (!res.ok) {
@@ -295,7 +295,7 @@ export async function handleUpdate(currentVersion) {
     );
 
     // Fetch release info from GitHub
-    const releaseInfo = await fetchLatestReleaseFromGitHub(pkgName);
+    const releaseInfo = await fetchLatestReleaseFromGitHub();
 
     // Install using detected package manager
     try {
@@ -310,11 +310,11 @@ export async function handleUpdate(currentVersion) {
       }
     } catch (installErr) {
       // If install fails, provide a helpful message
-      const cmd = `${packageManager === "bun" ? "bun install -g" : packageManager === "pnpm" ? "pnpm install -g" : packageManager === "yarn" ? "yarn global add" : "npm install -g"} ${pkgName}@${latest}`;
+      const cmd = `${packageManager === "pnpm" ? "pnpm add -g" : packageManager === "yarn" ? "yarn global add" : packageManager === "bun" ? "bun add -g" : "npm install -g"} ${pkgName}@${latest}`;
       console.error(`Update failed: ${installErr.message || installErr}`);
       console.error(
         `Try running the following command manually:\n  ${cmd}\n` +
-        `If you see permissions errors, consider running with elevated privileges or using a Node version manager.`
+          `If you see permissions errors, consider running with elevated privileges or using a Node version manager.`
       );
       process.exitCode = 1;
     }
