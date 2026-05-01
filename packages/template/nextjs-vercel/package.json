@@ -17,6 +17,7 @@
     "@docsearch/react": "^4.6.2",
     "@docubook/core": "^1.4.1",
     "@docubook/mdx-content": "^2.1.1",
+    "@docubook/ui": "workspace:*",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-collapsible": "^1.1.12",
