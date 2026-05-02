@@ -28,6 +28,10 @@ interface MobTocProps {
   title?: string
 }
 
+const subscribe = () => () => undefined
+const getMountedSnapshot = () => true
+const getServerSnapshot = () => false
+
 const useClickOutside = (ref: React.RefObject<HTMLElement | null>, callback: () => void) => {
   const handleClick = React.useCallback(
     (event: MouseEvent) => {
@@ -65,11 +69,11 @@ export default function MobToc({ tocs, title }: MobTocProps) {
 
   const displayTitle = activeSection?.text || title || "On this page"
 
-  const [mounted, setMounted] = React.useState(false)
-
-  React.useEffect(() => {
-    setMounted(true)
-  }, [])
+  const mounted = React.useSyncExternalStore(
+    subscribe,
+    getMountedSnapshot,
+    getServerSnapshot
+  )
 
   // Toggle expanded state
   const toggleExpanded = React.useCallback((e: React.MouseEvent) => {

@@ -5,16 +5,19 @@ import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
+const subscribe = () => () => undefined;
+const getMountedSnapshot = () => true;
+const getServerSnapshot = () => false;
+
 export function ModeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
+  const mounted = React.useSyncExternalStore(
+    subscribe,
+    getMountedSnapshot,
+    getServerSnapshot
+  );
 
-  // Untuk menghindari hydration mismatch
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Jika belum mounted, jangan render apapun untuk menghindari mismatch
+  // If not mounted, do not render anything to avoid mismatch
   if (!mounted) {
     return (
       <div className="flex items-center gap-1 rounded-full border border-border bg-background/50 p-0.5">
@@ -24,13 +27,9 @@ export function ModeToggle() {
     );
   }
 
-  // Tentukan theme yang aktif: gunakan resolvedTheme untuk menampilkan ikon yang sesuai
-  // jika theme === "system", resolvedTheme akan menjadi "light" atau "dark" sesuai device
   const activeTheme = theme === "system" || !theme ? resolvedTheme : theme;
 
   const handleToggle = () => {
-    // Toggle antara light dan dark
-    // Jika sekarang light, ganti ke dark, dan sebaliknya
     if (activeTheme === "light") {
       setTheme("dark");
     } else {
