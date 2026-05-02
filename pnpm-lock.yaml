@@ -55,8 +55,8 @@ importers:
         specifier: ^4.6.2
         version: 4.6.2(@algolia/client-search@5.50.0)(@types/react@19.2.8)(algoliasearch@5.50.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(search-insights@2.17.3)
       '@docubook/core':
-        specifier: ^1.4.1
-        version: 1.4.1(@types/react@19.2.8)(react@19.2.3)
+        specifier: ^1.5.0
+        version: 1.5.0(@types/react@19.2.8)(react@19.2.3)
       '@docubook/mdx-content':
         specifier: ^2.1.1
         version: 2.1.1(lucide-react@1.7.0(react@19.2.3))(next@16.2.3(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react-icons@5.6.0(react@19.2.3))(react@19.2.3)
@@ -600,8 +600,8 @@ packages:
       search-insights:
         optional: true
 
-  '@docubook/core@1.4.1':
-    resolution: {integrity: sha512-qO6zOGDI9YNrPmNnD19O20Vr/uIt8F88XudKOuZwXnTC3Tjjze/q7mWbRzNg2YITNyCkNIDE+bJipAtBqh2ulw==}
+  '@docubook/core@1.5.0':
+    resolution: {integrity: sha512-g40q4JBqUKK4AHJqpVIDrE3LYJuTIFYCYXhyx2Z3cNJ8f2Z+ZxUlsrQ+xKjeUFytcEn5NfB2c548wv5W+3/a6w==}
 
   '@docubook/docs-tree@1.0.1':
     resolution: {integrity: sha512-AmsrlXeACyWX09RCQF46E/PWHbaTql8OTyBAdz6nKlg4SiZIHi1A4k4ELjw0dZKNfzl1Dt7PUS/E0w52l0al4g==}
@@ -2508,10 +2508,6 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
-  gray-matter@4.0.3:
-    resolution: {integrity: sha512-5v6yZd4JK3eMI3FqqCouswVqwugaA9r4dNZB1wwcmrD02QkV5H0y7XBQW8QwQqEaZY1pM9aqORSORhJRdNK44Q==}
-    engines: {node: '>=6.0'}
-
   has-bigints@1.1.0:
     resolution: {integrity: sha512-R3pbpkcIqv2Pm3dUwgjclDRVmWpTJW2DcMzcIhEXEx1oh/CEMObMm3KLmRJOdvhM7o4uQBnwr8pzRK2sJWIqfg==}
     engines: {node: '>= 0.4'}
@@ -3823,10 +3819,6 @@ packages:
     resolution: {integrity: sha512-yDPMNjp4WyfYBkHnjIRLfca1i6KMyGCtsVgoKe/z1+6vukgaENdgGBZt+ZmKPc4gavvEZ5OgHfHdrazhgNyG7w==}
     engines: {node: '>=12'}
 
-  strip-bom-string@1.0.0:
-    resolution: {integrity: sha512-uCC2VHvQRYu+lMh4My/sFNmF2klFymLX1wHJeXnbEJERpV/ZsVuonzerjfrGpIGF7LBVa1O7i9kjiWvJiFck8g==}
-    engines: {node: '>=0.10.0'}
-
   strip-bom@3.0.0:
     resolution: {integrity: sha512-vavAMRXOgBVNF6nyEEmL3DBK19iRpDcoIwW+swQ+CbGiu7lju6t+JklA1MHweoWtadgt4ISVUsXLyDq34ddcwA==}
     engines: {node: '>=4'}
@@ -4511,9 +4503,9 @@ snapshots:
       - '@algolia/client-search'
       - algoliasearch
 
-  '@docubook/core@1.4.1(@types/react@19.2.8)(react@19.2.3)':
+  '@docubook/core@1.5.0(@types/react@19.2.8)(react@19.2.3)':
     dependencies:
-      gray-matter: 4.0.3
+      '@11ty/gray-matter': 2.0.2
       next-mdx-remote: 6.0.0(@types/react@19.2.8)(react@19.2.3)
       rehype-autolink-headings: 7.1.0
       rehype-code-titles: 1.2.1
@@ -6522,13 +6514,6 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
-  gray-matter@4.0.3:
-    dependencies:
-      js-yaml: 3.14.2
-      kind-of: 6.0.3
-      section-matter: 1.0.0
-      strip-bom-string: 1.0.0
-
   has-bigints@1.1.0: {}
 
   has-flag@4.0.0: {}
@@ -8192,8 +8177,6 @@ snapshots:
   strip-ansi@7.2.0:
     dependencies:
       ansi-regex: 6.2.2
-
-  strip-bom-string@1.0.0: {}
 
   strip-bom@3.0.0: {}
 

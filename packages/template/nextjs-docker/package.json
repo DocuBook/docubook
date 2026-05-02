@@ -15,7 +15,7 @@
   "dependencies": {
     "@docsearch/css": "^4.6.2",
     "@docsearch/react": "^4.6.2",
-    "@docubook/core": "^1.4.1",
+    "@docubook/core": "^1.5.0",
     "@docubook/mdx-content": "^2.1.1",
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-dialog": "^1.1.15",
