@@ -1,0 +1,8 @@
+{
+  "apps/**/*.{ts,tsx,js,jsx}": [
+    "turbo lint --filter=...[head]"
+  ],
+  "packages/**/*.{ts,tsx,js,jsx}": [
+    "turbo lint --filter=...[head]"
+  ]
+}

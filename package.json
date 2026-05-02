@@ -13,13 +13,15 @@
     "typecheck": "turbo typecheck",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
     "@typescript-eslint/eslint-plugin": "^8.57.2",
     "@typescript-eslint/parser": "^8.57.2",
     "eslint": "^9.39.4",
+    "husky": "^9.1.7",
     "npm": "^10.9.8",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.6.14",
@@ -28,6 +30,7 @@
     "typescript-eslint": "^8.57.2"
   },
   "dependencies": {
+    "lint-staged": "^16.4.0",
     "next": "^16.2.3"
   },
   "engines": {
