@@ -1,6 +1,6 @@
 {
   "name": "@docubook/core",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "Shared MDX compile pipeline and markdown utilities for DocuBook",
   "type": "module",
   "main": "./dist/index.js",
@@ -39,7 +39,7 @@
   "author-url": "https://wildan.dev",
   "license": "MIT",
   "dependencies": {
-    "gray-matter": "^4.0.3",
+    "@11ty/gray-matter": "^2.0.2",
     "next-mdx-remote": "^6.0.0",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-code-titles": "^1.2.1",

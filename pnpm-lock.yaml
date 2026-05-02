@@ -214,9 +214,9 @@ importers:
 
   packages/core:
     dependencies:
-      gray-matter:
-        specifier: ^4.0.3
-        version: 4.0.3
+      '@11ty/gray-matter':
+        specifier: ^2.0.2
+        version: 2.0.2
       next-mdx-remote:
         specifier: ^6.0.0
         version: 6.0.0(@types/react@19.2.8)(react@19.2.4)
@@ -334,6 +334,10 @@ importers:
         version: 5.9.3
 
 packages:
+
+  '@11ty/gray-matter@2.0.2':
+    resolution: {integrity: sha512-+sbmr+BPzzi0z4lFvruKiGQ3D/d5zBssavhH9SzXmWkf7rStnB4gfeEMgz6k1Ac8bpN5NAFCH5GyR3xHk1BGPA==}
+    engines: {node: '>=11'}
 
   '@algolia/abtesting@1.16.0':
     resolution: {integrity: sha512-alHFZ68/i9qLC/muEB07VQ9r7cB8AvCcGX6dVQi2PNHhc/ZQRmmFAv8KK1ay4UiseGSFr7f0nXBKsZ/jRg7e4g==}
@@ -4101,6 +4105,11 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
+
+  '@11ty/gray-matter@2.0.2':
+    dependencies:
+      js-yaml: 4.1.1
+      section-matter: 1.0.0
 
   '@algolia/abtesting@1.16.0':
     dependencies:

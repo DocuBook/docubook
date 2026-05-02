@@ -226,7 +226,7 @@ This means app-level users should focus on content and integration. Plugin upgra
 
 ### Managed Markdown Dependencies
 
-- gray-matter
+- @11ty/gray-matter
 - rehype-autolink-headings
 - rehype-code-titles
 - rehype-prism-plus

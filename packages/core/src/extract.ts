@@ -1,4 +1,4 @@
-import matter from "gray-matter"
+import matter from "@11ty/gray-matter"
 import type { TocItem } from "./types"
 
 const FENCE_MARKER_REGEX = /^(````|```)(?!`)/
