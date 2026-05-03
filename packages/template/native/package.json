@@ -1,0 +1,46 @@
+{
+  "name": "@docubook/template-native",
+  "version": "0.1.0",
+  "description": "Native DocuBook static site template - Bun + daisyUI",
+  "type": "module",
+  "scripts": {
+    "dev": "bun .docu/server.ts",
+    "build": "bun .docu/build.ts",
+    "preview": "bun .docu/server.ts --preview",
+    "deploy": "bun .docu/build.ts && wrangler pages deploy .docu/dist"
+  },
+  "keywords": [
+    "docubook",
+    "documentation",
+    "static-site",
+    "daisyui",
+    "bun",
+    "docs framework"
+  ],
+  "homepage": "https://docubook.pro/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DocuBook/docubook.git"
+  },
+  "author": "wildan.nrs",
+  "author-url": "https://wildan.dev",
+  "license": "MIT",
+  "dependencies": {
+    "@docubook/core": "^1.5.0",
+    "@docubook/mdx-content": "^2.1.0",
+    "bun-plugin-tailwind": "^0.1.2",
+    "daisyui": "^5.5.19",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.0",
+    "bun-types": "^1.0.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^4.2.4",
+    "typescript": "^5.5.0"
+  }
+}

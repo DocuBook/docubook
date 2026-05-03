@@ -1,0 +1,58 @@
+/* daisyUI + TailwindCSS v4 for Bun */
+@import "daisyui";
+@import "tailwindcss";
+
+/* Theme configuration */
+@theme {
+  --color-primary: #0f172a;
+  --color-secondary: #64748b;
+  --color-accent: #3b82f6;
+  --color-neutral: #1e293b;
+  --color-base-100: #ffffff;
+  --color-base-200: #f8fafc;
+  --color-base-300: #e2e8f0;
+  --color-base-content: #0f172a;
+}
+
+/* Custom components */
+.docs-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.docs-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 4rem;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid oklch(var(--b3));
+  background-color: oklch(var(--b1));
+}
+
+.docs-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 16rem;
+  flex-shrink: 0;
+  overflow-y: auto;
+  border-right: 1px solid oklch(var(--b3));
+  background-color: oklch(var(--b2));
+}
+
+.docs-content {
+  flex: 1;
+  min-width: 0;
+  padding: 2rem;
+}
+
+.docs-home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+}
