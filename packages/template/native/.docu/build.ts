@@ -1,19 +1,13 @@
-/**
- * DocuBook Native Build CLI
- * Compiles MDX to static HTML with daisyUI
- */
-
 import { readFile, writeFile, mkdir, readdir, copyFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { resolve, join, dirname } from "node:path";
 import docuConfig from "../docu.json" with { type: "json" };
+import { getDocDate, parseFrontmatterDate } from "./date";
 
 const DOCS_DIR = resolve("./docs");
 const DIST_DIR = resolve("./.docu/dist");
-const DIST_PUBLIC = resolve("./dist");
 const ASSETS_DIR = resolve("./.docu/dist/assets");
 
-// Types
 interface DocuRoute {
   title: string;
   href: string;
@@ -27,7 +21,6 @@ interface DocuConfig {
   routes: DocuRoute[];
 }
 
-/** Flatten routes from docu.json */
 function flattenRoutes(routes: DocuRoute[]): string[] {
   const paths: string[] = [];
   for (const route of routes) {
@@ -37,7 +30,6 @@ function flattenRoutes(routes: DocuRoute[]): string[] {
   return paths;
 }
 
-/** Find MDX files */
 async function findMdxFiles(dir: string): Promise<string[]> {
   const files: string[] = [];
   try {
@@ -57,7 +49,6 @@ async function findMdxFiles(dir: string): Promise<string[]> {
   return files;
 }
 
-/** Read MDX file */
 async function readMdxFile(pathName: string): Promise<string | null> {
   const patterns = [
     join(DOCS_DIR, pathName, "index.mdx"),
@@ -69,12 +60,17 @@ async function readMdxFile(pathName: string): Promise<string | null> {
   return null;
 }
 
-/** Parse MDX to HTML */
-function parseMdxToHtml(raw: string): string {
+async function parseMdxToHtml(raw: string, path: string): Promise<string> {
+
   let content = raw;
+  let frontmatterDate: string | undefined;
+
   if (raw.startsWith("---")) {
     const end = raw.indexOf("---", 3);
-    if (end > 0) content = raw.slice(end + 3);
+    if (end > 0) {
+      frontmatterDate = parseFrontmatterDate(raw);
+      content = raw.slice(end + 3);
+    }
   }
 
   let html = content
@@ -87,38 +83,50 @@ function parseMdxToHtml(raw: string): string {
     .replace(/\n\n/g, '</p><p class="mb-4">')
     .replace(/\n/g, "<br>");
 
+
+  const date = await getDocDate({
+    filePath: path,
+    frontmatterDate,
+  });
+
+
+  if (date) {
+    html += `\n<p class="text-sm text-gray-500 mt-8">${date}</p>`;
+  }
+
   return `<div class="prose max-w-none"><p class="mb-4">${html}</p></div>`;
 }
 
-/** Generate navbar links */
 function generateNavLinks(menu: { title: string; href: string }[]): string {
   return menu.map(m => `<li><a href="${m.href}.html">${m.title}</a></li>`).join("");
 }
 
-/** Main build */
 async function build() {
   console.log("🔨 Building DocuBook native static site...");
 
   await mkdir(DIST_DIR, { recursive: true });
   await mkdir(ASSETS_DIR, { recursive: true });
 
-  // Copy daisyUI CSS to assets
   const daisyuiCssPath = resolve("./node_modules/daisyui/daisyui.css");
   if (existsSync(daisyuiCssPath)) {
     await copyFile(daisyuiCssPath, join(ASSETS_DIR, "daisyui.css"));
     console.log("✅ Copied daisyui.css");
   }
 
-  // Get paths
   const routePaths = flattenRoutes(docuConfig.routes || []).filter(p => p.length > 1);
   const mdxPaths = await findMdxFiles(DOCS_DIR);
   const allPaths = [...new Set([...routePaths, ...mdxPaths])];
   console.log(`📄 Building ${allPaths.length} pages\n`);
 
-  // Generate pages
   for (const path of allPaths) {
     const raw = await readMdxFile(path);
-    const htmlContent = raw ? parseMdxToHtml(raw) : `<div class="alert alert-error">Page not found: ${path}</div>`;
+
+    if (!raw) {
+      console.log(`  ⚠️ ${path}.html (file not found)`);
+      continue;
+    }
+
+    const htmlContent = await parseMdxToHtml(raw, path);
 
     const fullHtml = `<!DOCTYPE html>
 <html data-theme="light" lang="en">
@@ -153,7 +161,6 @@ async function build() {
     console.log(`  ✅ ${path}.html`);
   }
 
-  // Index page
   const indexHtml = `<!DOCTYPE html>
 <html data-theme="light" lang="en">
 <head>
@@ -178,7 +185,6 @@ async function build() {
   await writeFile(join(DIST_DIR, "index.html"), indexHtml);
   console.log("  ✅ index.html");
 
-  // Routes JSON
   const routesJson = {
     routes: Object.fromEntries(allPaths.map(p => [p, `${p}.html`])),
   };

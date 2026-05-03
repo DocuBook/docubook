@@ -19,19 +19,8 @@
     {
       "title": "Getting Started",
       "href": "/getting-started",
-      "noLink": true,
       "items": [
-        { "title": "Introduction", "href": "/introduction" },
-        { "title": "Installation", "href": "/installation" }
-      ]
-    },
-    {
-      "title": "Components",
-      "href": "/components",
-      "noLink": true,
-      "items": [
-        { "title": "Button", "href": "/button" },
-        { "title": "Card", "href": "/card" }
+        { "title": "Introduction", "href": "/introduction" }
       ]
     }
   ]
