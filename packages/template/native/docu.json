@@ -1,20 +1,5 @@
 {
   "$schema": "https://docubook.pro/docu.schema.json",
-  "meta": {
-    "title": "DocuBook",
-    "description": "Native DocuBook static site with Bun + daisyUI",
-    "baseURL": "/"
-  },
-  "navbar": {
-    "logoText": "DocuBook",
-    "menu": [
-      { "title": "Home", "href": "/" },
-      { "title": "Docs", "href": "/docs" }
-    ]
-  },
-  "footer": {
-    "copyright": "DocuBook"
-  },
   "routes": [
     {
       "title": "Getting Started",
