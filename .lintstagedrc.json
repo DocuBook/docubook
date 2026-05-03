@@ -2,7 +2,7 @@
   "apps/**/*.{ts,tsx,js,jsx}": [
     "turbo lint --filter=...[head]"
   ],
-  "packages/**/*.{ts,tsx,js,jsx}": [
+  "packages/{cli,core,docs-tree,mdx-content,ui}/**/*.{ts,tsx,js,jsx}": [
     "turbo lint --filter=...[head]"
   ]
 }
