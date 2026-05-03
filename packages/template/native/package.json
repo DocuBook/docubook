@@ -1,5 +1,5 @@
 {
-  "name": "@docubook/template-native",
+  "name": "@docubook/native",
   "version": "0.1.0",
   "description": "Native DocuBook static site template - Bun + daisyUI",
   "type": "module",
