@@ -7,8 +7,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "prebuild": "node ../../packages/docs-tree/dist/cli.js ./docs ./docu.json ./lib/docs-tree.json",
+    "build": "docs-tree ./docs ./docu.json ./lib/docs-tree.json && next build",
     "start": "next start",
     "lint": "eslint ."
   },
