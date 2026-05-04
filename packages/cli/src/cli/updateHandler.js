@@ -212,7 +212,8 @@ function extractVersionSection(changelog, version) {
 
   // Normalize version
   const normalizedVersion = version.replace(/^v/, "");
-  const versionPattern = new RegExp(`^##\\s+${normalizedVersion.replace(/\./g, "\\.")}`, "m");
+  const escapedVersion = normalizedVersion.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const versionPattern = new RegExp(`^##\\s+${escapedVersion}`, "m");
 
   const match = changelog.match(versionPattern);
   if (!match) return null;

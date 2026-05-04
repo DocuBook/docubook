@@ -1,5 +1,5 @@
 {
-  "packages/{cli,core,docs-tree,mdx-content}/**/*.{js,ts,jsx,tsx}": [
+  "packages/{cli,core,mdx-content}/**/*.{js,ts,jsx,tsx}": [
     "echo \"✅ Lint passed\""
   ]
 }
