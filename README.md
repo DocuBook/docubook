@@ -31,7 +31,6 @@ This monorepo uses [Changesets](https://github.com/changesets/changesets) to man
 | `@docubook/cli`         | `packages/cli`         | [![npm](https://img.shields.io/npm/v/@docubook/cli)](https://www.npmjs.com/package/@docubook/cli)                 |
 | `@docubook/core`        | `packages/core`        | [![npm](https://img.shields.io/npm/v/@docubook/core)](https://www.npmjs.com/package/@docubook/core)               |
 | `@docubook/mdx-content` | `packages/mdx-content` | [![npm](https://img.shields.io/npm/v/@docubook/mdx-content)](https://www.npmjs.com/package/@docubook/mdx-content) |
-| `@docubook/docs-tree`   | `packages/docs-tree`   | [![npm](https://img.shields.io/npm/v/@docubook/docs-tree)](https://www.npmjs.com/package/@docubook/docs-tree)     |
 
 ### Version Bump Guide
 

@@ -6,7 +6,6 @@ node_modules
 # Build outputs
 .next
 out
-*.docs-tree-cache.json
 
 # Environment variables
 .env

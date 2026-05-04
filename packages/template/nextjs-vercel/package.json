@@ -7,7 +7,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "docs-tree ./docs ./docu.json ./lib/docs-tree.json && next build",
+    "prebuild": "node lib/docs-tree.js",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint ."
   },
@@ -40,7 +41,6 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@docubook/docs-tree": "^1.0.1",
     "@eslint/js": "^9.39.4",
     "@tailwindcss/postcss": "^4.2.2",
     "@tailwindcss/typography": "^0.5.19",
