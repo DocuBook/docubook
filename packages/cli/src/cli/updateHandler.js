@@ -5,22 +5,57 @@ import os from "os";
 import path from "path";
 import { lt } from "semver";
 
-// Changelog store to avoid showing same version multiple times
-const _CHANGELOG_STORE = path.join(os.homedir(), ".docubook_cli_seen_changelogs.json");
-const _PREFERENCES_FILE = path.join(os.homedir(), ".docubook_cli_prefs.json");
+const _DOCUBOOK_DIR = path.join(os.homedir(), ".docubook");
+const _CHANGELOGS_DIR = path.join(_DOCUBOOK_DIR, "changelogs");
+const _PREFERENCES_FILE = path.join(_DOCUBOOK_DIR, "cli-config.json");
 
-function _readChangelogStore() {
+function _ensureChangelogsDir() {
   try {
-    const raw = fs.readFileSync(_CHANGELOG_STORE, "utf8");
-    return JSON.parse(raw || "{}");
+    if (!fs.existsSync(_DOCUBOOK_DIR)) {
+      fs.mkdirSync(_DOCUBOOK_DIR, { recursive: true, mode: 0o700 });
+    }
+    if (!fs.existsSync(_CHANGELOGS_DIR)) {
+      fs.mkdirSync(_CHANGELOGS_DIR, { recursive: true, mode: 0o700 });
+    }
   } catch {
-    return {};
+    // non-fatal
   }
 }
 
-function _writeChangelogStore(obj) {
+/**
+ * Get changelog file path for a specific version
+ * @param {string} version - Version string (e.g., "0.4.3")
+ * @returns {string} - Full path to version changelog file
+ */
+function _getChangelogPath(version) {
+  // Normalize version: remove 'v' prefix if present, sanitize for filename
+  const normalized = version.replace(/^v/, "").replace(/[^\d.]/g, "");
+  return path.join(_CHANGELOGS_DIR, `${normalized}.md`);
+}
+
+/**
+ * Check if changelog for a version has been shown
+ * @param {string} version - Version string
+ * @returns {boolean} - True if already shown
+ */
+function _isChangelogShown(version) {
+  const changelogPath = _getChangelogPath(version);
   try {
-    fs.writeFileSync(_CHANGELOG_STORE, JSON.stringify(obj, null, 2), { mode: 0o600 });
+    return fs.existsSync(changelogPath);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Mark changelog for a version as shown
+ * @param {string} version - Version string
+ */
+function _markChangelogShown(version) {
+  _ensureChangelogsDir();
+  const changelogPath = _getChangelogPath(version);
+  try {
+    fs.writeFileSync(changelogPath, "# fetched\n", { mode: 0o600 });
   } catch {
     // non-fatal
   }
@@ -37,6 +72,7 @@ function _readPreferences() {
 
 function _writePreferences(obj) {
   try {
+    _ensureChangelogsDir();
     fs.writeFileSync(_PREFERENCES_FILE, JSON.stringify(obj, null, 2), { mode: 0o600 });
   } catch {
     // non-fatal
@@ -144,47 +180,130 @@ async function fetchLatestReleaseFromGitHub() {
 }
 
 /**
- * Extract first 5 non-empty lines from changelog text
- * Empty lines are skipped and don't count toward the limit
- * @param {string} text - Full changelog text
- * @returns {string} - First 5 non-empty lines joined with newline
+ * Fetch CHANGELOG.md content from GitHub raw URL
+ * @param {string} pkgPath - Path to package in monorepo (e.g., "packages/cli")
+ * @returns {Promise<string>} - Raw changelog content
  */
-function extractFirst5Lines(text) {
-  if (!text) return "";
+async function fetchChangelogFromGitHub(pkgPath = "packages/cli") {
+  try {
+    const owner = "DocuBook";
+    const repo = "docubook";
+    const url = `https://raw.githubusercontent.com/${owner}/${repo}/main/${pkgPath}/CHANGELOG.md`;
 
-  const lines = text
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
-
-  return lines.slice(0, 5).join("\n");
+    const res = await fetch(url);
+    if (!res.ok) {
+      return null;
+    }
+    return await res.text();
+  } catch {
+    return null;
+  }
 }
 
 /**
- * Fetch and display changelog from GitHub release
- * Shows only the first 5 non-empty lines from release body
+ * Parse changelog and extract section for a specific version
+ * Format expected: ## 0.4.3 followed by ### Patch Changes / ### Minor Changes
+ * @param {string} changelog - Full changelog content
+ * @param {string} version - Version to extract (e.g., "0.4.3")
+ * @returns {string} - Parsed section or null
  */
-async function showChangelogOnce(pkgName, version, releaseInfo) {
+function extractVersionSection(changelog, version) {
+  if (!changelog || !version) return null;
+
+  // Normalize version
+  const normalizedVersion = version.replace(/^v/, "");
+  const versionPattern = new RegExp(`^##\\s+${normalizedVersion.replace(/\./g, "\\.")}`, "m");
+
+  const match = changelog.match(versionPattern);
+  if (!match) return null;
+
+  // Get content after the version header until next version (##) or end
+  const startIndex = match.index;
+  const afterVersion = changelog.slice(startIndex);
+
+  // Find next ## header or end of file
+  const nextVersionMatch = afterVersion.match(/\n##\s+\d+\.\d+/);
+  const endIndex = nextVersionMatch ? nextVersionMatch.index + startIndex : changelog.length;
+
+  return changelog.slice(startIndex, endIndex).trim();
+}
+
+/**
+ * Format changelog section as unordered list (max 5 lines)
+ * @param {string} section - Parsed changelog section
+ * @returns {string} - Formatted list
+ */
+function formatAsUnorderedList(section) {
+  if (!section) return "";
+
+  const lines = section.split("\n");
+  const items = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // Match bullet points: "- ", "* ", or "  - "
+    if (trimmed.startsWith("- ") || trimmed.startsWith("* ") || trimmed.match(/^  - /)) {
+      // Get the actual content after the bullet prefix
+      const content = trimmed.replace(/^(\* |\- |  - )/, "").trim();
+      if (content) {
+        items.push(content);
+      }
+    }
+    // Also match ### Patch Changes, ### Minor Changes, etc. headers
+    else if (trimmed.startsWith("### ")) {
+      items.push(`\n${trimmed.replace("### ", "**")}**`);
+    }
+  }
+
+  // Limit to 5 items (excluding headers)
+  const maxItems = 5;
+  const result = [];
+  let itemCount = 0;
+
+  for (const item of items) {
+    if (item.startsWith("**") && item.endsWith("**")) {
+      // Header - always include
+      result.push(item);
+    } else if (itemCount < maxItems) {
+      // Regular item - count toward limit
+      result.push(`- ${item}`);
+      itemCount++;
+    }
+  }
+
+  return result.join("\n");
+}
+
+/**
+ * Show changelog for a specific version
+ * Fetches from GitHub, parses version section, formats as list
+ */
+async function showChangelogForVersion(pkgName, version) {
   try {
-    const store = _readChangelogStore();
-    const seen = Array.isArray(store[pkgName]) ? store[pkgName] : [];
-    if (seen.includes(version)) return;
+    // Check if already shown
+    if (_isChangelogShown(version)) return;
 
-    // Use release body only
-    if (!releaseInfo || !releaseInfo.body) return;
+    // Fetch changelog from GitHub
+    const changelogContent = await fetchChangelogFromGitHub("packages/cli");
+    if (!changelogContent) return;
 
-    const changelogPreview = extractFirst5Lines(releaseInfo.body);
-    if (!changelogPreview) return;
+    // Extract version section
+    const versionSection = extractVersionSection(changelogContent, version);
+    if (!versionSection) return;
+
+    // Format as unordered list
+    const formatted = formatAsUnorderedList(versionSection);
+    if (!formatted) return;
 
     // Print changelog preview
     console.log("");
-    console.log(changelogPreview);
+    console.log(`## ${version.replace(/^v/, "")}`);
+    console.log(formatted);
     console.log("");
-    console.log(`Full changelog: ${releaseInfo.html_url}\n`);
+    console.log(`Full changelog: https://github.com/DocuBook/docubook/blob/main/packages/cli/CHANGELOG.md\n`);
 
     // Mark as shown
-    store[pkgName] = Array.from(new Set([...seen, version]));
-    _writeChangelogStore(store);
+    _markChangelogShown(version);
   } catch {
     // silent on any error - changelog is a nicety
   }
@@ -255,6 +374,9 @@ export async function handleUpdate(currentVersion) {
   let spinner;
 
   try {
+    // Ensure changelogs directory exists
+    _ensureChangelogsDir();
+
     // Detect package manager (in preference order: persisted > env/argv)
     const packageManager = getPreferredPackageManager();
     setPreferredPackageManager(packageManager);
@@ -304,7 +426,7 @@ export async function handleUpdate(currentVersion) {
 
       // Try to show changelog for the newly installed version once
       try {
-        await showChangelogOnce(pkgName, latest, releaseInfo);
+        await showChangelogForVersion(pkgName, latest);
       } catch {
         // non-fatal
       }

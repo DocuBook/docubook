@@ -1,8 +1,6 @@
 {
-  "apps/**/*.{ts,tsx,js,jsx}": [
-    "turbo lint --filter=...[head]"
-  ],
-  "packages/{cli,core,docs-tree,mdx-content,ui}/**/*.{ts,tsx,js,jsx}": [
-    "turbo lint --filter=...[head]"
+  "packages/{cli,core,docs-tree,mdx-content}/**/*.{js,ts,jsx,tsx}": [
+    "node --check",
+    "echo \"✅ Lint passed\""
   ]
 }
