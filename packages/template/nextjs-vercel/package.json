@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "prebuild": "docs-tree ./docs ./docu.json ./lib/docs-tree.json",
+    "prebuild": "pnpm --filter @docubook/docs-tree run build && docs-tree ./docs ./docu.json ./lib/docs-tree.json",
     "start": "next start",
     "lint": "eslint ."
   },
