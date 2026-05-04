@@ -1,10 +1,5 @@
-/**
- * DocuBook Native Dev Server
- * Static file server with route mapping
- */
-
-import { existsSync, createReadStream } from "node:fs";
-import { resolve, join } from "node:path";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 
 const DIST_DIR = resolve("./.docu/dist");
 const PORT = process.env.PORT || "3000";
@@ -41,12 +36,39 @@ function notFound(): string {
       <div class="max-w-md">
         <h1 class="text-6xl font-bold">404</h1>
         <p class="py-4 text-xl">Page not found</p>
-        <a href="/" class="btn btn-primary">Go Home</a>
+        <a href="/docs/" class="btn btn-primary">Go Docs</a>
       </div>
     </div>
   </div>
 </body>
 </html>`;
+}
+
+/** Resolve file path - handle /docs -> /docs/index.html and /docs/page -> /docs/page.html */
+function resolveFilePath(pathname: string): string | null {
+  // Remove leading slash
+  let path = pathname.slice(1);
+  
+  // If no extension, try index.html first
+  if (!path.includes(".")) {
+    const withIndex = resolve(DIST_DIR, path, "index.html");
+    if (existsSync(withIndex)) {
+      return withIndex;
+    }
+    // Try with .html extension
+    const withHtml = resolve(DIST_DIR, path + ".html");
+    if (existsSync(withHtml)) {
+      return withHtml;
+    }
+  }
+  
+  // Try exact match
+  const exactPath = resolve(DIST_DIR, path);
+  if (existsSync(exactPath)) {
+    return exactPath;
+  }
+  
+  return null;
 }
 
 /** Serve file or return 404 */
@@ -71,16 +93,18 @@ const server = Bun.serve({
     let url = new URL(req.url);
     let pathname = url.pathname;
 
-    // Default to index.html
-    if (pathname === "/") pathname = "/index.html";
+    // Default to docs/index.html
+    if (pathname === "/") pathname = "/docs/";
 
-    // Remove leading slash for file path
-    const filePath = resolve(DIST_DIR, pathname.slice(1));
+    // Resolve file path
+    const filePath = resolveFilePath(pathname);
+    if (filePath) {
+      return serveFile(filePath);
+    }
 
-    return serveFile(filePath);
+    return serveFile(resolve(DIST_DIR, "docs", "index.html"));
   },
 });
 
-console.log(`🚀 DocuBook dev server running at http://localhost:${server.port}`);
-console.log(`📁 Serving from: ${DIST_DIR}`);
+console.log("➜  DocuBook Dev:   http://localhost:" + server.port + "/docs/");
 console.log(`\nPress Ctrl+C to stop\n`);

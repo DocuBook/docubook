@@ -34,3 +34,4 @@ tsconfig.tsbuildinfo
 
 # Build artifacts
 *.tgz
+build-cache.json

@@ -13,7 +13,6 @@
     "typecheck": "turbo typecheck",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "changeset publish",
     "prepare": "husky"
   },
   "devDependencies": {

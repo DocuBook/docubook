@@ -1,13 +1,13 @@
 {
   "name": "@docubook/native",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Native DocuBook static site template - Bun + daisyUI",
   "type": "module",
   "scripts": {
     "dev": "bun .docu/server.ts",
     "build": "bun .docu/build.ts",
-    "preview": "bun .docu/server.ts --preview",
-    "deploy": "bun .docu/build.ts && wrangler pages deploy .docu/dist"
+    "clean": "bun .docu/clean.ts",
+    "preview": "bun .docu/server.ts --preview"
   },
   "keywords": [
     "docubook",
@@ -26,7 +26,7 @@
   "author-url": "https://wildan.dev",
   "license": "MIT",
   "dependencies": {
-    "@docubook/core": "^1.5.0",
+    "@docubook/core": "^1.6.0",
     "@docubook/mdx-content": "^2.1.0",
     "bun-plugin-tailwind": "^0.1.2",
     "daisyui": "^5.5.19",

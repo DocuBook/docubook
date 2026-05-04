@@ -1,17 +1,11 @@
-/**
- * DocuBook utils - simple class merger without cva
- * Replaces clsx + twMerge for component className
- */
-
 type ClassValue = string | number | boolean | undefined | null | ClassValue[];
 
-/** Simple class merger - concatenates classes */
 export function cn(...inputs: ClassValue[]): string {
   const classes: string[] = [];
-  
+
   for (const input of inputs) {
     if (!input) continue;
-    
+
     if (typeof input === "string") {
       classes.push(input);
     } else if (Array.isArray(input)) {
@@ -22,7 +16,7 @@ export function cn(...inputs: ClassValue[]): string {
       // Ignore other types
     }
   }
-  
+
   return classes.join(" ");
 }
 
@@ -54,7 +48,7 @@ export function formatDate(dateStr: string | Date): string {
   const date = dateStr instanceof Date ? dateStr : parseDate(dateStr);
   return date.toLocaleDateString("en-US", {
     weekday: "long",
-    year: "numeric", 
+    year: "numeric",
     month: "long",
     day: "numeric",
   });
