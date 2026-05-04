@@ -1,6 +1,7 @@
 export type { TocItem, MdxCompileResult } from "./types"
 export {
   parseMdx,
+  serialize,
   preProcess,
   postProcess,
   createDefaultRehypePlugins,

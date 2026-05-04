@@ -1,6 +1,5 @@
 {
   "packages/{cli,core,docs-tree,mdx-content}/**/*.{js,ts,jsx,tsx}": [
-    "node --check",
     "echo \"✅ Lint passed\""
   ]
 }

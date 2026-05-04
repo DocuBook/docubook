@@ -1,5 +1,11 @@
 # @docubook/core
 
+## 1.6.0
+
+### Minor Changes
+
+- d48275d: add serialize from next-mdx-remote
+
 ## 1.5.0
 
 ### Minor Changes

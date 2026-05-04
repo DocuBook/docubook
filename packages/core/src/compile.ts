@@ -1,4 +1,5 @@
 import { compileMDX } from "next-mdx-remote/rsc"
+import { serialize } from "next-mdx-remote/serialize"
 import type { Node } from "unist"
 import { visit } from "unist-util-visit"
 import remarkGfm from "remark-gfm"
@@ -10,6 +11,9 @@ import { handleCodeTitles } from "./plugins/handleCodeTitles"
 import { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/handleCodeExpandable"
 import type { MdxCompileResult } from "./types"
 import type { ElementNode } from "./utils"
+
+// Re-export serialize for non-RSC usage
+export { serialize };
 
 interface TextNode extends Node {
   type: "text"
