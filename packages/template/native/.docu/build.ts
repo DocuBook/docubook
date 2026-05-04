@@ -1,5 +1,5 @@
-import { readFile, writeFile, mkdir, readdir, copyFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { readFile, writeFile, mkdir, readdir, copyFile, stat } from "node:fs/promises";
+import { existsSync, createHash } from "node:fs";
 import { resolve, join, dirname } from "node:path";
 import docuConfig from "../docu.json" with { type: "json" };
 import { getDocDate, parseFrontmatterDate } from "./date";
@@ -7,7 +7,9 @@ import { getDocDate, parseFrontmatterDate } from "./date";
 const DOCS_DIR = resolve("./docs");
 const DIST_DIR = resolve("./.docu/dist");
 const ASSETS_DIR = resolve("./.docu/dist/assets");
+const CACHE_FILE = resolve("./.docu/build-cache.json");
 
+// Types
 interface DocuRoute {
   title: string;
   href: string;
@@ -21,6 +23,49 @@ interface DocuConfig {
   routes: DocuRoute[];
 }
 
+interface BuildCache {
+  [path: string]: {
+    hash: string;
+    mtime: number;
+  builtAt: number;
+  };
+}
+
+interface CliArgs {
+  force?: boolean;
+  clean?: boolean;
+}
+
+// Parse CLI args
+function parseArgs(): CliArgs {
+  const args = process.argv.slice(2);
+  return {
+    force: args.includes("--force") || args.includes("-f"),
+    clean: args.includes("--clean") || args.includes("-c"),
+  };
+}
+
+// Hash content
+function hashContent(content: string): string {
+  return createHash("sha256").update(content).digest("hex").slice(0, 16);
+}
+
+// Read/write cache
+async function readCache(): Promise<BuildCache> {
+  try {
+    if (existsSync(CACHE_FILE)) {
+      const data = await readFile(CACHE_FILE, "utf-8");
+      return JSON.parse(data);
+    }
+  } catch { /** skip */ }
+  return {};
+}
+
+async function writeCache(cache: BuildCache): Promise<void> {
+  await writeFile(CACHE_FILE, JSON.stringify(cache, null, 2));
+}
+
+// Flatten routes from docu.json
 function flattenRoutes(routes: DocuRoute[]): string[] {
   const paths: string[] = [];
   for (const route of routes) {
@@ -30,25 +75,37 @@ function flattenRoutes(routes: DocuRoute[]): string[] {
   return paths;
 }
 
-async function findMdxFiles(dir: string): Promise<string[]> {
-  const files: string[] = [];
+// Recursive find MDX files with timestamps
+async function findMdxFilesWithStats(dir: string, baseDir = ""): Promise<{ path: string; mtime: number }[]> {
+  const files: { path: string; mtime: number }[] = [];
   try {
     const entries = await readdir(dir, { withFileTypes: true });
     for (const entry of entries) {
       const fullPath = join(dir, entry.name);
+      const relativePath = baseDir ? `${baseDir}/${entry.name}` : entry.name;
+
       if (entry.isDirectory()) {
-        const subFiles = await findMdxFiles(fullPath);
-        files.push(...subFiles.map(f => `${entry.name}/${f}`));
-      } else if (entry.name.endsWith(".mdx")) {
-        if (entry.name !== "index.mdx") {
-          files.push(entry.name.replace(".mdx", ""));
-        }
+        const subFiles = await findMdxFilesWithStats(fullPath, relativePath);
+        files.push(...subFiles);
+      } else if (entry.name.endsWith(".mdx") && entry.name !== "index.mdx") {
+        const stats = await stat(fullPath);
+        files.push({
+          path: relativePath.replace(".mdx", ""),
+          mtime: stats.mtimeMs,
+        });
+      } else if (entry.name === "index.mdx" && baseDir) {
+        const stats = await stat(fullPath);
+        files.push({
+          path: baseDir,
+          mtime: stats.mtimeMs,
+        });
       }
     }
   } catch { /** skip */ }
   return files;
 }
 
+// Read MDX file
 async function readMdxFile(pathName: string): Promise<string | null> {
   const patterns = [
     join(DOCS_DIR, pathName, "index.mdx"),
@@ -60,8 +117,23 @@ async function readMdxFile(pathName: string): Promise<string | null> {
   return null;
 }
 
-async function parseMdxToHtml(raw: string, path: string): Promise<string> {
+// Check if should rebuild (cache invalid)
+function shouldRebuild(
+  path: string,
+  mtime: number,
+  cache: BuildCache
+): boolean {
+  const cached = cache[path];
+  if (!cached) return true;
 
+  // Rebuild if file modified after last build
+  if (mtime > cached.builtAt) return true;
+
+  return false;
+}
+
+// Parse MDX to HTML
+async function parseMdxToHtml(raw: string, path: string): Promise<string> {
   let content = raw;
   let frontmatterDate: string | undefined;
 
@@ -83,12 +155,10 @@ async function parseMdxToHtml(raw: string, path: string): Promise<string> {
     .replace(/\n\n/g, '</p><p class="mb-4">')
     .replace(/\n/g, "<br>");
 
-
   const date = await getDocDate({
     filePath: path,
     frontmatterDate,
   });
-
 
   if (date) {
     html += `\n<p class="text-sm text-gray-500 mt-8">${date}</p>`;
@@ -98,37 +168,13 @@ async function parseMdxToHtml(raw: string, path: string): Promise<string> {
 }
 
 function generateNavLinks(menu: { title: string; href: string }[]): string {
-  return menu.map(m => `<li><a href="${m.href}.html">${m.title}</a></li>`).join("");
+  return menu
+    .map((m) => `<li><a href="${m.href}.html">${m.title}</a></li>`)
+    .join("");
 }
 
-async function build() {
-  console.log("🔨 Building DocuBook native static site...");
-
-  await mkdir(DIST_DIR, { recursive: true });
-  await mkdir(ASSETS_DIR, { recursive: true });
-
-  const daisyuiCssPath = resolve("./node_modules/daisyui/daisyui.css");
-  if (existsSync(daisyuiCssPath)) {
-    await copyFile(daisyuiCssPath, join(ASSETS_DIR, "daisyui.css"));
-    console.log("✅ Copied daisyui.css");
-  }
-
-  const routePaths = flattenRoutes(docuConfig.routes || []).filter(p => p.length > 1);
-  const mdxPaths = await findMdxFiles(DOCS_DIR);
-  const allPaths = [...new Set([...routePaths, ...mdxPaths])];
-  console.log(`📄 Building ${allPaths.length} pages\n`);
-
-  for (const path of allPaths) {
-    const raw = await readMdxFile(path);
-
-    if (!raw) {
-      console.log(`  ⚠️ ${path}.html (file not found)`);
-      continue;
-    }
-
-    const htmlContent = await parseMdxToHtml(raw, path);
-
-    const fullHtml = `<!DOCTYPE html>
+function generateDocHtml(path: string, htmlContent: string): string {
+  return `<!DOCTYPE html>
 <html data-theme="light" lang="en">
 <head>
   <meta charset="UTF-8">
@@ -154,14 +200,10 @@ async function build() {
   </div>
 </body>
 </html>`;
+}
 
-    const outputPath = join(DIST_DIR, `${path}.html`);
-    await mkdir(dirname(outputPath), { recursive: true });
-    await writeFile(outputPath, fullHtml);
-    console.log(`  ✅ ${path}.html`);
-  }
-
-  const indexHtml = `<!DOCTYPE html>
+function generateIndexHtml(): string {
+  return `<!DOCTYPE html>
 <html data-theme="light" lang="en">
 <head>
   <meta charset="UTF-8">
@@ -175,26 +217,123 @@ async function build() {
       <div class="max-w-md">
         <h1 class="text-5xl font-bold">${docuConfig.meta?.title || "DocuBook"}</h1>
         <p class="py-6">${docuConfig.meta?.description || "Native static documentation"}</p>
-        <a href="/docs/getting-started.html" class="btn btn-primary">Get Started</a>
+        <a href="/getting-started.html" class="btn btn-primary">Get Started</a>
       </div>
     </div>
   </div>
 </body>
 </html>`;
-
-  await writeFile(join(DIST_DIR, "index.html"), indexHtml);
-  console.log("  ✅ index.html");
-
-  const routesJson = {
-    routes: Object.fromEntries(allPaths.map(p => [p, `${p}.html`])),
-  };
-  await writeFile(join(DIST_DIR, "routes.json"), JSON.stringify(routesJson, null, 2));
-  console.log("\n✅ routes.json");
-
-  console.log("\n✨ Build complete! Output in .docu/dist/");
 }
 
-build().catch(err => {
+// Main build function
+async function build() {
+  const args = parseArgs();
+  const startTime = Date.now();
+
+  // Clean build
+  if (args.clean) {
+    console.log("🧹 Cleaning dist folder...");
+    const { rm } = await import("node:fs/promises");
+    try {
+      await rm(DIST_DIR, { recursive: true, force: true });
+    } catch { /** ignore if doesn't exist */ }
+  }
+
+  console.log("🔨 Building DocuBook native static site...");
+
+  await mkdir(DIST_DIR, { recursive: true });
+  await mkdir(ASSETS_DIR, { recursive: true });
+
+  // Copy assets
+  const daisyuiCssPath = resolve("./node_modules/daisyui/daisyui.css");
+  if (existsSync(daisyuiCssPath)) {
+    await copyFile(daisyuiCssPath, join(ASSETS_DIR, "daisyui.css"));
+    console.log("✅ Copied daisyui.css");
+  }
+
+  // Get all MDX files with stats
+  const mdxFiles = await findMdxFilesWithStats(DOCS_DIR);
+  const mdxPaths = mdxFiles.map((f) => f.path);
+
+  // Route paths from config
+  const routePaths = flattenRoutes(docuConfig.routes || []).filter(
+    (p) => p.length > 1
+  );
+
+  // All paths to build
+  const allPaths = [...new Set([...routePaths, ...mdxPaths])];
+
+  // Load cache
+  const cache = args.force ? {} : await readCache();
+
+  // Track stats
+  let built = 0;
+  let skipped = 0;
+
+  console.log(`\n📄 Found ${allPaths.length} pages\n`);
+
+  for (const path of allPaths) {
+    const raw = await readMdxFile(path);
+
+    if (!raw) {
+      console.log(`  ⚠️ ${path}.html (file not found)`);
+      continue;
+    }
+
+    const fileInfo = mdxFiles.find((f) => f.path === path);
+    const needRebuild = !fileInfo || shouldRebuild(path, fileInfo.mtime, cache);
+
+    if (!needRebuild) {
+      // Check if output exists
+      const outputPath = join(DIST_DIR, `${path}.html`);
+      if (!existsSync(outputPath)) {
+        // File was deleted, rebuild
+        needRebuild = true;
+      }
+    }
+
+    if (!needRebuild) {
+      skipped++;
+      console.log(`  ⏭️  ${path}.html (unchanged)`);
+      continue;
+    }
+
+    // Build the file
+    const htmlContent = await parseMdxToHtml(raw, path);
+    const fullHtml = generateDocHtml(path, htmlContent);
+
+    const outputPath = join(DIST_DIR, `${path}.html`);
+    await mkdir(dirname(outputPath), { recursive: true });
+    await writeFile(outputPath, fullHtml);
+
+    // Update cache
+    const contentHash = hashContent(raw);
+    cache[path] = {
+      hash: contentHash,
+      mtime: fileInfo?.mtime || Date.now(),
+      builtAt: Date.now(),
+    };
+
+    built++;
+    console.log(`  ✅ ${path}.html`);
+  }
+
+  // Build index (always rebuild for config changes)
+  const indexHtml = generateIndexHtml();
+  await writeFile(join(DIST_DIR, "index.html"), indexHtml);
+  console.log(`  ✅ index.html`);
+
+  // Update cache
+  await writeCache(cache);
+
+  // Summary
+  const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+  console.log(
+    `\n✨ Build complete! ${built} rebuilt, ${skipped} skipped (${elapsed}s)`
+  );
+}
+
+build().catch((err) => {
   console.error("Build failed:", err);
   process.exit(1);
 });
