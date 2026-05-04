@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm turbo build --filter=@docubook/web",
+  "buildCommand": "pnpm build",
   "outputDirectory": "apps/web/.next",
   "installCommand": "pnpm install"
 }

@@ -6,8 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "pnpm --filter @docubook/docs-tree build && turbo build",
-    "dev:web": "pnpm --filter @docubook/docs-tree build && turbo dev --filter=@docubook/web",
+    "build": "turbo build",
     "lint": "turbo lint",
     "clean": "turbo clean",
     "typecheck": "turbo typecheck",
