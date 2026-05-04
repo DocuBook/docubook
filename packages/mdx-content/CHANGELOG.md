@@ -1,5 +1,12 @@
 # @docubook/mdx-content
 
+## 2.2.0
+
+### Minor Changes
+
+- 55be6f9: - feat: improvement kbd components mapping
+  - fix: icon issue background from card
+
 ## 2.1.1
 
 ### Patch Changes

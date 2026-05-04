@@ -9,14 +9,14 @@ import type { LinkMdxProps } from "./LinkMdx";
 type LinkRenderer = ComponentType<LinkMdxProps>;
 
 export type CardMdxProps = HTMLAttributes<HTMLDivElement> & {
-    title: string;
-    icon?: IconProp;
-    href?: string;
-    horizontal?: boolean;
-    children?: ReactNode;
-    style?: CSSProperties;
+  title: string;
+  icon?: IconProp;
+  href?: string;
+  horizontal?: boolean;
+  children?: ReactNode;
+  style?: CSSProperties;
   /** Internal adapter hook: inject framework link component without duplicating styles. */
-    __LinkComponent?: LinkRenderer;
+  __LinkComponent?: LinkRenderer;
 };
 
 const baseStyle: CSSProperties = {
@@ -66,8 +66,6 @@ export function CardMdx({
             justifyContent: "center",
             width: "1rem",
             height: "1rem",
-            borderRadius: "999px",
-            backgroundColor: "hsl(var(--primary, 210 81% 56%) / 0.14)",
             color: "hsl(var(--primary, 210 81% 56%))",
             fontSize: "2rem",
             transition: "transform 0.2s ease, color 0.2s ease",
@@ -102,21 +100,21 @@ export function CardMdx({
         ) : null}
       </div>
     </div>
-    );
+  );
 
   const interactiveStyle: CSSProperties = href
     ? {
-        cursor: "pointer",
-        borderColor: hover ? "hsl(var(--primary, 210 81% 56%))" : "hsl(var(--border, 210 20% 85%))",
-        boxShadow: hover ? "0 11px 28px rgba(34, 129, 227, 0.15)" : "0 0 0 rgba(0, 0, 0, 0)",
-        transform: hover ? "translateY(-2px)" : "translateY(0)",
-      }
+      cursor: "pointer",
+      borderColor: hover ? "hsl(var(--primary, 210 81% 56%))" : "hsl(var(--border, 210 20% 85%))",
+      boxShadow: hover ? "0 11px 28px rgba(34, 129, 227, 0.15)" : "0 0 0 rgba(0, 0, 0, 0)",
+      transform: hover ? "translateY(-2px)" : "translateY(0)",
+    }
     : {
-        borderColor: "hsl(var(--border, 210 20% 85%))",
-        boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
-        };
+      borderColor: "hsl(var(--border, 210 20% 85%))",
+      boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
+    };
 
-    const combinedStyle = { ...baseStyle, ...interactiveStyle, ...style };
+  const combinedStyle = { ...baseStyle, ...interactiveStyle, ...style };
 
   const divProps = {
     onMouseEnter: () => setHover(true),
@@ -124,7 +122,7 @@ export function CardMdx({
     style: combinedStyle,
     ...(className ? { className } : {}),
     ...props,
-    };
+  };
 
   if (href) {
     return (
@@ -138,12 +136,12 @@ export function CardMdx({
       >
         {content}
       </LinkComponent>
-        );
+    );
   }
 
-    return (
-        <div {...divProps}>
-            {content}
-        </div>
-    );
+  return (
+    <div {...divProps}>
+      {content}
+    </div>
+  );
 }

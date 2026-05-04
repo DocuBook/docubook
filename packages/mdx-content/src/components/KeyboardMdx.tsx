@@ -1,9 +1,9 @@
 import type { CSSProperties, ReactNode } from "react";
 
 type KeyboardMdxProps = {
-    show: string;
-    type?: "window" | "mac";
-    style?: CSSProperties;
+  show: string;
+  type?: "window" | "mac";
+  style?: CSSProperties;
 };
 
 const wrapperStyle: CSSProperties = {
@@ -24,13 +24,43 @@ const wrapperStyle: CSSProperties = {
 };
 
 const aliases: Record<string, string> = {
-  cmd: "Cmd",
+  cmd: "Win",
+  command: "Win",
   ctrl: "Ctrl",
-  shift: "Shift",
+  control: "Ctrl",
   alt: "Alt",
-  option: "Option",
+  option: "Alt",
+  shift: "Shift",
+  tab: "Tab",
   enter: "Enter",
+  return: "Enter",
+  delete: "Del",
+  del: "Del",
+  escape: "Esc",
   esc: "Esc",
+  space: "Space",
+  up: "↑",
+  down: "↓",
+  left: "←",
+  right: "→",
+};
+
+const macSymbols: Record<string, string> = {
+  cmd: "⌘",
+  command: "⌘",
+  ctrl: "⌃",
+  control: "⌃",
+  alt: "⌥",
+  option: "⌥",
+  shift: "⇧",
+  tab: "⇥",
+  enter: "⏎",
+  return: "⏎",
+  delete: "⌫",
+  del: "⌫",
+  escape: "⎋",
+  esc: "⎋",
+  space: "␣",
   up: "↑",
   down: "↓",
   left: "←",
@@ -38,13 +68,19 @@ const aliases: Record<string, string> = {
 };
 
 
-function normalize(show: string) {
+function normalize(show: string, type: "window" | "mac") {
   const token = (show || "").toLowerCase();
-  return aliases[token] || show || "Key";
+  const label = aliases[token] || show || "Key";
+
+  if (type === "mac") {
+    return macSymbols[token] || label;
+  }
+  return label;
 }
 
 export function KbdMdx({ show, type = "window", style }: KeyboardMdxProps) {
-  const label = normalize(show);
-  const prefix = type === "mac" && label === "Ctrl" ? "Cmd" : label;
-  return <kbd style={{ ...wrapperStyle, ...style }}>{prefix}</kbd>;
+  const label = normalize(show, type);
+  const isLetter = /^[a-zA-Z]$/.test(show);
+  const display = isLetter ? show.toUpperCase() : label;
+  return <kbd style={{ ...wrapperStyle, ...style }}>{display}</kbd>;
 }

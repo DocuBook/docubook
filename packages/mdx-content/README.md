@@ -203,13 +203,13 @@ The current rename rollout uses a migration phase, not an immediate hard-breakin
 - Legacy tags are still supported as deprecated aliases for backward compatibility (`AccordionGroup`, `CardGroup`, `Stepper`, `StepperItem`).
 - A true breaking change happens when deprecated aliases are removed in a future major release.
 
-For migration examples, see [components.md](./components.md).
+For migration examples, see [components.md](https://github.com/DocuBook/docubook/blob/main/packages/mdx-content/components.md).
 
 ---
 
 ## Available Components
 
-For full usage examples of all built-in components, refer to [components.md](./components.md).
+For full usage examples of all built-in components, refer to [components.md](https://github.com/DocuBook/docubook/blob/main/packages/mdx-content/components.md).
 
 Components included out of the box:
 
@@ -233,4 +233,4 @@ Components included out of the box:
 
 ## License
 
-MIT — see [LICENSE](./LICENSE) for details.
+MIT — see [LICENSE](https://github.com/DocuBook/docubook/blob/main/packages/mdx-content/LICENSE) for details.
