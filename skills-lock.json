@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "skills": {
+    "bun": {
+      "source": "bun.sh",
+      "sourceType": "well-known",
+      "computedHash": "aa2f0425603c9dfc58bf707c051cf8ad4b117e897e602b3f65995c4f6f95d2b2"
+    },
+    "daisyui-5": {
+      "source": "nenorrell/skills",
+      "sourceType": "github",
+      "skillPath": "daisyUI5/SKILL.md",
+      "computedHash": "f8f9ede7e46dc79ad3b247f49e992d3cd50ac547124094b6a89ee812e4f5c760"
+    },
+    "react:components": {
+      "source": "google-labs-code/stitch-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-components/SKILL.md",
+      "computedHash": "01a94f035a1c3a1a405f611c0df212433d8973f18bf16e94540875ec58ee7b9b"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "ca7b0c0c6e5f2750043f7f0cd72d16ac4e2abc48f9b5500d047a4b77a2506212"
+    }
+  }
+}

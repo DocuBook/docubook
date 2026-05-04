@@ -12,7 +12,7 @@ node_modules
 out
 dist
 build
-*.docs-tree-cache.json
+*.plan
 
 # Turbo
 .turbo
