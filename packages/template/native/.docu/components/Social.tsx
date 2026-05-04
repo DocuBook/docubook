@@ -1,4 +1,4 @@
-import { getSocialLinks } from "../docu.config";
+import { getSocialLinks } from "../helpers";
 
 export interface SocialProps {
   className?: string;

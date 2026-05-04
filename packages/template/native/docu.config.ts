@@ -1,13 +1,4 @@
-export interface SocialLink {
-  name: string;
-  url: string;
-}
-
-export interface RepoConfig {
-  url: string;
-  path: string;
-  edit: boolean;
-}
+import type { RepoConfig, SocialLink } from "./docu.types";
 
 export const repoConfig: RepoConfig = {
   url: "https://github.com/DocuBook/docubook",
@@ -20,20 +11,3 @@ export const socialConfig: SocialLink[] = [
   { name: "npm", url: "https://www.npmjs.com/~wildan.nrs" },
   { name: "youtube", url: "https://youtube.com/@wildandotdev" },
 ];
-
-export function getEditLink(url: string, filePath: string): string {
-  const path = repoConfig.path || "blob/main/{filePath}";
-  return `${url}/${path}`.replace("{filePath}", filePath);
-}
-
-export function isEditEnabled(): boolean {
-  return repoConfig.edit ?? false;
-}
-
-export function getRepoUrl(): string {
-  return repoConfig.url || "";
-}
-
-export function getSocialLinks(): SocialLink[] {
-  return socialConfig;
-}

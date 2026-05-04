@@ -1,5 +1,5 @@
 import { SquarePen } from "lucide-react";
-import { isEditEnabled, getEditLink, getRepoUrl } from "../docu.config";
+import { isEditEnabled, getEditLink, getRepoUrl } from "../helpers";
 
 export interface EditWithProps {
     filePath: string;
