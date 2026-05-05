@@ -1,4 +1,4 @@
-import type { RepoConfig, SocialLink } from "./docu.types";
+import type { RepoConfig, SocialLink } from "./types";
 
 export const repoConfig: RepoConfig = {
   url: "https://github.com/DocuBook/docubook",

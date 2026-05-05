@@ -35,10 +35,9 @@ project/
 │   ├── index.mdx
 │   └── getting-started/
 │       └── introduction.mdx
-├── docu.config.ts           # Config file
 ├── docu.json                # Settings
 ├── package.json
-└── tailwind.config.ts
+└── ...
 ```
 
 ## Key Files

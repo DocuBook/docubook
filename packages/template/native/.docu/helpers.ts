@@ -1,4 +1,4 @@
-import { repoConfig, socialConfig } from "../docu.config";
+import { repoConfig, socialConfig } from "./docu.config";
 import type { SocialLink } from "./types";
 
 export function getEditLink(url: string, filePath: string): string {
