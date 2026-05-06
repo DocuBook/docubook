@@ -32,7 +32,8 @@ project/
 │   |    └── ...              # any files
 │   └── dist/                 # Build output
 ├── docs/                     # MDX source files
-│   ├── index.mdx
+│   ├── .assets               # static images
+│   └── index.mdx
 │   └── getting-started/
 │       └── introduction.mdx
 ├── docu.json                # Settings

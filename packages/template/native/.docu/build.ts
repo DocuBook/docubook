@@ -11,6 +11,7 @@ const DOCS_DIR = resolve("./docs");
 const DIST_DIR = resolve("./.docu/dist");
 const ASSETS_DIR = resolve("./.docu/dist/assets");
 const CACHE_FILE = resolve("./.docu/build-cache.json");
+const DOCS_ASSETS_DIR = resolve("./docs/.assets");
 
 function parseArgs(): CliArgs {
   const args = process.argv.slice(2);
@@ -144,6 +145,27 @@ function generateNavLinks(menu: { title: string; href: string }[]): string {
     .join("");
 }
 
+async function copyDirectoryRecursive(
+  src: string,
+  dest: string
+): Promise<void> {
+  if (!existsSync(src)) return;
+
+  await mkdir(dest, { recursive: true });
+  const entries = await readdir(src, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const srcPath = join(src, entry.name);
+    const destPath = join(dest, entry.name);
+
+    if (entry.isDirectory()) {
+      await copyDirectoryRecursive(srcPath, destPath);
+    } else {
+      await copyFile(srcPath, destPath);
+    }
+  }
+}
+
 async function build() {
   const args = parseArgs();
   const startTime = Date.now();
@@ -163,6 +185,10 @@ async function build() {
   if (existsSync(daisyuiCssPath)) {
     await copyFile(daisyuiCssPath, join(ASSETS_DIR, "daisyui.css"));
   }
+
+  // Copy docs/.assets/ to dist/docs/.assets/
+  const docsAssetsDest = join(DIST_DIR, "docs", ".assets");
+  await copyDirectoryRecursive(DOCS_ASSETS_DIR, docsAssetsDest);
 
   // Build pages
   const service = createDocsService();

@@ -5,9 +5,37 @@ export interface DocuRoute {
   items?: DocuRoute[];
 }
 
+export interface DocuMeta {
+  title: string;
+  description: string;
+  baseURL: string;
+}
+
+export interface SocialLink {
+  name: string;
+  url: string;
+}
+
+export interface DocuNavbar {
+  logoText: string;
+  menu: { title: string; href: string }[];
+}
+
+export interface DocuFooter {
+  social: SocialLink[];
+}
+
+export interface RepoConfig {
+  url: string;
+  path: string;
+  edit: boolean;
+}
+
 export interface DocuConfig {
-  meta: { title: string; description: string; baseURL: string };
-  navbar: { logoText: string; menu: { title: string; href: string }[] };
+  meta: DocuMeta;
+  navbar: DocuNavbar;
+  footer: DocuFooter;
+  repo: RepoConfig;
   routes: DocuRoute[];
 }
 
@@ -29,15 +57,4 @@ export interface ParsedDoc {
   content: React.ReactElement;
   frontmatter: Record<string, unknown>;
   raw: string;
-}
-
-export interface SocialLink {
-  name: string;
-  url: string;
-}
-
-export interface RepoConfig {
-  url: string;
-  path: string;
-  edit: boolean;
 }
