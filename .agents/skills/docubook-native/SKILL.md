@@ -20,10 +20,10 @@ Use this skill when the user wants to:
 
 ```
 project/
-├── .docu/                    # DocuBook core
+├── .docu/                    # core directory
 │   ├── build.ts              # Build pipeline
 │   ├── server.ts             # Dev server
-│   ├── markdown.ts           # MDX service
+│   ├── prerender.ts          # MDX service as prerender static
 │   ├── hydrate.ts            # Client bundle
 │   ├── ...                   # any files
 │   ├── components/           # UI components

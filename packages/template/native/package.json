@@ -26,7 +26,7 @@
   "author-url": "https://wildan.dev",
   "license": "MIT",
   "dependencies": {
-    "@docubook/core": "^1.6.0",
+    "@docubook/core": "^1.6.1",
     "@docubook/mdx-content": "^2.1.0",
     "bun-plugin-tailwind": "^0.1.2",
     "daisyui": "^5.5.19",

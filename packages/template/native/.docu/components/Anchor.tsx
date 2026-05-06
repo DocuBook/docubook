@@ -1,5 +1,5 @@
 import { AnchorHTMLAttributes, ReactNode } from "react";
-import { cn, isExternalUrl } from "./utils";
+import { cn, isExternalUrl } from "../utils";
 
 export interface AnchorProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   href?: string;

@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { resolve, join, dirname } from "node:path";
 import docuConfig from "../docu.json" with { type: "json" };
-import { createDocsService } from "./markdown";
+import { preRenderer } from "./prerender.tsx";
 import { buildClientBundle } from "./hydrate";
 import type { BuildCache, CliArgs } from "./types";
 
@@ -75,16 +75,21 @@ function shouldRebuild(path: string, mtime: number, cache: BuildCache): boolean 
 
 function generateDocHtml(
   path: string,
-  compiledSource: string,
-  frontmatter: Record<string, unknown>
+  preRendered: {
+    html: string;
+    compiledSource: string;
+    frontmatter: Record<string, unknown>;
+    toc?: { id: string; title: string; level: number }[];
+  }
 ): string {
-  const title = String(frontmatter.title || path);
-  const description = frontmatter.description as string | undefined;
-  const date = frontmatter.date as string | undefined;
+  const title = String(preRendered.frontmatter.title || path);
+  const description = preRendered.frontmatter.description as string | undefined;
+  const date = preRendered.frontmatter.date as string | undefined;
   const favicon = docuConfig.meta?.favicon || "/favicon.ico";
   const logo = docuConfig.navbar?.logo;
   const logoText = docuConfig.navbar?.logoText;
 
+  // Logo HTML
   let logoHtml = "";
   if (logo?.src && logoText) {
     logoHtml = `<a href="/docs" class="flex items-center gap-2"><img src="${logo.src}" alt="${logo.alt || logoText}" width="32" height="32"><span class="font-semibold text-lg">${logoText}</span></a>`;
@@ -94,11 +99,22 @@ function generateDocHtml(
     logoHtml = `<a href="/docs" class="font-semibold text-xl">${logoText}</a>`;
   }
 
+  // Meta section
   let metaSection = "";
   if (description || date) {
     const descHtml = description ? `<p class="mt-2 text-lg opacity-80">${description}</p>` : "";
     const dateHtml = date ? `<span class="text-sm opacity-60">${date}</span>` : "";
     metaSection = `<div class="mb-6">${descHtml}${dateHtml}</div>`;
+  }
+
+  // TOC HTML
+  let tocHtml = "";
+  if (preRendered.toc && preRendered.toc.length > 0) {
+    const tocItems = preRendered.toc
+      .filter((item) => item.level > 1)
+      .map((item) => `<li><a href="#${item.id}" class="text-sm">${item.title}</a></li>`)
+      .join("\n");
+    tocHtml = tocItems ? `<aside class="hidden lg:block fixed right-8 top-24 w-48"><h4 class="font-semibold mb-2">On this page</h4><ul class="text-base-content/70">${tocItems}</ul></aside>` : "";
   }
 
   return `<!DOCTYPE html>
@@ -116,8 +132,9 @@ function generateDocHtml(
   <script src="/assets/mdx-client.js" crossorigin></script>
 </head>
 <body>
-  <div id="root" data-mdx="${encodeURIComponent(compiledSource)}">
+  <div id="root" data-mdx="${encodeURIComponent(preRendered.compiledSource)}">
     <div class="flex min-h-screen flex-col">
+      <!-- Navbar -->
       <nav class="navbar bg-base-200 px-4">
         <div class="flex items-center gap-1.5">
           <a class="btn btn-ghost text-xl" href="/docs/">${logoHtml}</a>
@@ -128,12 +145,31 @@ function generateDocHtml(
           </ul>
         </div>
       </nav>
-      <main class="flex-1 p-8 max-w-4xl mx-auto">
+      
+      <!-- Main Content -->
+      <main class="flex-1 p-8 max-w-4xl mx-auto relative">
         <h1 class="text-3xl font-bold mb-4">${title}</h1>
         ${metaSection}
-        <article class="prose max-w-none" id="mdx-content">
-        </article>
+        
+        <div class="flex gap-8">
+          <!-- Article Content (Pre-rendered HTML) -->
+          <article class="flex-1">
+            ${preRendered.html}
+          </article>
+          
+          <!-- Table of Contents -->
+          ${tocHtml}
+        </div>
       </main>
+      
+      <!-- Footer -->
+      <footer class="footer footer-center p-4 bg-base-200 text-base-content">
+        <div>
+          <p class="text-sm opacity-70">
+            © ${new Date().getFullYear()} ${docuConfig.meta?.title}. Built with DocuBook.
+          </p>
+        </div>
+      </footer>
     </div>
   </div>
 </body>
@@ -207,7 +243,7 @@ async function build() {
   await mkdir(DIST_DIR, { recursive: true });
   await mkdir(ASSETS_DIR, { recursive: true });
 
-  // Copy daisyUI
+  // Copy daisyUI CSS
   const daisyuiCssPath = resolve("./node_modules/daisyui/daisyui.css");
   if (existsSync(daisyuiCssPath)) {
     await copyFile(daisyuiCssPath, join(ASSETS_DIR, "daisyui.css"));
@@ -217,8 +253,7 @@ async function build() {
   const docsAssetsDest = join(DIST_DIR, "docs", ".assets");
   await copyDirectoryRecursive(DOCS_ASSETS_DIR, docsAssetsDest);
 
-  // Build pages
-  const service = createDocsService();
+  // Build pages as preRenderer service
   const mdxFiles = await findMdxFilesWithStats(DOCS_DIR);
   const allPaths = mdxFiles.map((f) => f.path);
   const cache = args.force ? {} : await readCache();
@@ -227,9 +262,20 @@ async function build() {
   let skipped = 0;
 
   for (const path of allPaths) {
-    const parsed = await service.getDocForPath(path);
-    if (!parsed) continue;
+    // Read MDX file
+    const mdxPath1 = join(DOCS_DIR, path, "index.mdx");
+    const mdxPath2 = join(DOCS_DIR, `${path}.mdx`);
+    
+    let rawMdx: string | null = null;
+    if (existsSync(mdxPath1)) {
+      rawMdx = await readFile(mdxPath1, "utf-8");
+    } else if (existsSync(mdxPath2)) {
+      rawMdx = await readFile(mdxPath2, "utf-8");
+    }
+    
+    if (!rawMdx) continue;
 
+    // Check cache
     const fileInfo = mdxFiles.find((f) => f.path === path);
     let needRebuild = !fileInfo || shouldRebuild(path, fileInfo.mtime, cache);
 
@@ -243,13 +289,15 @@ async function build() {
       continue;
     }
 
-    const fullHtml = generateDocHtml(path, parsed.compiledSource, parsed.frontmatter);
+    const preRendered = await preRenderer.preRender(rawMdx);
+    const fullHtml = generateDocHtml(path, preRendered);
     const outputPath = join(DIST_DIR, "docs", `${path}.html`);
     await mkdir(dirname(outputPath), { recursive: true });
     await writeFile(outputPath, fullHtml);
 
+    // Update cache
     cache[path] = {
-      hash: hashContent(parsed.raw),
+      hash: hashContent(rawMdx),
       mtime: fileInfo?.mtime || Date.now(),
       builtAt: Date.now(),
     };
@@ -260,13 +308,16 @@ async function build() {
   const indexMdxPath = join(DOCS_DIR, "index.mdx");
   if (existsSync(indexMdxPath)) {
     const indexMdxContent = await readFile(indexMdxPath, "utf-8");
-    const parsed = await service.parseMdxFile(indexMdxContent);
-    await writeFile(join(DIST_DIR, "docs", "index.html"), generateDocHtml("", parsed.compiledSource, parsed.frontmatter));
+    const preRendered = await preRenderer.preRender(indexMdxContent);
+    await writeFile(
+      join(DIST_DIR, "docs", "index.html"),
+      generateDocHtml("", { ...preRendered, frontmatter: preRendered.frontmatter })
+    );
   } else {
     await writeFile(join(DIST_DIR, "docs", "index.html"), generateIndexHtml());
   }
 
-  // Build client bundle
+  // Build client bundle for hydration
   await buildClientBundle();
   await writeCache(cache);
 
