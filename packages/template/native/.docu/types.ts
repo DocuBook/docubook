@@ -54,7 +54,8 @@ export interface CliArgs {
 }
 
 export interface ParsedDoc {
-  content: React.ReactElement;
+  compiledSource: string;
   frontmatter: Record<string, unknown>;
   raw: string;
+  scope?: Record<string, unknown>;
 }

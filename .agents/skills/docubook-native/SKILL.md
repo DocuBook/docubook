@@ -71,9 +71,9 @@ bun clean
 - `@docubook/mdx-content` - MDX components
 - `daisyui` - UI components (via CDN for simplicity)
 - `react` / `react-dom` - Client hydration
-- `tailwindcss` - token based color via variable (colors) via unpkg build by native
+- `tailwindcss` - token based color via variable (colors) via [jsdelivr](https://www.jsdelivr.com/) build by native
 
-## Colors - via unpkg for tokens color based
+## Colors - via [jsdelivr](https://www.jsdelivr.com/) for tokens color based
 
 ```css
 /* CSS variables - Modern Blue Theme + daisyUI tokens */

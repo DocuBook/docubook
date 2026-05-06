@@ -79,6 +79,27 @@ function generateDocHtml(
   frontmatter: Record<string, unknown>
 ): string {
   const title = String(frontmatter.title || path);
+  const description = frontmatter.description as string | undefined;
+  const date = frontmatter.date as string | undefined;
+  const favicon = docuConfig.meta?.favicon || "/favicon.ico";
+  const logo = docuConfig.navbar?.logo;
+  const logoText = docuConfig.navbar?.logoText;
+
+  let logoHtml = "";
+  if (logo?.src && logoText) {
+    logoHtml = `<a href="/docs" class="flex items-center gap-2"><img src="${logo.src}" alt="${logo.alt || logoText}" width="32" height="32"><span class="font-semibold text-lg">${logoText}</span></a>`;
+  } else if (logo?.src) {
+    logoHtml = `<a href="/docs"><img src="${logo.src}" alt="${logo.alt || "Logo"}" width="24" height="24"></a>`;
+  } else if (logoText) {
+    logoHtml = `<a href="/docs" class="font-semibold text-xl">${logoText}</a>`;
+  }
+
+  let metaSection = "";
+  if (description || date) {
+    const descHtml = description ? `<p class="mt-2 text-lg opacity-80">${description}</p>` : "";
+    const dateHtml = date ? `<span class="text-sm opacity-60">${date}</span>` : "";
+    metaSection = `<div class="mb-6">${descHtml}${dateHtml}</div>`;
+  }
 
   return `<!DOCTYPE html>
 <html data-theme="light" lang="en">
@@ -86,6 +107,8 @@ function generateDocHtml(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
+  ${description ? `<meta name="description" content="${description}">` : ""}
+  <link rel="icon" type="image/x-icon" href="${favicon}">
   <link rel="stylesheet" href="/assets/daisyui.css">
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
@@ -96,8 +119,8 @@ function generateDocHtml(
   <div id="root" data-mdx="${encodeURIComponent(compiledSource)}">
     <div class="flex min-h-screen flex-col">
       <nav class="navbar bg-base-200 px-4">
-        <div class="flex-1">
-          <a class="btn btn-ghost text-xl" href="/docs/">${docuConfig.navbar?.logoText}</a>
+        <div class="flex items-center gap-1.5">
+          <a class="btn btn-ghost text-xl" href="/docs/">${logoHtml}</a>
         </div>
         <div class="flex-none">
           <ul class="menu menu-horizontal px-1">
@@ -107,6 +130,7 @@ function generateDocHtml(
       </nav>
       <main class="flex-1 p-8 max-w-4xl mx-auto">
         <h1 class="text-3xl font-bold mb-4">${title}</h1>
+        ${metaSection}
         <article class="prose max-w-none" id="mdx-content">
         </article>
       </main>
@@ -117,12 +141,15 @@ function generateDocHtml(
 }
 
 function generateIndexHtml(): string {
+  const favicon = docuConfig.meta?.favicon || "/favicon.ico";
+
   return `<!DOCTYPE html>
 <html data-theme="light" lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${docuConfig.meta?.title}</title>
+  <link rel="icon" type="image/x-icon" href="${favicon}">
   <link rel="stylesheet" href="/assets/daisyui.css">
 </head>
 <body>
@@ -131,7 +158,7 @@ function generateIndexHtml(): string {
       <div class="max-w-md">
         <h1 class="text-5xl font-bold">${docuConfig.meta?.title}</h1>
         <p class="py-6">${docuConfig.meta?.description}</p>
-        <a href="/docs/getting-started/introduction.html" class="btn btn-primary">Get Started</a>
+        <a href="/docs/getting-started/introduction" class="btn btn-primary">Get Started</a>
       </div>
     </div>
   </div>

@@ -3,19 +3,36 @@
   "meta": {
     "title": "DocuBook Native",
     "description": "Lightweight documentation starter kit using Bun + daisyUI + MDX.",
-    "baseURL": "https://docubook.pro"
+    "baseURL": "https://docubook.pro",
+    "favicon": "/docs/.assets/images/favicon.ico"
   },
   "navbar": {
+    "logo": {
+      "src": "/docs/.assets/images/docu.svg",
+      "alt": "DocuBook"
+    },
     "logoText": "DocuBook",
     "menu": [
-      { "title": "Docs", "href": "/docs/getting-started/introduction" }
+      {
+        "title": "Docs",
+        "href": "getting-started/introduction"
+      }
     ]
   },
   "footer": {
     "social": [
-      { "name": "gitHub", "url": "https://github.com/DocuBook/docubook" },
-      { "name": "npm", "url": "https://www.npmjs.com/~wildan.nrs" },
-      { "name": "youtube", "url": "https://youtube.com/@wildandotdev" }
+      {
+        "name": "gitHub",
+        "url": "https://github.com/DocuBook/docubook"
+      },
+      {
+        "name": "npm",
+        "url": "https://www.npmjs.com/~wildan.nrs"
+      },
+      {
+        "name": "youtube",
+        "url": "https://youtube.com/@wildandotdev"
+      }
     ]
   },
   "repo": {
