@@ -1,5 +1,11 @@
 # @docubook/core
 
+## 1.6.1
+
+### Patch Changes
+
+- 8360248: fix: changed return types from unknown[] to Pluggable[]
+
 ## 1.6.0
 
 ### Minor Changes

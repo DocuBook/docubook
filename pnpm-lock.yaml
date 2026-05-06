@@ -61,7 +61,7 @@ importers:
         specifier: ^4.6.2
         version: 4.6.3(@algolia/client-search@5.52.0)(@types/react@19.2.8)(algoliasearch@5.52.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(search-insights@2.17.3)
       '@docubook/core':
-        specifier: ^1.5.0
+        specifier: ^1.6.1
         version: link:../../packages/core
       '@docubook/mdx-content':
         specifier: ^2.2.0
@@ -254,6 +254,9 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      unified:
+        specifier: ^11.0.0
+        version: 11.0.5
 
   packages/mdx-content:
     dependencies:

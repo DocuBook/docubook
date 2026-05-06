@@ -11,6 +11,7 @@ import { handleCodeTitles } from "./plugins/handleCodeTitles"
 import { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/handleCodeExpandable"
 import type { MdxCompileResult } from "./types"
 import type { ElementNode } from "./utils"
+import type { Pluggable } from "unified"
 
 // Re-export serialize for non-RSC usage
 export { serialize };
@@ -84,7 +85,7 @@ export const postProcess = () => (tree: Node) => {
   return tree
 }
 
-export function createDefaultRehypePlugins(): unknown[] {
+export function createDefaultRehypePlugins(): Pluggable[] {
   return [
     preProcess,
     rehypeCodeTitles,
@@ -98,7 +99,7 @@ export function createDefaultRehypePlugins(): unknown[] {
   ]
 }
 
-export function createDefaultRemarkPlugins(): unknown[] {
+export function createDefaultRemarkPlugins(): Pluggable[] {
   return [remarkGfm, handleCodeExpandableRemark]
 }
 
