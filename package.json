@@ -29,19 +29,15 @@
   },
   "dependencies": {
     "lint-staged": "^16.4.0",
-    "next": "^16.2.3"
+    "next": "^16.2.5"
   },
   "engines": {
     "node": ">=20.0.0"
   },
-  "packageManager": "pnpm@10.33.2",
+  "packageManager": "pnpm@11.0.8+sha512.4c4097e1dd2d42372c4e7fa5a791ff28fc75a484c7ac192e64b1df0fdef17594ba982f9b4fed9adfb3c757846f565b799b2763fb3733d1de1bcb82cf46684912",
   "pnpm": {
     "overrides": {
       "flatted": ">=3.4.2"
-    },
-    "ignoredBuiltDependencies": [
-      "sharp",
-      "unrs-resolver"
-    ]
+    }
   }
 }

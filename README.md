@@ -22,7 +22,7 @@ npx @docubook/cli@latest
 
 ## Versioning & Release Workflow
 
-This monorepo uses [Changesets](https://github.com/changesets/changesets) to manage versioning and releases for all packages (`@docubook/cli`, `@docubook/core`, `@docubook/mdx-content`, `@docubook/docs-tree`).
+This monorepo uses [Changesets](https://github.com/changesets/changesets) to manage versioning and releases for all packages (`@docubook/cli`, `@docubook/core`, `@docubook/mdx-content`).
 
 ### Managed Packages
 
