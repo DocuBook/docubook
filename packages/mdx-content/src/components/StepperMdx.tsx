@@ -140,15 +140,5 @@ export function StepMdx({ title, children, style, className, ...props }: Interna
         </div>
       ) : null}
     </li>
-    );
-}
-
-/** @deprecated Use `StepsMdx` instead. */
-export function StepperMdx(props: StepsMdxProps) {
-  return <StepsMdx {...props} />;
-}
-
-/** @deprecated Use `StepMdx` instead. */
-export function StepperItemMdx(props: StepMdxProps) {
-  return <StepMdx {...props} />;
+  );
 }

@@ -1,12 +1,12 @@
 export { ButtonMdx } from "./components/ButtonMdx";
 export { CardMdx } from "./components/CardMdx";
-export { CardsMdx, CardGroupMdx } from "./components/CardGroupMdx";
+export { CardsMdx } from "./components/CardGroupMdx";
 export { CodeBlock } from "./components/CodeBlock";
 export { FileMdx, FilesMdx, FolderMdx } from "./components/FileTreeMdx";
 export { KbdMdx } from "./components/KeyboardMdx";
 export { LinkMdx } from "./components/LinkMdx";
 export { ChangesMdx, ReleaseMdx } from "./components/ReleaseMdx";
-export { StepMdx, StepsMdx, StepperItemMdx, StepperMdx } from "./components/StepperMdx";
+export { StepMdx, StepsMdx } from "./components/StepperMdx";
 export {
     TableMdx,
     TableHeaderMdx,

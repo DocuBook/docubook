@@ -41,7 +41,7 @@ for example :
   </Accordion>
 </Accordions>
 
-deprecated alias: `AccordionGroup`
+deprecated alias: `AccordionGroup` (removed on v3)
 
 ## button
 
@@ -81,7 +81,7 @@ for example :
   </Card>
 </Cards>
 
-deprecated alias: `CardGroup`
+deprecated alias: `CardGroup` (removed on v3)
 
 
 ## code block
@@ -184,7 +184,7 @@ for example :
   </Step>
 </Steps>
 
-deprecated aliases: `Stepper`, `StepperItem`
+deprecated aliases: `Stepper`, `StepperItem` (removed on v3)
 
 ## tabs
 
@@ -213,7 +213,7 @@ for example :
   </Tab>
 </Tabs>
 
-deprecated legacy API: `TabsList`, `TabsTrigger`, `TabsContent`
+deprecated legacy API: `TabsList`, `TabsTrigger`, `TabsContent` (removed on v3)
 
 ## tooltips
 

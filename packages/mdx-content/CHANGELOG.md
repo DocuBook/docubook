@@ -1,5 +1,18 @@
 # @docubook/mdx-content
 
+## 3.0.0
+
+### Major Changes
+
+- Major: removed legacy API! use (Tabs, Cards, Accordions, Steps) ;
+  - removed API TabsList, TabsTrigger and TabsContent instead (<Tabs> <Tab title="Name">)
+  - removed API AccordionGroup instead (<Accordions> <Accordion title="Name">)
+  - removed API CardGroup instead (<Cards> <Card title="Name" icon"Lucide">)
+  - removed API StepperItem, Stepper instead (<Steps> <Step title="Name">)
+
+  A lightweight API that writes shorter component names that are easier to remember, but still works
+  for writing interactive components.
+
 ## 2.2.0
 
 ### Minor Changes

@@ -2,10 +2,8 @@ import type { ComponentType } from "react";
 import {
     AccordionMdx,
     AccordionsMdx,
-    AccordionGroupMdx,
     ButtonMdx,
     CardsMdx,
-    CardGroupMdx,
     CardMdx,
     CodeBlock,
     FileMdx,
@@ -19,8 +17,6 @@ import {
     ChangesMdx,
     StepMdx,
     StepsMdx,
-    StepperItemMdx,
-    StepperMdx,
     TooltipMdx,
     YoutubeMdx,
 } from "../components";
@@ -33,7 +29,7 @@ import {
     TableMdx,
     TableRowMdx,
 } from "../components/TableMdx";
-import { TabMdx, TabsContentMdx, TabsListMdx, TabsMdx, TabsTriggerMdx } from "../components/TabsMdx";
+import { TabMdx, TabsMdx } from "../components/TabsMdx";
 
 export type MdxComponentMap = Record<string, ComponentType<any>>;
 
@@ -41,11 +37,6 @@ export function createMdxComponents(customComponents: MdxComponentMap = {}): Mdx
     return {
         Tabs: TabsMdx,
         Tab: TabMdx,
-
-        // Legacy tabs API aliases for migration compatibility
-        TabsList: TabsListMdx,
-        TabsTrigger: TabsTriggerMdx,
-        TabsContent: TabsContentMdx,
         table: TableMdx,
         thead: TableHeaderMdx,
         tbody: TableBodyMdx,
@@ -61,13 +52,9 @@ export function createMdxComponents(customComponents: MdxComponentMap = {}): Mdx
         Note: NoteMdx,
         Steps: StepsMdx,
         Step: StepMdx,
-        Stepper: StepperMdx,
-        StepperItem: StepperItemMdx,
         Accordion: AccordionMdx,
         Accordions: AccordionsMdx,
-        AccordionGroup: AccordionGroupMdx,
         Cards: CardsMdx,
-        CardGroup: CardGroupMdx,
         Kbd: KbdMdx,
         Release: ReleaseMdx,
         Changes: ChangesMdx,

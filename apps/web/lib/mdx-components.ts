@@ -25,14 +25,6 @@ import {
     TableRowMdx,
     TooltipMdx,
     YoutubeMdx,
-    // Legacy components (deprecated, kept for migration compatibility)
-    TabsContentMdx,
-    TabsListMdx,
-    TabsTriggerMdx,
-    AccordionGroupMdx,
-    CardGroupMdx,
-    StepperItemMdx,
-    StepperMdx,
 } from "@docubook/mdx-content";
 import { ImageMdx, LinkMdx, ButtonMdx, CardMdx } from "@docubook/mdx-content/next";
 import { customMdxComponents } from "@/lib/mdx";
@@ -67,15 +59,6 @@ const builtInOverrides: MdxComponentMap = {
     img: ImageMdx,
     a: LinkMdx,
     Link: LinkMdx,
-
-    // Legacy aliases (deprecated, kept for migration compatibility)
-    Stepper: StepperMdx,
-    StepperItem: StepperItemMdx,
-    AccordionGroup: AccordionGroupMdx,
-    CardGroup: CardGroupMdx,
-    TabsContent: TabsContentMdx,
-    TabsList: TabsListMdx,
-    TabsTrigger: TabsTriggerMdx,
 };
 
 export const mdxComponents = createMdxComponents({

@@ -42,8 +42,3 @@ export function CardsMdx({ cols = 2, children, style }: CardsMdxProps) {
         </>
     );
 }
-
-/** @deprecated Use `CardsMdx` instead. */
-export function CardGroupMdx(props: CardsMdxProps) {
-    return <CardsMdx {...props} />;
-}

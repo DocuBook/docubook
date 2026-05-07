@@ -1,8 +1,8 @@
 export { AccordionMdx } from "./components/AccordionMdx";
-export { AccordionsMdx, AccordionGroupMdx } from "./components/AccordionGroupMdx";
+export { AccordionsMdx } from "./components/AccordionGroupMdx";
 export { ButtonMdx } from "./components/ButtonMdx";
 export { CardMdx } from "./components/CardMdx";
-export { CardsMdx, CardGroupMdx } from "./components/CardGroupMdx";
+export { CardsMdx } from "./components/CardGroupMdx";
 export { CodeBlock } from "./components/CodeBlock";
 export { ExpandableCode } from "./components/ExpandableCode";
 export { FileMdx, FilesMdx, FolderMdx } from "./components/FileTreeMdx";
@@ -11,7 +11,7 @@ export { KbdMdx } from "./components/KeyboardMdx";
 export { LinkMdx, type LinkMdxProps } from "./components/LinkMdx";
 export { NoteMdx } from "./components/NoteMdx";
 export { ChangesMdx, ReleaseMdx } from "./components/ReleaseMdx";
-export { StepMdx, StepsMdx, StepperItemMdx, StepperMdx } from "./components/StepperMdx";
+export { StepMdx, StepsMdx } from "./components/StepperMdx";
 export {
     TableMdx,
     TableHeaderMdx,
@@ -21,7 +21,7 @@ export {
     TableHeadMdx,
     TableCellMdx,
 } from "./components/TableMdx";
-export { TabMdx, TabsMdx, TabsListMdx, TabsTriggerMdx, TabsContentMdx } from "./components/TabsMdx";
+export { TabMdx, TabsMdx } from "./components/TabsMdx";
 export { TooltipMdx } from "./components/TooltipsMdx";
 export { YoutubeMdx } from "./components/YoutubeMdx";
 export type { IconProp } from "./components/IconMdx";

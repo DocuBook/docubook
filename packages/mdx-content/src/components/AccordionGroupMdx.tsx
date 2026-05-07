@@ -30,8 +30,3 @@ export function AccordionsMdx({ children }: AccordionsMdxProps) {
         </AccordionGroupContext.Provider>
     );
 }
-
-/** @deprecated Use `AccordionsMdx` instead. */
-export function AccordionGroupMdx(props: AccordionsMdxProps) {
-    return <AccordionsMdx {...props} />;
-}
