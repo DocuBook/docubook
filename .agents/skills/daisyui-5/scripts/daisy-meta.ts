@@ -193,6 +193,11 @@ export const COMPONENT_CAPABILITIES: Partial<
         activity: true,
         orientation: true,
     },
+    // Pagination: uses join component with btn items, supports sizes and shapes
+    join: {
+        sizes: true,
+        shapes: true,
+    },
     // Modals: capabilities center on screen placement
     modal: {
         placement: ["top", "middle", "bottom", "start", "end"],

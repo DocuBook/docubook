@@ -38,18 +38,34 @@ export function getRouteMap(): Map<string, string> {
   return map;
 }
 
-/** Get prev/next for pagination */
-export function getPagination(currentPath: string) {
-  const paths = flattenRoutes("/docs");
-  const index = paths.indexOf(currentPath);
 
+export function getPreviousNext(pathname: string) {
+
+  const normalizedPath = pathname.replace(/^\/|\/$/g, "");
+  const paths = flattenRoutes("/docs");
+  
+  const index = paths.findIndex(
+    (href) => href === `/${normalizedPath}` || href === normalizedPath
+  );
+  
+  if (index === -1) {
+    return { prev: null, next: null };
+  }
+  
+  const routeMap = getRouteMap();
+  const prevHref = index > 0 ? paths[index - 1] : null;
+  const nextHref = index < paths.length - 1 ? paths[index + 1] : null;
+  
   return {
-    prev: index > 0 ? paths[index - 1] : null,
-    next: index < paths.length - 1 ? paths[index + 1] : null,
+    prev: prevHref ? { href: prevHref, title: routeMap.get(prevHref) || "" } : null,
+    next: nextHref ? { href: nextHref, title: routeMap.get(nextHref) || "" } : null,
   };
 }
 
-/** Get section from pathname */
+export function getPagination(currentPath: string) {
+  return getPreviousNext(currentPath);
+}
+
 export function getSection(pathname: string): string {
   const parts = pathname.split("/").filter(Boolean);
   return parts[0] || "home";
