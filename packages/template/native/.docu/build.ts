@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { resolve, join, dirname } from "node:path";
 import docuConfig from "../docu.json" with { type: "json" };
-import { preRenderer } from "./prerender.tsx";
+import { preRenderer } from "./prerender";
 import { buildClientBundle } from "./hydrate";
 import type { BuildCache, CliArgs } from "./types";
 
