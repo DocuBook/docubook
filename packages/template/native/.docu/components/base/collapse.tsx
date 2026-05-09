@@ -2,7 +2,7 @@
 
 import { cn } from "../../utils";
 import { ChevronDown, ChevronRight, Plus, Minus } from "lucide-react";
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 type CollapseVariant = "arrow" | "plus";
 
@@ -10,6 +10,7 @@ interface CollapseProps {
   title: ReactNode;
   children: ReactNode;
   defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
   variant?: CollapseVariant;
   className?: string;
   titleClassName?: string;
@@ -21,6 +22,7 @@ export default function Collapse({
   title,
   children,
   defaultOpen = false,
+  onOpenChange,
   variant = "arrow",
   className,
   titleClassName,
@@ -29,8 +31,12 @@ export default function Collapse({
 }: CollapseProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
-  useEffect(() => {
-  }, []);
+  const handleToggle = () => {
+    if (disabled) return;
+    const newState = !isOpen;
+    setIsOpen(newState);
+    onOpenChange?.(newState);
+  };
 
   const Icon = variant === "arrow"
     ? (isOpen ? ChevronDown : ChevronRight)
@@ -52,7 +58,7 @@ export default function Collapse({
       <input
         type="checkbox"
         checked={isOpen}
-        onChange={() => !disabled && setIsOpen(!isOpen)}
+        onChange={handleToggle}
         disabled={disabled}
         aria-expanded={isOpen}
       />
@@ -61,7 +67,7 @@ export default function Collapse({
           "collapse-title font-medium text-base-content cursor-pointer",
           titleClassName
         )}
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={handleToggle}
         role="button"
         tabIndex={disabled ? -1 : 0}
         onKeyDown={(e) => {
