@@ -6,6 +6,7 @@ dist/
 
 # DaisyUI CSS (regenerated on build)
 daisyui.css
+daisyui.d.ts
 
 # Lock files
 bun.lock
