@@ -1,19 +1,7 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
+import Anchor from "./Anchor";
 import { cn } from "../utils";
-
-const CONFIG_PATH = resolve(process.cwd(), "docu.json");
-const _raw = JSON.parse(readFileSync(CONFIG_PATH, "utf-8"));
-
-if (!_raw.meta?.title) throw new Error("docu.json: meta.title required");
-if (!_raw.navbar?.menu?.length) throw new Error("docu.json: navbar.menu required");
-if (!_raw.navbar?.logoText) throw new Error("docu.json: navbar.logoText required");
-
-const _cfg = _raw;
-const _navbar = _cfg.navbar;
-const _meta = _cfg.meta;
-const _repo = _cfg.repo;
 
 interface NavMenuItem {
   title: string;
@@ -21,19 +9,28 @@ interface NavMenuItem {
 }
 
 interface NavbarProps {
+  logo?: { src?: string; alt?: string };
+  logoText?: string;
+  menu: NavMenuItem[];
   id?: string;
   className?: string;
 }
 
-export function Navbar({ id = "navbar", className }: NavbarProps) {
+export function Navbar({ logo, logoText, menu, id = "navbar", className }: NavbarProps) {
+  const [currentPath, setCurrentPath] = useState("/");
+
+  useEffect(() => {
+    setCurrentPath(window.location.pathname);
+  }, []);
+
   return (
     <nav id={id} className={cn("navbar bg-base-200 px-4", className)}>
       <div className="flex-1">
-        <Logo />
+        <Logo logo={logo} logoText={logoText} />
       </div>
       <div className="flex-none">
-        <NavMenu />
-        <MobileMenuToggle />
+        <NavMenu menu={menu} currentPath={currentPath} />
+        <MobileMenuToggle menu={menu} currentPath={currentPath} />
       </div>
     </nav>
   );
@@ -59,61 +56,51 @@ export function NavbarLayout({
   );
 }
 
-export function Logo() {
-  const logo = _navbar.logo;
-  const logoText = _navbar.logoText;
-  
+export function Logo({ logo, logoText }: { logo?: { src?: string; alt?: string }; logoText?: string }) {
   return (
     <a href="/docs" className="flex items-center gap-2">
       {logo?.src ? (
-        <img src={logo.src} alt={logo.alt ?? logoText} width={32} height={32} className="h-8 w-8" />
-      ) : (
+        <img src={logo.src} alt={logo.alt ?? logoText ?? ""} width={32} height={32} className="h-8 w-8" />
+      ) : logoText ? (
         <span className="text-xl font-semibold">{logoText}</span>
-      )}
-      <span className="text-xl font-semibold hidden md:inline">{logoText}</span>
+      ) : null}
+      <span className="text-xl font-semibold hidden md:inline">{logoText ?? ""}</span>
     </a>
   );
 }
 
-export function NavMenu({ className }: { className?: string }) {
-  const menu = _navbar.menu;
-  
+export function NavMenu({ menu, currentPath }: { menu: NavMenuItem[]; currentPath?: string }) {
   return (
-    <ul className={cn("menu menu-horizontal px-1", className)}>
+    <ul className="menu menu-horizontal px-1">
       {menu.map((item) => (
         <li key={item.title + item.href}>
-          <a href={item.href} className="text-sm font-medium">
+          <Anchor
+            href={item.href}
+            activeWhen={currentPath ? (path: string) => path === item.href || path.startsWith(item.href + "/") || path.endsWith(item.href + ".html") : undefined}
+            activeClassName="text-primary font-semibold bg-base-300"
+            className="text-sm font-medium"
+          >
             {item.title}
-          </a>
+          </Anchor>
         </li>
       ))}
     </ul>
   );
 }
 
-export function NavItem({
-  item,
-  isActive,
-}: {
-  item: NavMenuItem;
-  isActive?: boolean;
-}) {
+export function NavItem({ item }: { item: NavMenuItem }) {
   return (
-    <a
+    <Anchor
       href={item.href}
-      className={cn(
-        "text-sm font-medium transition-colors",
-        isActive ? "text-primary font-semibold" : "text-base-content/80 hover:text-base-content"
-      )}
+      activeClassName="text-primary font-semibold"
+      className="text-sm font-medium"
     >
       {item.title}
-    </a>
+    </Anchor>
   );
 }
 
-export function MobileMenuToggle() {
-  const menu = _navbar.menu;
-  
+export function MobileMenuToggle({ menu, currentPath }: { menu: NavMenuItem[]; currentPath?: string }) {
   return (
     <div className="md:hidden">
       <details className="dropdown dropdown-end">
@@ -125,7 +112,13 @@ export function MobileMenuToggle() {
         <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-52 mt-2">
           {menu.map((item) => (
             <li key={item.title + item.href}>
-              <a href={item.href}>{item.title}</a>
+              <Anchor
+                href={item.href}
+                activeWhen={currentPath ? (path: string) => path === item.href || path.startsWith(item.href + "/") || path.endsWith(item.href + ".html") : undefined}
+                activeClassName="text-primary font-semibold"
+              >
+                {item.title}
+              </Anchor>
             </li>
           ))}
         </ul>
@@ -134,26 +127,22 @@ export function MobileMenuToggle() {
   );
 }
 
-export function NavbarBrand() {
-  const logo = _navbar.logo;
-  const logoText = _navbar.logoText;
-  
+export function NavbarBrand({ logo, logoText }: { logo?: { src?: string; alt?: string }; logoText?: string }) {
   return (
     <div className="flex items-center gap-2">
       {logo?.src ? (
-        <img src={logo.src} alt={logo.alt ?? logoText} width={32} height={32} className="h-8 w-8" />
+        <img src={logo.src} alt={logo.alt ?? logoText ?? ""} width={32} height={32} className="h-8 w-8" />
       ) : (
         <div className="h-8 w-8 bg-primary rounded-lg" />
       )}
-      <span className="text-xl font-bold">{logoText}</span>
+      <span className="text-xl font-bold">{logoText ?? "Logo"}</span>
     </div>
   );
 }
 
-export function GitHubLink() {
-  const repoUrl = _repo?.url;
+export function GitHubLink({ repoUrl }: { repoUrl?: string }) {
   if (!repoUrl) return null;
-  
+
   return (
     <a href={repoUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm btn-circle" aria-label="GitHub">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
