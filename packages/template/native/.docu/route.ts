@@ -1,19 +1,24 @@
 import docuConfig from "../docu.json" with { type: "json" };
 import type { DocuRoute } from "./types";
+import { resolveRoutes } from "./fs-scanner";
 
-/** Flatten routes from docu.json */
-export function flattenRoutes(routes: DocuRoute[], basePath = ""): string[] {
+// Get routes: manual from docu.json, or auto-scan docs folder
+export const routes: DocuRoute[] = resolveRoutes(docuConfig.routes);
+
+/** Get all route paths (flattened) */
+export function flattenRoutes(basePath = ""): string[] {
   const paths: string[] = [];
 
-  for (const route of routes) {
-    if (route.href && !route.noLink) {
-      paths.push(`${basePath}${route.href}`);
+  function traverse(r: DocuRoute[], section = "") {
+    if (r.href && !r.noLink) {
+      paths.push(`${section}${r.href}`);
     }
-    if (route.items) {
-      paths.push(...flattenRoutes(route.items, basePath));
+    if (r.items) {
+      r.items.forEach(item => traverse(item, `${section}${r.href}/`));
     }
   }
 
+  routes.forEach(route => traverse(route));
   return paths;
 }
 
@@ -21,24 +26,21 @@ export function flattenRoutes(routes: DocuRoute[], basePath = ""): string[] {
 export function getRouteMap(): Map<string, string> {
   const map = new Map<string, string>();
 
-  function traverse(routes: DocuRoute[], section = "") {
-    for (const route of routes) {
-      const fullPath = section + route.href;
-      map.set(fullPath, route.title);
-
-      if (route.items) {
-        traverse(route.items, fullPath + "/");
-      }
+  function traverse(r: DocuRoute[], section = "") {
+    const fullPath = `${section}${r.href}`;
+    map.set(fullPath, r.title);
+    if (r.items) {
+      r.items.forEach(item => traverse(item, `${fullPath}/`));
     }
   }
 
-  traverse(docuConfig.routes || []);
+  routes.forEach(route => traverse(route));
   return map;
 }
 
 /** Get prev/next for pagination */
 export function getPagination(currentPath: string) {
-  const paths = flattenRoutes(docuConfig.routes || [], "/docs");
+  const paths = flattenRoutes("/docs");
   const index = paths.indexOf(currentPath);
 
   return {
@@ -47,7 +49,7 @@ export function getPagination(currentPath: string) {
   };
 }
 
-/** Get section for active route */
+/** Get section from pathname */
 export function getSection(pathname: string): string {
   const parts = pathname.split("/").filter(Boolean);
   return parts[0] || "home";
