@@ -1,5 +1,4 @@
 {
-  "packages/{cli,core,mdx-content}/**/*.{js,ts,jsx,tsx}": [
-    "echo \"✅ Lint passed\""
-  ]
+  "*.{js,ts,jsx,tsx}": ["eslint --fix", "prettier --write"],
+  "*.{json,md,mdx}": ["prettier --write"]
 }
