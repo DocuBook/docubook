@@ -4,10 +4,12 @@
   "description": "Native DocuBook static site template - Bun + daisyUI",
   "type": "module",
   "scripts": {
-    "dev": "bun .docu/server.ts",
-    "build": "bun .docu/build.ts",
-    "clean": "bun .docu/clean.ts",
-    "preview": "bun .docu/server.ts --preview"
+    "dev": "bun .docu/lib/server.ts",
+    "build": "bun .docu/lib/build.ts",
+    "clean": "bun .docu/lib/clean.ts",
+    "preview": "bun .docu/lib/server.ts --preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "keywords": [
     "docubook",
@@ -35,13 +37,19 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.0",
     "bun-types": "^1.3.0",
+    "eslint": "^10.3.0",
+    "eslint-plugin-perfectionist": "^5.9.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "postcss": "^8.4.0",
     "tailwindcss": "^4.3.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.2"
   }
 }
