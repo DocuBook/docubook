@@ -26,7 +26,8 @@ npx @docubook/cli@latest
 ## Contributing
 
 <!-- prettier-ignore -->
-> [!NOTE] Please read: [CONTRIBUTING.md](CONTRIBUTING.md)
+> [!NOTE]
+> Please read: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Workspace
 
