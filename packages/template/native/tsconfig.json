@@ -18,11 +18,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": [".docu/**/*.ts", ".docu/**/*.tsx"],
+  "exclude": ["node_modules"]
 }
