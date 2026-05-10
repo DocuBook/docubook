@@ -1,30 +1,55 @@
 # Contributing to DocuBook
 
-Language: English | [IN](CONTRIBUTING.id.md)
-
 Thank you for your interest in contributing to DocuBook!
 
 ## Quick Contribution Flow
 
-1. **Check existing issues**: Before starting any work, always check the [issues](https://github.com/docubook-repo/issues) in the repository. If your idea, bug, or feature is not already listed, create a new issue with the appropriate label (e.g., `bug`, `feature`, `docs`).
-2. **Create a branch**: Once your issue is created, create a branch with a descriptive name based on the issue (see branch naming guidelines below).
-3. **Open a Pull Request (PR)**: After pushing your branch, open a PR referencing the issue. Do not open a PR without an associated issue.
+1. **Fork the repository**: Fork the [DocuBook repository](https://github.com/docubook-repo) to your
+   GitHub account.
+2. **Clone your fork**:
+   ```bash
+   git clone https://github.com/<your-username>/docubook.git
+   cd docubook
+   ```
+3. **Check existing issues**: Before starting any work, always check the
+   [issues](https://github.com/docubook-repo/issues) in the repository. If your idea, bug, or
+   feature is not already listed, create a new issue with the appropriate label (e.g., `bug`,
+   `feature`, `docs`).
+4. **Create a branch**: Once your issue is created, create a branch with a descriptive name based on
+   the issue (see branch naming guidelines below).
+5. **Install dependencies and validate**:
+   ```bash
+   pnpm install
+   pnpm build
+   pnpm lint
+   pnpm typecheck
+   ```
+6. **Make your changes** and add a changeset:
+   ```bash
+   pnpm changeset
+   ```
+7. **Open a Pull Request (PR)**: After pushing your branch, open a PR referencing the issue. Do not
+   open a PR without an associated issue.
 
 ---
 
 ## About DocuBook
 
-DocuBook is a documentation platform built as a monorepo to help teams create, manage, and publish technical docs efficiently.
+DocuBook is a documentation platform built as a monorepo to help teams create, manage, and publish
+technical docs efficiently.
 
-The project combines a Next.js documentation app, a CLI for scaffolding and project setup, and reusable packages for MDX processing and docs-tree generation.
+The project combines a Next.js documentation app, a CLI for scaffolding and project setup, and
+reusable packages for MDX processing and docs-tree generation.
 
-In short, DocuBook focuses on fast documentation delivery, clean developer experience, and scalable open-source release workflows.
+In short, DocuBook focuses on fast documentation delivery, clean developer experience, and scalable
+open-source release workflows.
 
 ## Code of Conduct
 
 Be respectful, constructive, and collaborative.
 
-If you report sensitive issues (security, abuse, private data), avoid public disclosure and contact maintainers privately first.
+If you report sensitive issues (security, abuse, private data), avoid public disclosure and contact
+maintainers privately first.
 
 ## Ways to Contribute
 
@@ -33,7 +58,6 @@ If you report sensitive issues (security, abuse, private data), avoid public dis
 - Improve docs, examples, and DX
 - Submit pull requests for fixes or enhancements
 - Help review issues and PR discussions
-
 
 ## Before You Start
 
@@ -44,12 +68,27 @@ If you report sensitive issues (security, abuse, private data), avoid public dis
 
 ## Development Setup
 
+This monorepo uses **pnpm workspaces** and includes automated git hooks for consistent development
+workflow.
+
 ### Requirements
 
-- Node.js `>=18`
-- `pnpm` `>=10`
+- **Node.js** >= 20.0.0
+- **pnpm** >= 11.0.0
 
-### Install
+### Package Manager
+
+This project is configured to use **pnpm** as the package manager. Using other package managers may
+cause workspace resolution issues.
+
+If you have `corepack` enabled, pnpm will be automatically selected:
+
+```bash
+corepack enable
+corepack prepare pnpm@11.0.0 --activate
+```
+
+### Installing Dependencies
 
 ```bash
 pnpm install
@@ -61,9 +100,6 @@ pnpm install
 # Build all packages/apps
 pnpm build
 
-# Run web app in development
-pnpm dev:web
-
 # Lint all workspaces
 pnpm lint
 
@@ -73,6 +109,23 @@ pnpm typecheck
 # Clean turbo outputs
 pnpm clean
 ```
+
+### Git Hooks (Husky)
+
+Git hooks are automatically set up via Husky during `pnpm install` (via the `prepare` script). These
+hooks enforce code quality standards on every commit.
+
+#### Pre-commit Hook
+
+Runs lint-staged to validate and format staged files:
+
+- **JavaScript/TypeScript/JSX/TSX/MDX**: ESLint + Prettier
+- **JSON/MD/MDX**: Prettier check
+
+#### Commit-msg Hook
+
+Validates commit messages using **Commitlint** with
+[Conventional Commits](https://www.conventionalcommits.org/) format.
 
 ## Project Structure (High Level)
 
@@ -90,25 +143,85 @@ pnpm clean
   - `fix/search-modal-focus`
   - `feat/cli-template-update`
   - `docs/improve-installation`
-- Prefer Conventional Commit style:
-  - `feat: add docs-tree cache`
-  - `fix(cli): handle invalid template name`
-  - `docs: clarify release steps`
 
+### Commit Message Convention
+
+This project follows the **Conventional Commits** specification. Commit messages must follow this
+format:
+
+```
+<type>(<scope>): <subject>
+```
+
+#### Types
+
+| Type       | Description                                 |
+| ---------- | ------------------------------------------- |
+| `feat`     | New feature                                 |
+| `fix`      | Bug fix                                     |
+| `docs`     | Documentation only changes                  |
+| `style`    | Code style changes (formatting, semicolons) |
+| `refactor` | Code refactoring without feature/fix        |
+| `perf`     | Performance improvements                    |
+| `test`     | Adding or modifying tests                   |
+| `build`    | Build system or dependency changes          |
+| `ci`       | CI configuration changes                    |
+| `chore`    | Other changes that don't modify src         |
+| `revert`   | Reverting a previous commit                 |
+
+#### Scopes
+
+The `scope` is optional but recommended. Common scopes:
+
+| Scope         | Description               |
+| ------------- | ------------------------- |
+| `app`         | Main application          |
+| `packages`    | Package changes (general) |
+| `cli`         | CLI package               |
+| `core`        | Core package              |
+| `mdx-content` | MDX content package       |
+| `docs`        | Documentation             |
+| `configs`     | Configuration files       |
+| `scripts`     | Build/scripts             |
+
+#### Examples
+
+```bash
+feat(cli): add new command
+fix(core): resolve template rendering issue
+docs: update API documentation
+refactor(app): simplify navigation logic
+chore: update dependencies
+```
+
+### Interactive Commit (czg)
+
+For an interactive commit prompt, use:
+
+```bash
+pnpm commit
+```
+
+This provides a guided interface for writing properly formatted commit messages.
 
 ## Pull Request Guidelines
 
 ### Before Opening a PR
 
-1. **Read the issues list**: Only open a PR if there is an existing issue describing your change. If not, create a new issue first and wait for confirmation or discussion.
+1. **Read the issues list**: Only open a PR if there is an existing issue describing your change. If
+   not, create a new issue first and wait for confirmation or discussion.
 2. **Create a branch**: Name your branch according to the issue and guidelines below.
-3. **Keep your branch up to date**: Always merge the latest `main` branch into your feature branch before opening a PR.
+3. **Keep your branch up to date**: Always merge the latest `main` branch into your feature branch
+   before opening a PR.
 
 #### How to Merge with `main`
 
-For this repository, **always use merge** to update your branch with the latest `main` before opening a pull request. This keeps the commit history transparent and avoids rewriting history, which is safer for open source collaboration.
+For this repository, **always use merge** to update your branch with the latest `main` before
+opening a pull request. This keeps the commit history transparent and avoids rewriting history,
+which is safer for open source collaboration.
 
-- **Merge** keeps the full history and creates a new commit that combines changes from both branches. The commit graph will show a branch and merge point.
+- **Merge** keeps the full history and creates a new commit that combines changes from both
+  branches. The commit graph will show a branch and merge point.
 
 To merge the latest `main` into your branch:
 
@@ -152,7 +265,8 @@ Before requesting review, ensure:
 
 This repository uses linting, type checking, and real workflow validation as core quality gates.
 
-When touching runtime behavior, validate the affected package/app locally and include verification notes in the PR.
+When touching runtime behavior, validate the affected package/app locally and include verification
+notes in the PR.
 
 ## Changesets and Releases
 
@@ -164,13 +278,100 @@ For any user-facing package change, add a changeset:
 pnpm changeset
 ```
 
-Then follow the release flow documented in [README.md](README.md).
+### Version Bump Guide
+
+Choose the bump type based on the nature of the change:
+
+| Type    | When to use                                             | Version example   |
+| ------- | ------------------------------------------------------- | ----------------- |
+| `patch` | Bug fixes and small changes that do not affect the API  | `1.0.0` → `1.0.1` |
+| `minor` | New features that are backward-compatible               | `1.0.0` → `1.1.0` |
+| `major` | Breaking changes — API is no longer backward-compatible | `1.0.0` → `2.0.0` |
+
+---
+
+<details>
+<summary>Workflow: Patch Release (bug fix)</summary>
+
+```bash
+# 1. Create a changeset — select the affected package(s) and choose "patch"
+pnpm changeset
+
+# 2. Commit the generated changeset
+git add .changeset/
+git commit -m "chore: add changeset for patch fix"
+
+# 3. Apply version bumps and generate CHANGELOG
+pnpm package
+
+# 4. Commit the version bump
+git add .
+git commit -m "chore: release patch"
+
+# 5. Push your branch and open a Pull Request
+git push <branch-name>
+```
+
+</details>
+
+---
+
+<details>
+<summary>Workflow: Minor Release (new feature)</summary>
+
+```bash
+# 1. Create a changeset — select the affected package(s) and choose "minor"
+pnpm changeset
+
+# 2. Commit the generated changeset
+git add .changeset/
+git commit -m "chore: add changeset for new feature"
+
+# 3. Apply version bumps and generate CHANGELOG
+pnpm package
+
+# 4. Commit the version bump
+git add .
+git commit -m "chore: release minor"
+
+# 5. Push your branch and open a Pull Request
+git push <branch-name>
+```
+
+</details>
+
+---
+
+<details>
+<summary>Workflow: Major Release (breaking change)</summary>
+
+```bash
+# 1. Create a changeset — select the affected package(s) and choose "major"
+pnpm changeset
+
+# 2. Commit the generated changeset
+git add .changeset/
+git commit -m "chore: add changeset for breaking change"
+
+# 3. Apply version bumps and generate CHANGELOG
+pnpm package
+
+# 4. Commit the version bump
+git add .
+git commit -m "chore: release major"
+
+# 5. Push your branch and open a Pull Request
+git push <branch-name>
+```
+
+</details>
 
 ## Documentation Contributions
 
 Docs improvements are highly encouraged.
 
-Please keep writing concise, example-driven, and consistent with existing tone and file organization.
+Please keep writing concise, example-driven, and consistent with existing tone and file
+organization.
 
 ## Review Process
 
@@ -180,7 +381,8 @@ Please keep writing concise, example-driven, and consistent with existing tone a
 
 ## Contributor Benefits
 
-Contributing here is not about financial incentives. The core value is helping sustain a healthy ecosystem and long-term product quality.
+Contributing here is not about financial incentives. The core value is helping sustain a healthy
+ecosystem and long-term product quality.
 
 By contributing, you help:
 
@@ -192,11 +394,15 @@ By contributing, you help:
 
 ## Sponsorship and Fairness
 
-DocuBook welcomes sponsorship and donations to support ongoing maintenance, documentation, and community activities.
+DocuBook welcomes sponsorship and donations to support ongoing maintenance, documentation, and
+community activities.
 
-CI/CD is handled through GitHub Actions, and the main documentation site is hosted for free on Vercel. Sponsor funds are therefore primarily intended to help cover support for active contributors, community coordination, and domain costs.
+CI/CD is handled through GitHub Actions, and the main documentation site is hosted for free on
+Vercel. Sponsor funds are therefore primarily intended to help cover support for active
+contributors, community coordination, and domain costs.
 
-Sponsor support is appreciated, but it does not affect the contribution review process. All issues and pull requests are evaluated on their technical merit, quality, and alignment with project goals.
+Sponsor support is appreciated, but it does not affect the contribution review process. All issues
+and pull requests are evaluated on their technical merit, quality, and alignment with project goals.
 
 Sponsor benefits may include:
 
@@ -210,11 +416,13 @@ Fairness is a priority:
 - sponsorship is not a shortcut to merge or priority treatment
 - transparency about fund usage builds trust
 
-> [!NOTE]
-> Because this project has a small maintainer team, the owner may use automated agents like GitHub Copilot and Anthropic Claude for work. Some funds may be used to pay for API token subscriptions needed by those agents.
+> [!NOTE] Because this project has a small maintainer team, the owner may use automated agents like
+> GitHub Copilot and Anthropic Claude for work. Some funds may be used to pay for API token
+> subscriptions needed by those agents.
 
 ## Recognition
 
-All meaningful contributions are appreciated, including code, docs, issue triage, and design feedback.
+All meaningful contributions are appreciated, including code, docs, issue triage, and design
+feedback.
 
 Thank you for helping improve DocuBook.
