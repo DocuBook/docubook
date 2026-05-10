@@ -1,5 +1,6 @@
 {
   "name": "@docubook/monorepo",
+  "type": "module",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -12,13 +13,18 @@
     "typecheck": "turbo typecheck",
     "changeset": "changeset",
     "package": "changeset version",
-    "prepare": "husky"
+    "prepare": "husky",
+    "commit": "czg",
+    "commitlint": "commitlint --edit"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
+    "@commitlint/cli": "^21.0.0",
+    "@commitlint/config-conventional": "^21.0.0",
     "@eslint/js": "^9.39.4",
     "@typescript-eslint/eslint-plugin": "^8.57.2",
     "@typescript-eslint/parser": "^8.57.2",
+    "czg": "^1.13.1",
     "eslint": "^9.39.4",
     "husky": "^9.1.7",
     "npm": "^10.9.8",

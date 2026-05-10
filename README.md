@@ -23,7 +23,115 @@ npx @docubook/cli@latest
 
 ![command output](docubook-cli.png)
 
-## Versioning & Release Workflow
+## Development Setup
+
+This monorepo uses **pnpm workspaces** and includes automated git hooks for consistent development
+workflow.
+
+### Requirements
+
+- **Node.js** >= 20.0.0
+- **pnpm** >= 11.0.0
+
+### Installing Dependencies
+
+```bash
+pnpm install
+```
+
+> [!NOTE] This project uses pnpm workspaces. Do not use `npm install` or `yarn add`. Always use
+> `pnpm` commands.
+
+### Package Manager
+
+This project is configured to use **pnpm** as the package manager. Using other package managers may
+cause workspace resolution issues.
+
+If you have `corepack` enabled, pnpm will be automatically selected:
+
+```bash
+corepack enable
+corepack prepare pnpm@11.0.0 --activate
+```
+
+### Git Hooks (Husky)
+
+Git hooks are automatically set up via Husky during `pnpm install` (via the `prepare` script). These
+hooks enforce code quality standards on every commit.
+
+#### Pre-commit Hook
+
+Runs lint-staged to validate and format staged files:
+
+- **JavaScript/TypeScript/JSX/TSX/MDX**: ESLint + Prettier
+- **JSON/MD/MDX**: Prettier check
+
+#### Commit-msg Hook
+
+Validates commit messages using **Commitlint** with
+[Conventional Commits](https://www.conventionalcommits.org/) format.
+
+### Commit Message Convention
+
+This project follows the **Conventional Commits** specification. Commit messages must follow this
+format:
+
+```
+<type>(<scope>): <subject>
+```
+
+#### Types
+
+| Type       | Description                                 |
+| ---------- | ------------------------------------------- |
+| `feat`     | New feature                                 |
+| `fix`      | Bug fix                                     |
+| `docs`     | Documentation only changes                  |
+| `style`    | Code style changes (formatting, semicolons) |
+| `refactor` | Code refactoring without feature/fix        |
+| `perf`     | Performance improvements                    |
+| `test`     | Adding or modifying tests                   |
+| `build`    | Build system or dependency changes          |
+| `ci`       | CI configuration changes                    |
+| `chore`    | Other changes that don't modify src         |
+| `revert`   | Reverting a previous commit                 |
+
+#### Scopes
+
+The `scope` is optional but recommended. Common scopes:
+
+| Scope         | Description               |
+| ------------- | ------------------------- |
+| `app`         | Main application          |
+| `packages`    | Package changes (general) |
+| `cli`         | CLI package               |
+| `core`        | Core package              |
+| `mdx-content` | MDX content package       |
+| `docs`        | Documentation             |
+| `configs`     | Configuration files       |
+| `scripts`     | Build/scripts             |
+
+#### Examples
+
+```bash
+feat(cli): add new command
+fix(core): resolve template rendering issue
+docs: update API documentation
+refactor(app): simplify navigation logic
+chore: update dependencies
+```
+
+### Interactive Commit (czg)
+
+For an interactive commit prompt, use:
+
+```bash
+pnpm commit
+```
+
+This provides a guided interface for writing properly formatted commit messages.
+
+### Versioning & Release Workflow
 
 This monorepo uses [Changesets](https://github.com/changesets/changesets) to manage versioning and
 releases for all packages (`@docubook/cli`, `@docubook/core`, `@docubook/mdx-content`).
@@ -124,6 +232,6 @@ git push <branch-name>
 
 </details>
 
-> [!NOTE] `pnpm package` automatically updates internal dependency versions across packages
-> (e.g. if `@docubook/mdx-content` depends on `@docubook/core`, its version reference will be
-> updated accordingly).
+> [!NOTE] `pnpm package` automatically updates internal dependency versions across packages (e.g. if
+> `@docubook/mdx-content` depends on `@docubook/core`, its version reference will be updated
+> accordingly).
