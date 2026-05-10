@@ -416,9 +416,9 @@ Fairness is a priority:
 - sponsorship is not a shortcut to merge or priority treatment
 - transparency about fund usage builds trust
 
-> [!NOTE] Because this project has a small maintainer team, the owner may use automated agents like
-> GitHub Copilot and Anthropic Claude for work. Some funds may be used to pay for API token
-> subscriptions needed by those agents.
+<!-- prettier-ignore -->
+> [!NOTE]
+> Because this project has a small maintainer team, the owner may use automated agents like GitHub Copilot and Anthropic Claude for work. Some funds may be used to pay for API token subscriptions needed by those agents.
 
 ## Recognition
 
