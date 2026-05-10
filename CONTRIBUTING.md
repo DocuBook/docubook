@@ -4,15 +4,15 @@ Thank you for your interest in contributing to DocuBook!
 
 ## Quick Contribution Flow
 
-1. **Fork the repository**: Fork the [DocuBook repository](https://github.com/docubook-repo) to your
-   GitHub account.
+1. **Fork the repository**: Fork the
+   [DocuBook repository](https://github.com/DocuBook/docubook/fork) to your GitHub account.
 2. **Clone your fork**:
    ```bash
    git clone https://github.com/<your-username>/docubook.git
    cd docubook
    ```
 3. **Check existing issues**: Before starting any work, always check the
-   [issues](https://github.com/docubook-repo/issues) in the repository. If your idea, bug, or
+   [issues](https://github.com/DocuBook/docubook/issues) in the repository. If your idea, bug, or
    feature is not already listed, create a new issue with the appropriate label (e.g., `bug`,
    `feature`, `docs`).
 4. **Create a branch**: Once your issue is created, create a branch with a descriptive name based on
