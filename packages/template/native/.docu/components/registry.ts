@@ -1,7 +1,14 @@
 import type { ComponentType } from "react";
 import { createMdxComponents } from "@docubook/mdx-content";
-import { Pagination } from "./Pagination";
 import {
+  Dropdown,
+  DropdownItem,
+  DropdownLink,
+  DropdownLabel,
+  DropdownDivider,
+} from "./base/dropdown";
+import {
+  Pagination,
   PaginationItem,
   PaginationButtons,
   PaginationRange,
@@ -24,119 +31,173 @@ import {
   BreadcrumbSeparator,
   BreadcrumbList,
 } from "./base/breadcrumbs";
+import Collapse, { Accordion } from "./base/collapse";
 import {
-  Accordion,
-  type CollapseProps,
-  type AccordionItem,
-  type AccordionProps,
-} from "./base/collapse";
-import {
+  Drawer,
   useDrawerState,
   DrawerTrigger,
   DrawerContent,
   DrawerSidePanel,
-  type DrawerProps,
-  type DrawerSide,
 } from "./base/drawer";
 import {
-  Navbar,
+  Navbar as BaseNavbar,
   NavbarContainer,
-  Logo,
-  NavMenu,
+  Logo as BaseLogo,
+  NavMenu as BaseNavMenu,
   NavMenuLink,
   NavToggle,
   NavbarVersion,
-  type NavMenuItem,
 } from "./base/navbar";
+import PaginationComp from "./Pagination";
+import Anchor from "./Anchor";
+import { Footer } from "./Footer";
 import { ThemeToggle } from "./Theme";
+import { Context } from "./Context";
+import {
+  Navbar,
+  NavbarLayout,
+  Logo,
+  NavMenu,
+  NavItem,
+  MobileMenuToggle,
+  NavbarBrand,
+  GitHubLink,
+} from "./Navbar";
 
 
-// Basic HTML element components for pre-render
-const BasicElements = {
-  // Block elements
-  h1: "h1",
-  h2: "h2",
-  h3: "h3",
-  p: "p",
-  ul: "ul",
-  ol: "ol",
-  li: "li",
-  blockquote: "blockquote",
-  pre: "pre",
-  code: "code",
-  hr: "hr",
-  div: "div",
-  span: "span",
-
-  // Inline elements
-  a: "a",
-  strong: "strong",
-  em: "em",
-  img: "img",
-
-  // Table elements
-  table: "table",
-  thead: "thead",
-  tbody: "tbody",
-  tfoot: "tfoot",
-  tr: "tr",
-  th: "th",
-  td: "td",
+export {
+  Dropdown,
+  DropdownItem,
+  DropdownLink,
+  DropdownLabel,
+  DropdownDivider,
 };
+export {
+  Pagination,
+  PaginationItem,
+  PaginationButtons,
+  PaginationRange,
+  PaginationInfo,
+  PaginationFull,
+  PaginationDocs,
+};
+export { Toggle, ToggleGroup };
+export {
+  ThemeController,
+  ThemeControllerToggle,
+  ThemeControllerSelect,
+  ThemeControllerRadio,
+};
+export {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+  BreadcrumbList,
+};
+export { Collapse, Accordion };
+export { Drawer, useDrawerState, DrawerTrigger, DrawerContent, DrawerSidePanel };
+export { BaseNavbar, NavbarContainer, BaseLogo, BaseNavMenu, NavMenuLink, NavToggle, NavbarVersion };
+export { Footer };
+export { ThemeToggle };
+export { Context };
+export { Anchor };
+export { Navbar, NavbarLayout, Logo, NavMenu, NavItem, MobileMenuToggle, NavbarBrand, GitHubLink };
 
-export function createComponentsRegistry(): Record<string, ComponentType<any>> {
+export type ComponentRegistry = Record<string, ComponentType<Record<string, unknown>>>;
+
+const BASE_COMPONENTS = {
+  // Dropdown
+  Dropdown,
+  DropdownItem,
+  DropdownLink,
+  DropdownLabel,
+  DropdownDivider,
+
+  // Pagination
+  Pagination,
+  PaginationItem,
+  PaginationButtons,
+  PaginationRange,
+  PaginationInfo,
+  PaginationFull,
+  PaginationDocs,
+
+  // Toggle
+  Toggle,
+  ToggleGroup,
+
+  // Theme
+  ThemeController,
+  ThemeControllerToggle,
+  ThemeControllerSelect,
+  ThemeControllerRadio,
+
+  // Breadcrumb
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+  BreadcrumbList,
+
+  // Accordion
+  Collapse,
+  Accordion,
+
+  // Drawer
+  Drawer,
+  useDrawerState,
+  DrawerTrigger,
+  DrawerContent,
+  DrawerSidePanel,
+
+  // Base Navbar
+  BaseNavbar,
+  NavbarContainer,
+  BaseLogo,
+  BaseNavMenu,
+  NavMenuLink,
+  NavToggle,
+  NavbarVersion,
+} as const;
+
+const APP_COMPONENTS = {
+  AppPagination: PaginationComp,
+  Footer,
+  ThemeToggle,
+  Context,
+  Anchor,
+  DocsNavbar: Navbar,
+  NavbarLayout,
+  DocsLogo: Logo,
+  DocsNavMenu: NavMenu,
+  NavItem,
+  MobileMenuToggle,
+  NavbarBrand,
+  GitHubLink,
+} as const;
+
+export function createComponentsRegistry(): Record<string, unknown> {
   return {
-    ...BasicElements,
-    Pagination,
-    PaginationItem,
-    PaginationButtons,
-    PaginationRange,
-    PaginationInfo,
-    PaginationFull,
-    PaginationDocs,
-    Toggle,
-    ToggleGroup,
-    ThemeController,
-    ThemeControllerToggle,
-    ThemeControllerSelect,
-    ThemeControllerRadio,
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-    BreadcrumbList,
-    Accordion,
-    useDrawerState,
-    DrawerTrigger,
-    DrawerContent,
-    DrawerSidePanel,
-    Navbar,
-    NavbarContainer,
-    Logo,
-    NavMenu,
-    NavMenuLink,
-    NavToggle,
-    NavbarVersion,
-    ThemeToggle,
+    ...BASE_COMPONENTS,
+    ...APP_COMPONENTS,
   };
 }
 
-export async function createFullComponentsRegistry(): Promise<Record<string, ComponentType<any>>> {
+export async function createFullComponentsRegistry(): Promise<Record<string, unknown>> {
   const baseComponents = createComponentsRegistry();
 
-  let mdxComponents = {};
+  let mdxComponents: ComponentRegistry = {};
   try {
-    mdxComponents = createMdxComponents();
-  } catch (error) {
-    console.warn("MDX components not available:", error);
+    const mdx = createMdxComponents() as unknown as ComponentRegistry;
+    mdxComponents = mdx;
+  } catch {
+    // MDX components not available
   }
 
-  return {
-    ...baseComponents,
-    ...mdxComponents,
-  };
+  return { ...baseComponents, ...mdxComponents };
 }
 
-export type ComponentsRegistry = ReturnType<typeof createComponentsRegistry>;
 export const componentsRegistry = createComponentsRegistry();

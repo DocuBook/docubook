@@ -1,9 +1,18 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import Anchor from "./Anchor";
-import { cn } from "../utils";
+import { cn } from "../lib/utils";
+import {
+  Navbar as BaseNavbar,
+  Logo as BaseLogo,
+  NavMenu as BaseNavMenu,
+  NavMenuLink as BaseNavMenuLink,
+  type NavMenuItem as BaseNavMenuItem,
+} from "./base/navbar";
 
-interface NavMenuItem {
+export type { NavMenuItem } from "./base/navbar";
+
+interface AppNavMenuItem {
   title: string;
   href: string;
 }
@@ -11,9 +20,29 @@ interface NavMenuItem {
 interface NavbarProps {
   logo?: { src?: string; alt?: string };
   logoText?: string;
-  menu: NavMenuItem[];
+  menu: AppNavMenuItem[];
   id?: string;
   className?: string;
+}
+
+function AppLogo({ logo, logoText }: { logo?: { src?: string; alt?: string }; logoText?: string }) {
+  return (
+    <BaseLogo
+      src={logo?.src}
+      alt={logo?.alt}
+      text={logoText}
+      href="/docs"
+    />
+  );
+}
+
+function AppNavMenu({ menu, currentPath }: { menu: AppNavMenuItem[]; currentPath?: string }) {
+  return (
+    <BaseNavMenu
+      items={menu}
+      activePath={currentPath}
+    />
+  );
 }
 
 export function Navbar({ logo, logoText, menu, id = "navbar", className }: NavbarProps) {
@@ -24,15 +53,15 @@ export function Navbar({ logo, logoText, menu, id = "navbar", className }: Navba
   }, []);
 
   return (
-    <nav id={id} className={cn("navbar bg-base-200 px-4", className)}>
+    <BaseNavbar id={id} className={cn("bg-base-200 px-4", className)}>
       <div className="flex-1">
-        <Logo logo={logo} logoText={logoText} />
+        <AppLogo logo={logo} logoText={logoText} />
       </div>
       <div className="flex-none">
-        <NavMenu menu={menu} currentPath={currentPath} />
+        <AppNavMenu menu={menu} currentPath={currentPath} />
         <MobileMenuToggle menu={menu} currentPath={currentPath} />
       </div>
-    </nav>
+    </BaseNavbar>
   );
 }
 
@@ -48,47 +77,25 @@ export function NavbarLayout({
   className?: string;
 }) {
   return (
-    <nav className={cn("navbar bg-base-200 px-4", className)}>
+    <BaseNavbar className={cn("bg-base-200 px-4", className)}>
       {start && <div className="flex-1">{start}</div>}
       {center && <div className="flex-1">{center}</div>}
       {end && <div className="flex-none">{end}</div>}
-    </nav>
+    </BaseNavbar>
   );
 }
 
-export function Logo({ logo, logoText }: { logo?: { src?: string; alt?: string }; logoText?: string }) {
-  return (
-    <a href="/docs" className="flex items-center gap-2">
-      {logo?.src ? (
-        <img src={logo.src} alt={logo.alt ?? logoText ?? ""} width={32} height={32} className="h-8 w-8" />
-      ) : logoText ? (
-        <span className="text-xl font-semibold">{logoText}</span>
-      ) : null}
-      <span className="text-xl font-semibold hidden md:inline">{logoText ?? ""}</span>
-    </a>
-  );
+export { BaseNavbar as Logo };
+
+export function NavMenu({ items, activePath }: { items: BaseNavMenuItem[]; activePath?: string }) {
+  return <BaseNavMenu items={items} activePath={activePath} />;
 }
 
-export function NavMenu({ menu, currentPath }: { menu: NavMenuItem[]; currentPath?: string }) {
-  return (
-    <ul className="menu menu-horizontal px-1">
-      {menu.map((item) => (
-        <li key={item.title + item.href}>
-          <Anchor
-            href={item.href}
-            activeWhen={currentPath ? (path: string) => path === item.href || path.startsWith(item.href + "/") || path.endsWith(item.href + ".html") : undefined}
-            activeClassName="text-primary font-semibold bg-base-300"
-            className="text-sm font-medium"
-          >
-            {item.title}
-          </Anchor>
-        </li>
-      ))}
-    </ul>
-  );
+export function NavMenuLink({ item, isActive }: { item: BaseNavMenuItem; isActive?: boolean }) {
+  return <BaseNavMenuLink item={item} isActive={isActive} />;
 }
 
-export function NavItem({ item }: { item: NavMenuItem }) {
+export function NavItem({ item }: { item: BaseNavMenuItem }) {
   return (
     <Anchor
       href={item.href}
@@ -100,7 +107,7 @@ export function NavItem({ item }: { item: NavMenuItem }) {
   );
 }
 
-export function MobileMenuToggle({ menu, currentPath }: { menu: NavMenuItem[]; currentPath?: string }) {
+export function MobileMenuToggle({ menu, currentPath }: { menu: AppNavMenuItem[]; currentPath?: string }) {
   return (
     <div className="md:hidden">
       <details className="dropdown dropdown-end">

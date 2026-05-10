@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "../../utils";
+import { cn } from "../../lib/utils";
 import type { InputHTMLAttributes, ReactNode } from "react";
 import { forwardRef, useState, useEffect } from "react";
 
@@ -42,8 +42,11 @@ const Toggle = forwardRef<HTMLInputElement, ToggleProps>(function Toggle(
   const sizeClass = `toggle-${size}`;
 
   useEffect(() => {
-    if (ref && "indeterminate" in ref && indeterminate) {
-      (ref as HTMLInputElement).indeterminate = true;
+    if (indeterminate && ref) {
+      const input = (ref as React.RefObject<HTMLInputElement>).current;
+      if (input) {
+        input.indeterminate = true;
+      }
     }
   }, [ref, indeterminate]);
 

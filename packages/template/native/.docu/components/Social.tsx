@@ -1,4 +1,4 @@
-import { getSocialLinks } from "../helpers";
+import { getSocialLinks } from "../lib/helpers";
 
 export interface SocialProps {
   className?: string;

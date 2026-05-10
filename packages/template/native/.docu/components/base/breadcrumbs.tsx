@@ -68,6 +68,6 @@ export function BreadcrumbSeparator({ className = "" }: { className?: string }) 
     return <li className={className}>/</li>;
 }
 
-export function BreadcrumbList({ children, className = "" }: BreadcrumbItemProps) {
+export function BreadcrumbList({ children }: BreadcrumbItemProps) {
     return <>{children}</>;
 }

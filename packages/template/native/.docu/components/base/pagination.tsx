@@ -1,13 +1,13 @@
 "use client";
 
-import { cn } from "../../utils";
+import { cn } from "../../lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState, useMemo, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 
 type PaginationSize = "lg" | "md" | "sm" | "xs";
 type PaginationVariant = "default" | "square" | "rounded";
 
-interface PaginationProps {
+interface PaginationRootProps {
   children?: ReactNode;
   className?: string;
   size?: PaginationSize;
@@ -25,7 +25,7 @@ interface PaginationItemProps {
   "aria-label"?: string;
 }
 
-interface PaginationRange {
+interface PaginationRangeProps {
   start: number;
   end: number;
   total: number;
@@ -37,7 +37,7 @@ interface PaginationRange {
   variant?: PaginationVariant;
 }
 
-interface PaginationButtons {
+interface PaginationButtonsProps {
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -50,6 +50,35 @@ interface PaginationButtons {
   firstLabel?: string;
   lastLabel?: string;
   disabled?: boolean;
+}
+
+interface PaginationInfoProps {
+  current: number;
+  total: number;
+  pageSize?: number;
+  className?: string;
+  label?: string;
+  showTotal?: boolean;
+}
+
+interface PaginationFullProps {
+  current: number;
+  total: number;
+  pageSize?: number;
+  onPageChange: (page: number) => void;
+  siblingCount?: number;
+  className?: string;
+  size?: PaginationSize;
+  variant?: PaginationVariant;
+  showFirstLast?: boolean;
+  showPrevNext?: boolean;
+  infoClassName?: string;
+}
+
+interface PaginationDocsProps {
+  prev?: { href: string; title: string };
+  next?: { href: string; title: string };
+  className?: string;
 }
 
 function getPaginationRange({
@@ -108,7 +137,7 @@ export function Pagination({
   className,
   size = "md",
   variant = "default",
-}: PaginationProps) {
+}: PaginationRootProps) {
   const sizeClass = {
     lg: "join-lg",
     md: "",
@@ -137,7 +166,6 @@ export function PaginationItem({
   onClick,
   className,
   size = "md",
-  variant = "default",
   "aria-label": ariaLabel,
 }: PaginationItemProps) {
   const sizeClasses = {
@@ -180,7 +208,7 @@ export function PaginationButtons({
   firstLabel,
   lastLabel,
   disabled = false,
-}: PaginationButtons) {
+}: PaginationButtonsProps) {
   const handlePrev = () => {
     if (page > 1) onPageChange(page - 1);
   };
@@ -199,7 +227,6 @@ export function PaginationButtons({
 
   return (
     <>
-      {/* First button */}
       {showFirstLast && (
         <button
           type="button"
@@ -212,7 +239,6 @@ export function PaginationButtons({
         </button>
       )}
 
-      {/* Previous button */}
       {showPrevNext && (
         <button
           type="button"
@@ -225,12 +251,10 @@ export function PaginationButtons({
         </button>
       )}
 
-      {/* Page indicator */}
       <span className="join-item btn btn-disabled no-animation cursor-default">
         {page} / {totalPages}
       </span>
 
-      {/* Next button */}
       {showPrevNext && (
         <button
           type="button"
@@ -243,7 +267,6 @@ export function PaginationButtons({
         </button>
       )}
 
-      {/* Last button */}
       {showFirstLast && (
         <button
           type="button"
@@ -269,9 +292,7 @@ export function PaginationRange({
   className,
   size = "md",
   variant = "default",
-}: PaginationRange) {
-  const totalPages = Math.ceil(total / (end - start + 1));
-
+}: PaginationRangeProps) {
   const range = useMemo(
     () =>
       getPaginationRange({
@@ -334,15 +355,6 @@ export function PaginationRange({
   );
 }
 
-interface PaginationInfoProps {
-  current: number;
-  total: number;
-  pageSize?: number;
-  className?: string;
-  label?: string;
-  showTotal?: boolean;
-}
-
 export function PaginationInfo({
   current,
   total,
@@ -359,20 +371,6 @@ export function PaginationInfo({
       {label} {start}-{end} {showTotal && `of ${total}`}
     </div>
   );
-}
-
-interface PaginationFullProps {
-  current: number;
-  total: number;
-  pageSize?: number;
-  onPageChange: (page: number) => void;
-  siblingCount?: number;
-  className?: string;
-  size?: PaginationSize;
-  variant?: PaginationVariant;
-  showFirstLast?: boolean;
-  showPrevNext?: boolean;
-  infoClassName?: string;
 }
 
 export function PaginationFull({
@@ -420,7 +418,6 @@ export function PaginationFull({
       <PaginationInfo current={current} total={total} pageSize={pageSize} className={infoClassName} />
 
       <div className={cn("join", sizeClasses, variantClass)}>
-        {/* First button */}
         {showFirstLast && (
           <button
             type="button"
@@ -433,7 +430,6 @@ export function PaginationFull({
           </button>
         )}
 
-        {/* Previous button */}
         {showPrevNext && (
           <button
             type="button"
@@ -446,7 +442,6 @@ export function PaginationFull({
           </button>
         )}
 
-        {/* Page numbers */}
         {range.map((item, index) => {
           if (item === "ellipsis") {
             return (
@@ -479,7 +474,6 @@ export function PaginationFull({
           );
         })}
 
-        {/* Next button */}
         {showPrevNext && (
           <button
             type="button"
@@ -492,7 +486,6 @@ export function PaginationFull({
           </button>
         )}
 
-        {/* Last button */}
         {showFirstLast && (
           <button
             type="button"
@@ -509,25 +502,18 @@ export function PaginationFull({
   );
 }
 
-interface PaginationDocsProps {
-  prev?: { href: string; title: string };
-  next?: { href: string; title: string };
-  className?: string;
-}
-
 export function PaginationDocs({
   prev,
   next,
   className,
 }: PaginationDocsProps) {
   return (
-    <div className={cn("grid grid-cols-1 sm:grid-cols-2 flex-grow py-8 gap-4", className)}>
-      {/* Previous */}
+    <div className={cn("grid grid-cols-1 sm:grid-cols-2 grow py-8 gap-4", className)}>
       <div>
         {prev && (
           <a
             href={prev.href}
-            className="btn btn-outline w-full flex-col pl-4 !py-6 !items-start no-underline h-auto"
+            className="btn btn-outline w-full flex-col pl-4 py-6! items-start! no-underline h-auto"
           >
             <span className="flex items-center text-xs text-base-content/60">
               <ChevronLeft className="w-4 h-4 mr-1" />
@@ -538,12 +524,11 @@ export function PaginationDocs({
         )}
       </div>
 
-      {/* Next */}
       <div>
         {next && (
           <a
             href={next.href}
-            className="btn btn-outline w-full flex-col pr-4 !py-6 !items-end no-underline h-auto"
+            className="btn btn-outline w-full flex-col pr-4 py-6! items-end! no-underline h-auto"
           >
             <span className="flex items-center text-xs text-base-content/60">
               Next
@@ -557,24 +542,16 @@ export function PaginationDocs({
   );
 }
 
-export {
-  Pagination,
-  PaginationItem,
-  PaginationButtons,
-  PaginationRange,
-  PaginationInfo,
-  PaginationFull,
-  PaginationDocs,
-  getPaginationRange,
-};
-
 export type {
-  PaginationProps,
+  PaginationRootProps as PaginationProps,
   PaginationItemProps,
-  PaginationRange,
-  PaginationButtons,
+  PaginationRangeProps,
+  PaginationButtonsProps,
+  PaginationInfoProps,
   PaginationFullProps,
   PaginationDocsProps,
   PaginationSize,
   PaginationVariant,
 };
+
+export { getPaginationRange };

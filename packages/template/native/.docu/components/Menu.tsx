@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import docuConfig from "../../docu.json" with { type: "json" };
 import Sublink from "./Sublink";
-import type { DocuRoute } from "../types";
-import { cn } from "../utils";
+import type { DocuRoute } from "../lib/types";
+import { cn } from "../lib/utils";
 
 interface MenuProps {
   isSheet?: boolean;

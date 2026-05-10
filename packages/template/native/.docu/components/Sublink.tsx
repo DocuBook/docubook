@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
 import Collapse from "./base/Collapse";
 import Anchor from "./Anchor";
-import type { DocuRoute } from "../types";
-import { cn } from "../utils";
+import type { DocuRoute } from "../lib/types";
+import { cn } from "../lib/utils";
 
 interface SublinkProps extends DocuRoute {
   level: number;
@@ -42,17 +41,6 @@ export default function Sublink({
       return pathname.startsWith(childHref) && pathname !== fullHref;
     });
   }, [items, fullHref]);
-
-  const titleContent = (
-    <span
-      className={cn(
-        "text-base-content/80 hover:text-base-content transition-colors",
-        hasActiveChild && "font-medium text-base-content"
-      )}
-    >
-      {title}
-    </span>
-  );
 
   if (noLink) {
     const titleEl = (
