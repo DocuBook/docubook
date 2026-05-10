@@ -1,4 +1,4 @@
-import docuConfig from "../docu.json" with { type: "json" };
+import docuConfig from "../../docu.json" with { type: "json" };
 import type { SocialLink } from "./types";
 
 export function getEditLink(url: string, filePath: string): string {

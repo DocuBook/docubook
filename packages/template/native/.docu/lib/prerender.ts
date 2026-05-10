@@ -41,7 +41,6 @@ export function createPreRenderer() {
         mdxOptions: {
           rehypePlugins,
           remarkPlugins,
-          parseFrontmatter: false,
         },
         scope: {},
       });

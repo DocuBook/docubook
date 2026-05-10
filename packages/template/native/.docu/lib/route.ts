@@ -1,4 +1,4 @@
-import docuConfig from "../docu.json" with { type: "json" };
+import docuConfig from "../../docu.json" with { type: "json" };
 import type { DocuRoute } from "./types";
 import { resolveRoutes } from "./fs-scanner";
 
@@ -9,12 +9,12 @@ export const routes: DocuRoute[] = resolveRoutes(docuConfig.routes);
 export function flattenRoutes(basePath = ""): string[] {
   const paths: string[] = [];
 
-  function traverse(r: DocuRoute[], section = "") {
-    if (r.href && !r.noLink) {
-      paths.push(`${section}${r.href}`);
+  function traverse(route: DocuRoute, section = "") {
+    if (route.href && !route.noLink) {
+      paths.push(`${section}${route.href}`);
     }
-    if (r.items) {
-      r.items.forEach(item => traverse(item, `${section}${r.href}/`));
+    if (route.items) {
+      route.items.forEach(item => traverse(item, `${section}${route.href}/`));
     }
   }
 
@@ -26,11 +26,11 @@ export function flattenRoutes(basePath = ""): string[] {
 export function getRouteMap(): Map<string, string> {
   const map = new Map<string, string>();
 
-  function traverse(r: DocuRoute[], section = "") {
-    const fullPath = `${section}${r.href}`;
-    map.set(fullPath, r.title);
-    if (r.items) {
-      r.items.forEach(item => traverse(item, `${fullPath}/`));
+  function traverse(route: DocuRoute, section = "") {
+    const fullPath = `${section}${route.href}`;
+    map.set(fullPath, route.title);
+    if (route.items) {
+      route.items.forEach(item => traverse(item, `${fullPath}/`));
     }
   }
 
@@ -41,7 +41,7 @@ export function getRouteMap(): Map<string, string> {
 
 export function getPreviousNext(pathname: string) {
 
-  const normalizedPath = pathname.replace(/^\/|\/$/g, "");
+  const normalizedPath = pathname.replace(/^\/|$/g, "");
   const paths = flattenRoutes("/docs");
   
   const index = paths.findIndex(

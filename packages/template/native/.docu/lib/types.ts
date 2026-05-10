@@ -1,8 +1,15 @@
+export interface DocuRouteContext {
+  title?: string;
+  icon?: string;
+  description?: string;
+}
+
 export interface DocuRoute {
   title: string;
   href: string;
   noLink?: boolean;
   items?: DocuRoute[];
+  context?: DocuRouteContext;
 }
 
 export interface DocuMeta {

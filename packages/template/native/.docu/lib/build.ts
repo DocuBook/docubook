@@ -2,7 +2,7 @@ import { readFile, writeFile, mkdir, readdir, copyFile, stat } from "node:fs/pro
 import { existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { resolve, join, dirname } from "node:path";
-import docuConfig from "../docu.json" with { type: "json" };
+import docuConfig from "../../docu.json" with { type: "json" };
 import { preRenderer } from "./prerender";
 import { buildClientBundle } from "./hydrate";
 import type { BuildCache, CliArgs } from "./types";
