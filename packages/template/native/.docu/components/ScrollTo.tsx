@@ -10,11 +10,7 @@ interface ScrollToProps {
   offset?: number;
 }
 
-export function ScrollTo({
-  className,
-  showIcon = true,
-  offset = 0,
-}: ScrollToProps) {
+export function ScrollTo({ className, showIcon = true, offset = 0 }: ScrollToProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   const checkScroll = useCallback(() => {
@@ -47,26 +43,23 @@ export function ScrollTo({
     };
   }, [checkScroll]);
 
-  const scrollToTop = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      const container = document.getElementById("scroll-container");
-      if (container) {
-        container.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    },
-    [],
-  );
+  const scrollToTop = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const container = document.getElementById("scroll-container");
+    if (container) {
+      container.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, []);
 
   return (
     <div
       className={cn(
-        "mt-4 pt-4 border-t border-base-300",
+        "border-base-300 mt-4 border-t pt-4",
         "transition-opacity duration-300",
         "opacity-100",
-        className,
+        className
       )}
     >
       <a
@@ -75,7 +68,7 @@ export function ScrollTo({
         className={cn(
           "inline-flex items-center text-sm",
           "link link-hover text-base-content/60 hover:text-base-content",
-          "transition-all duration-200 hover:translate-y-px",
+          "transition-all duration-200 hover:translate-y-px"
         )}
         aria-label="Scroll to top"
       >
