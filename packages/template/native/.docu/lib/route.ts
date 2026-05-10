@@ -6,7 +6,7 @@ import { resolveRoutes } from "./fs-scanner";
 export const routes: DocuRoute[] = resolveRoutes(docuConfig.routes);
 
 /** Get all route paths (flattened) */
-export function flattenRoutes(basePath = ""): string[] {
+export function flattenRoutes(): string[] {
   const paths: string[] = [];
 
   function traverse(route: DocuRoute, section = "") {

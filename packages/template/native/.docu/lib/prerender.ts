@@ -10,7 +10,7 @@ export interface PreRenderResult {
 }
 
 export interface PreRenderOptions {
-  components?: Record<string, any>;
+  components?: Record<string, object>;
   includeHydrationData?: boolean;
 }
 

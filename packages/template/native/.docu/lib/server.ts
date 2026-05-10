@@ -47,7 +47,7 @@ function notFound(): string {
 /** Resolve file path - handle /docs -> /docs/index.html and /docs/page -> /docs/page.html */
 function resolveFilePath(pathname: string): string | null {
   // Remove leading slash
-  let path = pathname.slice(1);
+  const path = pathname.slice(1);
   
   // If no extension, try index.html first
   if (!path.includes(".")) {
@@ -90,8 +90,8 @@ const server = Bun.serve({
   port: PORT,
 
   async fetch(req) {
-    let url = new URL(req.url);
-    let pathname = url.pathname;
+    const url = new URL(req.url);
+    const pathname = url.pathname;
 
     // Default to docs/index.html
     if (pathname === "/") pathname = "/docs/";
