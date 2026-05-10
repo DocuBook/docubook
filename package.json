@@ -14,8 +14,7 @@
     "changeset": "changeset",
     "package": "changeset version",
     "prepare": "husky",
-    "commit": "czg",
-    "commitlint": "commitlint --edit"
+    "commit": "czg"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
