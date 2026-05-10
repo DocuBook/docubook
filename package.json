@@ -11,7 +11,7 @@
     "clean": "turbo clean",
     "typecheck": "turbo typecheck",
     "changeset": "changeset",
-    "version-packages": "changeset version",
+    "package": "changeset version",
     "prepare": "husky"
   },
   "devDependencies": {

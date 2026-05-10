@@ -60,7 +60,7 @@ git add .changeset/
 git commit -m "chore: add changeset for patch fix"
 
 # 3. Apply version bumps and generate CHANGELOG
-pnpm version-packages
+pnpm package
 
 # 4. Commit the version bump
 git add .
@@ -86,7 +86,7 @@ git add .changeset/
 git commit -m "chore: add changeset for new feature"
 
 # 3. Apply version bumps and generate CHANGELOG
-pnpm version-packages
+pnpm package
 
 # 4. Commit the version bump
 git add .
@@ -112,7 +112,7 @@ git add .changeset/
 git commit -m "chore: add changeset for breaking change"
 
 # 3. Apply version bumps and generate CHANGELOG
-pnpm version-packages
+pnpm package
 
 # 4. Commit the version bump
 git add .
@@ -124,6 +124,6 @@ git push <branch-name>
 
 </details>
 
-> [!NOTE] `pnpm version-packages` automatically updates internal dependency versions across packages
+> [!NOTE] `pnpm package` automatically updates internal dependency versions across packages
 > (e.g. if `@docubook/mdx-content` depends on `@docubook/core`, its version reference will be
 > updated accordingly).
