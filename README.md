@@ -39,9 +39,6 @@ workflow.
 pnpm install
 ```
 
-> [!NOTE] This project uses pnpm workspaces. Do not use `npm install` or `yarn add`. Always use
-> `pnpm` commands.
-
 ### Package Manager
 
 This project is configured to use **pnpm** as the package manager. Using other package managers may
@@ -231,7 +228,3 @@ git push <branch-name>
 ```
 
 </details>
-
-> [!NOTE] `pnpm package` automatically updates internal dependency versions across packages (e.g. if
-> `@docubook/mdx-content` depends on `@docubook/core`, its version reference will be updated
-> accordingly).
