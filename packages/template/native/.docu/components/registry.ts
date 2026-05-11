@@ -39,6 +39,9 @@ import {
   DrawerContent,
   DrawerSidePanel,
 } from "./base/drawer";
+import { Input, InputGroup } from "./base/input";
+import { Kbd, FnKey } from "./base/kbd";
+import { Modal, ModalAction, useModal } from "./base/modal";
 import {
   Navbar as BaseNavbar,
   NavbarContainer,
@@ -88,6 +91,9 @@ export {
 };
 export { Collapse, Accordion };
 export { Drawer, useDrawerState, DrawerTrigger, DrawerContent, DrawerSidePanel };
+export { Input, InputGroup };
+export { Kbd, FnKey };
+export { Modal, ModalAction, useModal };
 export {
   BaseNavbar,
   NavbarContainer,
@@ -152,6 +158,19 @@ const BASE_COMPONENTS = {
   DrawerTrigger,
   DrawerContent,
   DrawerSidePanel,
+
+  // Input
+  Input,
+  InputGroup,
+
+  // Kbd
+  Kbd,
+  FnKey,
+
+  // Modal
+  Modal,
+  ModalAction,
+  useModal,
 
   // Base Navbar
   BaseNavbar,
