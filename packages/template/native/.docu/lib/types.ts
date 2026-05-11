@@ -66,3 +66,9 @@ export interface ParsedDoc {
   raw: string;
   scope?: Record<string, unknown>;
 }
+
+export interface TocItem {
+  level: number;
+  text: string;
+  href: string;
+}
