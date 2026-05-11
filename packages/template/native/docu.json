@@ -4,11 +4,11 @@
     "title": "DocuBook Native",
     "description": "Lightweight documentation starter kit using Bun + daisyUI + MDX.",
     "baseURL": "https://docubook.pro",
-    "favicon": "/docs/.assets/images/favicon.ico"
+    "favicon": "/docs/assets/images/favicon.ico"
   },
   "navbar": {
     "logo": {
-      "src": "/docs/.assets/images/docu.svg",
+      "src": "/docs/assets/images/docu.svg",
       "alt": "DocuBook"
     },
     "logoText": "DocuBook",
