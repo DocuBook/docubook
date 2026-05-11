@@ -53,6 +53,8 @@ import Anchor from "./Anchor";
 import { Footer } from "./Footer";
 import { ThemeToggle } from "./Theme";
 import { Context } from "./Context";
+import Toc from "./Toc";
+import { Typography } from "./Typography";
 import {
   Navbar,
   NavbarLayout,
@@ -64,14 +66,7 @@ import {
   GitHubLink,
 } from "./Navbar";
 
-
-export {
-  Dropdown,
-  DropdownItem,
-  DropdownLink,
-  DropdownLabel,
-  DropdownDivider,
-};
+export { Dropdown, DropdownItem, DropdownLink, DropdownLabel, DropdownDivider };
 export {
   Pagination,
   PaginationItem,
@@ -82,12 +77,7 @@ export {
   PaginationDocs,
 };
 export { Toggle, ToggleGroup };
-export {
-  ThemeController,
-  ThemeControllerToggle,
-  ThemeControllerSelect,
-  ThemeControllerRadio,
-};
+export { ThemeController, ThemeControllerToggle, ThemeControllerSelect, ThemeControllerRadio };
 export {
   Breadcrumb,
   BreadcrumbItem,
@@ -98,10 +88,20 @@ export {
 };
 export { Collapse, Accordion };
 export { Drawer, useDrawerState, DrawerTrigger, DrawerContent, DrawerSidePanel };
-export { BaseNavbar, NavbarContainer, BaseLogo, BaseNavMenu, NavMenuLink, NavToggle, NavbarVersion };
+export {
+  BaseNavbar,
+  NavbarContainer,
+  BaseLogo,
+  BaseNavMenu,
+  NavMenuLink,
+  NavToggle,
+  NavbarVersion,
+};
 export { Footer };
 export { ThemeToggle };
 export { Context };
+export { default as Toc } from "./Toc";
+export { Typography };
 export { Anchor };
 export { Navbar, NavbarLayout, Logo, NavMenu, NavItem, MobileMenuToggle, NavbarBrand, GitHubLink };
 
@@ -168,6 +168,8 @@ const APP_COMPONENTS = {
   Footer,
   ThemeToggle,
   Context,
+  Toc,
+  AppTypography: Typography,
   Anchor,
   DocsNavbar: Navbar,
   NavbarLayout,
