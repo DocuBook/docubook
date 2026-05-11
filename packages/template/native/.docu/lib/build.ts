@@ -11,7 +11,7 @@ const DOCS_DIR = resolve("./docs");
 const DIST_DIR = resolve("./.docu/dist");
 const ASSETS_DIR = resolve("./.docu/dist/assets");
 const CACHE_FILE = resolve("./.docu/build-cache.json");
-const DOCS_ASSETS_DIR = resolve("./docs/.assets");
+const DOCS_ASSETS_DIR = resolve("./docs/assets");
 
 function parseArgs(): CliArgs {
   const args = process.argv.slice(2);
@@ -31,7 +31,9 @@ async function readCache(): Promise<BuildCache> {
       const data = await readFile(CACHE_FILE, "utf-8");
       return JSON.parse(data);
     }
-  } catch { /** skip */ }
+  } catch {
+    /** skip */
+  }
   return {};
 }
 
@@ -62,7 +64,9 @@ async function findMdxFilesWithStats(
         });
       }
     }
-  } catch { /** skip */ }
+  } catch {
+    /** skip */
+  }
   return files;
 }
 
@@ -114,7 +118,9 @@ function generateDocHtml(
       .filter((item) => item.level > 1)
       .map((item) => `<li><a href="#${item.id}" class="text-sm">${item.title}</a></li>`)
       .join("\n");
-    tocHtml = tocItems ? `<aside class="hidden lg:block fixed right-8 top-24 w-48"><h4 class="font-semibold mb-2">On this page</h4><ul class="text-base-content/70">${tocItems}</ul></aside>` : "";
+    tocHtml = tocItems
+      ? `<aside class="hidden lg:block fixed right-8 top-24 w-48"><h4 class="font-semibold mb-2">On this page</h4><ul class="text-base-content/70">${tocItems}</ul></aside>`
+      : "";
   }
 
   return `<!DOCTYPE html>
@@ -203,15 +209,10 @@ function generateIndexHtml(): string {
 }
 
 function generateNavLinks(menu: { title: string; href: string }[]): string {
-  return menu
-    .map((m) => `<li><a href="/docs/${m.href}.html">${m.title}</a></li>`)
-    .join("");
+  return menu.map((m) => `<li><a href="/docs/${m.href}.html">${m.title}</a></li>`).join("");
 }
 
-async function copyDirectoryRecursive(
-  src: string,
-  dest: string
-): Promise<void> {
+async function copyDirectoryRecursive(src: string, dest: string): Promise<void> {
   if (!existsSync(src)) return;
 
   await mkdir(dest, { recursive: true });
@@ -237,7 +238,9 @@ async function build() {
     const { rm } = await import("node:fs/promises");
     try {
       await rm(DIST_DIR, { recursive: true, force: true });
-    } catch { /** ignore */ }
+    } catch {
+      /** ignore */
+    }
   }
 
   await mkdir(DIST_DIR, { recursive: true });
@@ -249,8 +252,8 @@ async function build() {
     await copyFile(daisyuiCssPath, join(ASSETS_DIR, "daisyui.css"));
   }
 
-  // Copy docs/.assets/ to dist/docs/.assets/
-  const docsAssetsDest = join(DIST_DIR, "docs", ".assets");
+  // Copy docs/assets/ to dist/docs/assets/
+  const docsAssetsDest = join(DIST_DIR, "docs", "assets");
   await copyDirectoryRecursive(DOCS_ASSETS_DIR, docsAssetsDest);
 
   // Build pages as preRenderer service
@@ -265,14 +268,14 @@ async function build() {
     // Read MDX file
     const mdxPath1 = join(DOCS_DIR, path, "index.mdx");
     const mdxPath2 = join(DOCS_DIR, `${path}.mdx`);
-    
+
     let rawMdx: string | null = null;
     if (existsSync(mdxPath1)) {
       rawMdx = await readFile(mdxPath1, "utf-8");
     } else if (existsSync(mdxPath2)) {
       rawMdx = await readFile(mdxPath2, "utf-8");
     }
-    
+
     if (!rawMdx) continue;
 
     // Check cache
