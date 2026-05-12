@@ -5,6 +5,7 @@ import { resolve, join, dirname } from "node:path";
 import docuConfig from "../../docu.json" with { type: "json" };
 import { preRenderer } from "./prerender";
 import { buildClientBundle } from "./hydrate";
+import { generateSearchIndex } from "./search-indexer";
 import type { BuildCache, CliArgs } from "./types";
 
 const DOCS_DIR = resolve("./docs");
@@ -323,6 +324,10 @@ async function build() {
   // Build client bundle for hydration
   await buildClientBundle();
   await writeCache(cache);
+
+  // Generate search index
+  const indexCount = await generateSearchIndex();
+  console.log("🔍 Indexed " + indexCount + " search records");
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
   console.log("✨ Built " + built + " pages (" + skipped + " cached) in " + elapsed + "s");
