@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import Collapse from "./base/Collapse";
+import Collapse from "./base/collapse";
 import Anchor from "./Anchor";
 import type { DocuRoute } from "../lib/types";
 import { cn } from "../lib/utils";
@@ -46,7 +46,7 @@ export default function Sublink({
     const titleEl = (
       <h4
         className={cn(
-          "font-medium sm:text-sm text-base-content/90 hover:text-base-content transition-colors",
+          "text-base-content/90 hover:text-base-content font-medium transition-colors sm:text-sm",
           hasActiveChild ? "text-base-content" : "text-base-content/80"
         )}
       >
@@ -59,19 +59,19 @@ export default function Sublink({
     }
 
     return (
-      <div className="flex flex-col gap-1 w-full">
+      <div className="flex w-full flex-col gap-1">
         <Collapse
           title={titleEl}
           defaultOpen={isOpen}
           onOpenChange={setIsOpen}
-          className="border-0 shadow-none bg-transparent"
+          className="border-0 bg-transparent shadow-none"
           titleClassName="p-0 bg-transparent hover:bg-transparent"
           contentClassName="pl-2"
         >
           <div
             className={cn(
-              "flex flex-col items-start sm:text-sm text-base-content/80 mt-2.5 gap-3 hover:[&_a]:text-base-content transition-colors",
-              level > 0 && "pl-4 border-l border-base-300 ml-1.5"
+              "text-base-content/80 hover:[&_a]:text-base-content mt-2.5 flex flex-col items-start gap-3 transition-colors sm:text-sm",
+              level > 0 && "border-base-300 ml-1.5 border-l pl-4"
             )}
           >
             {items?.map((innerLink) => (
@@ -95,7 +95,7 @@ export default function Sublink({
       href={fullHref}
       className={cn(
         "text-base-content/80 hover:text-base-content transition-colors",
-        hasActiveChild && "font-medium text-base-content"
+        hasActiveChild && "text-base-content font-medium"
       )}
       activeClassName={!hasActiveChild ? "font-medium text-primary" : ""}
     >
@@ -125,10 +125,10 @@ export default function Sublink({
   }
 
   return (
-    <div className="flex flex-col gap-1 w-full">
+    <div className="flex w-full flex-col gap-1">
       <Collapse
         title={
-          <div className="flex items-center justify-between w-full">
+          <div className="flex w-full items-center justify-between">
             {isSheet ? (
               <label
                 htmlFor="drawer"
@@ -147,14 +147,14 @@ export default function Sublink({
         }
         defaultOpen={isOpen}
         onOpenChange={setIsOpen}
-        className="border-0 shadow-none bg-transparent"
+        className="border-0 bg-transparent shadow-none"
         titleClassName="p-0 bg-transparent hover:bg-transparent cursor-pointer"
         contentClassName="pl-2"
       >
         <div
           className={cn(
-            "flex flex-col items-start sm:text-sm text-base-content/80 ml-0.5 mt-2.5 gap-3 hover:[&_a]:text-base-content transition-colors",
-            level > 0 && "pl-4 border-l border-base-300 ml-1.5"
+            "text-base-content/80 hover:[&_a]:text-base-content ml-0.5 mt-2.5 flex flex-col items-start gap-3 transition-colors sm:text-sm",
+            level > 0 && "border-base-300 ml-1.5 border-l pl-4"
           )}
         >
           {items?.map((innerLink) => (

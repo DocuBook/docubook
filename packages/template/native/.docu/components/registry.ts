@@ -68,6 +68,8 @@ import {
   NavbarBrand,
   GitHubLink,
 } from "./Navbar";
+import Search from "./Search";
+import Sidebar from "./Sidebar";
 
 export { Dropdown, DropdownItem, DropdownLink, DropdownLabel, DropdownDivider };
 export {
@@ -110,6 +112,8 @@ export { default as Toc } from "./Toc";
 export { Typography };
 export { Anchor };
 export { Navbar, NavbarLayout, Logo, NavMenu, NavItem, MobileMenuToggle, NavbarBrand, GitHubLink };
+export { Search };
+export { Sidebar };
 
 export type ComponentRegistry = Record<string, ComponentType<Record<string, unknown>>>;
 
@@ -190,6 +194,8 @@ const APP_COMPONENTS = {
   Toc,
   AppTypography: Typography,
   Anchor,
+  Search,
+  Sidebar,
   DocsNavbar: Navbar,
   NavbarLayout,
   DocsLogo: Logo,
