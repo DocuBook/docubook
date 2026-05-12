@@ -14,6 +14,7 @@ import {
 import { createMdxComponents } from "@docubook/mdx-content";
 import docuConfig from "../../docu.json" with { type: "json" };
 import { generateSearchIndex } from "./search-indexer";
+import { buildClientBundle } from "./hydrate";
 import type { BuildCache, CliArgs } from "./types";
 
 import DocsPage from "../pages/docs/[[...slug]]";
@@ -94,10 +95,11 @@ function htmlShell(title: string, description: string, body: string): string {
   <title>${title}</title>
   <meta name="description" content="${description}">
   <link rel="icon" type="image/x-icon" href="${favicon}">
-  <link rel="stylesheet" href="/assets/globals.css">
+  <link rel="stylesheet" href="/assets/client.css">
 </head>
 <body>
   <div id="root">${body}</div>
+  <script src="/assets/client.js"></script>
 </body>
 </html>`;
 }
@@ -248,6 +250,9 @@ async function build() {
   await writeFile(join(DIST_DIR, "404.html"), notFoundHtml);
 
   await writeCache(cache);
+
+  // Build client bundle (JS + CSS)
+  await buildClientBundle();
 
   const indexCount = await generateSearchIndex();
   console.log("\uD83D\uDD0D Indexed " + indexCount + " search records");

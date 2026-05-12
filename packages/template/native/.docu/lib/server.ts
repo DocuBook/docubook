@@ -18,10 +18,16 @@ import NotFoundPage from "../pages/404";
 import ErrorPage from "../pages/Error";
 import IndexPage from "../pages/index";
 import { Navbar } from "../components/Navbar";
+import { buildClientBundle } from "./hydrate";
+import { generateSearchIndex } from "./search-indexer";
 
 const DOCS_DIR = resolve("./docs");
 const DIST_DIR = resolve("./.docu/dist");
 const PORT = process.env.PORT || "3000";
+
+// Build client assets on startup
+await buildClientBundle();
+await generateSearchIndex();
 
 const router = new Bun.FileSystemRouter({
   style: "nextjs",
@@ -60,10 +66,11 @@ function htmlShell(title: string, description: string, body: string): string {
   <title>${title}</title>
   <meta name="description" content="${description}">
   <link rel="icon" type="image/x-icon" href="${favicon}">
-  <link rel="stylesheet" href="/assets/globals.css">
+  <link rel="stylesheet" href="/assets/client.css">
 </head>
 <body>
   <div id="root">${body}</div>
+  <script src="/assets/client.js"></script>
   ${HMR_SCRIPT}
 </body>
 </html>`;
