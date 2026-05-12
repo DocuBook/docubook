@@ -7,7 +7,7 @@
     "dev": "bun .docu/lib/server.ts",
     "build": "bun .docu/lib/build.ts",
     "clean": "bun .docu/lib/clean.ts",
-    "preview": "bun .docu/lib/server.ts --preview",
+    "preview": "bun .docu/lib/preview.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
