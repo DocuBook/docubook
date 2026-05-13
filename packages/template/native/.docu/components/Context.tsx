@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { cn } from "../lib/utils";
 import { Dropdown, DropdownItem } from "./base/dropdown";
 import { routes } from "../lib/route";
-import { ChevronRight, Check, type LucideIcon } from "lucide-react";
+import { ChevronsUpDown, Check, type LucideIcon } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 
 interface ContextProps {
@@ -30,29 +30,14 @@ function getIcon(name: string): LucideIcon {
 }
 
 export function Context({ className }: ContextProps) {
-  const [pathname, setPathname] = useState("/");
-  const [mounted, setMounted] = useState(false);
-  const [activeRoute, setActiveRoute] = useState<{
-    href: string;
-    title: string;
-    context?: { title?: string; icon?: string; description?: string };
-  }>();
+  const [pathname] = useState(() =>
+    typeof window !== "undefined" ? window.location.pathname : "/"
+  );
+  const mounted = typeof window !== "undefined";
+  const activeRoute = pathname.startsWith("/docs") ? getActiveContextRoute(pathname) : undefined;
   const contextRoutes = getContextRoutes();
   const fallbackRoute = routes[0];
   const displayRoute = activeRoute || fallbackRoute;
-
-  useEffect(() => {
-    setPathname(window.location.pathname);
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (pathname.startsWith("/docs")) {
-      setActiveRoute(getActiveContextRoute(pathname));
-    } else {
-      setActiveRoute(undefined);
-    }
-  }, [pathname]);
 
   if (!mounted || !pathname.startsWith("/docs") || contextRoutes.length === 0) {
     return null;
@@ -67,7 +52,7 @@ export function Context({ className }: ContextProps) {
       className={cn("w-full", className)}
       align="start"
       trigger={
-        <div className="flex items-center justify-between truncate text-sm font-semibold">
+        <div className="border-base-300 flex items-center justify-between rounded-lg border px-3 py-2 text-sm font-semibold">
           <div className="flex min-w-0 items-center gap-2">
             {displayRoute?.context?.icon && (
               <span className="text-primary bg-primary/10 border-primary flex-shrink-0 rounded border p-0.5">
@@ -79,7 +64,7 @@ export function Context({ className }: ContextProps) {
             )}
             <span className="truncate">{displayRoute?.context?.title || displayRoute?.title}</span>
           </div>
-          <ChevronRight className="text-base-content/50 h-4 w-4 flex-shrink-0 [&_svg]:rotate-90 rtl:[&_svg]:-rotate-90" />
+          <ChevronsUpDown className="text-base-content/50 h-4 w-4 flex-shrink-0" />
         </div>
       }
     >
@@ -113,10 +98,10 @@ export function Context({ className }: ContextProps) {
                 })()}
               </span>
             )}
-            <div className="min-w-0 flex-1 overflow-hidden">
-              <div className="truncate font-medium">{route.context?.title || route.title}</div>
+            <div className="min-w-0 flex-1">
+              <div className="font-medium">{route.context?.title || route.title}</div>
               {route.context?.description && (
-                <div className="text-base-content/50 max-w-full overflow-hidden truncate text-ellipsis text-xs">
+                <div className="text-base-content/50 line-clamp-2 text-xs">
                   {route.context.description}
                 </div>
               )}

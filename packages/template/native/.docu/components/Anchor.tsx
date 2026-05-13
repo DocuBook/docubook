@@ -1,4 +1,5 @@
-import { AnchorHTMLAttributes, ReactNode, useEffect, useState } from "react";
+import { AnchorHTMLAttributes, ReactNode } from "react";
+import { ArrowUpRight } from "lucide-react";
 import { cn, isExternalUrl } from "../lib/utils";
 
 export interface AnchorProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -19,22 +20,15 @@ export default function Anchor({
   children,
   ...props
 }: AnchorProps) {
-  const [isActive, setIsActive] = useState(false);
-
-  useEffect(() => {
-    if (!activeWhen) return;
+  const isActive = (() => {
+    if (!activeWhen || typeof window === "undefined") return false;
     const pathname = window.location.pathname;
-    
-    let active = false;
-    if (typeof activeWhen === "string") {
-      active = pathname === activeWhen || pathname.endsWith(activeWhen);
-    } else if (activeWhen instanceof RegExp) {
-      active = activeWhen.test(pathname);
-    } else if (typeof activeWhen === "function") {
-      active = activeWhen(pathname);
-    }
-    setIsActive(active);
-  }, [activeWhen]);
+    if (typeof activeWhen === "string")
+      return pathname === activeWhen || pathname.endsWith(activeWhen);
+    if (activeWhen instanceof RegExp) return activeWhen.test(pathname);
+    if (typeof activeWhen === "function") return activeWhen(pathname);
+    return false;
+  })();
 
   const isExternal = isExternalUrl(href);
 
@@ -47,23 +41,14 @@ export default function Anchor({
   );
 
   if (disabled) {
-    return (
-      <span className={baseClasses}>
-        {children}
-      </span>
-    );
+    return <span className={baseClasses}>{children}</span>;
   }
 
   if (isExternal) {
     return (
-      <a
-        href={href}
-        className={baseClasses}
-        target="_blank"
-        rel="noopener noreferrer"
-        {...props}
-      >
+      <a href={href} className={baseClasses} target="_blank" rel="noopener noreferrer" {...props}>
         {children}
+        <ArrowUpRight className="ml-0.5 inline-block h-3.5 w-3.5" />
       </a>
     );
   }

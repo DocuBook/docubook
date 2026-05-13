@@ -33,7 +33,7 @@ export const Kbd = forwardRef<HTMLElement, KbdProps>(
 );
 Kbd.displayName = "Kbd";
 
-const iconSize = 14;
+const iconSize = 12;
 
 export const FnKey = {
   Cmd: () => <Command size={iconSize} />,

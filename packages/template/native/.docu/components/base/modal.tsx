@@ -44,7 +44,13 @@ export function ModalAction({
 
 export function useModal() {
   const ref = useRef<HTMLDialogElement>(null);
-  const open = useCallback(() => ref.current?.showModal(), []);
+  const open = useCallback(() => {
+    ref.current?.showModal();
+    setTimeout(() => {
+      const input = ref.current?.querySelector<HTMLElement>("input, [autofocus]");
+      input?.focus();
+    }, 0);
+  }, []);
   const close = useCallback(() => ref.current?.close(), []);
   return { ref, open, close };
 }

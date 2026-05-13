@@ -51,14 +51,13 @@ export const DEFAULT_THEMES: ThemeOption[] = [
 
 /** Hook to get/set current theme */
 export function useTheme() {
-  const [theme, setThemeState] = useState<ThemeName>("light");
+  const [theme, setThemeState] = useState<ThemeName>(() => {
+    if (typeof window === "undefined") return "light";
+    return (localStorage.getItem("theme") as ThemeName) || "light";
+  });
 
   useEffect(() => {
-    // Get theme from localStorage or default to light
-    const stored = localStorage.getItem("theme") as ThemeName | null;
-    const initial = stored || "light";
-    setThemeState(initial);
-    applyTheme(initial);
+    applyTheme(theme);
   }, []);
 
   const setTheme = (newTheme: ThemeName) => {
@@ -102,13 +101,15 @@ function ThemeControllerToggle({
   size = "md",
   children,
 }: ThemeControllerToggleProps) {
-  const [checked, setChecked] = useState(false);
+  const [checked, setChecked] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const stored = localStorage.getItem("theme") as ThemeName | null;
+    return (stored || defaultTheme) === darkTheme;
+  });
 
   useEffect(() => {
-    const stored = localStorage.getItem("theme") as ThemeName | null;
-    const currentTheme = stored || defaultTheme;
-    setChecked(currentTheme === darkTheme);
-  }, [defaultTheme, darkTheme]);
+    applyTheme(checked ? darkTheme : lightTheme);
+  }, []);
 
   const handleChange = (newChecked: boolean) => {
     const newTheme = newChecked ? darkTheme : lightTheme;
@@ -120,13 +121,8 @@ function ThemeControllerToggle({
 
   const isDark = checked;
 
-  // If children render prop is provided, use it (custom toggle UI)
   if (children) {
-    return (
-      <div className={className}>
-        {children({ isDark, checked, toggle: handleChange })}
-      </div>
-    );
+    return <div className={className}>{children({ isDark, checked, toggle: handleChange })}</div>;
   }
 
   const toggleElement = (
@@ -142,7 +138,7 @@ function ThemeControllerToggle({
   if (!label) return <div className={className}>{toggleElement}</div>;
 
   return (
-    <label className={cn("flex items-center gap-3 cursor-pointer", className)}>
+    <label className={cn("flex cursor-pointer items-center gap-3", className)}>
       {toggleElement}
       <span className="text-base-content">{label}</span>
     </label>
@@ -170,11 +166,8 @@ function ThemeControllerSelect({
   size = "md",
   placeholder = "Choose theme",
 }: ThemeControllerSelectProps) {
-  const [internalValue, setInternalValue] = useState<ThemeName>(
-    defaultValue as ThemeName
-  );
-  const currentValue = controlled ? value ?? internalValue : internalValue;
-
+  const [internalValue, setInternalValue] = useState<ThemeName>(defaultValue as ThemeName);
+  const currentValue = controlled ? (value ?? internalValue) : internalValue;
   useEffect(() => {
     applyTheme(currentValue as ThemeName);
   }, []);
@@ -229,11 +222,8 @@ function ThemeControllerRadio({
   variant = "btn",
   size = "md",
 }: ThemeControllerRadioProps) {
-  const [internalValue, setInternalValue] = useState<ThemeName>(
-    defaultValue as ThemeName
-  );
-  const currentValue = controlled ? value ?? internalValue : internalValue;
-
+  const [internalValue, setInternalValue] = useState<ThemeName>(defaultValue as ThemeName);
+  const currentValue = controlled ? (value ?? internalValue) : internalValue;
   useEffect(() => {
     applyTheme(currentValue as ThemeName);
   }, []);
@@ -249,27 +239,19 @@ function ThemeControllerRadio({
   };
 
   const variantClass =
-    variant === "btn"
-      ? "btn"
-      : variant === "tile"
-      ? "btn btn-tile"
-      : "btn btn-ghost";
+    variant === "btn" ? "btn" : variant === "tile" ? "btn btn-tile" : "btn btn-ghost";
 
   return (
     <div className={cn("flex flex-wrap gap-2", className)} role="radiogroup">
       {themes.map((theme) => (
         <label
           key={theme.value}
-          className={cn(
-            variantClass,
-            `btn-${size}`,
-            currentValue === theme.value && "btn-active"
-          )}
+          className={cn(variantClass, `btn-${size}`, currentValue === theme.value && "btn-active")}
         >
           <input
             type="radio"
             name="theme"
-            className="hidden theme-controller"
+            className="theme-controller hidden"
             value={theme.value}
             checked={currentValue === theme.value}
             onChange={handleChange}
@@ -317,11 +299,8 @@ export function ThemeController({
   radioVariant = "btn",
   radioSize = "md",
 }: ThemeControllerProps) {
-  const [internalValue, setInternalValue] = useState<ThemeName>(
-    defaultValue as ThemeName
-  );
-  const currentValue = controlled ? value ?? internalValue : internalValue;
-
+  const [internalValue, setInternalValue] = useState<ThemeName>(defaultValue as ThemeName);
+  const currentValue = controlled ? (value ?? internalValue) : internalValue;
   useEffect(() => {
     applyTheme(currentValue as ThemeName);
   }, []);
@@ -377,8 +356,4 @@ export function ThemeController({
 }
 
 export { ThemeControllerToggle, ThemeControllerSelect, ThemeControllerRadio };
-export type {
-  ThemeControllerToggleProps,
-  ThemeControllerSelectProps,
-  ThemeControllerRadioProps,
-};
+export type { ThemeControllerToggleProps, ThemeControllerSelectProps, ThemeControllerRadioProps };

@@ -74,17 +74,17 @@ export default function Toc({ tocs }: TocProps) {
   if (!tocs.length) return null;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex w-full flex-col gap-2">
       <div className="flex items-center gap-2">
         <ListIcon className="h-4 w-4" />
         <h3 className="text-sm font-medium">On this page</h3>
       </div>
 
       <div className="relative">
-        <div className="text-base-content/70 hover:text-base-content relative text-sm transition-colors">
-          <div className="border-base-300 absolute left-0 top-0 h-full w-px" />
+        <div className="relative text-sm">
+          <div className="bg-base-300 absolute left-0 top-0 h-full w-px" />
 
-          <div className="flex flex-col gap-0">
+          <div className="flex flex-col">
             {tocs.map(({ href, level, text }) => {
               const id = href.slice(1);
               const isActive = activeId === id;
@@ -95,13 +95,13 @@ export default function Toc({ tocs }: TocProps) {
                   key={href}
                   className={cn(
                     "relative flex items-center transition-all duration-200",
-                    isActive ? "bg-primary/10" : ""
+                    isActive && "bg-primary/5"
                   )}
                 >
                   <div
                     className={cn(
                       "flex shrink-0 items-center px-1 py-2 transition-all duration-200",
-                      isActive ? "border-primary -ml-px border-l-[3px]" : ""
+                      isActive && "border-primary -ml-px border-l-[3px]"
                     )}
                   >
                     <div

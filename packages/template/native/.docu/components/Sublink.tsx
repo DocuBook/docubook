@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import Collapse from "./base/collapse";
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import Anchor from "./Anchor";
 import type { DocuRoute } from "../lib/types";
 import { cn } from "../lib/utils";
 
 interface SublinkProps extends DocuRoute {
   level: number;
-  isSheet?: boolean;
+  onNavigate?: () => void;
   parentHref?: string;
 }
 
@@ -18,157 +18,98 @@ export default function Sublink({
   items,
   noLink,
   level,
-  isSheet = false,
+  onNavigate,
   parentHref = "",
 }: SublinkProps) {
-  const [isOpen, setIsOpen] = useState(level === 0);
   const fullHref = parentHref ? `${parentHref}${href}` : `/docs${href}`;
 
-  useEffect(() => {
-    if (items && typeof window !== "undefined") {
-      const pathname = window.location.pathname;
-      if (pathname.startsWith(fullHref) && pathname !== fullHref) {
-        setIsOpen(true);
-      }
-    }
-  }, [fullHref, items]);
-
-  const hasActiveChild = useMemo(() => {
-    if (!items || typeof window === "undefined") return false;
+  const [isOpen, setIsOpen] = useState(() => {
+    if (level === 0) return true;
+    if (typeof window === "undefined" || !items) return false;
     const pathname = window.location.pathname;
-    return items.some((item) => {
-      const childHref = `${fullHref}${item.href}`;
-      return pathname.startsWith(childHref) && pathname !== fullHref;
-    });
-  }, [items, fullHref]);
+    return pathname.startsWith(fullHref) && pathname !== fullHref;
+  });
 
-  if (noLink) {
-    const titleEl = (
-      <h4
-        className={cn(
-          "text-base-content/90 hover:text-base-content font-medium transition-colors sm:text-sm",
-          hasActiveChild ? "text-base-content" : "text-base-content/80"
-        )}
+  // Leaf node (no children)
+  if (!items) {
+    const isActive =
+      typeof window !== "undefined" &&
+      (window.location.pathname === fullHref || window.location.pathname === `${fullHref}.html`);
+
+    const link = (
+      <Anchor
+        href={fullHref}
+        className="text-foreground hover:text-foreground/80 text-sm transition-colors"
+        activeClassName="text-primary font-medium"
+        activeWhen={(path) => path === fullHref || path === `${fullHref}.html`}
+        onClick={onNavigate}
       >
         {title}
-      </h4>
+      </Anchor>
     );
-
-    if (!items) {
-      return <div className="flex flex-col">{titleEl}</div>;
-    }
-
     return (
-      <div className="flex w-full flex-col gap-1">
-        <Collapse
-          title={titleEl}
-          defaultOpen={isOpen}
-          onOpenChange={setIsOpen}
-          className="border-0 bg-transparent shadow-none"
-          titleClassName="p-0 bg-transparent hover:bg-transparent"
-          contentClassName="pl-2"
-        >
-          <div
-            className={cn(
-              "text-base-content/80 hover:[&_a]:text-base-content mt-2.5 flex flex-col items-start gap-3 transition-colors sm:text-sm",
-              level > 0 && "border-base-300 ml-1.5 border-l pl-4"
-            )}
-          >
-            {items?.map((innerLink) => (
-              <Sublink
-                key={`${fullHref}${innerLink.href}`}
-                {...innerLink}
-                href={innerLink.href}
-                level={level + 1}
-                isSheet={isSheet}
-                parentHref={fullHref}
-              />
-            ))}
-          </div>
-        </Collapse>
-      </div>
-    );
-  }
-
-  const linkEl = (
-    <Anchor
-      href={fullHref}
-      className={cn(
-        "text-base-content/80 hover:text-base-content transition-colors",
-        hasActiveChild && "text-base-content font-medium"
-      )}
-      activeClassName={!hasActiveChild ? "font-medium text-primary" : ""}
-    >
-      {title}
-    </Anchor>
-  );
-
-  if (!items) {
-    return (
-      <div className="flex flex-col">
-        {isSheet ? (
-          <label
-            htmlFor="drawer"
-            className="cursor-pointer"
-            onClick={() => {
-              const checkbox = document.getElementById("drawer") as HTMLInputElement;
-              if (checkbox) checkbox.checked = false;
-            }}
-          >
-            {linkEl}
-          </label>
-        ) : (
-          linkEl
+      <div
+        className={cn(
+          "py-1.5",
+          level >= 2 && "border-l-2 pl-3",
+          level >= 2 && (isActive ? "border-primary" : "border-base-300")
         )}
+      >
+        {link}
       </div>
     );
   }
 
+  // Section with children
   return (
-    <div className="flex w-full flex-col gap-1">
-      <Collapse
-        title={
-          <div className="flex w-full items-center justify-between">
-            {isSheet ? (
-              <label
-                htmlFor="drawer"
-                className="flex-1 cursor-pointer"
-                onClick={() => {
-                  const checkbox = document.getElementById("drawer") as HTMLInputElement;
-                  if (checkbox) checkbox.checked = false;
-                }}
-              >
-                {linkEl}
-              </label>
-            ) : (
-              <span className="flex-1">{linkEl}</span>
-            )}
-          </div>
-        }
-        defaultOpen={isOpen}
-        onOpenChange={setIsOpen}
-        className="border-0 bg-transparent shadow-none"
-        titleClassName="p-0 bg-transparent hover:bg-transparent cursor-pointer"
-        contentClassName="pl-2"
+    <div className="flex flex-col">
+      {/* Section header */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "flex w-full cursor-pointer items-center justify-between py-1.5 text-left text-sm transition-colors",
+          noLink
+            ? "text-base-content font-semibold"
+            : "text-base-content/80 hover:text-base-content font-medium"
+        )}
       >
-        <div
+        {noLink ? (
+          <span>{title}</span>
+        ) : (
+          <Anchor
+            href={fullHref}
+            className="text-foreground hover:text-foreground/80 transition-colors"
+            activeClassName="text-primary"
+            activeWhen={(path) => path === fullHref || path === `${fullHref}.html`}
+            onClick={onNavigate}
+          >
+            {title}
+          </Anchor>
+        )}
+        <ChevronDown
           className={cn(
-            "text-base-content/80 hover:[&_a]:text-base-content ml-0.5 mt-2.5 flex flex-col items-start gap-3 transition-colors sm:text-sm",
-            level > 0 && "border-base-300 ml-1.5 border-l pl-4"
+            "text-base-content/40 h-4 w-4 shrink-0 transition-transform duration-200",
+            isOpen && "rotate-180"
           )}
-        >
-          {items?.map((innerLink) => (
+        />
+      </button>
+
+      {/* Children */}
+      {isOpen && (
+        <div className="flex flex-col py-1.5">
+          {items.map((item) => (
             <Sublink
-              key={`${fullHref}${innerLink.href}`}
-              {...innerLink}
-              href={innerLink.href}
+              key={`${fullHref}${item.href}`}
+              {...item}
+              href={item.href}
               level={level + 1}
-              isSheet={isSheet}
+              onNavigate={onNavigate}
               parentHref={fullHref}
             />
           ))}
         </div>
-      </Collapse>
+      )}
     </div>
   );
 }

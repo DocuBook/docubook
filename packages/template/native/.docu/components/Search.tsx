@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Search as SearchIcon, FileText, CornerDownLeft, ChevronRight } from "lucide-react";
+import { Search as SearchIcon, FileText, CornerDownLeft, Hash, AlignLeft } from "lucide-react";
 import { Modal, useModal } from "./base/modal";
-import { Input } from "./base/input";
 import { Kbd, FnKey } from "./base/kbd";
 import { cn } from "../lib/utils";
 import { search, type SearchResult } from "../lib/search";
@@ -14,6 +13,7 @@ interface SearchProps {
 }
 
 let indexCache: SearchRecord[] | null = null;
+let cmdKRegistered = false;
 
 async function loadIndex(): Promise<SearchRecord[]> {
   if (indexCache) return indexCache;
@@ -31,19 +31,27 @@ export default function Search({ className }: SearchProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
-  // Global Cmd+K / Ctrl+K shortcut
   useEffect(() => {
+    if (cmdKRegistered) return;
+    cmdKRegistered = true;
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        open();
+        const dialog = modalRef.current;
+        if (dialog?.open) {
+          close();
+        } else {
+          open();
+        }
       }
     };
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [open]);
+    return () => {
+      window.removeEventListener("keydown", handler);
+      cmdKRegistered = false;
+    };
+  }, [open, close, modalRef]);
 
-  // Focus input when modal opens
   useEffect(() => {
     const dialog = modalRef.current;
     if (!dialog) return;
@@ -64,7 +72,6 @@ export default function Search({ className }: SearchProps) {
     return () => observer.disconnect();
   }, [modalRef, indexLoaded]);
 
-  // Search on query change
   const handleQueryChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
@@ -80,7 +87,6 @@ export default function Search({ className }: SearchProps) {
     [indexLoaded]
   );
 
-  // Keyboard navigation inside modal
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (results.length === 0) return;
@@ -103,87 +109,68 @@ export default function Search({ className }: SearchProps) {
     [results, selectedIndex, close]
   );
 
-  // Scroll selected item into view
   useEffect(() => {
     itemRefs.current[selectedIndex]?.scrollIntoView({ block: "nearest" });
   }, [selectedIndex]);
 
   return (
     <div className={className}>
-      {/* Search Trigger */}
       <SearchTrigger onClick={open} />
-
-      {/* Search Modal */}
       <Modal
         ref={modalRef}
-        placement="top"
         closeOnBackdrop
-        className="backdrop:bg-black/40"
-        boxClassName="max-w-[640px] p-0 mt-[10vh]"
+        className="items-start pt-[15vh] backdrop:bg-black/40"
+        boxClassName="w-[calc(100%-2rem)] max-w-[640px] p-0 mx-auto relative z-10"
       >
         <div onKeyDown={handleKeyDown}>
-          {/* Search Input */}
-          <div className="border-base-300 flex items-center border-b px-4">
-            <SearchIcon className="text-base-content/50 h-4 w-4 shrink-0" />
-            <input
-              ref={inputRef}
-              value={query}
-              onChange={handleQueryChange}
-              placeholder="Search documentation..."
-              className="placeholder:text-base-content/40 h-14 w-full bg-transparent px-3 text-sm outline-none"
-              aria-label="Search documentation"
-            />
-            <Kbd size="sm" className="shrink-0 text-xs" onClick={close}>
-              esc
-            </Kbd>
+          <div className="px-4 pb-2 pt-4">
+            <div className="border-base-300 flex items-center gap-3 rounded-lg border px-4 py-2.5">
+              <SearchIcon className="text-primary h-5 w-5 shrink-0" />
+              <input
+                ref={inputRef}
+                value={query}
+                onChange={handleQueryChange}
+                placeholder="Search documentation..."
+                autoFocus
+                className="placeholder:text-base-content/40 h-8 w-full border-none bg-transparent text-base outline-none ring-0 focus:outline-none focus:ring-0"
+                aria-label="Search documentation"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setResults([]);
+                    inputRef.current?.focus();
+                  }}
+                  className="text-primary hover:text-primary/80 shrink-0 text-xs"
+                >
+                  Clear
+                </button>
+              )}
+              <button type="button" onClick={close} className="shrink-0">
+                <Kbd size="sm" className="hover:bg-base-200 cursor-pointer text-xs">
+                  esc
+                </Kbd>
+              </button>
+            </div>
           </div>
 
-          {/* Results */}
-          <div className="max-h-[360px] overflow-y-auto px-2 py-2">
+          <div className="max-h-[400px] overflow-y-auto px-3 py-2">
             {query.trim().length >= 2 && results.length === 0 && (
               <p className="text-base-content/50 py-8 text-center text-sm">
                 No results for &ldquo;<span className="text-primary">{query}</span>&rdquo;
               </p>
             )}
 
-            {results.map((item, index) => (
-              <a
-                key={item.url + index}
-                ref={(el) => {
-                  itemRefs.current[index] = el;
-                }}
-                href={item.url}
-                onClick={() => close()}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
-                  index === selectedIndex
-                    ? "bg-primary/10 text-primary"
-                    : "hover:bg-base-200 text-base-content"
-                )}
-              >
-                <FileText className="h-4 w-4 shrink-0 opacity-50" />
-                <div className="min-w-0 flex-1">
-                  <div className="text-base-content/50 flex items-center gap-1 text-xs">
-                    <span>{item.hierarchy.lvl0}</span>
-                    {item.hierarchy.lvl1 && item.hierarchy.lvl1 !== item.title && (
-                      <>
-                        <ChevronRight className="h-3 w-3" />
-                        <span>{item.hierarchy.lvl1}</span>
-                      </>
-                    )}
-                  </div>
-                  <div className="truncate font-medium">{item.title}</div>
-                  {item.content && (
-                    <div className="text-base-content/50 truncate text-xs">{item.content}</div>
-                  )}
-                </div>
-                {index === selectedIndex && (
-                  <div className="text-base-content/40 hidden shrink-0 items-center gap-1 text-xs md:flex">
-                    <CornerDownLeft className="h-3 w-3" />
-                  </div>
-                )}
-              </a>
-            ))}
+            {query.trim().length >= 2 && results.length > 0 && (
+              <GroupedResults
+                results={results}
+                selectedIndex={selectedIndex}
+                itemRefs={itemRefs}
+                onSelect={close}
+              />
+            )}
 
             {query.trim().length < 2 && (
               <p className="text-base-content/40 py-8 text-center text-sm">
@@ -192,7 +179,6 @@ export default function Search({ className }: SearchProps) {
             )}
           </div>
 
-          {/* Footer with keyboard hints */}
           <div className="border-base-300 hidden items-center gap-3 border-t px-4 py-2.5 md:flex">
             <div className="flex items-center gap-1">
               <Kbd size="xs">
@@ -210,9 +196,7 @@ export default function Search({ className }: SearchProps) {
               <span className="text-base-content/50 text-xs">select</span>
             </div>
             <div className="flex items-center gap-1">
-              <Kbd size="xs">
-                <FnKey.Esc />
-              </Kbd>
+              <Kbd size="xs">esc</Kbd>
               <span className="text-base-content/50 text-xs">close</span>
             </div>
           </div>
@@ -225,30 +209,115 @@ export default function Search({ className }: SearchProps) {
 function SearchTrigger({ onClick }: { onClick: () => void }) {
   return (
     <button type="button" onClick={onClick} className="flex w-full items-center">
-      {/* Mobile: icon only */}
       <div className="block p-2 lg:hidden">
         <SearchIcon className="text-base-content/60 h-5 w-5" />
       </div>
-
-      {/* Desktop: input-like trigger */}
       <div className="relative hidden w-full lg:block">
-        <SearchIcon className="text-base-content/40 absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
-        <Input
-          readOnly
-          placeholder="Search..."
-          inputSize="sm"
-          className="w-full cursor-pointer pl-9 pr-16"
-          tabIndex={-1}
-        />
-        <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
-          <Kbd size="xs" className="text-[10px]">
-            <FnKey.Cmd />
-          </Kbd>
-          <Kbd size="xs" className="text-[10px]">
-            K
-          </Kbd>
+        <div className="border-base-300 bg-base-200/50 text-base-content/50 hover:border-base-content/20 hover:bg-base-200 flex h-9 w-full items-center gap-2 rounded-full border px-3 text-sm transition-colors">
+          <SearchIcon className="h-4 w-4 shrink-0" />
+          <span className="flex-1 text-left">Search</span>
+          <div className="flex items-center gap-0.5">
+            <Kbd
+              size="s"
+              className="bg-primary text-[12px text-base-300 rounded-md p-1.5 font-medium"
+            >
+              <FnKey.Cmd />
+            </Kbd>
+            <Kbd
+              size="s"
+              className="bg-primary text-base-300 rounded-md p-1.5 text-[12px] font-medium"
+            >
+              K
+            </Kbd>
+          </div>
         </div>
       </div>
     </button>
+  );
+}
+
+function GroupedResults({
+  results,
+  selectedIndex,
+  itemRefs,
+  onSelect,
+}: {
+  results: SearchResult[];
+  selectedIndex: number;
+  itemRefs: React.MutableRefObject<(HTMLAnchorElement | null)[]>;
+  onSelect: () => void;
+}) {
+  // Group results by lvl0
+  const groups: { section: string; items: { result: SearchResult; globalIndex: number }[] }[] = [];
+  let currentSection = "";
+
+  results.forEach((result, index) => {
+    const section = result.hierarchy.lvl0;
+    if (section !== currentSection) {
+      groups.push({ section, items: [] });
+      currentSection = section;
+    }
+    groups[groups.length - 1].items.push({ result, globalIndex: index });
+  });
+
+  return (
+    <div className="flex flex-col gap-1">
+      {groups.map((group) => (
+        <div key={group.section}>
+          <div className="text-base-content/50 px-2 pb-1 pt-3 text-xs font-semibold">
+            {group.section}
+          </div>
+          {group.items.map(({ result, globalIndex }) => {
+            const isActive = globalIndex === selectedIndex;
+            const isPage = result.type === "lvl1";
+            const isContent = result.type === "content";
+            const isHeading = !isPage && !isContent;
+            const parentLabel = isPage ? null : result.hierarchy.lvl1;
+
+            return (
+              <a
+                key={result.url + globalIndex}
+                ref={(el) => {
+                  itemRefs.current[globalIndex] = el;
+                }}
+                href={result.url}
+                onClick={onSelect}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                  isActive
+                    ? "bg-primary/10 text-primary shadow-sm"
+                    : "hover:bg-base-200 text-base-content"
+                )}
+              >
+                {/* Icon */}
+                <div
+                  className={cn(
+                    "flex h-7 w-7 shrink-0 items-center justify-center rounded border",
+                    isActive ? "border-primary/30 bg-primary/5" : "border-base-300 bg-base-200/50"
+                  )}
+                >
+                  {isPage && <FileText className="h-3.5 w-3.5" />}
+                  {isHeading && <Hash className="h-3.5 w-3.5" />}
+                  {isContent && <AlignLeft className="h-3.5 w-3.5" />}
+                </div>
+
+                {/* Text */}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-medium">
+                    {isContent ? result.content : result.title}
+                  </div>
+                  {parentLabel && parentLabel !== result.title && (
+                    <div className="text-base-content/50 truncate text-xs">{parentLabel}</div>
+                  )}
+                </div>
+
+                {/* Return icon on active */}
+                {isActive && <CornerDownLeft className="text-primary/60 h-4 w-4 shrink-0" />}
+              </a>
+            );
+          })}
+        </div>
+      ))}
+    </div>
   );
 }

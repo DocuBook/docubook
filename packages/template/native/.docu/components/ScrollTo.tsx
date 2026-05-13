@@ -10,24 +10,22 @@ interface ScrollToProps {
   offset?: number;
 }
 
-export function ScrollTo({ className, showIcon = true, offset = 0 }: ScrollToProps) {
+export function ScrollTo({ className, showIcon = true }: ScrollToProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   const checkScroll = useCallback(() => {
     const container = document.getElementById("scroll-container");
     const scrollY = container ? container.scrollTop : window.scrollY;
+    const scrollHeight = container ? container.scrollHeight : document.documentElement.scrollHeight;
+    const threshold = scrollHeight * 0.3;
 
-    const halfViewportHeight = window.innerHeight * 0.5;
-    const scrolledPastHalfViewport = scrollY > halfViewportHeight + offset;
-
-    if (scrolledPastHalfViewport !== isVisible) {
-      setIsVisible(scrolledPastHalfViewport);
+    const shouldShow = scrollY > threshold;
+    if (shouldShow !== isVisible) {
+      setIsVisible(shouldShow);
     }
-  }, [isVisible, offset]);
+  }, [isVisible]);
 
   useEffect(() => {
-    checkScroll();
-
     let timeoutId: ReturnType<typeof setTimeout>;
     const handleScroll = () => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -58,7 +56,7 @@ export function ScrollTo({ className, showIcon = true, offset = 0 }: ScrollToPro
       className={cn(
         "border-base-300 mt-4 border-t pt-4",
         "transition-opacity duration-300",
-        "opacity-100",
+        isVisible ? "opacity-100" : "pointer-events-none opacity-0",
         className
       )}
     >

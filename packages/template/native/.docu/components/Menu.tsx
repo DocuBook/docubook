@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import docuConfig from "../../docu.json" with { type: "json" };
 import Sublink from "./Sublink";
 import type { DocuRoute } from "../lib/types";
 import { cn } from "../lib/utils";
 
 interface MenuProps {
-  isSheet?: boolean;
+  onNavigate?: () => void;
   className?: string;
 }
 
@@ -24,14 +24,11 @@ function getContextRoute(contextPath: string): DocuRoute | undefined {
   });
 }
 
-export default function Menu({ isSheet = false, className = "" }: MenuProps) {
-  const [currentPath, setCurrentPath] = useState("/");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setCurrentPath(window.location.pathname);
-    setMounted(true);
-  }, []);
+export default function Menu({ onNavigate, className = "" }: MenuProps) {
+  const [currentPath] = useState(() =>
+    typeof window !== "undefined" ? window.location.pathname : "/"
+  );
+  const mounted = typeof window !== "undefined";
 
   if (!mounted || !currentPath.startsWith("/docs")) return null;
 
@@ -55,7 +52,7 @@ export default function Menu({ isSheet = false, className = "" }: MenuProps) {
             {...contextRoute}
             href={contextRoute.href}
             level={0}
-            isSheet={isSheet}
+            onNavigate={onNavigate}
             parentHref="/docs"
           />
         </li>

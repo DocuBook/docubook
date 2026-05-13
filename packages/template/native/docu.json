@@ -15,7 +15,11 @@
     "menu": [
       {
         "title": "Docs",
-        "href": "getting-started/introduction"
+        "href": "/"
+      },
+      {
+        "title": "Showcase",
+        "href": "https://www.docubook.pro/showcase"
       }
     ]
   },
@@ -37,17 +41,141 @@
   },
   "repo": {
     "url": "https://github.com/DocuBook/docubook",
-    "path": "blob/main/{filePath}",
+    "path": "blob/main/apps/web/{filePath}",
     "edit": true
   },
   "routes": [
     {
       "title": "Getting Started",
       "href": "/getting-started",
+      "noLink": true,
+      "context": {
+        "icon": "BookOpen",
+        "description": "Set up your Documentation",
+        "title": "Guides"
+      },
       "items": [
         {
           "title": "Introduction",
           "href": "/introduction"
+        },
+        {
+          "title": "Installation",
+          "href": "/installation"
+        },
+        {
+          "title": "Quick Start Guide",
+          "href": "/quick-start-guide"
+        },
+        {
+          "title": "Format text",
+          "href": "/format-text"
+        },
+        {
+          "title": "Frontmatter",
+          "href": "/frontmatter"
+        },
+        {
+          "title": "Themes",
+          "href": "/themes"
+        },
+        {
+          "title": "Search",
+          "href": "/search",
+          "items": [
+            {
+              "title": "Built-in",
+              "href": "/built-in"
+            },
+            {
+              "title": "Algolia",
+              "href": "/algolia"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Components",
+      "href": "/components",
+      "noLink": true,
+      "context": {
+        "icon": "Layers",
+        "description": "Write with Markdown",
+        "title": "Markdown"
+      },
+      "items": [
+        {
+          "title": "Accordion",
+          "href": "/accordion"
+        },
+        {
+          "title": "Accordion Group",
+          "href": "/accordion-group"
+        },
+        {
+          "title": "Button",
+          "href": "/button"
+        },
+        {
+          "title": "Card",
+          "href": "/card"
+        },
+        {
+          "title": "Card Group",
+          "href": "/card-group"
+        },
+        {
+          "title": "Code Block",
+          "href": "/code-block"
+        },
+        {
+          "title": "File Tree",
+          "href": "/file-tree"
+        },
+        {
+          "title": "Image",
+          "href": "/image"
+        },
+        {
+          "title": "Keyboard",
+          "href": "/keyboard"
+        },
+        {
+          "title": "Link",
+          "href": "/link"
+        },
+        {
+          "title": "Note",
+          "href": "/note"
+        },
+        {
+          "title": "Release Note",
+          "href": "/release-note"
+        },
+        {
+          "title": "Stepper",
+          "href": "/stepper"
+        },
+        {
+          "title": "Tabs",
+          "href": "/tabs"
+        },
+        {
+          "title": "Tooltips",
+          "href": "/tooltips"
+        },
+        {
+          "title": "Tables",
+          "href": "/tables"
+        },
+        {
+          "title": "Youtube",
+          "href": "/youtube"
+        },
+        {
+          "title": "Custom",
+          "href": "/custom"
         }
       ]
     }

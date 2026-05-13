@@ -9,6 +9,7 @@ import { ThemeToggle } from "./Theme";
 import { GitHubLink } from "./Navbar";
 import Search from "./Search";
 import type { TocItem } from "../lib/types";
+import docuConfig from "../../docu.json" with { type: "json" };
 
 interface SidebarProps {
   tocs?: TocItem[];
@@ -20,25 +21,48 @@ interface SidebarProps {
 export default function Sidebar({ tocs = [], title, repoUrl, className }: SidebarProps) {
   return (
     <>
-      <DesktopSidebar className={className} />
+      <DesktopSidebar className={className} repoUrl={repoUrl} />
       <MobileBar tocs={tocs} title={title} repoUrl={repoUrl} />
     </>
   );
 }
 
-function DesktopSidebar({ className }: { className?: string }) {
+function DesktopSidebar({ className, repoUrl }: { className?: string; repoUrl?: string }) {
   return (
-    <aside
-      className={cn(
-        "hidden lg:flex lg:w-64 lg:shrink-0 lg:flex-col",
-        "sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto",
-        "border-base-200 bg-base-100 border-r px-3 py-4",
-        className
-      )}
-    >
-      <Context className="mb-3" />
-      <Menu />
-    </aside>
+    <div className={cn("flex h-full flex-col", className)}>
+      {/* Logo */}
+      <div className="flex h-14 shrink-0 items-center px-5">
+        <a href="/docs" className="flex items-center gap-2">
+          {docuConfig.navbar?.logo?.src && (
+            <img
+              src={docuConfig.navbar.logo.src}
+              alt={docuConfig.navbar.logo.alt || ""}
+              className="h-6 w-6"
+            />
+          )}
+          {docuConfig.navbar?.logoText && (
+            <span className="text-primary text-lg font-semibold">{docuConfig.navbar.logoText}</span>
+          )}
+        </a>
+      </div>
+
+      {/* Search */}
+      <div className="shrink-0 px-4 pb-3">
+        <Search className="w-full" />
+      </div>
+
+      {/* Context + Menu */}
+      <div className="flex-1 overflow-y-auto px-4">
+        <Context className="mb-2" />
+        <Menu />
+      </div>
+
+      {/* Bottom: Theme + GitHub */}
+      <div className="border-base-200 flex items-center justify-between border-t px-4 py-3">
+        <ThemeToggle />
+        <GitHubLink repoUrl={repoUrl} />
+      </div>
+    </div>
   );
 }
 
@@ -224,7 +248,7 @@ function MobileDrawer({
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-2">
           <Context className="mb-2" />
-          <Menu isSheet />
+          <Menu onNavigate={onClose} />
         </div>
       </div>
     </div>

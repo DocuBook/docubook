@@ -1,4 +1,4 @@
 {
   "*": "prettier --write --ignore-unknown",
-  "*.{js,ts,jsx,tsx}": "eslint --fix"
+  "*.{js,ts,jsx,tsx}": "eslint --ignore-pattern '*.config.*'"
 }
