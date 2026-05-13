@@ -1,0 +1,31 @@
+---
+title: Frontmatter
+description: How to write frontmatter for metadata available in DocuBook
+---
+
+## Format
+
+```markdown
+---
+title: Frontmatter
+description: How to write frontmatter for metadata available in DocuBook
+---
+
+your content here...
+```
+
+## Metadata
+
+Below is a table of available frontmatter fields for documentation pages:
+
+| Field Name  | Type         | Required | Description                                                                                                                 |
+| ----------- | ------------ | -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| title       | string       | Yes      | The page title, displayed in the header and metadata.                                                                       |
+| description | string       | Yes      | A short description of the page, used for SEO and previews.                                                                 |
+| image       | string (URL) | No       | URL for the Open Graph image (og:image), used when sharing the page on social media.                                        |
+| date        | string       | No       | Publication date in the format `07-04-2026`. If omitted, the system uses the file's last modified local time automatically. |
+
+<Note type="note">
+  The `date` field is optional. If not provided, the system will automatically use the file's last
+  local update time as the publication date.
+</Note>

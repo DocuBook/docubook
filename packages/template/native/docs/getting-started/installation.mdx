@@ -1,0 +1,59 @@
+---
+title: Installation
+description: Installation guide for our application.
+---
+
+Setting up DocuBook is straightforward, with options to clone the repository or use the convenient
+`npx` command. DocuBook requires [Node.js](https://nodejs.org/) version 18 or higher for optimal
+performance.
+
+## Quick Setup with CLI
+
+For a faster setup, use the `cli` command to create a new DocuBook project in one step:
+
+<Tabs className="pb-1 pt-5">
+  <Tab title="npm">```shell:npx npx @docubook/cli@latest ```</Tab>
+  <Tab title="pnpm">```shell:pnpm pnpm dlx @docubook/cli@latest ```</Tab>
+  <Tab title="yarn">```shell:yarn yarn dlx @docubook/cli@latest ```</Tab>
+  <Tab title="bun">```shell:bun bunx @docubook/cli@latest ```</Tab>
+</Tabs>
+
+## Installing the CLI Globally
+
+If you prefer installing the CLI globally so the `docubook` command is available system-wide, use
+one of the following:
+
+<Tabs className="pb-1 pt-5">
+  <Tab title="npm">```shell:npx npm install -g @docubook/cli@latest ```</Tab>
+  <Tab title="pnpm">```shell:pnpm pnpm add -g @docubook/cli@latest ```</Tab>
+  <Tab title="yarn">```shell:yarn yarn global add @docubook/cli@latest ```</Tab>
+  <Tab title="bun">```shell:bun bun add -g @docubook/cli@latest ```</Tab>
+</Tabs>
+
+After a global install, verify the installation and check the CLI version:
+
+```shell:bash
+# init
+docubook
+
+# with argumen [projectname]
+docubook my-project
+
+# show version
+docubook version
+
+# update
+docubook update
+```
+
+If you used `npx`, `pnpm dlx`, `bunx` or `yarn dlx` you can still run the CLI directly without
+installing. Example:
+
+```shell:npx
+npx @docubook/cli@latest --version
+```
+
+These commands install the `docubook` binary (package "bin"), so the `docubook` command should be
+available in your PATH after installation.
+
+With this setup, you’ll have a ready-to-use DocuBook instance to start building your documentation.

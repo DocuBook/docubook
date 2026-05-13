@@ -1,0 +1,50 @@
+---
+title: Note
+description:
+  A component used to display different types of messages such as general notes, warnings, or
+  success notifications.
+---
+
+## Preview
+
+<Note type="tip" title="Tip">
+  This is a tip to suggests a helpful.
+</Note>
+<Note type="note" title="Note">
+  This is a general note to convey information to the user.
+</Note>
+<Note type="danger" title="Danger">
+  This is a danger alert to notify the user of a critical issue.
+</Note>
+<Note type="warning">This note uses default title and default icon from its type.</Note>
+<Note type="success" title="Success">
+  This is a success message to inform the user of successful actions.
+</Note>
+
+## Props
+
+| Prop    | Type                                      | Default                           | Description                                                                       |
+| ------- | ----------------------------------------- | --------------------------------- | --------------------------------------------------------------------------------- |
+| `title` | string                                    | fallback to "type" with Uppercase | Sets the title of the note.                                                       |
+| `type`  | "note" "danger" "success" "warning" "tip" | `"note"`                          | Determines the visual style of the note.                                          |
+| `icon`  | string                                    | fallback icon based on `type`     | Optional Lucide icon name. If empty/undefined, icon automatically follows `type`. |
+
+## Output Markdown
+
+```markdown:mdx
+<Note type="tip" title="Tip">
+  This is a tip to suggests a helpful.
+</Note>
+<Note type="note" title="Note">
+  This is a general note to convey information to the user.
+</Note>
+<Note type="danger" title="Danger">
+  This is a danger alert to notify the user of a critical issue.
+</Note>
+<Note type="warning">
+  This note uses default title and default icon from its type.
+</Note>
+<Note type="success" title="Success">
+  This is a success message to inform the user of successful actions.
+</Note>
+```

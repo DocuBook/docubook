@@ -1,0 +1,98 @@
+---
+title: Keyboard
+description: Display keyboard keys with platform-specific styling for Windows and macOS.
+---
+
+The `Keyboard` component automatically renders platform-appropriate key symbols for macOS and
+Windows. It's perfect for documenting keyboard shortcuts in your application.
+
+## Usage
+
+### Basic Usage
+
+Simply use the `Kbd` component with a `show` prop:
+
+```tsx
+<Kbd show="cmd" type="mac" /> + <Kbd show="c" />;
+```
+
+Renders as:
+
+<Kbd show="cmd" type="mac" /> + <Kbd show="c" />
+
+### Automatic Symbol Rendering
+
+The component automatically renders appropriate symbols based on the platform:
+
+```tsx
+{
+  /* Windows style (default) */
+}
+<Kbd show="ctrl" /> + <Kbd show="v" />;
+
+{
+  /* Mac style */
+}
+<Kbd show="cmd" type="mac" /> + <Kbd show="v" type="mac" />;
+```
+
+Renders as:
+
+- Windows: <Kbd show="ctrl" type="window" /> + <Kbd show="v" type="window" />
+- Mac: <Kbd show="cmd" type="mac" /> + <Kbd show="v" type="mac" />
+
+### Custom Content
+
+For custom key labels, provide children:
+
+```tsx
+<Kbd show="custom" />
+```
+
+Renders as: <Kbd show="custom" />
+
+### Arrow Key
+
+```tsx
+<Kbd show="up" /> <Kbd show="down" /> <Kbd show="left" /> <Kbd show="right" />
+```
+
+Render as: <Kbd show="up" /> <Kbd show="down" /> <Kbd show="left" /> <Kbd show="right" />
+
+## Props
+
+| Prop   | Type   | Default    | Description                                   |                                  |
+| ------ | ------ | ---------- | --------------------------------------------- | -------------------------------- |
+| `show` | string | (required) | The key identifier (e.g., 'cmd', 'ctrl', 'a') |                                  |
+| `type` | string | `window`   | for device type `mac` or `window`             | Platform style or custom content |
+
+## Supported Keys
+
+The component includes special handling for common keys:
+
+| Key Name           | Windows         | macOS           |
+| ------------------ | --------------- | --------------- |
+| command/cmd        | `Win`           | `⌘`             |
+| option/alt         | `Alt`           | `⌥`             |
+| shift              | `Shift`         | `⇧`             |
+| ctrl/control       | `Ctrl`          | `⌃`             |
+| tab                | `Tab`           | `⇥`             |
+| enter/return       | `Enter`         | `⏎`             |
+| delete             | `Del`           | `⌫`             |
+| escape/esc         | `Esc`           | `⎋`             |
+| up/down/left/right | `↑` `↓` `←` `→` | `↑` `↓` `←` `→` |
+| space              | `Space`         | `␣`             |
+
+## Best Practices
+
+1. **Be Consistent**: Stick to one platform style within the same context
+2. **Use Type Wisely**:
+   - Use `type="mac"` for Mac-specific documentation
+   - Use `type="window"` (default) for Windows/Linux
+3. **Accessibility**: The component uses semantic `<kbd>` HTML for better accessibility
+
+## Notes
+
+- The component automatically capitalizes single letters (e.g., 'a' becomes 'A')
+- Unrecognized keys are displayed as-is
+- Dark mode is automatically supported through Tailwind's dark mode classes

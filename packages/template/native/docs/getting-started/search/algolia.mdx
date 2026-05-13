@@ -1,0 +1,218 @@
+---
+title: Algolia
+description: Learn how to integrate Algolia DocSearch into your documentation.
+---
+
+[Algolia DocSearch](https://docsearch.algolia.com/) provides a fast, relevant search experience for
+documentation sites. It powers the search in this project **(DocuBook)**. Follow this guide to
+integrate it into your documentation.
+
+## Enable Algolia Search
+
+To enable Algolia DocSearch, update the `search.type` in your `docu.json` file:
+
+```json
+{
+  "search": {
+    "type": "algolia"
+  }
+}
+```
+
+This will automatically apply Algolia search across all search components in your documentation.
+
+> **Built-in Search**
+>
+> To use the built-in search instead, set `"type": "default"` or remove the `search` configuration
+> entirely.
+
+## Apply for DocSearch
+
+Algolia provides `DocSearch` for open-source projects for free. To apply:
+
+<div className="pl-4">
+<Steps>
+  <Step title="Step 1: Visit the DocSearch">
+    Visit [DocSearch Application](https://docsearch.algolia.com/apply/ ) to register your
+    application.
+  </Step>
+  <Step title="Step 2: Fill out the form with details about your documentation:">
+    - Your website URL - The selectors for headings and content
+  </Step>
+  <Step title="Step 3: Submit your request. Once approved, Algolia will provide:">
+    - Application ID
+    - Search API Key
+    - Index Name
+    > Store your environment variables securely by creating a .env.local file
+    >  ```plaintext
+    >    NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_ID="your_app_id"
+    >    NEXT_PUBLIC_ALGOLIA_DOCSEARCH_API_KEY="your_api_key"
+    >    NEXT_PUBLIC_ALGOLIA_DOCSEARCH_INDEX_NAME="your_index_name"
+    >    NEXT_PUBLIC_ALGOLIA_DOCSEARCH_ASKAI_ASSISTANT_ID="your_assistant_id" // optional
+    >  ```
+  </Step>
+</Steps>
+</div>
+
+## Crawler Editor
+
+Now we will customize the crawler to follow the hierarchy of the docs created by DocuBook :
+
+<div className="pl-4">
+<Steps>
+  <Step title="Step 1: Dashboard Algolia">
+    Visit the [Algolia DocSearch dashboard](https://dashboard.algolia.com/)
+  </Step>
+  <Step title="Step 2: Navigate to Data Sources">
+    On the Algolia dashboard page, navigate to the "Data Sources" menu.
+  </Step>
+  <Step title="Step 3: In the Data Sources menu">
+    Please navigate to the "Crawler" tab, where you will see a list of crawlers. Then, click on the name of the crawler you want to customize.
+
+    > make sure to add your domain in the `domains` tab in the crawler settings
+
+  </Step>
+  <Step title="Step 4: Editor">
+    On the crawler page, open the `setup` dropdown and select `editor`.
+  </Step>
+</Steps>
+</div>
+
+copy the entire crawler code below :
+
+> Pay attention to the <span className="text-red-500 font-bold">highlighted</span> parts of the
+> crawler syntax below—these are the sections you need to modify.
+
+```javascript:index.js showLineNumbers {2-3,6,13,16-17,66} Expandable
+new Crawler({
+  appId: "5CCY***", // changes your appId
+  apiKey: "01469aacecdb****", // changes crawler apiKey
+  indexPrefix: "",
+  rateLimit: 8,
+  startUrls: ["https://www.docubook.pro"], // changes your domain
+  renderJavaScript: true,
+  maxDepth: 10,
+  maxUrls: 8000,
+  schedule: "every 1 day at 02:00 am", // Recommended daily schedule
+  sitemaps: [],
+  ignoreCanonicalTo: true,
+  discoveryPatterns: ["https://www.docubook.pro/**"], // changes your domain
+  actions: [
+    {
+      indexName: "docsearch_docubook", // recommendations for index names with the prefix docsearch_
+      pathsToMatch: ["https://www.docubook.pro/**"], // changes your domain
+      recordExtractor: ({ $, helpers }) => {
+        // Prefer the specific data attribute, fall back to breadcrumb
+        const lvl0 =
+          $("[data-search-lvl0='true']").first().text().trim() ||
+          $("nav[aria-label='breadcrumb'] li:nth-child(3)").text().trim() ||
+          "Docs";
+
+        const layoutAnchors = ["scroll-container", "main-navbar"];
+
+        return helpers
+          .docsearch({
+            recordProps: {
+              lvl0: {
+                selectors: "",
+                defaultValue: lvl0,
+              },
+              // Limit H1 extraction to the document content area.
+              // This avoids layout anchors like #scroll-container or #main-navbar.
+              lvl1: ["article h1", ".prose h1"],
+              content: ["article p, article li", ".prose p, .prose li"],
+              lvl2: ["article h2", ".prose h2"],
+              lvl3: ["article h3", ".prose h3"],
+              lvl4: ["article h4", ".prose h4"],
+              lvl5: ["article h5", ".prose h5"],
+              lvl6: ["article h6", ".prose h6"],
+            },
+            aggregateContent: true,
+            recordVersion: "v3",
+          })
+          .map((record) => {
+            if (!layoutAnchors.includes(record.anchor)) return record;
+
+            return {
+              ...record,
+              anchor: undefined,
+              url: record.url
+                ? record.url.replace(/#(scroll-container|main-navbar)$/, "")
+                : record.url,
+              url_without_anchor:
+                record.url_without_anchor ||
+                (record.url ? record.url.split("#")[0] : record.url),
+            };
+          });
+      },
+    },
+  ],
+  safetyChecks: { beforeIndexPublishing: { maxLostRecordsPercentage: 10 } },
+  initialIndexSettings: {
+    "docsearch_docubook": { // recommendations for index names with the prefix docsearch_
+      attributesForFaceting: ["type", "lang"],
+      attributesToRetrieve: [
+        "hierarchy",
+        "content",
+        "anchor",
+        "url",
+        "url_without_anchor",
+        "type",
+      ],
+      attributesToHighlight: ["hierarchy", "content"],
+      attributesToSnippet: ["content:10"],
+      camelCaseAttributes: ["hierarchy", "content"],
+      searchableAttributes: [
+        "unordered(hierarchy.lvl0)",
+        "unordered(hierarchy.lvl1)",
+        "unordered(hierarchy.lvl2)",
+        "unordered(hierarchy.lvl3)",
+        "unordered(hierarchy.lvl4)",
+        "unordered(hierarchy.lvl5)",
+        "unordered(hierarchy.lvl6)",
+        "content",
+      ],
+      distinct: true,
+      attributeForDistinct: "url",
+      customRanking: [
+        "desc(weight.pageRank)",
+        "desc(weight.level)",
+        "asc(weight.position)",
+      ],
+      ranking: [
+        "words",
+        "filters",
+        "typo",
+        "attribute",
+        "proximity",
+        "exact",
+        "custom",
+      ],
+      highlightPreTag: '<span class="algolia-docsearch-suggestion--highlight">',
+      highlightPostTag: "</span>",
+      minWordSizefor1Typo: 3,
+      minWordSizefor2Typos: 7,
+      allowTyposOnNumericTokens: false,
+      minProximity: 1,
+      ignorePlurals: true,
+      advancedSyntax: true,
+      attributeCriteriaComputedByMinProximity: true,
+      removeWordsIfNoResults: "allOptional",
+    },
+  },
+});
+```
+
+## Vercel
+
+If you are deploying your DocuBook project using the Vercel platform, here are the steps to bring
+your local environment variables to production:
+
+| **key**                                          | **value**           |
+| ------------------------------------------------ | ------------------- |
+| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_ID             | `your_app_id`       |
+| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_KEY            | `your_api_key`      |
+| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_INDEX_NAME         | `your_index_name`   |
+| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_ASKAI_ASSISTANT_ID | `your_assistant_id` |
+
+or you can import the .env.local file
