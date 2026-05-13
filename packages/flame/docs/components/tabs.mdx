@@ -1,0 +1,62 @@
+---
+title: Tabs
+description: Organize content into multiple sections with switchable tabs.
+---
+
+The `Tabs` component allows you to organize content into multiple sections, enabling users to switch between them easily. This is particularly useful for displaying related content in a compact manner.
+
+## Preview
+
+<Tabs className="pt-5 pb-1">
+  <Tab title="Java">
+    ```java:HelloWorld.java
+    // HelloWorld.java
+    public class HelloWorld {
+        public static void main(String[] args) {
+            System.out.println("Hello, World!");
+        }
+    }
+    ```
+  </Tab>
+  <Tab title="TypeScript">
+    ```typescript:helloWorld.ts
+    // helloWorld.ts
+    function helloWorld(): void {
+        console.log("Hello, World!");
+    }
+    helloWorld();
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+| Prop        | Type   | Default | Description                                            |
+| ----------- | ------ | ------- | ------------------------------------------------------ |
+| `className` | string | null    | Additional CSS classes for styling the Tabs component. |
+
+## Output Markdown
+
+````markdown:mdx
+<Tabs className="pt-5 pb-1">
+  <Tab title="Java">
+    ```java:HelloWorld.java
+    // HelloWorld.java
+    public class HelloWorld {
+        public static void main(String[] args) {
+            System.out.println("Hello, World!");
+        }
+    }
+    ```
+  </Tab>
+  <Tab title="TypeScript">
+    ```typescript:helloWorld.ts
+    // helloWorld.ts
+    function helloWorld(): void {
+        console.log("Hello, World!");
+    }
+    helloWorld();
+    ```
+  </Tab>
+</Tabs>
+````

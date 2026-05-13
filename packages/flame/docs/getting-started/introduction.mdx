@@ -1,0 +1,130 @@
+---
+title: Introduction
+description: This section provides an overview of DocuBook.
+image: example-img.png
+---
+
+## Why DocuBook Exists
+
+For years, I worked on documentation projects where the biggest effort was not writing content, but getting the theme and styling right. Most of the time was eaten by configuring CMS plugins and tweaking layouts instead of focusing on the actual documentation.
+
+That frustration inspired me to build a `docs framework` from the ground up in the React ecosystem—one that keeps the writing experience front and center. DocuBook is designed to let you focus on content while giving you a flexible, developer-friendly foundation that’s also open source.
+
+## Open Source Philosophy
+
+DocuBook is proudly **open-source**! 🎉 We believe in creating an accessible, collaborative platform that thrives on community contributions.
+
+<Note title="Contribute">
+  Want to contribute? Visit our [GitHub repository](https://github.com/DocuBook/docubook).
+  Feature ideas, bug reports, and pull requests are welcome.
+</Note>
+
+## Project Overview
+
+DocuBook is a complete docs ecosystem for modern React projects.
+
+- MDX-based documentation with reusable components
+- Clean, customizable UI built on modern React tooling
+- SEO-ready pages and static generation support
+- Prebuilt navigation tree via CLI
+- Multi-template support for different deployment targets
+
+## Technology & Libraries
+
+Core stack:
+
+- **@docubook/core** - MDX compile pipeline and markdown utilities
+- **@doubook/mdx-content** - Portable MDX components and framework adapters for DocuBook
+- **docs-tree** - CLI for prebuilding docs navigation
+- **Tailwind CSS + Radix UI + Shadcn patterns** - UI foundation
+- **Algolia DocSearch** - fast documentation search
+
+## MDX Processing Comparison (Before vs After Optimization)
+
+DocuBook separates metadata reads from full MDX compilation and reuses cached results within one request.
+
+<Note title="Why this matters">
+  This reduces repeated file reads and repeated compilation,
+  improving response time and lowering CPU usage.
+</Note>
+
+<Accordions>
+  <Accordion title="Before Optimization" icon="Loader">
+    In the old flow, a single page request repeated work multiple times:
+      ```text
+      request page
+        ↓
+      generateMetadata()
+        ↓
+      getDocsForSlug()
+        ↓
+      read mdx file
+        ↓
+      parse frontmatter
+        ↓
+      compile MDX
+
+      DocsPage()
+        ↓
+      getDocsForSlug()  (called again)
+        ↓
+      compile MDX again
+
+      getDocsTocs()
+        ↓
+      read mdx file again
+        ↓
+      parse headings
+      ```
+  </Accordion>
+  <Accordion title="After Optimization" icon="Zap">
+    The current flow avoids unnecessary compilation and duplicate reads:
+      ```text
+      request page
+        ↓
+      generateMetadata()
+        ↓
+      getDocsFrontmatterForSlug()
+        ↓
+      getDocsRawForSlugCached()
+        ↓
+      read mdx file + parse frontmatter + extract TOC
+
+      DocsPage()
+        ↓
+      getDocsForSlug()
+        ↓
+      computeDocsForSlugCached()
+        ↓
+      reuse getDocsRawForSlugCached() data
+        ↓
+      compile MDX once
+
+      getDocsTocs()
+        ↓
+      reuse getDocsRawForSlugCached() result
+        ↓
+      no extra file read
+      ```
+  </Accordion>
+</Accordions>
+
+### Quick Metrics (Per Request)
+
+|       Metric        |         Before          |           After            |
+| ------------------- | ----------------------- | -------------------------- |
+| MDX file reads      | 3x                      | 1x                         |
+| Frontmatter parsing | 2x                      | 1x                         |
+| MDX compilation     | 2x                      | 1x                         |
+| TOC extraction      | 1x (separate read path) | 1x (from shared raw cache) |
+
+> Metadata, page content, and TOC now share the same raw MDX processing in one request.
+
+### Practical Impact
+
+- Less CPU work for metadata generation (no unnecessary MDX compile).
+- No repeated file-system reads during a single docs page render.
+- Better performance consistency for docs routes under load.
+- Cleaner separation of concerns between metadata and full content rendering.
+
+DocuBook gives you a practical docs platform that scales with your project.

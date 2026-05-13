@@ -1,0 +1,79 @@
+---
+title: Custom Components
+description: How to create and register custom MDX components with the current setup.
+---
+
+Use this guide to add your own MDX components in the current DocuBook setup.
+
+## Current Flow
+
+<Steps>
+  <Step title="Step 1: Create a custom component in lib/mdx">
+    ````tsx:lib/mdx/Callout.tsx
+    export default function Callout({ children }: { children: React.ReactNode }) {
+      return (
+        <div className="rounded-md border px-4 py-3">
+          {children}
+        </div>
+      );
+    }
+    ````
+  </Step>
+
+  <Step title="Step 2: Register it in lib/mdx/index.ts">
+    ````ts:lib/mdx/index.ts
+    import type { MdxComponentMap } from "@docubook/mdx-content";
+    import Outlet from "@/lib/mdx/Outlet";
+    import Callout from "@/lib/mdx/Callout";
+
+    export const customMdxComponents: MdxComponentMap = {
+      Outlet,
+      Callout,
+    };
+    ````
+  </Step>
+
+  <Step title="Step 3: Merge custom and built-in components in lib/mdx-components.ts">
+    ````ts:lib/mdx-components.ts
+    import { createMdxComponents } from "@docubook/mdx-content";
+    import { customMdxComponents } from "@/lib/mdx";
+
+    export const mdxComponents = createMdxComponents({
+      ...builtInOverrides,
+      ...customMdxComponents,
+    });
+    ````
+  </Step>
+
+  <Step title="Step 4: Use your custom component in MDX">
+    ````md:docs/example.mdx
+    <Callout>
+      This content is rendered by a custom MDX component.
+    </Callout>
+    ````
+  </Step>
+</Steps>
+
+## Folder Structure
+
+Recommended structure for this flow:
+
+<Files>
+  <Folder name="lib">
+    <File name="mdx-components.ts" />
+    <Folder name="mdx">
+      <File name="index.ts" />
+      <File name="Outlet.tsx" />
+      <File name="Callout.tsx" />
+    </Folder>
+  </Folder>
+  <Folder name="docs">
+    <File name="example.mdx" />
+  </Folder>
+</Files>
+
+## Notes
+
+- Do not register custom components in `lib/markdown.ts`.
+- Keep all custom component registration in `lib/mdx/index.ts`.
+- Keep all MDX map composition in `lib/mdx-components.ts`.
