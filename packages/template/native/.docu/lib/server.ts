@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { watch } from "node:fs";
@@ -12,12 +12,12 @@ import {
   createDefaultRemarkPlugins,
 } from "@docubook/core";
 import { createMdxComponents } from "@docubook/mdx-content";
+import { getGitLastModified } from "./utils";
 import docuConfig from "../../docu.json" with { type: "json" };
 import DocsPage from "../pages/docs/[[...slug]]";
 import NotFoundPage from "../pages/404";
 import ErrorPage from "../pages/Error";
 import IndexPage from "../pages/index";
-import { Navbar } from "../components/Navbar";
 import { buildClientBundle } from "./hydrate";
 import { generateSearchIndex } from "./search-indexer";
 
@@ -25,8 +25,7 @@ const DOCS_DIR = resolve("./docs");
 const DIST_DIR = resolve("./.docu/dist");
 const PORT = process.env.PORT || "3000";
 
-// Build client assets on startup
-await buildClientBundle();
+const assetManifest = await buildClientBundle();
 await generateSearchIndex();
 
 const router = new Bun.FileSystemRouter({
@@ -42,18 +41,23 @@ const HMR_SCRIPT = `<script>
   es.onmessage = function(e) {
     if (e.data === "reload") window.location.reload();
   };
-  es.onerror = function() { setTimeout(() => window.location.reload(), 1000); };
+  es.onerror = function() { es.close(); setTimeout(() => { window.location.reload(); }, 2000); };
 })();
 </script>`;
 
-watch(DOCS_DIR, { recursive: true }, () => {
-  for (const client of hmrClients) {
-    try {
-      client.enqueue(new TextEncoder().encode("data: reload\n\n"));
-    } catch {
-      hmrClients.delete(client);
+let hmrTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(DOCS_DIR, { recursive: true }, (_event, filename) => {
+  if (!filename || (!filename.endsWith(".mdx") && !filename.endsWith(".md"))) return;
+  if (hmrTimeout) clearTimeout(hmrTimeout);
+  hmrTimeout = setTimeout(() => {
+    for (const client of hmrClients) {
+      try {
+        client.enqueue(new TextEncoder().encode("data: reload\n\n"));
+      } catch {
+        hmrClients.delete(client);
+      }
     }
-  }
+  }, 300);
 });
 
 function htmlShell(title: string, description: string, body: string): string {
@@ -66,26 +70,81 @@ function htmlShell(title: string, description: string, body: string): string {
   <title>${title}</title>
   <meta name="description" content="${description}">
   <link rel="icon" type="image/x-icon" href="${favicon}">
-  <link rel="stylesheet" href="/assets/client.css">
+  <link rel="stylesheet" href="/assets/${assetManifest.css}">
 </head>
 <body>
   <div id="root">${body}</div>
-  <script src="/assets/client.js"></script>
+  <script src="/assets/${assetManifest.js}"></script>
   ${HMR_SCRIPT}
 </body>
 </html>`;
 }
 
-function DocsLayout({ children }: { children: React.ReactNode }) {
+function DocsLayout({ children, repoUrl }: { children?: React.ReactNode; repoUrl?: string }) {
+  const tocsJson = "[]";
   return React.createElement(
     "div",
-    { className: "flex min-h-screen flex-col" },
-    React.createElement(Navbar, {
-      logo: docuConfig.navbar?.logo,
-      logoText: docuConfig.navbar?.logoText,
-      menu: docuConfig.navbar?.menu || [],
-    }),
-    React.createElement("div", { className: "flex flex-1" }, children)
+    { className: "docs-layout flex flex-col min-h-screen w-full" },
+    React.createElement(
+      "div",
+      { className: "flex flex-1 items-start w-full" },
+      // Leftbar (desktop sidebar island)
+      React.createElement("aside", {
+        id: "sidebar-island",
+        className:
+          "sticky top-0 hidden h-screen w-[280px] shrink-0 flex-col lg:flex border-r border-base-200 bg-base-100",
+        "data-tocs": tocsJson,
+        "data-title": "",
+        "data-repo": repoUrl || "",
+      }),
+      // Main area
+      React.createElement(
+        "main",
+        { className: "flex-1 min-w-0 min-h-screen flex flex-col" },
+        // DocsNavbar (desktop only)
+        React.createElement(
+          "div",
+          { className: "hidden lg:flex items-center justify-end gap-6 h-14 px-8" },
+          React.createElement(
+            "nav",
+            { className: "flex items-center gap-6 text-sm font-medium text-base-content/80" },
+            ...(docuConfig.navbar?.menu || []).map((item: { title: string; href: string }) => {
+              const isExternal = /^https?:\/\//.test(item.href);
+              return React.createElement(
+                "a",
+                {
+                  key: item.title,
+                  href: item.href,
+                  className: "flex items-center gap-1 hover:text-base-content transition-colors",
+                  ...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {}),
+                },
+                item.title,
+                isExternal
+                  ? React.createElement(
+                      "svg",
+                      {
+                        xmlns: "http://www.w3.org/2000/svg",
+                        width: "14",
+                        height: "14",
+                        viewBox: "0 0 24 24",
+                        fill: "none",
+                        stroke: "currentColor",
+                        strokeWidth: "2",
+                        strokeLinecap: "round",
+                        strokeLinejoin: "round",
+                      },
+                      React.createElement("path", { d: "M7 7h10v10" }),
+                      React.createElement("path", { d: "M7 17 17 7" })
+                    )
+                  : null
+              );
+            })
+          )
+        ),
+        // Page content
+        React.createElement("div", { className: "flex-1 w-full" }, children)
+      )
+    )
   );
 }
 
@@ -114,22 +173,17 @@ async function getDocsForSlug(slug: string) {
     date?: string;
   }>(raw);
 
-  let mdxComponents = {};
-  try {
-    mdxComponents = createMdxComponents();
-  } catch {
-    /* skip */
-  }
-
+  const components = createMdxComponents();
   const { content } = await parseMdx(strippedContent, {
-    components: mdxComponents,
+    components,
     rehypePlugins: createDefaultRehypePlugins(),
     remarkPlugins: createDefaultRemarkPlugins(),
     parseFrontmatter: false,
   });
 
   const relPath = filePath.replace(resolve("./"), "");
-  return { content, frontmatter, tocs, filePath: relPath };
+  const date = frontmatter.date || (await getGitLastModified(relPath));
+  return { content, frontmatter: { ...frontmatter, date }, tocs, filePath: relPath };
 }
 
 async function handleDocsRoute(slug: string[]): Promise<Response> {
@@ -144,7 +198,7 @@ async function handleDocsRoute(slug: string[]): Promise<Response> {
 
     const page = React.createElement(
       DocsLayout,
-      null,
+      { repoUrl: docuConfig.repo?.url },
       React.createElement(DocsPage, {
         slug,
         title,
@@ -153,6 +207,7 @@ async function handleDocsRoute(slug: string[]): Promise<Response> {
         content: doc.content,
         tocs: doc.tocs,
         filePath: doc.filePath,
+        repoUrl: docuConfig.repo?.url,
       })
     );
 
@@ -172,7 +227,11 @@ function renderPage(
   status: number,
   props: Record<string, unknown> = {}
 ): Response {
-  const page = React.createElement(DocsLayout, null, React.createElement(Component, props));
+  const page = React.createElement(
+    DocsLayout,
+    { repoUrl: docuConfig.repo?.url },
+    React.createElement(Component, props)
+  );
   const body = renderToString(page);
   const html = htmlShell(title, description, body);
   return new Response(html, { status, headers: { "Content-Type": "text/html" } });
@@ -209,17 +268,28 @@ function getContentType(pathname: string): string {
 
 function serveStatic(pathname: string): Response | null {
   const assetPath = resolve(DIST_DIR, pathname.slice(1));
-  if (existsSync(assetPath)) {
-    return new Response(Bun.file(assetPath), {
-      headers: { "Content-Type": getContentType(pathname) },
-    });
-  }
-  if (pathname.startsWith("/docs/assets/")) {
-    const docsAsset = resolve(DOCS_DIR, "assets", pathname.replace("/docs/assets/", ""));
-    if (existsSync(docsAsset)) {
-      return new Response(Bun.file(docsAsset), {
+  try {
+    const s = statSync(assetPath);
+    if (s.isFile()) {
+      return new Response(Bun.file(assetPath), {
         headers: { "Content-Type": getContentType(pathname) },
       });
+    }
+  } catch {
+    /* not found */
+  }
+
+  if (pathname.startsWith("/docs/assets/")) {
+    const docsAsset = resolve(DOCS_DIR, "assets", pathname.replace("/docs/assets/", ""));
+    try {
+      const s = statSync(docsAsset);
+      if (s.isFile()) {
+        return new Response(Bun.file(docsAsset), {
+          headers: { "Content-Type": getContentType(pathname) },
+        });
+      }
+    } catch {
+      /* not found */
     }
   }
   return null;
@@ -252,7 +322,7 @@ const server = Bun.serve({
       });
     }
 
-    if (pathname.startsWith("/assets/") || pathname.includes(".")) {
+    if (pathname.startsWith("/assets/") || /\.\w+$/.test(pathname)) {
       const staticRes = serveStatic(pathname);
       if (staticRes) return staticRes;
     }
@@ -267,12 +337,7 @@ const server = Bun.serve({
         const slug = slugParam ? slugParam.split("/") : [];
 
         if (slug.length === 0) {
-          const firstRoute = docuConfig.routes?.[0];
-          const firstItem = firstRoute?.items?.[0];
-          const defaultSlug = firstItem
-            ? `${firstRoute.href}${firstItem.href}`.replace(/^\//, "")
-            : "getting-started/introduction";
-          return handleDocsRoute(defaultSlug.split("/"));
+          return handleIndex();
         }
 
         return handleDocsRoute(slug);

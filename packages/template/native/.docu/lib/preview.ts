@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 
 const DIST_DIR = resolve("./.docu/dist");
@@ -38,7 +38,11 @@ function resolveFile(pathname: string): string | null {
   }
 
   const exact = resolve(DIST_DIR, path);
-  if (existsSync(exact)) return exact;
+  try {
+    if (statSync(exact).isFile()) return exact;
+  } catch {
+    /* not found */
+  }
   return null;
 }
 

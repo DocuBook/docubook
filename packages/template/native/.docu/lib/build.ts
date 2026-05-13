@@ -12,15 +12,14 @@ import {
   createDefaultRemarkPlugins,
 } from "@docubook/core";
 import { createMdxComponents } from "@docubook/mdx-content";
+import { getGitLastModified } from "./utils";
 import docuConfig from "../../docu.json" with { type: "json" };
 import { generateSearchIndex } from "./search-indexer";
 import { buildClientBundle } from "./hydrate";
 import type { BuildCache, CliArgs } from "./types";
-
 import DocsPage from "../pages/docs/[[...slug]]";
 import NotFoundPage from "../pages/404";
 import IndexPage from "../pages/index";
-import { Navbar } from "../components/Navbar";
 
 const DOCS_DIR = resolve("./docs");
 const DIST_DIR = resolve("./.docu/dist");
@@ -70,7 +69,12 @@ async function findMdxFiles(dir: string, baseDir = ""): Promise<{ path: string; 
       } else if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
         if (entry.name === "index.mdx" && !baseDir) continue;
         const stats = await stat(fullPath);
-        files.push({ path: relativePath.replace(/\.(mdx|md)$/, ""), mtime: stats.mtimeMs });
+        let path = relativePath.replace(/\.(mdx|md)$/, "");
+
+        if (/\/index$/.test(path)) {
+          path = path.replace(/\/index$/, "");
+        }
+        files.push({ path, mtime: stats.mtimeMs });
       }
     }
   } catch {
@@ -85,6 +89,8 @@ function shouldRebuild(path: string, mtime: number, cache: BuildCache): boolean 
   return mtime > cached.builtAt;
 }
 
+let assetManifest = { js: "client.js", css: "client.css" };
+
 function htmlShell(title: string, description: string, body: string): string {
   const favicon = docuConfig.meta?.favicon || "/favicon.ico";
   return `<!DOCTYPE html>
@@ -95,25 +101,75 @@ function htmlShell(title: string, description: string, body: string): string {
   <title>${title}</title>
   <meta name="description" content="${description}">
   <link rel="icon" type="image/x-icon" href="${favicon}">
-  <link rel="stylesheet" href="/assets/client.css">
+  <link rel="stylesheet" href="/assets/${assetManifest.css}">
 </head>
 <body>
   <div id="root">${body}</div>
-  <script src="/assets/client.js"></script>
+  <script src="/assets/${assetManifest.js}"></script>
 </body>
 </html>`;
 }
 
-function DocsLayout({ children }: { children: React.ReactNode }) {
+function DocsLayout({ children, repoUrl }: { children?: React.ReactNode; repoUrl?: string }) {
   return React.createElement(
     "div",
-    { className: "flex min-h-screen flex-col" },
-    React.createElement(Navbar, {
-      logo: docuConfig.navbar?.logo,
-      logoText: docuConfig.navbar?.logoText,
-      menu: docuConfig.navbar?.menu || [],
-    }),
-    React.createElement("div", { className: "flex flex-1" }, children)
+    { className: "docs-layout flex flex-col min-h-screen w-full" },
+    React.createElement(
+      "div",
+      { className: "flex flex-1 items-start w-full" },
+      React.createElement("aside", {
+        id: "sidebar-island",
+        className:
+          "sticky top-0 hidden h-screen w-[280px] shrink-0 flex-col lg:flex border-r border-base-200 bg-base-100",
+        "data-tocs": "[]",
+        "data-title": "",
+        "data-repo": repoUrl || "",
+      }),
+      React.createElement(
+        "main",
+        { className: "flex-1 min-w-0 min-h-screen flex flex-col" },
+        React.createElement(
+          "div",
+          { className: "hidden lg:flex items-center justify-end gap-6 h-14 px-8" },
+          React.createElement(
+            "nav",
+            { className: "flex items-center gap-6 text-sm font-medium text-base-content/80" },
+            ...(docuConfig.navbar?.menu || []).map((item: { title: string; href: string }) => {
+              const isExternal = /^https?:\/\//.test(item.href);
+              return React.createElement(
+                "a",
+                {
+                  key: item.title,
+                  href: item.href,
+                  className: "flex items-center gap-1 hover:text-base-content transition-colors",
+                  ...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {}),
+                },
+                item.title,
+                isExternal
+                  ? React.createElement(
+                      "svg",
+                      {
+                        xmlns: "http://www.w3.org/2000/svg",
+                        width: "14",
+                        height: "14",
+                        viewBox: "0 0 24 24",
+                        fill: "none",
+                        stroke: "currentColor",
+                        strokeWidth: "2",
+                        strokeLinecap: "round",
+                        strokeLinejoin: "round",
+                      },
+                      React.createElement("path", { d: "M7 7h10v10" }),
+                      React.createElement("path", { d: "M7 17 17 7" })
+                    )
+                  : null
+              );
+            })
+          )
+        ),
+        React.createElement("div", { className: "flex-1 w-full" }, children)
+      )
+    )
   );
 }
 
@@ -125,35 +181,39 @@ async function renderDocsPage(slug: string, rawMdx: string, filePath: string): P
     date?: string;
   }>(rawMdx);
 
-  let mdxComponents = {};
+  const components = createMdxComponents();
+  let content;
   try {
-    mdxComponents = createMdxComponents();
-  } catch {
-    /* skip */
+    const result = await parseMdx(strippedContent, {
+      components,
+      rehypePlugins: createDefaultRehypePlugins(),
+      remarkPlugins: createDefaultRemarkPlugins(),
+      parseFrontmatter: false,
+    });
+    content = result.content;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown MDX error";
+    console.error(`\n\u274C MDX Error in: docs/${slug}.mdx\n${msg}\n`);
+    process.exit(1);
   }
-
-  const { content } = await parseMdx(strippedContent, {
-    components: mdxComponents,
-    rehypePlugins: createDefaultRehypePlugins(),
-    remarkPlugins: createDefaultRemarkPlugins(),
-    parseFrontmatter: false,
-  });
 
   const title = frontmatter.title || slug;
   const description = frontmatter.description || "";
+  const date = frontmatter.date || (await getGitLastModified(filePath));
   const slugParts = slug.split("/");
 
   const page = React.createElement(
     DocsLayout,
-    null,
+    { repoUrl: docuConfig.repo?.url },
     React.createElement(DocsPage, {
       slug: slugParts,
       title,
       description,
-      date: frontmatter.date,
+      date: date || undefined,
       content,
       tocs,
       filePath,
+      repoUrl: docuConfig.repo?.url,
     })
   );
 
@@ -199,6 +259,19 @@ async function build() {
   let built = 0;
   let skipped = 0;
 
+  assetManifest = await buildClientBundle();
+
+  const lastManifest = cache["__assets__"];
+  const assetsChanged =
+    !lastManifest || lastManifest.hash !== `${assetManifest.js}:${assetManifest.css}`;
+  if (assetsChanged) {
+    cache["__assets__"] = {
+      hash: `${assetManifest.js}:${assetManifest.css}`,
+      mtime: 0,
+      builtAt: Date.now(),
+    };
+  }
+
   for (const file of mdxFiles) {
     const mdxPath1 = join(DOCS_DIR, file.path, "index.mdx");
     const mdxPath2 = join(DOCS_DIR, `${file.path}.mdx`);
@@ -215,7 +288,7 @@ async function build() {
     }
     if (!rawMdx) continue;
 
-    let needRebuild = shouldRebuild(file.path, file.mtime, cache);
+    let needRebuild = assetsChanged || shouldRebuild(file.path, file.mtime, cache);
     if (!needRebuild) {
       const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
       if (!existsSync(outputPath)) needRebuild = true;
@@ -245,14 +318,15 @@ async function build() {
   await mkdir(join(DIST_DIR, "docs"), { recursive: true });
   await writeFile(join(DIST_DIR, "docs", "index.html"), indexHtml);
 
-  const notFoundPage = React.createElement(DocsLayout, null, React.createElement(NotFoundPage));
+  const notFoundPage = React.createElement(
+    DocsLayout,
+    { repoUrl: docuConfig.repo?.url },
+    React.createElement(NotFoundPage)
+  );
   const notFoundHtml = htmlShell("404 - Not Found", "", renderToString(notFoundPage));
   await writeFile(join(DIST_DIR, "404.html"), notFoundHtml);
 
   await writeCache(cache);
-
-  // Build client bundle (JS + CSS)
-  await buildClientBundle();
 
   const indexCount = await generateSearchIndex();
   console.log("\uD83D\uDD0D Indexed " + indexCount + " search records");
