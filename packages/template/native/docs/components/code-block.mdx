@@ -1,7 +1,6 @@
 ---
 title: Code Block
-description:
-  A component used to display code snippets with optional line numbering and line highlighting.
+description: A component used to display code snippets with optional line numbering and line highlighting.
 ---
 
 ## Preview
@@ -15,13 +14,11 @@ function isRocketAboutToCrash() {
 }
 ```
 
-In this example, line numbers are displayed for lines 3 and 4. You can specify which lines to
-highlight using the format `{3-4}`.
+In this example, line numbers are displayed for lines 3 and 4. You can specify which lines to highlight using the format `{3-4}`.
 
 ## Output Markdown
 
-You can directly use the following syntax to create a code block with line numbers and highlight
-specific lines:
+You can directly use the following syntax to create a code block with line numbers and highlight specific lines:
 
 ````plaintext
 ```javascript:main.js showLineNumbers {3-4}
@@ -36,8 +33,7 @@ function isRocketAboutToCrash() {
 
 ## Features
 
-- **Language Title**: You can use a title for each programming language to render an icon and
-  display a title bar. For example : `javascript:index.js`
+- **Language Title**: You can use a title for each programming language to render an icon and display a title bar. For example : `javascript:index.js`
 - **Line Numbers**: Enable line numbers by adding `showLineNumbers` after the opening backticks.
 - **Highlight Lines**: Specify lines to highlight using curly braces (e.g., `{3-4}`).
 - **Syntax Highlighting**: Use the appropriate language for syntax highlighting.
@@ -45,7 +41,7 @@ function isRocketAboutToCrash() {
 
 ## Language Support
 
-| **Language**         | **Title**                |
+|     **Language**     |        **Title**         |
 | -------------------- | ------------------------ |
 | **javascript**       | `javascript:index.js`    |
 | **typescript**       | `typescript:index.ts`    |

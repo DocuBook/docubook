@@ -4,3 +4,5 @@ dist
 out
 .turbo
 coverage
+*.md
+*.mdx

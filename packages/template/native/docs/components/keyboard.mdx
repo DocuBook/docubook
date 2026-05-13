@@ -3,8 +3,7 @@ title: Keyboard
 description: Display keyboard keys with platform-specific styling for Windows and macOS.
 ---
 
-The `Keyboard` component automatically renders platform-appropriate key symbols for macOS and
-Windows. It's perfect for documenting keyboard shortcuts in your application.
+The `Keyboard` component automatically renders platform-appropriate key symbols for macOS and Windows. It's perfect for documenting keyboard shortcuts in your application.
 
 ## Usage
 
@@ -13,11 +12,10 @@ Windows. It's perfect for documenting keyboard shortcuts in your application.
 Simply use the `Kbd` component with a `show` prop:
 
 ```tsx
-<Kbd show="cmd" type="mac" /> + <Kbd show="c" />;
+<Kbd show="cmd" type="mac" /> + <Kbd show="c" />
 ```
 
 Renders as:
-
 <Kbd show="cmd" type="mac" /> + <Kbd show="c" />
 
 ### Automatic Symbol Rendering
@@ -25,19 +23,14 @@ Renders as:
 The component automatically renders appropriate symbols based on the platform:
 
 ```tsx
-{
-  /* Windows style (default) */
-}
-<Kbd show="ctrl" /> + <Kbd show="v" />;
+{/* Windows style (default) */}
+<Kbd show="ctrl" /> + <Kbd show="v" />
 
-{
-  /* Mac style */
-}
-<Kbd show="cmd" type="mac" /> + <Kbd show="v" type="mac" />;
+{/* Mac style */}
+<Kbd show="cmd" type="mac" /> + <Kbd show="v" type="mac" />
 ```
 
 Renders as:
-
 - Windows: <Kbd show="ctrl" type="window" /> + <Kbd show="v" type="window" />
 - Mac: <Kbd show="cmd" type="mac" /> + <Kbd show="v" type="mac" />
 
@@ -61,7 +54,7 @@ Render as: <Kbd show="up" /> <Kbd show="down" /> <Kbd show="left" /> <Kbd show="
 
 ## Props
 
-| Prop   | Type   | Default    | Description                                   |                                  |
+|  Prop  |  Type  |  Default   |                  Description                  |                                  |
 | ------ | ------ | ---------- | --------------------------------------------- | -------------------------------- |
 | `show` | string | (required) | The key identifier (e.g., 'cmd', 'ctrl', 'a') |                                  |
 | `type` | string | `window`   | for device type `mac` or `window`             | Platform style or custom content |
@@ -70,7 +63,7 @@ Render as: <Kbd show="up" /> <Kbd show="down" /> <Kbd show="left" /> <Kbd show="
 
 The component includes special handling for common keys:
 
-| Key Name           | Windows         | macOS           |
+|      Key Name      |     Windows     |      macOS      |
 | ------------------ | --------------- | --------------- |
 | command/cmd        | `Win`           | `⌘`             |
 | option/alt         | `Alt`           | `⌥`             |

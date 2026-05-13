@@ -1,28 +1,22 @@
 ---
 title: Introduction
 description: This section provides an overview of DocuBook.
-date: 2026-05-01
 image: example-img.png
 ---
 
 ## Why DocuBook Exists
 
-For years, I worked on documentation projects where the biggest effort was not writing content, but
-getting the theme and styling right. Most of the time was eaten by configuring CMS plugins and
-tweaking layouts instead of focusing on the actual documentation.
+For years, I worked on documentation projects where the biggest effort was not writing content, but getting the theme and styling right. Most of the time was eaten by configuring CMS plugins and tweaking layouts instead of focusing on the actual documentation.
 
-That frustration inspired me to build a `docs framework` from the ground up in the React
-ecosystem—one that keeps the writing experience front and center. DocuBook is designed to let you
-focus on content while giving you a flexible, developer-friendly foundation that’s also open source.
+That frustration inspired me to build a `docs framework` from the ground up in the React ecosystem—one that keeps the writing experience front and center. DocuBook is designed to let you focus on content while giving you a flexible, developer-friendly foundation that’s also open source.
 
 ## Open Source Philosophy
 
-DocuBook is proudly **open-source**! 🎉 We believe in creating an accessible, collaborative platform
-that thrives on community contributions.
+DocuBook is proudly **open-source**! 🎉 We believe in creating an accessible, collaborative platform that thrives on community contributions.
 
 <Note title="Contribute">
-  Want to contribute? Visit our [GitHub repository](https://github.com/DocuBook/docubook). Feature
-  ideas, bug reports, and pull requests are welcome.
+  Want to contribute? Visit our [GitHub repository](https://github.com/DocuBook/docubook).
+  Feature ideas, bug reports, and pull requests are welcome.
 </Note>
 
 ## Project Overview
@@ -47,12 +41,11 @@ Core stack:
 
 ## MDX Processing Comparison (Before vs After Optimization)
 
-DocuBook separates metadata reads from full MDX compilation and reuses cached results within one
-request.
+DocuBook separates metadata reads from full MDX compilation and reuses cached results within one request.
 
 <Note title="Why this matters">
-  This reduces repeated file reads and repeated compilation, improving response time and lowering
-  CPU usage.
+  This reduces repeated file reads and repeated compilation,
+  improving response time and lowering CPU usage.
 </Note>
 
 <Accordions>
@@ -83,7 +76,6 @@ request.
         ↓
       parse headings
       ```
-
   </Accordion>
   <Accordion title="After Optimization" icon="Zap">
     The current flow avoids unnecessary compilation and duplicate reads:
@@ -114,13 +106,12 @@ request.
         ↓
       no extra file read
       ```
-
   </Accordion>
 </Accordions>
 
 ### Quick Metrics (Per Request)
 
-| Metric              | Before                  | After                      |
+|       Metric        |         Before          |           After            |
 | ------------------- | ----------------------- | -------------------------- |
 | MDX file reads      | 3x                      | 1x                         |
 | Frontmatter parsing | 2x                      | 1x                         |

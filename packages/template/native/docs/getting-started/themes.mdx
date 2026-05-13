@@ -1,14 +1,12 @@
 ---
-title: Theme Colors
-description: Color system used in DocuBook for styling UI elements
+title : Theme Colors
+description : Color system used in DocuBook for styling UI elements
 ---
 
-DocuBook comes with a carefully designed color system that ensures consistency and accessibility
-across your documentation. The theme includes both light and dark modes, automatically adapting to
-the user's system preferences.
+DocuBook comes with a carefully designed color system that ensures consistency and accessibility across your documentation. The theme includes both light and dark modes, automatically adapting to the user's system preferences.
 
-> You can override the default styles by adding your own CSS variables in the `globals.css` and
-> `overrides.css` files to apply your own theme.
+> You can override the default styles by adding your own CSS variables in 
+> the `globals.css` and `overrides.css` files to apply your own theme.
 
 ## Default Theme
 
@@ -48,16 +46,35 @@ the user's system preferences.
     --line-number-color: rgba(0, 0, 0, 0.05);
   }
 
-.dark { --background: 220 25% 10%; --foreground: 210 30% 96%; --card: 220 25% 15%;
---card-foreground: 210 30% 96%; --popover: 220 25% 15%; --popover-foreground: 210 30% 96%;
---primary: 210 100% 65%; --primary-foreground: 220 25% 10%; --secondary: 215 25% 20%;
---secondary-foreground: 210 30% 96%; --muted: 215 20% 25%; --muted-foreground: 215 20% 65%;
---accent: 200 100% 60%; --accent-foreground: 0 0% 100%; --destructive: 0 85% 70%;
---destructive-foreground: 0 0% 100%; --border: 215 20% 25%; --input: 215 20% 25%; --ring: 210 100%
-65%; --chart-1: 210 100% 65%; --chart-2: 200 100% 60%; --chart-3: 220 90% 70%; --chart-4: 190 100%
-65%; --chart-5: 230 90% 60%; --line-number-color: rgba(255, 255, 255, 0.1); } }
-
-````
+  .dark {
+    --background: 220 25% 10%;
+    --foreground: 210 30% 96%;
+    --card: 220 25% 15%;
+    --card-foreground: 210 30% 96%;
+    --popover: 220 25% 15%;
+    --popover-foreground: 210 30% 96%;
+    --primary: 210 100% 65%;
+    --primary-foreground: 220 25% 10%;
+    --secondary: 215 25% 20%;
+    --secondary-foreground: 210 30% 96%;
+    --muted: 215 20% 25%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 200 100% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 85% 70%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 215 20% 25%;
+    --input: 215 20% 25%;
+    --ring: 210 100% 65%;
+    --chart-1: 210 100% 65%;
+    --chart-2: 200 100% 60%;
+    --chart-3: 220 90% 70%;
+    --chart-4: 190 100% 65%;
+    --chart-5: 230 90% 60%;
+    --line-number-color: rgba(255, 255, 255, 0.1);
+  }
+}
+```
 </Tab>
 
   <Tab title="overrides.css">
@@ -152,8 +169,7 @@ the user's system preferences.
   color: #9ca3af;
   /* Lighter gray for dark mode */
 }
-````
-
+```
 </Tab>
 </Tabs>
 
@@ -222,10 +238,8 @@ the user's system preferences.
         --chart-5: 85 90% 35%;
         --line-number-color: rgba(255, 255, 255, 0.1);
     }
-
 }
-
-````
+```
 </Tab>
 
   <Tab title="overrides.css">
@@ -304,8 +318,7 @@ the user's system preferences.
 .dark .punctuation {
   color: hsl(85 20% 70%); /* Light gray-green */
 }
-````
-
+```
 </Tab>
 </Tabs>
 
@@ -374,10 +387,8 @@ the user's system preferences.
         --chart-5: 35 40% 48%;
         --line-number-color: rgba(255, 255, 255, 0.12);
     }
-
 }
-
-````
+```
 </Tab>
 
   <Tab title="overrides.css">
@@ -459,22 +470,19 @@ the user's system preferences.
   color: hsl(30 15% 70%); /* Light brown-gray */
   opacity: 0.9;
 }
-````
-
+```
 </Tab>
 </Tabs>
 
 ## Llms
 
-This document explains how to create and implement custom color themes using AI with LLMS context.
-The context includes a consistent color palette for both light and dark modes, along with syntax
-highlighting colors for code.
+This document explains how to create and implement custom color themes using AI with LLMS context. The context includes a consistent color palette for both light and dark modes, along with syntax highlighting colors for code.
 
 <Files>
-  <Folder name="styles">
-    <File name="globals.css" />
-    <File name="overrides.css" />
-  </Folder>
+   <Folder name="styles">
+     <File name="globals.css" />
+     <File name="overrides.css" />
+   </Folder>
 </Files>
 
 ### Generate New Theme
@@ -500,12 +508,10 @@ highlighting colors for code.
     4. Keep the same structure as the provided context
     ```
     > changes the value of Hex color `#2281E3` into your brand colors.
-
   </Step>
 </Steps>
 
 ### Implementation
-
 After receiving the new color palette:
 
 1. Copy the generated CSS code to your theme file
@@ -514,30 +520,26 @@ After receiving the new color palette:
 4. Test the theme across different devices and display modes
 
 ### Example Implementation
-
 ```css
 :root {
-  --primary: 210 81% 56%; /* Primary color */
-  --secondary: 210 30% 90%; /* Secondary color */
+  --primary: 210 81% 56%;  /* Primary color */
+  --secondary: 210 30% 90%;  /* Secondary color */
   /* ... and so on */
 }
 
 .dark {
-  --primary: 210 100% 65%; /* Dark mode primary color */
+  --primary: 210 100% 65%;  /* Dark mode primary color */
   /* ... and so on */
 }
 ```
 
 ### Tips and Recommendations
-
 - Always test color contrast to ensure accessibility
 - Maintain consistency with existing themes
-- Use tools like [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) to verify
-  contrast ratios
+- Use tools like [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) to verify contrast ratios
 - Keep backups of previous theme versions before making major changes
 
 ### Troubleshooting
-
 - If colors don't change, ensure CSS variables are properly imported
 - Check CSS selector specificity if styles conflict
 - Verify dark/light mode toggling is working correctly
