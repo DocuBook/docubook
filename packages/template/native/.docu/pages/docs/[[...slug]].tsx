@@ -1,12 +1,9 @@
 import type { ReactNode } from "react";
 import DocsBreadcrumb from "../../components/Breadcrumb";
 import Pagination from "../../components/Pagination";
-import Toc from "../../components/Toc";
-import Sidebar from "../../components/Sidebar";
 import { Typography } from "../../components/Typography";
 import EditWith from "../../components/EditWith";
 import { formatDate2 } from "../../lib/utils";
-import { getRepoUrl } from "../../lib/helpers";
 import type { TocItem } from "../../lib/types";
 
 interface DocsPageProps {
@@ -17,6 +14,7 @@ interface DocsPageProps {
   content: ReactNode;
   tocs: TocItem[];
   filePath: string;
+  repoUrl?: string;
 }
 
 export default function DocsPage({
@@ -27,36 +25,52 @@ export default function DocsPage({
   content,
   tocs,
   filePath,
+  repoUrl,
 }: DocsPageProps) {
   const pathname = slug.join("/");
-  const repoUrl = getRepoUrl();
+  const tocsJson = JSON.stringify(tocs);
 
   return (
-    <div className="flex min-h-screen w-full">
-      <Sidebar tocs={tocs} title={title} repoUrl={repoUrl} />
+    <div className="flex w-full flex-1 px-0 pb-4 lg:h-[calc(100vh-4rem)] lg:px-8 lg:pb-8">
+      <div
+        id="scroll-container"
+        className="max-lg:scroll-p-54 bg-base-100 border-base-300 relative flex w-full flex-col items-start rounded-b-3xl border shadow-md lg:h-full lg:flex-row lg:overflow-y-auto lg:rounded-xl"
+      >
+        <div className="w-full min-w-0 flex-[7] px-4 py-4 lg:px-8 lg:py-8">
+          {/* Mobile bar - island */}
+          <div
+            id="mobile-bar-island"
+            className="lg:hidden"
+            data-tocs={tocsJson}
+            data-title={title}
+            data-repo={repoUrl || ""}
+          />
 
-      <div className="flex min-w-0 flex-1 flex-col lg:flex-row">
-        <div className="min-w-0 flex-1 px-4 py-4 lg:px-8 lg:py-8">
           <DocsBreadcrumb paths={slug} />
           <Typography>
-            <h1>{title}</h1>
-            {description && <p className="text-base-content/60 -mt-4 text-base">{description}</p>}
+            <h1 className="-mt-0.5 text-3xl">{title}</h1>
+            {description && (
+              <p className="text-muted-foreground -mt-4 text-[16.5px]">{description}</p>
+            )}
             <div>{content}</div>
-            <div className="border-base-300 my-8 flex items-center justify-between border-b border-dashed pb-4">
-              <EditWith filePath={filePath} />
+            <div className="border-base-300 my-8 flex items-center border-b-2 border-dashed">
+              <EditWith className="text-muted-foreground" filePath={filePath} />
               {date && (
-                <p className="text-base-content/50 text-xs">Last updated {formatDate2(date)}</p>
+                <p className="text-muted-foreground ml-auto text-[13px]">
+                  Last updated {formatDate2(date)}
+                </p>
               )}
             </div>
             <Pagination pathname={pathname} />
           </Typography>
         </div>
 
-        <div className="hidden xl:block xl:w-56 xl:shrink-0 xl:py-8 xl:pr-4">
-          <div className="sticky top-20">
-            <Toc tocs={tocs} />
-          </div>
-        </div>
+        {/* Desktop TOC - island */}
+        <div
+          id="toc-island"
+          data-tocs={tocsJson}
+          className="sticky top-4 hidden h-[calc(100vh-8rem)] min-w-[240px] flex-[3] self-start lg:flex lg:px-4 lg:py-6"
+        />
       </div>
     </div>
   );

@@ -33,7 +33,6 @@
     "bun-plugin-tailwind": "^0.1.2",
     "daisyui": "^5.5.19",
     "lucide-react": "^1.14.0",
-    "next-mdx-remote": "^6.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

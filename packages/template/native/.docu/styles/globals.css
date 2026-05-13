@@ -1,5 +1,10 @@
 @import "daisyui/daisyui.css";
 @import "tailwindcss";
+
+@plugin "@tailwindcss/typography";
+@source "../../.docu/components";
+@source "../../.docu/pages";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme {
@@ -119,6 +124,54 @@
   }
 }
 
+/* Code block utilities */
+@layer utilities {
+  .prose {
+    margin: 0 !important;
+  }
+
+  pre {
+    padding: 2px 0 !important;
+    width: inherit !important;
+    overflow-x: auto;
+  }
+
+  pre > code {
+    display: grid;
+    max-width: inherit !important;
+    padding: 14px 0 !important;
+    border: 0 !important;
+  }
+
+  .code-line {
+    padding: 0.75px 16px;
+    @apply border-l-2 border-transparent;
+  }
+
+  .line-number::before {
+    display: inline-block;
+    width: 1rem;
+    margin-right: 22px;
+    margin-left: -2px;
+    color: rgb(110, 110, 110);
+    content: attr(line);
+    font-size: 13.5px;
+    text-align: right;
+  }
+
+  .highlight-line {
+    @apply bg-primary/5 border-primary/30 border-l-2;
+  }
+
+  .rehype-code-title {
+    @apply -mb-8 mt-5 w-full px-2 pb-5 text-sm font-medium;
+  }
+
+  .highlight-comp > code {
+    background-color: transparent !important;
+  }
+}
+
 /* Custom components */
 .docs-layout {
   display: flex;
@@ -160,4 +213,80 @@
   justify-content: center;
   min-height: 100vh;
   text-align: center;
+}
+
+/* Modern Blue Theme */
+/* Light Mode */
+.keyword {
+  color: #1d4ed8;
+}
+
+.function {
+  color: #0369a1;
+}
+
+.punctuation {
+  color: #4b5563;
+}
+
+.comment {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.string,
+.constant,
+.annotation,
+.boolean,
+.number {
+  color: #0d9488;
+}
+
+.tag {
+  color: #1d4ed8;
+}
+
+.attr-name {
+  color: #0284c7;
+}
+
+.attr-value {
+  color: #2563eb;
+}
+
+/* Dark Mode */
+.dark .keyword {
+  color: #60a5fa;
+}
+
+.dark .function {
+  color: #38bdf8;
+}
+
+.dark .string,
+.dark .constant,
+.dark .annotation,
+.dark .boolean,
+.dark .number {
+  color: #2dd4bf;
+}
+
+.dark .tag {
+  color: #60a5fa;
+}
+
+.dark .attr-name {
+  color: #7dd3fc;
+}
+
+.dark .attr-value {
+  color: #3b82f6;
+}
+
+.dark .comment {
+  color: #9ca3af;
+}
+
+.dark .punctuation {
+  color: #9ca3af;
 }
