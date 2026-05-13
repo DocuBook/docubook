@@ -16,6 +16,7 @@ import { getGitLastModified } from "./utils";
 import docuConfig from "../../docu.json" with { type: "json" };
 import { generateSearchIndex } from "./search-indexer";
 import { buildClientBundle } from "./hydrate";
+import { logger } from "./logger";
 import type { BuildCache, CliArgs } from "./types";
 import DocsPage from "../pages/docs/[[...slug]]";
 import NotFoundPage from "../pages/404";
@@ -238,7 +239,8 @@ async function copyDirectoryRecursive(src: string, dest: string): Promise<void> 
 
 async function build() {
   const args = parseArgs();
-  const startTime = Date.now();
+
+  logger.buildStart();
 
   if (args.clean) {
     const { rm } = await import("node:fs/promises");
@@ -259,7 +261,10 @@ async function build() {
   let built = 0;
   let skipped = 0;
 
+  logger.bundleStart();
+  let t = performance.now();
   assetManifest = await buildClientBundle();
+  logger.bundleDone(Math.round(performance.now() - t));
 
   const lastManifest = cache["__assets__"];
   const assetsChanged =
@@ -271,6 +276,9 @@ async function build() {
       builtAt: Date.now(),
     };
   }
+
+  logger.spinner.start("Building pages...");
+  t = performance.now();
 
   for (const file of mdxFiles) {
     const mdxPath1 = join(DOCS_DIR, file.path, "index.mdx");
@@ -328,11 +336,17 @@ async function build() {
 
   await writeCache(cache);
 
-  const indexCount = await generateSearchIndex();
-  console.log("\uD83D\uDD0D Indexed " + indexCount + " search records");
+  logger.spinner.stop(
+    `Built ${built} pages (${skipped} cached) \x1b[90m(${Math.round(performance.now() - t)}ms)\x1b[0m`
+  );
 
-  const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
-  console.log("\u2728 Built " + built + " pages (" + skipped + " cached) in " + elapsed + "s");
+  logger.indexStart();
+  t = performance.now();
+  const indexCount = await generateSearchIndex();
+  logger.indexDone(indexCount, Math.round(performance.now() - t));
+
+  logger.routes();
+  console.log("");
 }
 
 build().catch((err) => {

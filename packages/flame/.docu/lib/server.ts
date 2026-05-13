@@ -20,13 +20,25 @@ import ErrorPage from "../pages/Error";
 import IndexPage from "../pages/index";
 import { buildClientBundle } from "./hydrate";
 import { generateSearchIndex } from "./search-indexer";
+import { logger } from "./logger";
 
 const DOCS_DIR = resolve("./docs");
 const DIST_DIR = resolve("./.docu/dist");
 const PORT = process.env.PORT || "3000";
 
+logger.buildStart();
+
+logger.bundleStart();
+let t = performance.now();
 const assetManifest = await buildClientBundle();
-await generateSearchIndex();
+logger.bundleDone(Math.round(performance.now() - t));
+
+logger.indexStart();
+t = performance.now();
+const records = await generateSearchIndex();
+logger.indexDone(records, Math.round(performance.now() - t));
+
+logger.routes();
 
 const router = new Bun.FileSystemRouter({
   style: "nextjs",
@@ -182,7 +194,7 @@ async function getDocsForSlug(slug: string) {
   });
 
   const relPath = filePath.replace(resolve("./"), "");
-  const date = frontmatter.date || (await getGitLastModified(relPath));
+  const date = frontmatter.date || (await getGitLastModified(relPath)) || undefined;
   return { content, frontmatter: { ...frontmatter, date }, tocs, filePath: relPath };
 }
 
@@ -356,5 +368,4 @@ const server = Bun.serve({
   },
 });
 
-console.log(`\u279C  DocuBook Dev:   http://localhost:${server.port}/docs/`);
-console.log("  HMR enabled \u2014 watching docs/ for changes\n");
+logger.ready(server.port!, true);

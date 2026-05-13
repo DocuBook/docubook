@@ -1,12 +1,16 @@
 import { existsSync, statSync } from "node:fs";
 import { resolve } from "node:path";
+import { logger } from "./logger";
 
 const DIST_DIR = resolve("./.docu/dist");
 const PORT = process.env.PORT || "4173";
 
+logger.buildStart();
+
 if (!existsSync(DIST_DIR)) {
-  console.error("Error: dist not found. Run `bun build` first.");
-  process.exit(1);
+  logger.spinner.start("Checking build output...");
+  logger.spinner.info("dist not found. Run \x1b[1mbun run build\x1b[0m first.");
+  process.exit(0);
 }
 
 function getContentType(pathname: string): string {
@@ -75,5 +79,5 @@ const server = Bun.serve({
   },
 });
 
-console.log(`\u279C  DocuBook Preview: http://localhost:${server.port}/docs/`);
-console.log("  Serving static files from .docu/dist/\n");
+logger.routes();
+logger.ready(server.port!);
