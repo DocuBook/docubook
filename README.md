@@ -1,17 +1,36 @@
-# DocuBook
+<p align="center">
+  <img
+    src="https://github.com/DocuBook/docubook/blob/main/apps/web/public/images/docu.svg"
+    alt="DocuBook Logo"
+    width="100"
+    height="100"
+  />
+</p>
+<h1 align="center" style="font-size: 32px;">
+  DocuBook
+</h1>
+<h3 align="center" style="font-size: 20px;">
+  An open-source alternative to Mintlify or GitBook. Just write in MDX — it works with pretty much any React framework.
+</h3>
 
-**DocuBook** is a documentation web project designed to provide a simple and user-friendly interface
-for accessing various types of documentation. This site is crafted for developers and teams who need
-quick access to references, guides, and essential documents.
+---
+
+> **DocuBook** is a documentation web project designed to provide a simple and user-friendly interface
+> for accessing various types of documentation. This site is crafted for developers and teams who need
+> quick access to references, guides, and essential documents.
 
 ## Features
 
-- **Easy Navigation**: Simple layout for quick navigation between pages.
-- **Quick Search**: Easily find documentation using a search function.
-- **Responsive Theme**: Responsive design optimized for devices ranging from desktops to mobile.
-- **Markdown Content**: Support for markdown-based documents.
-- **SEO Friendly**: Optimized structure for search visibility, enhancing accessibility on search
-  engines.
+- **@docubook/core** : Shared MDX compile pipeline and markdown utilities.
+- **@docubook/mdx-content** : Portable MDX components and framework adapters.
+- **@docubook/cli** : CLI tool that helps you initialize, update, and deploy documentation directly from your terminal.
+- **starter template** : ready-to-use templates with a choice of modern frameworks for the react ecosystem.
+  
+  - **@docubook/flame** : A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.
+  - **nextjs-vercel** : This template is optimized for deployment on Vercel (the default hosting target).
+  - **nextjs-docker** : This template includes an opinionated Docker setup optimized for building a small, production-ready Next.js standalone image using multi-stage
+    builds and an Alpine base.
+  - **react-router** : a minimal documentation template with spa (comingsoon)
 
 ## Installation
 
@@ -27,6 +46,8 @@ npx @docubook/cli@latest
 
 <!-- prettier-ignore -->
 > [!NOTE]
+> We are very open to all your contributions, no matter how small your contribution is, it will certainly be part of the development of this project.
+> 
 > Please read: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Workspace
