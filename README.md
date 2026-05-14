@@ -30,7 +30,7 @@
   - **nextjs-vercel** : This template is optimized for deployment on Vercel (the default hosting target).
   - **nextjs-docker** : This template includes an opinionated Docker setup optimized for building a small, production-ready Next.js standalone image using multi-stage
     builds and an Alpine base.
-  - **react-router** : a minimal documentation template with spa (comingsoon)
+  - **react-router** : a minimal documentation template with SSR + Hydration (comingsoon)
 
 ## Installation
 
