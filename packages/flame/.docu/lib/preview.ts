@@ -79,5 +79,4 @@ const server = Bun.serve({
   },
 });
 
-logger.routes();
 logger.ready(server.port!);

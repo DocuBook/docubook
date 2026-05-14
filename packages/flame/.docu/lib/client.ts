@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import React from "react";
 import Sidebar from "../components/Sidebar";
 import Toc from "../components/Toc";
+import { ThemeToggle } from "../components/Theme";
 import type { TocItem } from "./types";
 
 function mountIslands() {
@@ -17,6 +18,11 @@ function mountIslands() {
   if (tocEl) {
     const tocs: TocItem[] = JSON.parse(tocEl.dataset.tocs || "[]");
     createRoot(tocEl).render(React.createElement(Toc, { tocs }));
+  }
+
+  const themeEl = document.getElementById("theme-island");
+  if (themeEl) {
+    createRoot(themeEl).render(React.createElement(ThemeToggle));
   }
 
   hydrateMdxComponents();

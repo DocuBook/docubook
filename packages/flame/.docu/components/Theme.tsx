@@ -12,7 +12,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
     <ThemeControllerToggle lightTheme="light" darkTheme="dark">
       {({ isDark, toggle }) => (
         <div
-          className={`border-base-content/20 bg-base-100/50 flex items-center gap-1 rounded-full border p-0.5 transition-all ${className || ""}`}
+          className={`border-base-600 dark:border-base-content/20 bg-base-100/50 flex items-center gap-1 rounded-full border p-0.5 transition-all ${className || ""}`}
         >
           <button
             type="button"
@@ -20,11 +20,11 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
             aria-label="Light mode"
             aria-checked={!isDark}
             onClick={() => toggle(false)}
-            className="hover:bg-base-content/10 cursor-pointer rounded-full p-0.5 transition-all"
+            className="bg-primary cursor-pointer rounded-full p-0.5 transition-all dark:bg-transparent"
           >
             <Sun
               className={`h-4 w-4 transition-colors ${
-                !isDark ? "text-primary" : "text-base-content/60"
+                !isDark ? "text-base-300" : "text-foreground"
               }`}
             />
           </button>
@@ -34,11 +34,11 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
             aria-label="Dark mode"
             aria-checked={isDark}
             onClick={() => toggle(true)}
-            className="hover:bg-base-content/10 cursor-pointer rounded-full p-0.5 transition-all"
+            className="dark:bg-primary cursor-pointer rounded-full p-0.5 transition-all"
           >
             <Moon
               className={`h-4 w-4 transition-colors ${
-                isDark ? "text-primary" : "text-base-content/60"
+                isDark ? "text-foreground" : "text-base-content/60"
               }`}
             />
           </button>

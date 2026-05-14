@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "../../lib/utils";
 
 export type ThemeName =
@@ -56,15 +56,12 @@ export function useTheme() {
     return (localStorage.getItem("theme") as ThemeName) || "light";
   });
 
-  useEffect(() => {
-    applyTheme(theme);
-  }, []);
+  useApplyThemeOnMount(theme);
 
   const setTheme = (newTheme: ThemeName) => {
     setThemeState(newTheme);
     applyTheme(newTheme);
     localStorage.setItem("theme", newTheme);
-    document.documentElement.setAttribute("data-theme", newTheme);
   };
 
   return { theme, setTheme };
@@ -72,8 +69,18 @@ export function useTheme() {
 
 function applyTheme(theme: ThemeName) {
   if (typeof document !== "undefined") {
-    document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.classList.toggle("dark", theme === "dark");
   }
+}
+
+function useApplyThemeOnMount(theme: ThemeName) {
+  const applied = useRef(false);
+  useEffect(() => {
+    if (!applied.current) {
+      applyTheme(theme);
+      applied.current = true;
+    }
+  }, [theme]);
 }
 
 interface ThemeControllerToggleProps {
@@ -107,9 +114,7 @@ function ThemeControllerToggle({
     return (stored || defaultTheme) === darkTheme;
   });
 
-  useEffect(() => {
-    applyTheme(checked ? darkTheme : lightTheme);
-  }, []);
+  useApplyThemeOnMount(checked ? darkTheme : lightTheme);
 
   const handleChange = (newChecked: boolean) => {
     const newTheme = newChecked ? darkTheme : lightTheme;
@@ -168,9 +173,7 @@ function ThemeControllerSelect({
 }: ThemeControllerSelectProps) {
   const [internalValue, setInternalValue] = useState<ThemeName>(defaultValue as ThemeName);
   const currentValue = controlled ? (value ?? internalValue) : internalValue;
-  useEffect(() => {
-    applyTheme(currentValue as ThemeName);
-  }, []);
+  useApplyThemeOnMount(currentValue as ThemeName);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newTheme = e.target.value as ThemeName;
@@ -224,9 +227,7 @@ function ThemeControllerRadio({
 }: ThemeControllerRadioProps) {
   const [internalValue, setInternalValue] = useState<ThemeName>(defaultValue as ThemeName);
   const currentValue = controlled ? (value ?? internalValue) : internalValue;
-  useEffect(() => {
-    applyTheme(currentValue as ThemeName);
-  }, []);
+  useApplyThemeOnMount(currentValue as ThemeName);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTheme = e.target.value as ThemeName;
@@ -301,9 +302,7 @@ export function ThemeController({
 }: ThemeControllerProps) {
   const [internalValue, setInternalValue] = useState<ThemeName>(defaultValue as ThemeName);
   const currentValue = controlled ? (value ?? internalValue) : internalValue;
-  useEffect(() => {
-    applyTheme(currentValue as ThemeName);
-  }, []);
+  useApplyThemeOnMount(currentValue as ThemeName);
 
   const handleChange = (newTheme: ThemeName) => {
     if (!controlled) {

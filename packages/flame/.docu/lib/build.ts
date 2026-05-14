@@ -95,7 +95,7 @@ let assetManifest = { js: "client.js", css: "client.css" };
 function htmlShell(title: string, description: string, body: string): string {
   const favicon = docuConfig.meta?.favicon || "/favicon.ico";
   return `<!DOCTYPE html>
-<html data-theme="light" lang="en">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -103,6 +103,7 @@ function htmlShell(title: string, description: string, body: string): string {
   <meta name="description" content="${description}">
   <link rel="icon" type="image/x-icon" href="${favicon}">
   <link rel="stylesheet" href="/assets/${assetManifest.css}">
+  <script>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>
 </head>
 <body>
   <div id="root">${body}</div>
