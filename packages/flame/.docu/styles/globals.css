@@ -151,6 +151,10 @@
     @apply border-l-2 border-transparent;
   }
 
+  .token.list {
+    display: inline;
+  }
+
   .line-number::before {
     display: inline-block;
     width: 1rem;

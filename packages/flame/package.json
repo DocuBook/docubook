@@ -1,6 +1,6 @@
 {
   "name": "@docubook/flame",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.",
   "type": "module",
   "scripts": {
@@ -29,7 +29,7 @@
   "license": "MIT",
   "dependencies": {
     "@docubook/core": "^1.6.1",
-    "@docubook/mdx-content": "^3.0.0",
+    "@docubook/mdx-content": "^3.0.1",
     "@tailwindcss/typography": "0.5.16",
     "bun-plugin-tailwind": "^0.1.2",
     "daisyui": "^5.5.19",

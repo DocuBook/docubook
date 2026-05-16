@@ -84,13 +84,13 @@ function getIcon(name: string) {
   return iconMap[key] || null;
 }
 
-export default function Social({ className = "", size = 20 }: SocialProps) {
+export default function Social({ className = "", size = 16 }: SocialProps) {
   const socialLinks = getSocialLinks();
 
   if (!socialLinks?.length) return null;
 
   return (
-    <div className={`flex gap-3 ${className}`}>
+    <div className={`flex gap-1 ${className}`}>
       {socialLinks.map((link) => {
         const Icon = getIcon(link.name);
         return (
@@ -100,7 +100,7 @@ export default function Social({ className = "", size = 20 }: SocialProps) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={link.name}
-            className="btn btn-circle btn-ghost"
+            className="btn-xs btn-circle btn-ghost text-muted-foreground"
           >
             {Icon && <Icon size={size} />}
           </a>

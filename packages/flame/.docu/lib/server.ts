@@ -122,12 +122,13 @@ function DocsLayout({ children, repoUrl }: { children?: React.ReactNode; repoUrl
             { className: "flex items-center gap-6 text-sm font-medium text-base-content/80" },
             ...(docuConfig.navbar?.menu || []).map((item: { title: string; href: string }) => {
               const isExternal = /^https?:\/\//.test(item.href);
+              const isDocsActive = item.href === "/docs";
               return React.createElement(
                 "a",
                 {
                   key: item.title,
                   href: item.href,
-                  className: "flex items-center gap-1 hover:text-base-content transition-colors",
+                  className: `flex items-center gap-1 hover:text-base-content transition-colors${isDocsActive ? " text-primary font-semibold" : ""}`,
                   ...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {}),
                 },
                 item.title,

@@ -1,16 +1,16 @@
 <p align="center">
   <img
-    src="https://github.com/DocuBook/docubook/blob/main/apps/web/public/images/docu.svg"
+    src="../../apps/web/public/images/docu.svg"
     alt="DocuBook Logo"
-    width="80"
-    height="80"
+    width="60"
+    height="60"
   />
-  <span style="padding: 0 12px;">+</span>
+  <span style="font-size:40px">+</span>
   <img
-    src="https://github.com/DocuBook/docubook/blob/main/apps/web/public/images/bun.svg"
+    src="../../apps/web/public/images/bun.svg"
     alt="Bun Logo"
-    width="80"
-    height="80"
+    width="60"
+    height="60"
   />
 </p>
 

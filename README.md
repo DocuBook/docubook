@@ -1,6 +1,6 @@
 <p align="center">
   <img
-    src="https://github.com/DocuBook/docubook/blob/main/apps/web/public/images/docu.svg"
+    src="apps/web/public/images/docu.svg"
     alt="DocuBook Logo"
     width="100"
     height="100"

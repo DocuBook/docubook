@@ -68,7 +68,7 @@ export default function Sublink({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex w-full cursor-pointer items-center justify-between py-1.5 text-left text-sm transition-colors",
+          "flex w-full cursor-pointer items-center justify-between py-1 text-left text-sm transition-colors",
           noLink
             ? "text-base-content font-semibold"
             : "text-base-content/80 hover:text-base-content font-medium"

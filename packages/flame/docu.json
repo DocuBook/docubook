@@ -30,8 +30,12 @@
   "footer": {
     "social": [
       {
-        "name": "gitHub",
-        "url": "https://github.com/DocuBook/docubook"
+        "name": "facebook",
+        "url": "https://www.facebook.com/wildan.nrsh"
+      },
+      {
+        "name": "instagram",
+        "url": "https://www.instagram.com/wildan.nrs/"
       },
       {
         "name": "npm",
@@ -40,6 +44,14 @@
       {
         "name": "youtube",
         "url": "https://youtube.com/@wildandotdev"
+      },
+      {
+        "name": "x",
+        "url": "https://x.com/wildan_nrss"
+      },
+      {
+        "name": "threads",
+        "url": "https://www.threads.com/@wildan.nrs"
       }
     ]
   },

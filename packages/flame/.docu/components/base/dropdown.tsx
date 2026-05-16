@@ -40,7 +40,7 @@ export const Dropdown = forwardRef<HTMLDetailsElement, DropdownProps>(
         </summary>
         <ul
           className={cn(
-            "bg-base-100 rounded-box border-base-300 absolute z-50 mt-1 w-full min-w-[200px] border p-2 shadow-lg",
+            "bg-base-100 rounded-box border-base-300 absolute z-50 mt-1 w-full min-w-[200px] space-y-1 border p-2 shadow-lg",
             align === "end" ? "right-0" : "left-0"
           )}
         >

@@ -70,7 +70,11 @@ export function NavMenu({ items, activePath }: NavMenuProps) {
   return (
     <ul className="nav-menu">
       {items.map((item) => {
-        const isActive = activePath && item.href.includes(activePath);
+        const isActive = activePath
+          ? item.href === "/"
+            ? activePath === "/"
+            : activePath === item.href || activePath.startsWith(item.href + "/")
+          : false;
         return (
           <li key={item.title + item.href}>
             <a

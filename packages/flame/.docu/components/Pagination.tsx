@@ -17,8 +17,8 @@ export default function Pagination({ pathname, className }: PaginationProps) {
 
   return (
     <PaginationDocs
-      prev={prev ? { href: prev.href, title: prev.title } : undefined}
-      next={next ? { href: next.href, title: next.title } : undefined}
+      prev={prev ? { href: `/docs${prev.href}`, title: prev.title } : undefined}
+      next={next ? { href: `/docs${next.href}`, title: next.title } : undefined}
       className={className}
     />
   );
