@@ -5,6 +5,7 @@ import { Typography } from "../../components/Typography";
 import EditWith from "../../components/EditWith";
 import { formatDate2 } from "../../lib/utils";
 import type { TocItem } from "../../lib/types";
+import { Footer } from "@/.docu/components/Footer";
 
 interface DocsPageProps {
   slug: string[];
@@ -36,16 +37,16 @@ export default function DocsPage({
         id="scroll-container"
         className="bg-base-100 border-base-300 relative flex w-full flex-col items-start rounded-b-3xl border shadow-md max-lg:scroll-p-54 lg:h-full lg:flex-row lg:overflow-y-auto lg:rounded-xl"
       >
-        <div className="w-full min-w-0 flex-[7] px-4 py-4 lg:px-8 lg:py-8">
-          {/* Mobile bar - island */}
-          <div
-            id="mobile-bar-island"
-            className="lg:hidden"
-            data-tocs={tocsJson}
-            data-title={title}
-            data-repo={repoUrl || ""}
-          />
+        {/* Mobile bar - island */}
+        <div
+          id="mobile-bar-island"
+          className="sticky top-0 z-50 w-full lg:hidden"
+          data-tocs={tocsJson}
+          data-title={title}
+          data-repo={repoUrl || ""}
+        />
 
+        <div className="w-full min-w-0 flex-[7] px-4 py-4 lg:px-8 lg:py-8">
           <DocsBreadcrumb paths={slug} />
           <Typography>
             <h1 className="-mt-0.5 text-3xl">{title}</h1>
@@ -62,6 +63,7 @@ export default function DocsPage({
               )}
             </div>
             <Pagination pathname={pathname} />
+            <Footer />
           </Typography>
         </div>
 

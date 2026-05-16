@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { ChevronDown, ChevronUp, PanelRight, PanelRightClose, FileText } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  EllipsisVertical,
+  PanelRight,
+  PanelRightClose,
+  FileText,
+} from "lucide-react";
+import { Dropdown, DropdownLink } from "./base/dropdown";
 import { cn } from "../lib/utils";
 import { Context } from "./Context";
 import Menu from "./Menu";
@@ -32,7 +40,7 @@ function DesktopSidebar({ className, repoUrl }: { className?: string; repoUrl?: 
     <div className={cn("flex h-full flex-col", className)}>
       {/* Logo */}
       <div className="flex h-14 shrink-0 items-center px-5">
-        <a href="/docs" className="flex items-center gap-2">
+        <a href="/" className="flex items-center gap-2">
           {docuConfig.navbar?.logo?.src && (
             <img
               src={docuConfig.navbar.logo.src}
@@ -66,7 +74,7 @@ function DesktopSidebar({ className, repoUrl }: { className?: string; repoUrl?: 
   );
 }
 
-function MobileBar({
+export function MobileBar({
   tocs,
   title,
   repoUrl,
@@ -112,9 +120,24 @@ function MobileBar({
   const toggleToc = useCallback(() => setTocExpanded((p) => !p), []);
 
   return (
-    <div ref={barRef} className="sticky top-0 z-50 lg:hidden">
-      <div className="border-base-200 bg-base-100/95 border-b backdrop-blur-sm">
+    <div ref={barRef} className="z-50 lg:hidden">
+      <div className="border-base-200 bg-base-100/80 border-b shadow-sm backdrop-blur-md">
         <div className="flex items-center gap-1 p-2">
+          <Dropdown
+            align="start"
+            trigger={
+              <span className="btn btn-ghost btn-sm btn-square">
+                <EllipsisVertical className="text-base-content/60 h-5 w-5" />
+              </span>
+            }
+          >
+            {(docuConfig.navbar?.menu || []).map((item) => (
+              <DropdownLink key={item.href} href={item.href}>
+                {item.title}
+              </DropdownLink>
+            ))}
+          </Dropdown>
+
           <button
             type="button"
             onClick={toggleToc}
