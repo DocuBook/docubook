@@ -43,7 +43,6 @@ your-project/
 .docu/pages/
 ├── index.tsx              → /
 ├── 404.tsx                → 404 page
-├── Error.tsx              → error page (dev only)
 └── docs/
     └── [[...slug]].tsx    → /docs/*
 ```

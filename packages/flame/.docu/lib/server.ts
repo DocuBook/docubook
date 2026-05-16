@@ -16,7 +16,6 @@ import { getGitLastModified } from "./utils";
 import docuConfig from "../../docu.json" with { type: "json" };
 import DocsPage from "../pages/docs/[[...slug]]";
 import NotFoundPage from "../pages/404";
-import ErrorPage from "../pages/Error";
 import IndexPage from "../pages/index";
 import { buildClientBundle } from "./hydrate";
 import { generateSearchIndex } from "./search-indexer";
@@ -200,69 +199,59 @@ async function getDocsForSlug(slug: string) {
 }
 
 async function handleDocsIndex(): Promise<Response> {
-  try {
-    const doc = await getDocsForSlug("");
-    if (!doc) return renderPage(NotFoundPage, "404 - Not Found", "", 404);
+  const doc = await getDocsForSlug("");
+  if (!doc) return renderPage(NotFoundPage, "404 - Not Found", "", 404);
 
-    const title = doc.frontmatter.title || "Docs";
-    const description = doc.frontmatter.description || "";
+  const title = doc.frontmatter.title || "Docs";
+  const description = doc.frontmatter.description || "";
 
-    const page = React.createElement(
-      DocsLayout,
-      { repoUrl: docuConfig.repo?.url },
-      React.createElement(DocsPage, {
-        slug: [],
-        title,
-        description,
-        date: doc.frontmatter.date,
-        content: doc.content,
-        tocs: doc.tocs,
-        filePath: doc.filePath,
-        repoUrl: docuConfig.repo?.url,
-      })
-    );
+  const page = React.createElement(
+    DocsLayout,
+    { repoUrl: docuConfig.repo?.url },
+    React.createElement(DocsPage, {
+      slug: [],
+      title,
+      description,
+      date: doc.frontmatter.date,
+      content: doc.content,
+      tocs: doc.tocs,
+      filePath: doc.filePath,
+      repoUrl: docuConfig.repo?.url,
+    })
+  );
 
-    const body = renderToString(page);
-    const html = htmlShell(title, description, body);
-    return new Response(html, { headers: { "Content-Type": "text/html" } });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return renderPage(ErrorPage, "Error", message, 500, { message });
-  }
+  const body = renderToString(page);
+  const html = htmlShell(title, description, body);
+  return new Response(html, { headers: { "Content-Type": "text/html" } });
 }
 
 async function handleDocsRoute(slug: string[]): Promise<Response> {
   const path = slug.join("/");
 
-  try {
-    const doc = await getDocsForSlug(path);
-    if (!doc) return renderPage(NotFoundPage, "404 - Not Found", "", 404);
+  const doc = await getDocsForSlug(path);
+  if (!doc) return renderPage(NotFoundPage, "404 - Not Found", "", 404);
 
-    const title = doc.frontmatter.title || path;
-    const description = doc.frontmatter.description || "";
+  const title = doc.frontmatter.title || path;
+  const description = doc.frontmatter.description || "";
 
-    const page = React.createElement(
-      DocsLayout,
-      { repoUrl: docuConfig.repo?.url },
-      React.createElement(DocsPage, {
-        slug,
-        title,
-        description,
-        date: doc.frontmatter.date,
-        content: doc.content,
-        tocs: doc.tocs,
-        filePath: doc.filePath,
-        repoUrl: docuConfig.repo?.url,
-      })
-    );
+  const page = React.createElement(
+    DocsLayout,
+    { repoUrl: docuConfig.repo?.url },
+    React.createElement(DocsPage, {
+      slug,
+      title,
+      description,
+      date: doc.frontmatter.date,
+      content: doc.content,
+      tocs: doc.tocs,
+      filePath: doc.filePath,
+      repoUrl: docuConfig.repo?.url,
+    })
+  );
 
-    const body = renderToString(page);
-    const html = htmlShell(title, description, body);
-    return new Response(html, { headers: { "Content-Type": "text/html" } });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return renderPage(ErrorPage, "Error", message, 500, { message });
-  }
+  const body = renderToString(page);
+  const html = htmlShell(title, description, body);
+  return new Response(html, { headers: { "Content-Type": "text/html" } });
 }
 
 function renderPage(
@@ -342,6 +331,7 @@ function serveStatic(pathname: string): Response | null {
 
 const server = Bun.serve({
   port: PORT,
+  development: true,
   idleTimeout: 255,
 
   async fetch(req) {
@@ -398,6 +388,18 @@ const server = Bun.serve({
     }
 
     return renderPage(NotFoundPage, "404 - Not Found", "", 404);
+  },
+
+  error(error) {
+    const msg = Bun.escapeHTML(error?.message || "Unknown error");
+    const stack = Bun.escapeHTML(error?.stack || "");
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Error</title>
+<style>body{margin:0;padding:2rem;font-family:ui-monospace,monospace;background:#1a1a2e;color:#e0e0e0}
+h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;padding:1.5rem;overflow-x:auto;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.msg{color:#ff6b6b;font-weight:bold}</style></head><body>
+<h1>🔥 Server Error</h1>
+<pre><span class="msg">${msg}</span>\n\n${stack}</pre></body></html>`;
+    return new Response(html, { status: 500, headers: { "Content-Type": "text/html" } });
   },
 });
 

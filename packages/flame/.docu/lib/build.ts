@@ -19,6 +19,7 @@ import { buildClientBundle } from "./hydrate";
 import { logger } from "./logger";
 import type { BuildCache, CliArgs } from "./types";
 import DocsPage from "../pages/docs/[[...slug]]";
+import IndexPage from "../pages/index";
 import NotFoundPage from "../pages/404";
 
 const DOCS_DIR = resolve("./docs");
@@ -353,6 +354,14 @@ async function build() {
   );
   await mkdir(join(DIST_DIR, "docs"), { recursive: true });
   await writeFile(join(DIST_DIR, "docs", "index.html"), indexHtml);
+
+  const landingPage = React.createElement(IndexPage);
+  const landingHtml = htmlShell(
+    docuConfig.meta?.title || "DocuBook",
+    docuConfig.meta?.description || "",
+    renderToString(landingPage)
+  );
+  await writeFile(join(DIST_DIR, "index.html"), landingHtml);
 
   const notFoundPage = React.createElement(
     DocsLayout,
