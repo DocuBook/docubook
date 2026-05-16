@@ -504,9 +504,9 @@ export function PaginationDocs({ prev, next, className }: PaginationDocsProps) {
         {prev && (
           <a
             href={prev.href}
-            className="btn btn-outline h-auto w-full flex-col items-start! py-6! pl-4 no-underline"
+            className="btn btn-outline border-base-300 h-auto w-full flex-col items-start! py-2! pl-4 no-underline"
           >
-            <span className="text-base-content/60 flex items-center text-xs">
+            <span className="text-muted-foreground flex items-center text-xs">
               <ChevronLeft className="mr-1 h-4 w-4" />
               Previous
             </span>
@@ -519,9 +519,9 @@ export function PaginationDocs({ prev, next, className }: PaginationDocsProps) {
         {next && (
           <a
             href={next.href}
-            className="btn btn-outline h-auto w-full flex-col items-end! py-6! pr-4 no-underline"
+            className="btn btn-outline border-base-300 h-auto w-full flex-col items-end! py-2! pr-4 no-underline"
           >
-            <span className="text-base-content/60 flex items-center text-xs">
+            <span className="text-muted-foreground flex items-center text-xs">
               Next
               <ChevronRight className="ml-1 h-4 w-4" />
             </span>

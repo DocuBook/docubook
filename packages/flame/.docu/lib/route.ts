@@ -8,11 +8,12 @@ export function flattenRoutes(): string[] {
   const paths: string[] = [];
 
   function traverse(route: DocuRoute, section = "") {
+    const fullPath = `${section}${route.href}`.replace(/\/+/g, "/");
     if (route.href && !route.noLink) {
-      paths.push(`${section}${route.href}`);
+      paths.push(fullPath);
     }
     if (route.items) {
-      route.items.forEach((item) => traverse(item, `${section}${route.href}/`));
+      route.items.forEach((item) => traverse(item, `${fullPath}/`));
     }
   }
 
@@ -24,7 +25,7 @@ export function getRouteMap(): Map<string, string> {
   const map = new Map<string, string>();
 
   function traverse(route: DocuRoute, section = "") {
-    const fullPath = `${section}${route.href}`;
+    const fullPath = `${section}${route.href}`.replace(/\/+/g, "/");
     map.set(fullPath, route.title);
     if (route.items) {
       route.items.forEach((item) => traverse(item, `${fullPath}/`));
