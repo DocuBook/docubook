@@ -66,11 +66,13 @@ export default function DocsPage({
         </div>
 
         {/* Desktop TOC - island */}
-        <div
-          id="toc-island"
-          data-tocs={tocsJson}
-          className="sticky top-4 hidden h-[calc(100vh-8rem)] min-w-[240px] flex-[3] self-start lg:flex lg:px-4 lg:py-6"
-        />
+        {tocs.length > 0 && (
+          <div
+            id="toc-island"
+            data-tocs={tocsJson}
+            className="sticky top-4 hidden h-[calc(100vh-8rem)] min-w-[240px] flex-[3] self-start lg:flex lg:px-4 lg:py-6"
+          />
+        )}
       </div>
     </div>
   );

@@ -14,8 +14,12 @@
     "logoText": "DocuBook",
     "menu": [
       {
-        "title": "Docs",
+        "title": "Home",
         "href": "/"
+      },
+      {
+        "title": "Docs",
+        "href": "/docs"
       },
       {
         "title": "Showcase",

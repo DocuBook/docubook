@@ -219,13 +219,13 @@ function SearchTrigger({ onClick }: { onClick: () => void }) {
           <div className="flex items-center gap-0.5">
             <Kbd
               size="s"
-              className="bg-primary text-[12px text-base-300 rounded-md p-1.5 font-medium"
+              className="bg-primary text-[12px text-base-300 dark:text-foreground rounded-md p-1.5 font-medium"
             >
               <FnKey.Cmd />
             </Kbd>
             <Kbd
               size="s"
-              className="bg-primary text-base-300 rounded-md p-1.5 text-[12px] font-medium"
+              className="bg-primary text-base-300 dark:text-foreground rounded-md p-1.5 text-[12px] font-medium"
             >
               K
             </Kbd>

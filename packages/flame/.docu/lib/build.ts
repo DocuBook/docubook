@@ -20,7 +20,6 @@ import { logger } from "./logger";
 import type { BuildCache, CliArgs } from "./types";
 import DocsPage from "../pages/docs/[[...slug]]";
 import NotFoundPage from "../pages/404";
-import IndexPage from "../pages/index";
 
 const DOCS_DIR = resolve("./docs");
 const DIST_DIR = resolve("./.docu/dist");
@@ -317,12 +316,40 @@ async function build() {
     built++;
   }
 
-  const indexPage = React.createElement(IndexPage);
-  const indexBody = renderToString(indexPage);
+  const indexMdxPath = join(DOCS_DIR, "index.mdx");
+  const indexRaw = await readFile(indexMdxPath, "utf-8");
+  const indexTocs = extractTocsFromRawMdx(indexRaw);
+  const { frontmatter: indexFm, strippedContent: indexStripped } = extractFrontmatterWithContent<{
+    title?: string;
+    description?: string;
+    date?: string;
+  }>(indexRaw);
+  const { content: indexContent } = await parseMdx(indexStripped, {
+    components: createMdxComponents(),
+    rehypePlugins: createDefaultRehypePlugins(),
+    remarkPlugins: createDefaultRemarkPlugins(),
+    parseFrontmatter: false,
+  });
+  const indexRelPath = indexMdxPath.replace(resolve("./"), "");
+  const indexDate = indexFm.date || (await getGitLastModified(indexRelPath)) || undefined;
+  const indexPageEl = React.createElement(
+    DocsLayout,
+    { repoUrl: docuConfig.repo?.url },
+    React.createElement(DocsPage, {
+      slug: [],
+      title: indexFm.title || "Docs",
+      description: indexFm.description || "",
+      date: indexDate,
+      content: indexContent,
+      tocs: indexTocs,
+      filePath: indexRelPath,
+      repoUrl: docuConfig.repo?.url,
+    })
+  );
   const indexHtml = htmlShell(
-    docuConfig.meta?.title || "DocuBook",
-    docuConfig.meta?.description || "",
-    indexBody
+    indexFm.title || docuConfig.meta?.title || "DocuBook",
+    indexFm.description || docuConfig.meta?.description || "",
+    renderToString(indexPageEl)
   );
   await mkdir(join(DIST_DIR, "docs"), { recursive: true });
   await writeFile(join(DIST_DIR, "docs", "index.html"), indexHtml);

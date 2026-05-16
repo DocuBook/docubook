@@ -98,7 +98,7 @@ export const logger = {
 
   buildStart() {
     console.log(
-      `\n${c.bold}${c.cyan}  ▲ DocuBook Flame${c.reset} ${c.dim}v1.0.0-beta.1${c.reset}\n`
+      `\n${c.bold}${c.cyan}  🔥 DocuBook Flame${c.reset} ${c.dim}v1.0.0-beta.1${c.reset}\n`
     );
   },
 

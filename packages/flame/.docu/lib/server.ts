@@ -199,6 +199,38 @@ async function getDocsForSlug(slug: string) {
   return { content, frontmatter: { ...frontmatter, date }, tocs, filePath: relPath };
 }
 
+async function handleDocsIndex(): Promise<Response> {
+  try {
+    const doc = await getDocsForSlug("");
+    if (!doc) return renderPage(NotFoundPage, "404 - Not Found", "", 404);
+
+    const title = doc.frontmatter.title || "Docs";
+    const description = doc.frontmatter.description || "";
+
+    const page = React.createElement(
+      DocsLayout,
+      { repoUrl: docuConfig.repo?.url },
+      React.createElement(DocsPage, {
+        slug: [],
+        title,
+        description,
+        date: doc.frontmatter.date,
+        content: doc.content,
+        tocs: doc.tocs,
+        filePath: doc.filePath,
+        repoUrl: docuConfig.repo?.url,
+      })
+    );
+
+    const body = renderToString(page);
+    const html = htmlShell(title, description, body);
+    return new Response(html, { headers: { "Content-Type": "text/html" } });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return renderPage(ErrorPage, "Error", message, 500, { message });
+  }
+}
+
 async function handleDocsRoute(slug: string[]): Promise<Response> {
   const path = slug.join("/");
 
@@ -350,7 +382,7 @@ const server = Bun.serve({
         const slug = slugParam ? slugParam.split("/") : [];
 
         if (slug.length === 0) {
-          return handleIndex();
+          return handleDocsIndex();
         }
 
         return handleDocsRoute(slug);
