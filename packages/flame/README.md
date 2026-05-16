@@ -1,10 +1,30 @@
-# @docubook/flame
+<p align="center">
+  <img
+    src="https://github.com/DocuBook/docubook/blob/main/apps/web/public/images/docu.svg"
+    alt="DocuBook Logo"
+    width="80"
+    height="80"
+  />
+  <span style="padding: 0 12px;">+</span>
+  <img
+    src="https://github.com/DocuBook/docubook/blob/main/apps/web/public/images/bun.svg"
+    alt="Bun Logo"
+    width="80"
+    height="80"
+  />
+</p>
 
-> Fast as flame — a Bun-native framework for modern documentation experiences.
+<h1 align="center" style="font-size: 32px;">
+  DocuBook Flame 🔥
+</h1>
+<h3 align="center" style="font-size: 20px;">
+  Fast as flame — a Bun-native framework for modern documentation experiences.
+</h3>
 
-`@docubook/flame` is a lightweight runtime for building documentation websites using React, MDX, and filesystem-based routing — all running on Bun.
-
-No heavy abstractions. No complex tooling. Just a minimal layer between your content and the browser.
+<p align="center">
+    <strong>@docubook/flame</strong> is a lightweight runtime for building documentation websites using React, MDX, and filesystem-based routing — all running on Bun.</br>
+    No heavy abstractions. No complex tooling. Just a minimal layer between your content and the browser.
+</p>
 
 ---
 
