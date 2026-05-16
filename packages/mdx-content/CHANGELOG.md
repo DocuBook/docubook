@@ -1,5 +1,15 @@
 # @docubook/mdx-content
 
+## 3.0.1
+
+### Patch Changes
+
+- fix: improve SSR compatibility for client components ;
+  - CardMdx.tsx — add data-card-link attribute for hydration
+  - CodeBlock.tsx — add not-prose class to prevent Tailwind prose interference
+  - TabsMdx.tsx — render all tab panels for client-side switching
+  - TooltipsMdx.tsx — add data-tooltip attributes for hydration
+
 ## 3.0.0
 
 ### Major Changes

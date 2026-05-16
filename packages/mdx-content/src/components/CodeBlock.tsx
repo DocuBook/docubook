@@ -28,16 +28,16 @@ import { CopyButton } from "./CopyButton";
 import { ExpandableCode } from "./ExpandableCode";
 
 type CodeBlockProps = ComponentProps<"pre"> & {
-  raw?: string
-  "data-title"?: string
-  "data-language"?: string
-  "data-expandable"?: string
-  "data-expandable-lines"?: string
-}
+  raw?: string;
+  "data-title"?: string;
+  "data-language"?: string;
+  "data-expandable"?: string;
+  "data-expandable-lines"?: string;
+};
 
 function getLanguage(className: string = "") {
-  const match = className.match(/language-(\w+)/)
-  return match ? match[1] : "text"
+  const match = className.match(/language-(\w+)/);
+  return match ? match[1] : "text";
 }
 
 function resolveLanguage(
@@ -46,26 +46,26 @@ function resolveLanguage(
   children: ReactNode
 ) {
   if (typeof dataLanguage === "string" && dataLanguage.trim().length > 0) {
-    return dataLanguage.trim().toLowerCase()
+    return dataLanguage.trim().toLowerCase();
   }
 
-  const languageFromPre = getLanguage(preClassName ?? "")
-  if (languageFromPre !== "text") return languageFromPre
+  const languageFromPre = getLanguage(preClassName ?? "");
+  if (languageFromPre !== "text") return languageFromPre;
 
   if (isValidElement(children)) {
-    const childProps = children.props as { className?: string }
+    const childProps = children.props as { className?: string };
     if (typeof childProps.className === "string") {
-      const languageFromCode = getLanguage(childProps.className)
-      if (languageFromCode !== "text") return languageFromCode
+      const languageFromCode = getLanguage(childProps.className);
+      if (languageFromCode !== "text") return languageFromCode;
     }
   }
 
-  return "text"
+  return "text";
 }
 
 function getLanguageIcon(language: string) {
-  const normalized = language.toLowerCase()
-  const iconProps = { size: 14 }
+  const normalized = language.toLowerCase();
+  const iconProps = { size: 14 };
 
   const map: Record<string, ReactNode> = {
     gitignore: <SiGit {...iconProps} />,
@@ -106,18 +106,18 @@ function getLanguageIcon(language: string) {
     sass: <SiSass {...iconProps} />,
     text: <FaRegFileAlt {...iconProps} />,
     plaintext: <FaRegFileAlt {...iconProps} />,
-  }
+  };
 
-  return map[normalized] || <FaCode {...iconProps} />
+  return map[normalized] || <FaCode {...iconProps} />;
 }
 
 function countCodeLines(raw: string) {
-  let normalized = raw.replace(/\r\n/g, "\n")
-  if (normalized.startsWith("\n")) normalized = normalized.slice(1)
-  if (normalized.endsWith("\n")) normalized = normalized.slice(0, -1)
+  let normalized = raw.replace(/\r\n/g, "\n");
+  if (normalized.startsWith("\n")) normalized = normalized.slice(1);
+  if (normalized.endsWith("\n")) normalized = normalized.slice(0, -1);
 
-  if (normalized.length === 0) return 0
-  return normalized.split("\n").length
+  if (normalized.length === 0) return 0;
+  return normalized.split("\n").length;
 }
 
 export function CodeBlock({ children, raw, ...rest }: CodeBlockProps) {
@@ -128,28 +128,28 @@ export function CodeBlock({ children, raw, ...rest }: CodeBlockProps) {
     "data-expandable": isExpandable,
     "data-expandable-lines": totalLinesStr,
     ...props
-  } = rest
+  } = rest;
 
   const language = resolveLanguage(
     typeof className === "string" ? className : undefined,
     dataLanguage,
     children
-  )
-  const totalLinesFromMeta = parseInt(totalLinesStr as string, 10) || 0
-  const totalLinesFromRaw = raw ? countCodeLines(raw) : 0
-  const totalLines = totalLinesFromRaw || totalLinesFromMeta
+  );
+  const totalLinesFromMeta = parseInt(totalLinesStr as string, 10) || 0;
+  const totalLinesFromRaw = raw ? countCodeLines(raw) : 0;
+  const totalLines = totalLinesFromRaw || totalLinesFromMeta;
   const hasExpandableClass =
-    typeof className === "string" && className.split(" ").includes("mdx-expandable-code")
-  const shouldExpand = isExpandable === "true" || hasExpandableClass
+    typeof className === "string" && className.split(" ").includes("mdx-expandable-code");
+  const shouldExpand = isExpandable === "true" || hasExpandableClass;
   const preProps = {
     ...props,
     "data-expandable": isExpandable,
     "data-expandable-lines": totalLinesStr,
-  }
+  };
 
   return (
     <div
-      className="code-block-container"
+      className="code-block-container not-prose"
       style={{
         position: "relative",
         margin: "1.5rem 0",
@@ -226,5 +226,5 @@ export function CodeBlock({ children, raw, ...rest }: CodeBlockProps) {
         />
       </div>
     </div>
-  )
+  );
 }

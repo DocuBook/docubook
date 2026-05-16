@@ -29,7 +29,8 @@ const baseStyle: CSSProperties = {
   padding: "1rem",
   minHeight: 120,
   boxShadow: "0 0 0 rgba(0,0,0,0)",
-  transition: "border-color 0.2s ease, box-shadow 0.24s ease, transform 0.24s ease, color 0.2s ease",
+  transition:
+    "border-color 0.2s ease, box-shadow 0.24s ease, transform 0.24s ease, color 0.2s ease",
   overflow: "hidden",
 };
 
@@ -104,15 +105,15 @@ export function CardMdx({
 
   const interactiveStyle: CSSProperties = href
     ? {
-      cursor: "pointer",
-      borderColor: hover ? "hsl(var(--primary, 210 81% 56%))" : "hsl(var(--border, 210 20% 85%))",
-      boxShadow: hover ? "0 11px 28px rgba(34, 129, 227, 0.15)" : "0 0 0 rgba(0, 0, 0, 0)",
-      transform: hover ? "translateY(-2px)" : "translateY(0)",
-    }
+        cursor: "pointer",
+        borderColor: hover ? "hsl(var(--primary, 210 81% 56%))" : "hsl(var(--border, 210 20% 85%))",
+        boxShadow: hover ? "0 11px 28px rgba(34, 129, 227, 0.15)" : "0 0 0 rgba(0, 0, 0, 0)",
+        transform: hover ? "translateY(-2px)" : "translateY(0)",
+      }
     : {
-      borderColor: "hsl(var(--border, 210 20% 85%))",
-      boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
-    };
+        borderColor: "hsl(var(--border, 210 20% 85%))",
+        boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
+      };
 
   const combinedStyle = { ...baseStyle, ...interactiveStyle, ...style };
 
@@ -128,6 +129,7 @@ export function CardMdx({
     return (
       <LinkComponent
         href={href}
+        data-card-link=""
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
         style={combinedStyle}
@@ -139,9 +141,5 @@ export function CardMdx({
     );
   }
 
-  return (
-    <div {...divProps}>
-      {content}
-    </div>
-  );
+  return <div {...divProps}>{content}</div>;
 }

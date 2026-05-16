@@ -3,23 +3,33 @@
 import { useId, useState, type CSSProperties, type HTMLAttributes, type ReactNode } from "react";
 
 type TooltipMdxProps = HTMLAttributes<HTMLSpanElement> & {
-    text?: ReactNode;
-    tip?: ReactNode;
-    side?: "top" | "bottom";
-    style?: CSSProperties;
+  text?: ReactNode;
+  tip?: ReactNode;
+  side?: "top" | "bottom";
+  style?: CSSProperties;
 };
 
-export function TooltipMdx({ text, tip, side = "top", style, className, ...props }: TooltipMdxProps) {
-    const [open, setOpen] = useState(false);
-    const id = useId();
-    const tooltipContent = tip ?? "";
-    const triggerContent = text ?? "?";
-    const floatingPosition = side === "bottom" ? { top: "calc(100% + 8px)" } : { bottom: "calc(100% + 8px)" };
+export function TooltipMdx({
+  text,
+  tip,
+  side = "top",
+  style,
+  className,
+  ...props
+}: TooltipMdxProps) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  const tooltipContent = tip ?? "";
+  const triggerContent = text ?? "?";
+  const floatingPosition =
+    side === "bottom" ? { top: "calc(100% + 8px)" } : { bottom: "calc(100% + 8px)" };
 
   return (
     <span
       className={className}
       {...props}
+      data-tooltip={typeof tooltipContent === "string" ? tooltipContent : ""}
+      data-tooltip-side={side}
       style={{ position: "relative", display: "inline-block", ...style }}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
