@@ -32,21 +32,21 @@ const getMountedSnapshot = () => true;
 const getServerSnapshot = () => false;
 
 const useClickOutside = (ref: React.RefObject<HTMLElement | null>, callback: () => void) => {
-  const handleClick = React.useCallback(
-    (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        callback();
-      }
-    },
-    [ref, callback]
-  );
+  const callbackRef = useRef(callback);
 
   React.useEffect(() => {
-    document.addEventListener("mousedown", handleClick);
-    return () => {
-      document.removeEventListener("mousedown", handleClick);
+    callbackRef.current = callback;
+  });
+
+  React.useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        callbackRef.current();
+      }
     };
-  }, [handleClick]);
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [ref]);
 };
 
 export default function MobToc({ tocs, title }: MobTocProps) {
