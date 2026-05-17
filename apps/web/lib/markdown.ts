@@ -30,100 +30,109 @@ export type BaseMdxFrontmatter = {
 // `React.cache` deduplicates calls within a single server-render pass.
 // Keep request-level cache in app layer, while markdown pipeline lives in core.
 
+const FILE_GIT_DATE_CACHE_MAX = 1000;
 const fileGitDateCache = new Map<string, Date | undefined>();
+
+function cacheSet(key: string, value: Date | undefined) {
+  if (fileGitDateCache.size >= FILE_GIT_DATE_CACHE_MAX) {
+    const firstKey = fileGitDateCache.keys().next().value!;
+    fileGitDateCache.delete(firstKey);
+  }
+  fileGitDateCache.set(key, value);
+}
 let repoLastCommitDateCache: Date | undefined | null = null;
 let gitRootCache: string | undefined;
 const execFileAsync = promisify(execFile);
 
 async function getGitRootDir(): Promise<string | undefined> {
-  if (gitRootCache !== undefined) return gitRootCache
+  if (gitRootCache !== undefined) return gitRootCache;
 
   try {
-    const { stdout } = await execFileAsync("git", ["rev-parse", "--show-toplevel"])
-    gitRootCache = stdout.trim() || ""
-    return gitRootCache || undefined
+    const { stdout } = await execFileAsync("git", ["rev-parse", "--show-toplevel"]);
+    gitRootCache = stdout.trim() || "";
+    return gitRootCache || undefined;
   } catch {
-    gitRootCache = ""
-    return undefined
+    gitRootCache = "";
+    return undefined;
   }
 }
 
 async function getFileLastCommitDate(absoluteFilePath: string): Promise<Date | undefined> {
   if (fileGitDateCache.has(absoluteFilePath)) {
-    return fileGitDateCache.get(absoluteFilePath)
+    return fileGitDateCache.get(absoluteFilePath);
   }
 
   try {
-    const gitRoot = await getGitRootDir()
+    const gitRoot = await getGitRootDir();
     if (!gitRoot) {
-      fileGitDateCache.set(absoluteFilePath, undefined)
-      return undefined
+      cacheSet(absoluteFilePath, undefined);
+      return undefined;
     }
 
-    const relativePath = path.relative(gitRoot, absoluteFilePath)
+    const relativePath = path.relative(gitRoot, absoluteFilePath);
     if (relativePath.startsWith("..")) {
-      fileGitDateCache.set(absoluteFilePath, undefined)
-      return undefined
+      cacheSet(absoluteFilePath, undefined);
+      return undefined;
     }
 
     const { stdout } = await execFileAsync(
       "git",
       ["log", "-1", "--format=%cI", "--", relativePath],
       { cwd: gitRoot }
-    )
+    );
 
-    const rawDate = stdout.trim()
+    const rawDate = stdout.trim();
     if (!rawDate) {
-      fileGitDateCache.set(absoluteFilePath, undefined)
-      return undefined
+      cacheSet(absoluteFilePath, undefined);
+      return undefined;
     }
 
-    const parsed = new Date(rawDate)
+    const parsed = new Date(rawDate);
     if (Number.isNaN(parsed.getTime())) {
-      fileGitDateCache.set(absoluteFilePath, undefined)
-      return undefined
+      cacheSet(absoluteFilePath, undefined);
+      return undefined;
     }
 
-    fileGitDateCache.set(absoluteFilePath, parsed)
-    return parsed
+    cacheSet(absoluteFilePath, parsed);
+    return parsed;
   } catch {
-    fileGitDateCache.set(absoluteFilePath, undefined)
-    return undefined
+    cacheSet(absoluteFilePath, undefined);
+    return undefined;
   }
 }
 
 async function getRepoLastCommitDate(): Promise<Date | undefined> {
   if (repoLastCommitDateCache !== null) {
-    return repoLastCommitDateCache ?? undefined
+    return repoLastCommitDateCache ?? undefined;
   }
 
   try {
-    const gitRoot = await getGitRootDir()
+    const gitRoot = await getGitRootDir();
     if (!gitRoot) {
-      repoLastCommitDateCache = undefined
-      return undefined
+      repoLastCommitDateCache = undefined;
+      return undefined;
     }
 
     const { stdout } = await execFileAsync("git", ["log", "-1", "--format=%cI"], {
       cwd: gitRoot,
-    })
+    });
 
-    const rawDate = stdout.trim()
+    const rawDate = stdout.trim();
     if (!rawDate) {
-      repoLastCommitDateCache = undefined
-      return undefined
+      repoLastCommitDateCache = undefined;
+      return undefined;
     }
 
-    const parsed = new Date(rawDate)
+    const parsed = new Date(rawDate);
     if (Number.isNaN(parsed.getTime())) {
-      repoLastCommitDateCache = undefined
-      return undefined
+      repoLastCommitDateCache = undefined;
+      return undefined;
     }
 
-    repoLastCommitDateCache = parsed
-    return parsed
+    repoLastCommitDateCache = parsed;
+    return parsed;
   } catch {
-    repoLastCommitDateCache = undefined
+    repoLastCommitDateCache = undefined;
     return undefined;
   }
 }
@@ -153,7 +162,7 @@ export async function getDocsFrontmatterForSlug(
   try {
     return await docsService.getFrontmatterForSlug(slug);
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -165,7 +174,7 @@ export async function getDocsForSlug(slug: string): Promise<DocsForSlugResult | 
   try {
     return await docsService.getCompiledForSlug(slug);
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -225,7 +234,7 @@ export async function getAllChilds(pathString: string) {
       const frontmatter = await docsService.getFrontmatterForSlug(slug).catch(() => undefined);
 
       if (!frontmatter) {
-        return null
+        return null;
       }
 
       return {
@@ -235,5 +244,5 @@ export async function getAllChilds(pathString: string) {
     })
   );
 
-  return children.filter((child): child is BaseMdxFrontmatter & { href: string } => child !== null)
+  return children.filter((child): child is BaseMdxFrontmatter & { href: string } => child !== null);
 }
