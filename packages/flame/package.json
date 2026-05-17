@@ -28,8 +28,8 @@
   "author-url": "https://wildan.dev",
   "license": "MIT",
   "dependencies": {
-    "@docubook/core": "^1.6.1",
-    "@docubook/mdx-content": "^3.0.1",
+    "@docubook/core": "workspace:*",
+    "@docubook/mdx-content": "workspace:*",
     "@tailwindcss/typography": "0.5.16",
     "bun-plugin-tailwind": "^0.1.2",
     "daisyui": "^5.5.19",

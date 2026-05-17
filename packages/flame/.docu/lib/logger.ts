@@ -135,6 +135,12 @@ export const logger = {
     if (hmr) console.log(`${c.dim}  HMR enabled — watching docs/ for changes${c.reset}`);
     console.log("");
   },
+
+  request(method: string, pathname: string, status: number) {
+    const color = status >= 500 ? c.yellow : status >= 400 ? c.gray : c.green;
+    const ts = new Date().toLocaleTimeString();
+    console.log(`${c.dim}  ${ts}${c.reset} ${method} ${pathname} ${color}${status}${c.reset}`);
+  },
 };
 
 function countRoutes(routes: RouteItem[]): number {

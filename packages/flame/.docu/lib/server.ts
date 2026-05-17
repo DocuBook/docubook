@@ -23,7 +23,7 @@ import { logger } from "./logger";
 
 const DOCS_DIR = resolve("./docs");
 const DIST_DIR = resolve("./.docu/dist");
-const PORT = process.env.PORT || "3000";
+const PORT = process.env.PORT ?? "3000";
 
 logger.buildStart();
 
@@ -39,10 +39,15 @@ logger.indexDone(records, Math.round(performance.now() - t));
 
 logger.routes();
 
-const router = new Bun.FileSystemRouter({
-  style: "nextjs",
-  dir: resolve("./.docu/pages"),
-});
+let router: InstanceType<typeof Bun.FileSystemRouter> | null = null;
+try {
+  router = new Bun.FileSystemRouter({
+    style: "nextjs",
+    dir: resolve("./.docu/pages"),
+  });
+} catch (e) {
+  logger.spinner.info(`FileSystemRouter failed: ${e instanceof Error ? e.message : String(e)}`);
+}
 
 const hmrClients = new Set<ReadableStreamDefaultController>();
 
@@ -61,7 +66,7 @@ watch(DOCS_DIR, { recursive: true }, (_event, filename) => {
   if (!filename || (!filename.endsWith(".mdx") && !filename.endsWith(".md"))) return;
   if (hmrTimeout) clearTimeout(hmrTimeout);
   hmrTimeout = setTimeout(() => {
-    for (const client of hmrClients) {
+    for (const client of [...hmrClients]) {
       try {
         client.enqueue(new TextEncoder().encode("data: reload\n\n"));
       } catch {
@@ -339,56 +344,74 @@ const server = Bun.serve({
     const url = new URL(req.url);
     const pathname = url.pathname;
 
-    if (pathname === "/__hmr") {
-      const stream = new ReadableStream({
-        start(controller) {
-          hmrClients.add(controller);
-          controller.enqueue(new TextEncoder().encode("data: connected\n\n"));
-        },
-        cancel(controller) {
-          hmrClients.delete(controller);
-        },
-      });
-      return new Response(stream, {
-        headers: {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          Connection: "keep-alive",
-        },
-      });
-    }
+    try {
+      if (pathname === "/__hmr") {
+        const stream = new ReadableStream({
+          start(controller) {
+            hmrClients.add(controller);
+            controller.enqueue(new TextEncoder().encode("data: connected\n\n"));
+          },
+          cancel(controller) {
+            hmrClients.delete(controller);
+          },
+        });
+        return new Response(stream, {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            Connection: "keep-alive",
+          },
+        });
+      }
 
-    if (pathname.startsWith("/assets/") || /\.\w+$/.test(pathname)) {
-      const staticRes = serveStatic(pathname);
-      if (staticRes) return staticRes;
-    }
-
-    const match = router.match(req);
-
-    if (match) {
-      const routeName = match.name;
-
-      if (routeName === "/docs/[[...slug]]") {
-        const slugParam = match.params?.slug;
-        const slug = slugParam ? slugParam.split("/") : [];
-
-        if (slug.length === 0) {
-          return handleDocsIndex();
+      if (pathname.startsWith("/assets/") || /\.\w+$/.test(pathname)) {
+        const staticRes = serveStatic(pathname);
+        if (staticRes) {
+          logger.request(req.method, pathname, 200);
+          return staticRes;
         }
-
-        return handleDocsRoute(slug);
       }
 
-      if (routeName === "/404") {
-        return renderPage(NotFoundPage, "404 - Not Found", "", 404);
+      const match = router?.match(req);
+      let response: Response;
+
+      if (match) {
+        const routeName = match.name;
+
+        if (routeName === "/docs/[[...slug]]") {
+          const slugParam = match.params?.slug;
+          const slug = slugParam ? slugParam.split("/") : [];
+
+          if (slug.length === 0) {
+            response = await handleDocsIndex();
+          } else {
+            response = await handleDocsRoute(slug);
+          }
+        } else if (routeName === "/404") {
+          response = renderPage(NotFoundPage, "404 - Not Found", "", 404);
+        } else if (routeName === "/") {
+          response = handleIndex();
+        } else {
+          response = renderPage(NotFoundPage, "404 - Not Found", "", 404);
+        }
+      } else {
+        response = renderPage(NotFoundPage, "404 - Not Found", "", 404);
       }
 
-      if (routeName === "/") {
-        return handleIndex();
-      }
+      logger.request(req.method, pathname, response.status);
+      return response;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const stack = err instanceof Error ? err.stack || "" : "";
+      logger.request(req.method, pathname, 500);
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Error</title>
+<style>body{margin:0;padding:2rem;font-family:ui-monospace,monospace;background:#1a1a2e;color:#e0e0e0}
+h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;padding:1.5rem;overflow-x:auto;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.msg{color:#ff6b6b;font-weight:bold}</style></head><body>
+<h1>🔥 Server Error</h1>
+<pre><span class="msg">${Bun.escapeHTML(message)}</span>\n\n${Bun.escapeHTML(stack)}</pre></body></html>`;
+      return new Response(html, { status: 500, headers: { "Content-Type": "text/html" } });
     }
-
-    return renderPage(NotFoundPage, "404 - Not Found", "", 404);
   },
 
   error(error) {
