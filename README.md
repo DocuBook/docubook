@@ -57,6 +57,7 @@ npx @docubook/cli@latest
 > This repository uses a monorepo setup powered by pnpm workspaces and Turborepo to manage apps and packages in a single workspace.
 >
 > For development workflow:
+> - Vitest provides fast unit testing with native ESM and TypeScript support
 > - Changesets handles package versioning and release management
 > - Husky runs automatic linting and formatting before commits
 > - commitlint ensures commit messages follow the Conventional Commits format consistently

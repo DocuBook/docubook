@@ -1,5 +1,16 @@
 # @docubook/core
 
+## 1.6.2
+
+### Patch Changes
+
+- test(core): add unit tests for compile.ts and content.ts ;
+  - add vitest config and test script to packages/core
+  - add test task to turbo.json pipeline
+  - add fixture MDX files for filesystem-based tests
+  - add 11 tests for compile.ts (preProcess, postProcess, parseMdx)
+  - add 14 tests for content.ts (readMdxFileBySlug, parseMdxFile, createMdxContentService)
+
 ## 1.6.1
 
 ### Patch Changes

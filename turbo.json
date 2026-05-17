@@ -28,6 +28,10 @@
       "cache": false,
       "outputs": []
     },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
     "publish-packages": {
       "dependsOn": ["^build"],
       "cache": false,

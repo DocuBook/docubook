@@ -1,6 +1,6 @@
 {
   "name": "@docubook/core",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "Shared MDX compile pipeline and markdown utilities for DocuBook",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,6 +17,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
     "clean": "rm -rf dist",
     "prepublishOnly": "pnpm run clean && pnpm run build"
   },
