@@ -173,7 +173,7 @@ format:
 
 The `scope` is optional but recommended. Common scopes:
 
-| Scope         | Description               |
+|     Scope     |        Description        |
 | ------------- | ------------------------- |
 | `app`         | Main application          |
 | `packages`    | Package changes (general) |
@@ -182,7 +182,7 @@ The `scope` is optional but recommended. Common scopes:
 | `mdx-content` | MDX content package       |
 | `docs`        | Documentation             |
 | `configs`     | Configuration files       |
-| `scripts`     | Build/scripts             |
+| `template`    | starter template          |
 
 #### Examples
 

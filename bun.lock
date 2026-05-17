@@ -114,8 +114,8 @@
       "name": "@docubook/flame",
       "version": "1.0.0-beta.2",
       "dependencies": {
-        "@docubook/core": "^1.6.1",
-        "@docubook/mdx-content": "^3.0.0",
+        "@docubook/core": "workspace:*",
+        "@docubook/mdx-content": "workspace:*",
         "@tailwindcss/typography": "0.5.16",
         "bun-plugin-tailwind": "^0.1.2",
         "daisyui": "^5.5.19",
@@ -137,7 +137,7 @@
         "eslint-plugin-react-hooks": "^7.1.1",
         "postcss": "^8.4.0",
         "tailwindcss": "^4.3.0",
-        "typescript": "^6.0.3",
+        "typescript": "^5.9.3",
         "typescript-eslint": "^8.59.2",
       },
     },
@@ -159,9 +159,6 @@
         "react-icons": "^5.0.0",
       },
     },
-  },
-  "overrides": {
-    "flatted": ">=3.4.2",
   },
   "packages": {
     "@11ty/gray-matter": ["@11ty/gray-matter@2.0.2", "", { "dependencies": { "js-yaml": "4.1.1", "section-matter": "1.0.0" } }, "sha512-+sbmr+BPzzi0z4lFvruKiGQ3D/d5zBssavhH9SzXmWkf7rStnB4gfeEMgz6k1Ac8bpN5NAFCH5GyR3xHk1BGPA=="],
@@ -1951,8 +1948,6 @@
     "@docubook/flame/@types/node": ["@types/node@22.19.19", "", { "dependencies": { "undici-types": "6.21.0" } }, "sha512-dyh/xO2Fh5bYrfWaaqGrRQQGkNdmYw6AmaAUvYeUMNTWQtvb796ikLdmTchRmOlOiIJ1TDXfWgVx1QkUlQ6Hew=="],
 
     "@docubook/flame/eslint": ["eslint@10.3.0", "", { "dependencies": { "@eslint-community/eslint-utils": "4.9.1", "@eslint-community/regexpp": "4.12.2", "@eslint/config-array": "0.23.5", "@eslint/config-helpers": "0.5.5", "@eslint/core": "1.2.1", "@eslint/plugin-kit": "0.7.1", "@humanfs/node": "0.16.8", "@humanwhocodes/module-importer": "1.0.1", "@humanwhocodes/retry": "0.4.3", "@types/estree": "1.0.9", "ajv": "6.15.0", "cross-spawn": "7.0.6", "debug": "4.4.3", "escape-string-regexp": "4.0.0", "eslint-scope": "9.1.2", "eslint-visitor-keys": "5.0.1", "espree": "11.2.0", "esquery": "1.7.0", "esutils": "2.0.3", "fast-deep-equal": "3.1.3", "file-entry-cache": "8.0.0", "find-up": "5.0.0", "glob-parent": "6.0.2", "ignore": "5.3.2", "imurmurhash": "0.1.4", "is-glob": "4.0.3", "json-stable-stringify-without-jsonify": "1.0.1", "minimatch": "10.2.5", "natural-compare": "1.4.0", "optionator": "0.9.4" }, "optionalDependencies": { "jiti": "2.7.0" }, "bin": { "eslint": "bin/eslint.js" } }, "sha512-XbEXaRva5cF0ZQB8w6MluHA0kZZfV2DuCMJ3ozyEOHLwDpZX2Lmm/7Pp0xdJmI0GL1W05VH5VwIFHEm1Vcw2gw=="],
-
-    "@docubook/flame/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 
     "@docubook/web/@tailwindcss/typography": ["@tailwindcss/typography@0.5.19", "", { "dependencies": { "postcss-selector-parser": "6.0.10" }, "peerDependencies": { "tailwindcss": "4.3.0" } }, "sha512-w31dd8HOx3k9vPtcQh5QHP9GwKcgbMp87j58qi6xgiBnFFtKEAgCWnDw4qUT8aHwkCp8bKvb/KGKWWHedP0AAg=="],
 

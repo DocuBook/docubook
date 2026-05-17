@@ -20,7 +20,7 @@ export default function IndexPage() {
   const cards = routes.filter((r) => r.context);
 
   return (
-    <div className="bg-base-100 relative isolate min-h-screen">
+    <div className="bg-base-100 relative isolate min-h-screen overflow-hidden">
       <div className="absolute top-4 right-4 z-10" id="theme-island" />
 
       {/* Background gradient blobs */}
@@ -52,7 +52,7 @@ export default function IndexPage() {
       {/* Showcase Cards */}
       {cards.length > 0 && (
         <div className="relative mx-auto max-w-4xl px-6 pb-24">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
             {cards.map((route) => {
               const Icon = (icons as unknown as Record<string, icons.LucideIcon>)[
                 route.context!.icon || ""

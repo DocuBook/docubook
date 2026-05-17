@@ -1,4 +1,4 @@
-import { existsSync, statSync } from "node:fs";
+import { statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { watch } from "node:fs";
@@ -62,7 +62,7 @@ const HMR_SCRIPT = `<script>
 </script>`;
 
 let hmrTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(DOCS_DIR, { recursive: true }, (_event, filename) => {
+const watcher = watch(DOCS_DIR, { recursive: true }, (_event, filename) => {
   if (!filename || (!filename.endsWith(".mdx") && !filename.endsWith(".md"))) return;
   if (hmrTimeout) clearTimeout(hmrTimeout);
   hmrTimeout = setTimeout(() => {
@@ -74,6 +74,15 @@ watch(DOCS_DIR, { recursive: true }, (_event, filename) => {
       }
     }
   }, 300);
+});
+
+process.on("SIGINT", () => {
+  watcher.close();
+  process.exit(0);
+});
+process.on("SIGTERM", () => {
+  watcher.close();
+  process.exit(0);
 });
 
 function htmlShell(title: string, description: string, body: string): string {
@@ -175,15 +184,17 @@ async function getDocsForSlug(slug: string) {
   ];
 
   let filePath: string | null = null;
+  let raw: string | null = null;
   for (const p of paths) {
-    if (existsSync(p)) {
+    try {
+      raw = await readFile(p, "utf-8");
       filePath = p;
       break;
+    } catch {
+      // file doesn't exist, try next
     }
   }
-  if (!filePath) return null;
-
-  const raw = await readFile(filePath, "utf-8");
+  if (!filePath || !raw) return null;
   const tocs = extractTocsFromRawMdx(raw);
   const { frontmatter, strippedContent } = extractFrontmatterWithContent<{
     title?: string;
@@ -366,10 +377,7 @@ const server = Bun.serve({
 
       if (pathname.startsWith("/assets/") || /\.\w+$/.test(pathname)) {
         const staticRes = serveStatic(pathname);
-        if (staticRes) {
-          logger.request(req.method, pathname, 200);
-          return staticRes;
-        }
+        if (staticRes) return staticRes;
       }
 
       const match = router?.match(req);

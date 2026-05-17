@@ -196,8 +196,7 @@ async function renderDocsPage(slug: string, rawMdx: string, filePath: string): P
     content = result.content;
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown MDX error";
-    console.error(`\n\u274C MDX Error in: docs/${slug}.mdx\n${msg}\n`);
-    process.exit(1);
+    throw new Error(`MDX Error in: docs/${slug}.mdx\n${msg}`, { cause: err });
   }
 
   const title = frontmatter.title || slug;
@@ -284,6 +283,7 @@ async function build() {
 
   const CONCURRENCY = 10;
   const buildTasks = [];
+  const errors: string[] = [];
 
   for (const file of mdxFiles) {
     const mdxPath1 = join(DOCS_DIR, file.path, "index.mdx");
@@ -293,10 +293,12 @@ async function build() {
     let rawMdx: string | null = null;
     let absPath = "";
     for (const p of [mdxPath1, mdxPath2, mdxPath3]) {
-      if (existsSync(p)) {
+      try {
         rawMdx = await readFile(p, "utf-8");
         absPath = p;
         break;
+      } catch {
+        // file doesn't exist, try next
       }
     }
     if (!rawMdx) continue;
@@ -316,16 +318,22 @@ async function build() {
     const capturedFile = file;
 
     buildTasks.push(async () => {
-      const html = await renderDocsPage(capturedFile.path, capturedRawMdx, relPath);
-      const outputPath = join(DIST_DIR, "docs", `${capturedFile.path}.html`);
-      await mkdir(dirname(outputPath), { recursive: true });
-      await writeFile(outputPath, html);
-      cache[capturedFile.path] = {
-        hash: hashContent(capturedRawMdx),
-        mtime: capturedFile.mtime,
-        builtAt: Date.now(),
-      };
-      built++;
+      try {
+        const html = await renderDocsPage(capturedFile.path, capturedRawMdx, relPath);
+        const outputPath = join(DIST_DIR, "docs", `${capturedFile.path}.html`);
+        await mkdir(dirname(outputPath), { recursive: true });
+        await writeFile(outputPath, html);
+        cache[capturedFile.path] = {
+          hash: hashContent(capturedRawMdx),
+          mtime: capturedFile.mtime,
+          builtAt: Date.now(),
+        };
+        built++;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        errors.push(msg);
+        console.error(`\n\u274C ${msg}\n`);
+      }
     });
   }
 
@@ -400,6 +408,11 @@ async function build() {
 
   logger.routes();
   console.log("");
+
+  if (errors.length > 0) {
+    console.error(`\n\u274C Build completed with ${errors.length} error(s)\n`);
+    process.exit(1);
+  }
 }
 
 build().catch((err) => {
