@@ -1,5 +1,11 @@
 # @docubook/cli
 
+## 0.5.2
+
+### Patch Changes
+
+- Fix promptHandler.js — regex validation
+
 ## 0.5.1
 
 ### Patch Changes

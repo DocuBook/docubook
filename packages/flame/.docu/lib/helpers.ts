@@ -3,7 +3,8 @@ import type { SocialLink } from "./types";
 
 export function getEditLink(url: string, filePath: string): string {
   const configPath = docuConfig?.repo?.path || "blob/main/{filePath}";
-  return `${url}/${configPath}`.replace("{filePath}", filePath.replace(/^\//, ""));
+  const encodedPath = filePath.replace(/^\//, "").split("/").map(encodeURIComponent).join("/");
+  return `${url}/${configPath}`.replace("{filePath}", encodedPath);
 }
 
 export function isEditEnabled(): boolean {

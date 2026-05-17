@@ -367,12 +367,22 @@ function hydrateMdxComponents() {
         if (folderIcon) {
           if (expanded) {
             folderIcon.classList.replace("lucide-folder-open", "lucide-folder");
-            folderIcon.innerHTML =
-              '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>';
+            while (folderIcon.firstChild) folderIcon.removeChild(folderIcon.firstChild);
+            const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            p.setAttribute(
+              "d",
+              "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
+            );
+            folderIcon.appendChild(p);
           } else {
             folderIcon.classList.replace("lucide-folder", "lucide-folder-open");
-            folderIcon.innerHTML =
-              '<path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/>';
+            while (folderIcon.firstChild) folderIcon.removeChild(folderIcon.firstChild);
+            const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            p.setAttribute(
+              "d",
+              "m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"
+            );
+            folderIcon.appendChild(p);
           }
         }
       });

@@ -1,3 +1,4 @@
+/* global process */
 import prompts from "prompts";
 import path from "path";
 import fs from "fs";
@@ -42,6 +43,9 @@ export async function collectUserInput(cliProvidedDir) {
         const trimmed = name.trim();
         if (trimmed.length === 0) {
           return "Project name cannot be empty.";
+        }
+        if (!/^[a-zA-Z0-9._-]+$/.test(trimmed)) {
+          return "Project name can only contain letters, numbers, dots, hyphens, and underscores.";
         }
         if (fs.existsSync(path.resolve(process.cwd(), trimmed))) {
           return `The directory "${trimmed}" already exists. Choose a different name.`;
