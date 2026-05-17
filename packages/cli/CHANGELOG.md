@@ -1,5 +1,13 @@
 # @docubook/cli
 
+## 0.5.3
+
+### Patch Changes
+
+- fix: Shell injection risk in CLI installer — execSync with string interpolation ;
+  - Replace execSync curl/tar dengan execFileSync with array args
+  - Replace execSync(\${packageManager}--version`) with execFileSync
+
 ## 0.5.2
 
 ### Patch Changes

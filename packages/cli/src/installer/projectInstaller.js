@@ -4,7 +4,7 @@ import os from "os";
 import { URL, fileURLToPath } from "url";
 import ora from "ora";
 import chalk from "chalk";
-import { execSync, execFileSync } from "child_process";
+import { execFileSync } from "child_process";
 import prompts from "prompts";
 import log from "../utils/logger.js";
 import { displayManualSteps } from "../utils/display.js";
@@ -16,14 +16,7 @@ import { getTemplate } from "../utils/templateDetect.js";
  * @param {Object} options - Installation options.
  */
 export async function createProject(options) {
-  const {
-    directoryName,
-    packageManager,
-    template,
-    autoInstall,
-    docubookVersion,
-    state
-  } = options;
+  const { directoryName, packageManager, template, autoInstall, docubookVersion, state } = options;
 
   const projectPath = path.resolve(process.cwd(), directoryName);
 
@@ -34,8 +27,8 @@ export async function createProject(options) {
   log.info(`Creating a new DocuBook project in ${chalk.green(projectPath)}...`);
 
   try {
-    state?.setStage('scaffolding');
-    state?.setCurrentStep('Creating directories...');
+    state?.setStage("scaffolding");
+    state?.setCurrentStep("Creating directories...");
     renderScaffolding(state || {});
 
     const { templatePath, cleanup } = await getOrDownloadTemplate(template, state);
@@ -56,7 +49,7 @@ export async function createProject(options) {
     const pkgPath = path.join(projectPath, "package.json");
     if (fs.existsSync(pkgPath)) {
       const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
-      pkg.name = directoryName
+      pkg.name = directoryName;
       const packageManagerSpec = getPackageManagerSpec(packageManager);
       if (packageManagerSpec) {
         pkg.packageManager = packageManagerSpec;
@@ -87,12 +80,12 @@ export async function createProject(options) {
 
 function getPackageManagerSpec(packageManager) {
   try {
-    const versionOutput = execSync(`${packageManager} --version`, {
+    const versionOutput = execFileSync(packageManager, ["--version"], {
       stdio: ["ignore", "pipe", "pipe"],
       encoding: "utf8",
     }).trim();
 
-    const version = versionOutput.split(/\r?\n/).at(-1)?.trim()
+    const version = versionOutput.split(/\r?\n/).at(-1)?.trim();
     if (!version) return null;
 
     return `${packageManager}@${version}`;
@@ -170,8 +163,8 @@ async function downloadTemplateFromGitHub(templateId, templateUrl) {
       throw new Error(`Invalid template URL: ${templateUrl}`);
     }
 
-    const branchMatch = templateUrl.match(/\/tree\/([^/]+)\//)
-    const branch = branchMatch?.[1] || "main"
+    const branchMatch = templateUrl.match(/\/tree\/([^/]+)\//);
+    const branch = branchMatch?.[1] || "main";
 
     const archiveUrl = `https://github.com/${repoMatch[1]}/archive/refs/heads/${branch}.tar.gz`;
     const archivePath = path.join(tempDir, "repo.tar.gz");
@@ -180,7 +173,7 @@ async function downloadTemplateFromGitHub(templateId, templateUrl) {
     const downloadSpinner = ora(`Downloading template...`).start();
 
     try {
-      execSync(`curl -L -o "${archivePath}" "${archiveUrl}"`, { stdio: "pipe" });
+      execFileSync("curl", ["-L", "-o", archivePath, archiveUrl], { stdio: "pipe" });
       downloadSpinner.succeed("Template downloaded");
     } catch (error) {
       downloadSpinner.fail("Failed to download template");
@@ -191,7 +184,7 @@ async function downloadTemplateFromGitHub(templateId, templateUrl) {
     const extractSpinner = ora(`Extracting template...`).start();
 
     try {
-      execSync(`tar -xzf "${archivePath}" -C "${tempDir}"`, { stdio: "pipe" });
+      execFileSync("tar", ["-xzf", archivePath, "-C", tempDir], { stdio: "pipe" });
       extractSpinner.succeed("Template extracted");
     } catch (error) {
       extractSpinner.fail("Failed to extract template");
@@ -199,7 +192,7 @@ async function downloadTemplateFromGitHub(templateId, templateUrl) {
     }
 
     // Find template in extracted repo
-    const repoName = repoMatch[1].split("/")[1]
+    const repoName = repoMatch[1].split("/")[1];
     const extractedDir = path.join(tempDir, `${repoName}-main`, "packages", "template", templateId);
 
     if (!fs.existsSync(extractedDir)) {
@@ -210,12 +203,12 @@ async function downloadTemplateFromGitHub(templateId, templateUrl) {
       templatePath: extractedDir,
       cleanup: () => {
         try {
-          fs.rmSync(tempDir, { recursive: true, force: true })
+          fs.rmSync(tempDir, { recursive: true, force: true });
         } catch {
           // non-fatal
         }
       },
-    }
+    };
   } catch (error) {
     fs.rmSync(tempDir, { recursive: true, force: true });
     throw new Error(`Failed to download template: ${error.message}`);
@@ -283,11 +276,11 @@ async function installDependencies(directoryName, packageManager, projectPath, s
       pnpm: { command: "pnpm", args: ["install"] },
       yarn: { command: "yarn", args: ["install"] },
       bun: { command: "bun", args: ["install"] },
-    }
+    };
 
-    const selected = installCommands[packageManager]
+    const selected = installCommands[packageManager];
     if (!selected) {
-      throw new Error(`Unsupported package manager: ${packageManager}`)
+      throw new Error(`Unsupported package manager: ${packageManager}`);
     }
 
     execFileSync(selected.command, selected.args, { cwd: projectPath, stdio: "inherit" });
