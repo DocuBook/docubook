@@ -5,10 +5,18 @@ import Toc from "../components/Toc";
 import { ThemeToggle } from "../components/Theme";
 import type { TocItem } from "./types";
 
+function safeParseTocs(raw: string | undefined): TocItem[] {
+  try {
+    return JSON.parse(raw || "[]");
+  } catch {
+    return [];
+  }
+}
+
 function mountIslands() {
   const sidebarEl = document.getElementById("sidebar-island");
   if (sidebarEl) {
-    const tocs: TocItem[] = JSON.parse(sidebarEl.dataset.tocs || "[]");
+    const tocs: TocItem[] = safeParseTocs(sidebarEl.dataset.tocs);
     const title = sidebarEl.dataset.title || "";
     const repoUrl = sidebarEl.dataset.repo || "";
     createRoot(sidebarEl).render(React.createElement(Sidebar, { tocs, title, repoUrl }));
@@ -16,7 +24,7 @@ function mountIslands() {
 
   const mobileBarEl = document.getElementById("mobile-bar-island");
   if (mobileBarEl) {
-    const tocs: TocItem[] = JSON.parse(mobileBarEl.dataset.tocs || "[]");
+    const tocs: TocItem[] = safeParseTocs(mobileBarEl.dataset.tocs);
     const title = mobileBarEl.dataset.title || "";
     const repoUrl = mobileBarEl.dataset.repo || "";
     createRoot(mobileBarEl).render(React.createElement(MobileBar, { tocs, title, repoUrl }));
@@ -24,7 +32,7 @@ function mountIslands() {
 
   const tocEl = document.getElementById("toc-island");
   if (tocEl) {
-    const tocs: TocItem[] = JSON.parse(tocEl.dataset.tocs || "[]");
+    const tocs: TocItem[] = safeParseTocs(tocEl.dataset.tocs);
     createRoot(tocEl).render(React.createElement(Toc, { tocs }));
   }
 

@@ -12,8 +12,10 @@ async function cleanOldBundles() {
         await unlink(join(ASSETS_DIR, file));
       }
     }
-  } catch {
-    /* dir may not exist yet */
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+      console.error("Failed to clean old bundles:", (err as Error).message);
+    }
   }
 }
 
@@ -31,8 +33,8 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
   });
 
   if (!result.success) {
-    console.error("Client bundle failed:");
     for (const log of result.logs) console.error(log);
+    throw new Error("Client bundle failed");
   }
 
   const jsFile = result.outputs[0]?.path.split("/").pop() || "client.js";

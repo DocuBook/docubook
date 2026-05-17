@@ -46,8 +46,8 @@ async function readCache(): Promise<BuildCache> {
       const data = await readFile(CACHE_FILE, "utf-8");
       return JSON.parse(data);
     }
-  } catch {
-    /* skip */
+  } catch (err) {
+    console.error("Failed to load build cache:", (err as Error).message);
   }
   return {};
 }
@@ -78,8 +78,8 @@ async function findMdxFiles(dir: string, baseDir = ""): Promise<{ path: string; 
         files.push({ path, mtime: stats.mtimeMs });
       }
     }
-  } catch {
-    /* skip */
+  } catch (err) {
+    console.error("Failed to scan docs directory:", (err as Error).message);
   }
   return files;
 }
@@ -247,8 +247,8 @@ async function build() {
     const { rm } = await import("node:fs/promises");
     try {
       await rm(DIST_DIR, { recursive: true, force: true });
-    } catch {
-      /* ignore */
+    } catch (err) {
+      console.error("Failed to clean dist directory:", (err as Error).message);
     }
   }
 

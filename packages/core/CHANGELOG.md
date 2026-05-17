@@ -1,5 +1,14 @@
 # @docubook/core
 
+## 1.6.3
+
+### Patch Changes
+
+- fix(core): improve error handling and add extract tests #74 ;
+  - only continue on ENOENT, re-throw other errors
+  - add try/catch to extractFrontmatterWithContent
+  - unit tests for sluggify, extractTocs, extractFrontmatter
+
 ## 1.6.2
 
 ### Patch Changes

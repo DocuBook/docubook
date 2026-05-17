@@ -18,6 +18,18 @@ export default tseslint.config(
     },
   },
   {
+    files: ["packages/cli/**/*.js"],
+    languageOptions: {
+      globals: {
+        process: "readonly",
+        console: "readonly",
+      },
+    },
+    rules: {
+      "@typescript-eslint/no-unused-vars": "off",
+    },
+  },
+  {
     ignores: ["**/dist/**", "**/node_modules/**", "**/.turbo/**", "**/vitest.config.ts"],
   }
 );
