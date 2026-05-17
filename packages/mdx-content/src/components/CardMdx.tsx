@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import type { ComponentType, CSSProperties, HTMLAttributes, ReactNode } from "react";
 import { LinkMdx } from "./LinkMdx";
 import { IconProp, resolveLucideIcon } from "./IconMdx";
@@ -34,6 +33,8 @@ const baseStyle: CSSProperties = {
   overflow: "hidden",
 };
 
+const hoverCSS = `[data-card-hover]:hover{border-color:hsl(var(--primary,210 81% 56%))!important;box-shadow:0 11px 28px rgba(34,129,227,0.15)!important;transform:translateY(-2px)!important}[data-card-hover]:hover [data-card-icon]{transform:scale(1.05)}`;
+
 export function CardMdx({
   title,
   icon,
@@ -45,7 +46,6 @@ export function CardMdx({
   __LinkComponent,
   ...props
 }: CardMdxProps) {
-  const [hover, setHover] = useState(false);
   const resolvedIcon = resolveLucideIcon(icon);
   const LinkComponent = __LinkComponent ?? LinkMdx;
 
@@ -61,6 +61,7 @@ export function CardMdx({
       {resolvedIcon ? (
         <span
           aria-hidden="true"
+          data-card-icon=""
           style={{
             display: "block",
             alignItems: "center",
@@ -70,7 +71,6 @@ export function CardMdx({
             color: "hsl(var(--primary, 210 81% 56%))",
             fontSize: "2rem",
             transition: "transform 0.2s ease, color 0.2s ease",
-            transform: hover ? "scale(1.05)" : "scale(1)",
           }}
         >
           {resolvedIcon}
@@ -103,43 +103,29 @@ export function CardMdx({
     </div>
   );
 
-  const interactiveStyle: CSSProperties = href
-    ? {
-        cursor: "pointer",
-        borderColor: hover ? "hsl(var(--primary, 210 81% 56%))" : "hsl(var(--border, 210 20% 85%))",
-        boxShadow: hover ? "0 11px 28px rgba(34, 129, 227, 0.15)" : "0 0 0 rgba(0, 0, 0, 0)",
-        transform: hover ? "translateY(-2px)" : "translateY(0)",
-      }
-    : {
-        borderColor: "hsl(var(--border, 210 20% 85%))",
-        boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
-      };
-
-  const combinedStyle = { ...baseStyle, ...interactiveStyle, ...style };
-
-  const divProps = {
-    onMouseEnter: () => setHover(true),
-    onMouseLeave: () => setHover(false),
-    style: combinedStyle,
-    ...(className ? { className } : {}),
-    ...props,
-  };
+  const combinedStyle = { ...baseStyle, ...style };
 
   if (href) {
     return (
-      <LinkComponent
-        href={href}
-        data-card-link=""
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-        style={combinedStyle}
-        {...(className ? { className } : {})}
-        {...(props as React.ComponentProps<typeof LinkComponent>)}
-      >
-        {content}
-      </LinkComponent>
+      <>
+        <style dangerouslySetInnerHTML={{ __html: hoverCSS }} />
+        <LinkComponent
+          href={href}
+          data-card-hover=""
+          data-card-link=""
+          style={combinedStyle}
+          {...(className ? { className } : {})}
+          {...(props as React.ComponentProps<typeof LinkComponent>)}
+        >
+          {content}
+        </LinkComponent>
+      </>
     );
   }
 
-  return <div {...divProps}>{content}</div>;
+  return (
+    <div style={combinedStyle} {...(className ? { className } : {})} {...props}>
+      {content}
+    </div>
+  );
 }

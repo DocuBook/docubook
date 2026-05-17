@@ -1,5 +1,11 @@
 # @docubook/mdx-content
 
+## 3.0.3
+
+### Patch Changes
+
+- perf(mdx-content): replace hover useState with CSS :hover
+
 ## 3.0.2
 
 ### Patch Changes
