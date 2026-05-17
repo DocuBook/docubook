@@ -10,7 +10,6 @@ import docuConfig from "@/docu.json";
 import GitHubButton from "@/components/Github";
 import { Button } from "@/components/ui/button";
 import { useState, useCallback, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { ModeToggle } from "@/components/ThemeToggle";
 
 interface NavbarProps {
@@ -114,32 +113,31 @@ export function Navbar({ id }: NavbarProps) {
         </div>
       </nav>
 
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            ref={menuRef}
-            id="mobile-nav-menu"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Navigation menu"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="bg-background/95 w-full border-b shadow-sm backdrop-blur-sm md:hidden"
-          >
-            <div className="mx-auto w-[95vw] sm:container">
-              <ul className="flex flex-col py-2">
-                <NavMenuCollapsible onItemClick={() => setIsMenuOpen(false)} />
-              </ul>
-              <div className="flex items-center justify-between border-t px-1 py-3">
-                <GitHubButton />
-                <ModeToggle />
-              </div>
+      <div
+        id="mobile-nav-menu"
+        ref={menuRef}
+        role="dialog"
+        aria-modal={isMenuOpen ? true : undefined}
+        aria-label="Navigation menu"
+        className="bg-background/95 grid w-full border-b shadow-sm backdrop-blur-sm transition-[grid-template-rows,opacity] duration-200 ease-in-out md:hidden"
+        style={{
+          gridTemplateRows: isMenuOpen ? "1fr" : "0fr",
+          opacity: isMenuOpen ? 1 : 0,
+          borderBottomWidth: isMenuOpen ? undefined : 0,
+        }}
+      >
+        <div className="overflow-hidden">
+          <div className="mx-auto w-[95vw] sm:container">
+            <ul className="flex flex-col py-2">
+              <NavMenuCollapsible onItemClick={() => setIsMenuOpen(false)} />
+            </ul>
+            <div className="flex items-center justify-between border-t px-1 py-3">
+              <GitHubButton />
+              <ModeToggle />
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

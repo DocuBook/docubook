@@ -282,6 +282,9 @@ async function build() {
   logger.spinner.start("Building pages...");
   t = performance.now();
 
+  const CONCURRENCY = 10;
+  const buildTasks = [];
+
   for (const file of mdxFiles) {
     const mdxPath1 = join(DOCS_DIR, file.path, "index.mdx");
     const mdxPath2 = join(DOCS_DIR, `${file.path}.mdx`);
@@ -309,13 +312,25 @@ async function build() {
     }
 
     const relPath = absPath.replace(resolve("./"), "");
-    const html = await renderDocsPage(file.path, rawMdx, relPath);
-    const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
-    await mkdir(dirname(outputPath), { recursive: true });
-    await writeFile(outputPath, html);
+    const capturedRawMdx = rawMdx;
+    const capturedFile = file;
 
-    cache[file.path] = { hash: hashContent(rawMdx), mtime: file.mtime, builtAt: Date.now() };
-    built++;
+    buildTasks.push(async () => {
+      const html = await renderDocsPage(capturedFile.path, capturedRawMdx, relPath);
+      const outputPath = join(DIST_DIR, "docs", `${capturedFile.path}.html`);
+      await mkdir(dirname(outputPath), { recursive: true });
+      await writeFile(outputPath, html);
+      cache[capturedFile.path] = {
+        hash: hashContent(capturedRawMdx),
+        mtime: capturedFile.mtime,
+        builtAt: Date.now(),
+      };
+      built++;
+    });
+  }
+
+  for (let i = 0; i < buildTasks.length; i += CONCURRENCY) {
+    await Promise.all(buildTasks.slice(i, i + CONCURRENCY).map((fn) => fn()));
   }
 
   const indexMdxPath = join(DOCS_DIR, "index.mdx");
