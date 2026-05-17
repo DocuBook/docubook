@@ -14,41 +14,37 @@ type AnchorProps = LinkProps & {
 } & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof LinkProps>;
 
 const Anchor = forwardRef<HTMLAnchorElement, AnchorProps>(
-  ({
-    absolute = false,
-    className = "",
-    activeClassName = "",
-    disabled = false,
-    children,
-    href,
-    ...props
-  }, ref) => {
+  (
+    {
+      absolute = false,
+      className = "",
+      activeClassName = "",
+      disabled = false,
+      children,
+      href,
+      ...props
+    },
+    ref
+  ) => {
     const path = usePathname();
-    const hrefStr = href?.toString() || '';
+    const hrefStr = href?.toString() || "";
 
     // Check if URL is external
     const isExternal = /^(https?:\/\/|\/\/)/.test(hrefStr);
 
     // Check if current path matches the link
-    const isActive = absolute
-      ? hrefStr.split("/")[1] === path?.split("/")[1]
-      : path === hrefStr;
+    const isActive = absolute ? hrefStr.split("/")[1] === path?.split("/")[1] : path === hrefStr;
 
     // Apply active class only for internal links
     const linkClassName = cn(
-      'transition-colors hover:text-primary',
+      "transition-colors hover:text-primary",
       className,
       !isExternal && isActive && activeClassName
     );
 
     if (disabled) {
-      return (
-        <span className={cn(linkClassName, "cursor-not-allowed opacity-50")}>
-          {children}
-        </span>
-      );
+      return <span className={cn(linkClassName, "cursor-not-allowed opacity-50")}>{children}</span>;
     }
-
 
     if (isExternal) {
       return (
@@ -65,12 +61,12 @@ const Anchor = forwardRef<HTMLAnchorElement, AnchorProps>(
       );
     }
 
-
     return (
       <Link
         ref={ref}
         href={hrefStr}
         className={linkClassName}
+        aria-current={isActive ? "page" : undefined}
         {...props}
       >
         {children}

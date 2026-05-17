@@ -1,14 +1,10 @@
 import { EachRoute } from "@/lib/routes";
 import Anchor from "./anchor";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { SheetClose } from "@/components/ui/sheet";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { usePathname } from "next/navigation";
 
 interface SubLinkProps extends EachRoute {
@@ -27,42 +23,44 @@ export default function SubLink({
   parentHref = "",
 }: SubLinkProps) {
   const path = usePathname();
-  const [isOpen, setIsOpen] = useState(level === 0);
 
   // Full path including parent's href
   const fullHref = parentHref ? `${parentHref}${href}` : `/docs${href}`;
 
+  const shouldBeOpen = level === 0 || (!!items && path.startsWith(fullHref) && path !== fullHref);
+  const [isOpen, setIsOpen] = useState(shouldBeOpen);
+
   // Check if any child is active (for parent items)
   const hasActiveChild = useMemo(() => {
     if (!items) return false;
-    return items.some(item => {
+    return items.some((item) => {
       const childHref = `${fullHref}${item.href}`;
       return path.startsWith(childHref) && path !== fullHref;
     });
   }, [items, path, fullHref]);
 
-  // Auto-expand if current path is a child of this item
-  useEffect(() => {
-    if (items && (path.startsWith(fullHref) && path !== fullHref)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsOpen(true);
-    }
-  }, [path, fullHref, items]);
+  // Sync open state when path changes (expand if child becomes active)
+  if (shouldBeOpen && !isOpen) {
+    setIsOpen(true);
+  }
 
   // Only apply active styles if it's an exact match and not a parent with active children
-  const Comp = useMemo(() => (
-    <Anchor
-      activeClassName={!hasActiveChild ? "dark:text-accent text-primary font-medium" : ""}
-      href={fullHref}
-      data-search-lvl0={level === 0 && hasActiveChild ? "true" : undefined}
-      className={cn(
-        "text-foreground/80 hover:text-foreground transition-colors",
-        hasActiveChild && "font-medium text-foreground"
-      )}
-    >
-      {title}
-    </Anchor>
-  ), [title, fullHref, hasActiveChild, level]);
+  const Comp = useMemo(
+    () => (
+      <Anchor
+        activeClassName={!hasActiveChild ? "dark:text-accent text-primary font-medium" : ""}
+        href={fullHref}
+        data-search-lvl0={level === 0 && hasActiveChild ? "true" : undefined}
+        className={cn(
+          "text-foreground/80 hover:text-foreground transition-colors",
+          hasActiveChild && "text-foreground font-medium"
+        )}
+      >
+        {title}
+      </Anchor>
+    ),
+    [title, fullHref, hasActiveChild, level]
+  );
 
   const titleOrLink = !noLink ? (
     isSheet ? (
@@ -74,7 +72,7 @@ export default function SubLink({
     <h4
       data-search-lvl0={level === 0 && hasActiveChild ? "true" : undefined}
       className={cn(
-        "font-medium sm:text-sm text-foreground/90 hover:text-foreground transition-colors",
+        "text-foreground/90 hover:text-foreground font-medium transition-colors sm:text-sm",
         hasActiveChild ? "text-foreground" : "text-foreground/80"
       )}
     >
@@ -87,26 +85,25 @@ export default function SubLink({
   }
 
   return (
-    <div className={cn("flex flex-col gap-1 w-full")}>
+    <div className={cn("flex w-full flex-col gap-1")}>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger
-          className="w-full pr-5 text-left cursor-pointer"
-          aria-expanded={isOpen}
-          aria-controls={`collapsible-${fullHref.replace(/[^a-zA-Z0-9]/g, '-')}`}
-        >
-          <div className="flex items-center justify-between w-full">
-            {titleOrLink}
-            <span className="ml-2 text-muted-foreground">
-              {!isOpen ? (
-                <ChevronRight className="h-[0.9rem] w-[0.9rem]" aria-hidden="true" />
-              ) : (
-                <ChevronDown className="h-[0.9rem] w-[0.9rem]" aria-hidden="true" />
-              )}
-            </span>
-          </div>
-        </CollapsibleTrigger>
+        <div className="flex w-full items-center justify-between">
+          {titleOrLink}
+          <CollapsibleTrigger
+            className="text-muted-foreground ml-2 cursor-pointer"
+            aria-expanded={isOpen}
+            aria-label={`Toggle ${title} section`}
+            aria-controls={`collapsible-${fullHref.replace(/[^a-zA-Z0-9]/g, "-")}`}
+          >
+            {!isOpen ? (
+              <ChevronRight className="h-[0.9rem] w-[0.9rem]" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="h-[0.9rem] w-[0.9rem]" aria-hidden="true" />
+            )}
+          </CollapsibleTrigger>
+        </div>
         <CollapsibleContent
-          id={`collapsible-${fullHref.replace(/[^a-zA-Z0-9]/g, '-')}`}
+          id={`collapsible-${fullHref.replace(/[^a-zA-Z0-9]/g, "-")}`}
           className={cn(
             "overflow-hidden transition-all duration-200 ease-in-out",
             isOpen ? "animate-collapsible-down" : "animate-collapsible-up"
@@ -114,8 +111,8 @@ export default function SubLink({
         >
           <div
             className={cn(
-              "flex flex-col items-start sm:text-sm text-foreground/80 ml-0.5 mt-2.5 gap-3 hover:[&_a]:text-foreground transition-colors",
-              level > 0 && "pl-4 border-l border-border ml-1.5"
+              "text-foreground/80 hover:[&_a]:text-foreground mt-2.5 ml-0.5 flex flex-col items-start gap-3 transition-colors sm:text-sm",
+              level > 0 && "border-border ml-1.5 border-l pl-4"
             )}
           >
             {items?.map((innerLink) => (

@@ -1,48 +1,80 @@
-"use client"
+"use client";
 
-import { ArrowUpRight, ChevronDown, ChevronUp } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
-import Search from "@/components/SearchBox"
-import Anchor from "@/components/anchor"
-import { Separator } from "@/components/ui/separator"
-import docuConfig from "@/docu.json"
-import GitHubButton from "@/components/Github"
-import { Button } from "@/components/ui/button"
-import { useState, useCallback, useRef, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { ModeToggle } from "@/components/ThemeToggle"
+import { ArrowUpRight, ChevronDown, ChevronUp } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import Search from "@/components/SearchBox";
+import Anchor from "@/components/anchor";
+import { Separator } from "@/components/ui/separator";
+import docuConfig from "@/docu.json";
+import GitHubButton from "@/components/Github";
+import { Button } from "@/components/ui/button";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ModeToggle } from "@/components/ThemeToggle";
 
 interface NavbarProps {
-  id?: string
+  id?: string;
 }
 
 export function Navbar({ id }: NavbarProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const navRef = useRef<HTMLDivElement>(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const toggleMenu = useCallback(() => {
-    setIsMenuOpen((prev) => !prev)
-  }, [])
+    setIsMenuOpen((prev) => !prev);
+  }, []);
 
   // Close menu when the user clicks/taps anywhere outside the navbar, or presses Escape
   useEffect(() => {
-    if (!isMenuOpen) return
+    if (!isMenuOpen) return;
     const handleClickOutside = (event: MouseEvent) => {
       if (navRef.current && !navRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false)
+        setIsMenuOpen(false);
       }
-    }
+    };
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsMenuOpen(false)
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    document.addEventListener("keydown", handleKeyDown)
+      if (event.key === "Escape") setIsMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-      document.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [isMenuOpen])
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMenuOpen]);
+
+  // Focus trap: keep Tab within the mobile menu when open
+  useEffect(() => {
+    if (!isMenuOpen || !menuRef.current) return;
+    const menu = menuRef.current;
+    const focusableSelector =
+      'a[href], button, input, textarea, select, [tabindex]:not([tabindex="-1"])';
+
+    const handleTrap = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const focusables = menu.querySelectorAll<HTMLElement>(focusableSelector);
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    // Move focus into the menu
+    const focusables = menu.querySelectorAll<HTMLElement>(focusableSelector);
+    if (focusables.length > 0) focusables[0].focus();
+
+    menu.addEventListener("keydown", handleTrap);
+    return () => menu.removeEventListener("keydown", handleTrap);
+  }, [isMenuOpen]);
 
   return (
     <div ref={navRef} className="sticky top-0 z-50 w-full">
@@ -85,7 +117,11 @@ export function Navbar({ id }: NavbarProps) {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
+            ref={menuRef}
             id="mobile-nav-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -105,11 +141,11 @@ export function Navbar({ id }: NavbarProps) {
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }
 
 export function Logo() {
-  const { navbar } = docuConfig
+  const { navbar } = docuConfig;
 
   return (
     <Link href="/" className="flex items-center gap-1.5">
@@ -126,17 +162,17 @@ export function Logo() {
         {navbar.logoText}
       </h2>
     </Link>
-  )
+  );
 }
 
 // Desktop NavMenu — horizontal list
 export function NavMenu() {
-  const { navbar } = docuConfig
+  const { navbar } = docuConfig;
 
   return (
     <>
       {navbar?.menu?.map((item) => {
-        const isExternal = item.href.startsWith("http")
+        const isExternal = item.href.startsWith("http");
         return (
           <Anchor
             key={`${item.title}-${item.href}`}
@@ -150,20 +186,20 @@ export function NavMenu() {
             {item.title}
             {isExternal && <ArrowUpRight className="text-foreground/80 h-4 w-4" />}
           </Anchor>
-        )
+        );
       })}
     </>
-  )
+  );
 }
 
 // Mobile Collapsible NavMenu — vertical list items
 function NavMenuCollapsible({ onItemClick }: { onItemClick: () => void }) {
-  const { navbar } = docuConfig
+  const { navbar } = docuConfig;
 
   return (
     <>
       {navbar?.menu?.map((item) => {
-        const isExternal = item.href.startsWith("http")
+        const isExternal = item.href.startsWith("http");
         return (
           <li key={item.title + item.href}>
             <Anchor
@@ -179,8 +215,8 @@ function NavMenuCollapsible({ onItemClick }: { onItemClick: () => void }) {
               {isExternal && <ArrowUpRight className="text-foreground/60 h-4 w-4 shrink-0" />}
             </Anchor>
           </li>
-        )
+        );
       })}
     </>
-  )
+  );
 }

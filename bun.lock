@@ -153,6 +153,7 @@
         "typescript": "^5.9.3",
       },
       "peerDependencies": {
+        "@docubook/core": ">=1.6.0",
         "lucide-react": "^1.7.0",
         "react": ">=18",
         "react-dom": ">=18",
