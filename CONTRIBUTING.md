@@ -132,7 +132,7 @@ Validates commit messages using **Commitlint** with
 - `apps/web`: Next.js documentation app
 - `packages/cli`: CLI scaffold and installer utilities
 - `packages/core`: Shared compile/content utilities
-- `packages/docs-tree`: docs tree generation package
+- `packages/flame`: A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.
 - `packages/mdx-content`: MDX content helpers
 - `template/*`: starter templates
 
