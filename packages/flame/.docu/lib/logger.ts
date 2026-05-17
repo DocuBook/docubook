@@ -5,17 +5,31 @@
 
 import docuConfig from "../../docu.json" with { type: "json" };
 
-const c = {
-  reset: "\x1b[0m",
-  bold: "\x1b[1m",
-  dim: "\x1b[2m",
-  green: "\x1b[32m",
-  cyan: "\x1b[36m",
-  magenta: "\x1b[35m",
-  yellow: "\x1b[33m",
-  white: "\x1b[37m",
-  gray: "\x1b[90m",
-};
+const isCI = !!(process.env.CI || process.env.NO_COLOR || !process.stdout.isTTY);
+
+const c = isCI
+  ? {
+      reset: "",
+      bold: "",
+      dim: "",
+      green: "",
+      cyan: "",
+      magenta: "",
+      yellow: "",
+      white: "",
+      gray: "",
+    }
+  : {
+      reset: "\x1b[0m",
+      bold: "\x1b[1m",
+      dim: "\x1b[2m",
+      green: "\x1b[32m",
+      cyan: "\x1b[36m",
+      magenta: "\x1b[35m",
+      yellow: "\x1b[33m",
+      white: "\x1b[37m",
+      gray: "\x1b[90m",
+    };
 
 const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
@@ -27,14 +41,22 @@ class Spinner {
   info(finalMsg: string) {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
-    process.stdout.write(`\r\x1b[K${c.cyan}ℹ${c.reset} ${finalMsg}\n`);
-    process.stdout.write("\x1b[?25h");
+    if (isCI) {
+      console.log(`ℹ ${finalMsg}`);
+    } else {
+      process.stdout.write(`\r\x1b[K${c.cyan}ℹ${c.reset} ${finalMsg}\n`);
+      process.stdout.write("\x1b[?25h");
+    }
   }
 
   start(msg: string) {
     this.message = msg;
+    if (isCI) {
+      console.log(`… ${msg}`);
+      return;
+    }
     this.frame = 0;
-    process.stdout.write("\x1b[?25l"); // hide cursor
+    process.stdout.write("\x1b[?25l");
     this.render();
     this.timer = setInterval(() => this.render(), 80);
   }
@@ -42,8 +64,12 @@ class Spinner {
   stop(finalMsg: string) {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
+    if (isCI) {
+      console.log(`✓ ${finalMsg}`);
+      return;
+    }
     process.stdout.write(`\r\x1b[K${c.green}✓${c.reset} ${finalMsg}\n`);
-    process.stdout.write("\x1b[?25h"); // show cursor
+    process.stdout.write("\x1b[?25h");
   }
 
   private render() {

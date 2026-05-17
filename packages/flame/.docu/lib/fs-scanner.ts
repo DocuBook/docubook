@@ -53,42 +53,45 @@ function normalizePath(path: string): string {
 function scanDir(dirPath: string, docsRoot: string): FileNode[] {
   const nodes: FileNode[] = [];
 
+  let entries: string[];
   try {
-    const entries = readdirSync(dirPath);
+    entries = readdirSync(dirPath);
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+    return nodes;
+  }
 
-    for (const entry of entries) {
-      if (entry.startsWith(".")) continue;
+  for (const entry of entries) {
+    if (entry.startsWith(".")) continue;
 
-      const absPath = join(dirPath, entry);
+    const absPath = join(dirPath, entry);
 
-      try {
-        const stat = statSync(absPath);
+    try {
+      const stat = statSync(absPath);
 
-        if (stat.isDirectory()) {
-          const children = scanDir(absPath, docsRoot);
-          if (children.length > 0) {
-            nodes.push({
-              name: entry,
-              relPath: normalizePath(relative(docsRoot, absPath)),
-              absPath,
-              isDirectory: true,
-              children,
-            });
-          }
-        } else if (stat.isFile() && isDocFile(entry)) {
+      if (stat.isDirectory()) {
+        const children = scanDir(absPath, docsRoot);
+        if (children.length > 0) {
           nodes.push({
             name: entry,
-            relPath: normalizePath(relative(docsRoot, absPath).replace(/\.(mdx|md)$/, "")),
+            relPath: normalizePath(relative(docsRoot, absPath)),
             absPath,
-            isDirectory: false,
+            isDirectory: true,
+            children,
           });
         }
-      } catch {
-        continue;
+      } else if (stat.isFile() && isDocFile(entry)) {
+        nodes.push({
+          name: entry,
+          relPath: normalizePath(relative(docsRoot, absPath).replace(/\.(mdx|md)$/, "")),
+          absPath,
+          isDirectory: false,
+        });
       }
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+      continue;
     }
-  } catch {
-    return nodes;
   }
 
   return nodes;

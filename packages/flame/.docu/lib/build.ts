@@ -297,8 +297,8 @@ async function build() {
         rawMdx = await readFile(p, "utf-8");
         absPath = p;
         break;
-      } catch {
-        // file doesn't exist, try next
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
       }
     }
     if (!rawMdx) continue;

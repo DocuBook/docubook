@@ -44,8 +44,8 @@ function resolveFile(pathname: string): string | null {
   const exact = resolve(DIST_DIR, path);
   try {
     if (statSync(exact).isFile()) return exact;
-  } catch {
-    /* not found */
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
   }
   return null;
 }

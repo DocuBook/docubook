@@ -5,7 +5,7 @@ export function Footer() {
     <footer className="text-muted-foreground mt-auto flex w-full flex-col items-start gap-4 py-6 sm:flex-row sm:items-center sm:justify-between">
       <Social />
       <aside>
-        <p>
+        <p className="text-xs">
           Made with{" "}
           <a
             href="https://docubook.pro"
