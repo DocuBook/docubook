@@ -45,12 +45,13 @@ function resolveFile(pathname: string): string | null {
 
   if (!path.includes(".")) {
     const withIndex = resolve(DIST_DIR, path, "index.html");
-    if (existsSync(withIndex)) return withIndex;
+    if (withIndex.startsWith(DIST_DIR) && existsSync(withIndex)) return withIndex;
     const withHtml = resolve(DIST_DIR, path + ".html");
-    if (existsSync(withHtml)) return withHtml;
+    if (withHtml.startsWith(DIST_DIR) && existsSync(withHtml)) return withHtml;
   }
 
   const exact = resolve(DIST_DIR, path);
+  if (!exact.startsWith(DIST_DIR)) return null;
   try {
     if (statSync(exact).isFile()) return exact;
   } catch (err) {
@@ -66,7 +67,7 @@ const server = Bun.serve({
 
   fetch(req) {
     const url = new URL(req.url);
-    const pathname = url.pathname;
+    const pathname = decodeURIComponent(url.pathname);
 
     const filePath = resolveFile(pathname);
     if (filePath) {

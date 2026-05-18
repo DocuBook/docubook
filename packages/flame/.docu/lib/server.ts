@@ -331,8 +331,8 @@ function getContentType(pathname: string): string {
 }
 
 function serveStatic(pathname: string): Response | null {
-  if (pathname.includes("..")) return null;
-  const assetPath = resolve(DIST_DIR, pathname.slice(1));
+  const decoded = decodeURIComponent(pathname);
+  const assetPath = resolve(DIST_DIR, decoded.slice(1));
   if (!assetPath.startsWith(DIST_DIR)) return null;
   try {
     const s = statSync(assetPath);
@@ -345,8 +345,8 @@ function serveStatic(pathname: string): Response | null {
     if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
   }
 
-  if (pathname.startsWith("/docs/assets/")) {
-    const docsAsset = resolve(DOCS_DIR, "assets", pathname.replace("/docs/assets/", ""));
+  if (decoded.startsWith("/docs/assets/")) {
+    const docsAsset = resolve(DOCS_DIR, "assets", decoded.replace("/docs/assets/", ""));
     if (!docsAsset.startsWith(resolve(DOCS_DIR, "assets"))) return null;
     try {
       const s = statSync(docsAsset);
