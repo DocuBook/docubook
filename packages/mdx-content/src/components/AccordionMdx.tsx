@@ -1,33 +1,33 @@
 "use client";
 
 import { useContext, useId, useState, type KeyboardEvent, type ReactNode } from "react";
-import { AccordionGroupContext } from "./AccordionContext";
-import { IconProp, resolveLucideIcon } from "./IconMdx";
+import { AccordionGroupContext } from "../utils/AccordionGroupContext";
+import { IconProp, resolveLucideIcon } from "../utils/Icon";
 import { ChevronRight } from "lucide-react";
 
 type AccordionMdxProps = {
-    title: string;
-    icon?: IconProp;
-    className?: string;
-    children?: ReactNode;
+  title: string;
+  icon?: IconProp;
+  className?: string;
+  children?: ReactNode;
 };
 
 export function AccordionMdx({ title, icon, className, children }: AccordionMdxProps) {
-    const groupContext = useContext(AccordionGroupContext);
-    const [localOpen, setLocalOpen] = useState(false);
-    const panelId = useId();
-    const triggerId = `${panelId}-trigger`;
+  const groupContext = useContext(AccordionGroupContext);
+  const [localOpen, setLocalOpen] = useState(false);
+  const panelId = useId();
+  const triggerId = `${panelId}-trigger`;
 
-    const isGroup = groupContext?.inGroup === true;
-    const isOpen = isGroup ? groupContext?.openTitle === title : localOpen;
-    const resolvedIcon = resolveLucideIcon(icon);
+  const isGroup = groupContext?.inGroup === true;
+  const isOpen = isGroup ? groupContext?.openTitle === title : localOpen;
+  const resolvedIcon = resolveLucideIcon(icon);
 
   function onToggle() {
     if (isGroup && groupContext) {
-            groupContext.setOpenTitle(groupContext.openTitle === title ? null : title);
-            return;
+      groupContext.setOpenTitle(groupContext.openTitle === title ? null : title);
+      return;
     }
-        setLocalOpen((prev) => !prev);
+    setLocalOpen((prev) => !prev);
   }
 
   return (
@@ -114,5 +114,5 @@ export function AccordionMdx({ title, icon, className, children }: AccordionMdxP
         {children}
       </div>
     </div>
-  )
+  );
 }

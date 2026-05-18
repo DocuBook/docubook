@@ -24,8 +24,8 @@ import {
 } from "react-icons/si";
 import { FaJava, FaCode, FaRegFileAlt } from "react-icons/fa";
 import { TbJson } from "react-icons/tb";
-import { CopyButton } from "./CopyButton";
-import { ExpandableCode } from "./ExpandableCode";
+import { CopyButton } from "../utils/CopyButton";
+import { ExpandableCode } from "../utils/ExpandableCode";
 
 type CodeBlockProps = ComponentProps<"pre"> & {
   raw?: string;

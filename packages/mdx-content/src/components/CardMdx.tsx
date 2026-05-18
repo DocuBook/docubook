@@ -2,7 +2,7 @@
 
 import type { ComponentType, CSSProperties, HTMLAttributes, ReactNode } from "react";
 import { LinkMdx } from "./LinkMdx";
-import { IconProp, resolveLucideIcon } from "./IconMdx";
+import { IconProp, resolveLucideIcon } from "../utils/Icon";
 import type { LinkMdxProps } from "./LinkMdx";
 
 type LinkRenderer = ComponentType<LinkMdxProps>;

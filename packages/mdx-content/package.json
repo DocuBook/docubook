@@ -1,6 +1,6 @@
 {
   "name": "@docubook/mdx-content",
-  "version": "3.0.3",
+  "version": "3.1.0",
   "description": "Portable MDX components and framework adapters for DocuBook",
   "type": "module",
   "main": "./dist/index.js",
@@ -33,6 +33,7 @@
   "scripts": {
     "build": "rm -rf dist tsconfig.tsbuildinfo && tsc -p tsconfig.json",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prepublishOnly": "pnpm run clean && pnpm run build"
   },
@@ -56,10 +57,10 @@
   "license": "MIT",
   "peerDependencies": {
     "@docubook/core": ">=1.6.0",
+    "lucide-react": "^1.7.0",
     "react": ">=18",
     "react-dom": ">=18",
-    "react-icons": "^5.0.0",
-    "lucide-react": "^1.7.0"
+    "react-icons": "^5.0.0"
   },
   "peerDependenciesMeta": {
     "next": {
@@ -67,9 +68,14 @@
     }
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "19.2.8",
     "@types/react-dom": "19.2.3",
+    "jsdom": "^29.1.1",
     "lucide-react": "^1.7.0",
+    "react": ">=18",
+    "react-dom": ">=18",
     "react-icons": "^5.0.0",
     "typescript": "^5.9.3"
   }

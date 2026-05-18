@@ -1,5 +1,20 @@
 # @docubook/mdx-content
 
+## 3.1.0
+
+### Minor Changes
+
+- refactor: separate shared utils from components and add unit tests ;
+  - move shared utilities to src/utils/ (Icon, CopyButton, ExpandableCode, AccordionGroupContext)
+  - add trim() normalization in resolveLucideIcon for consistent icon resolution
+  - remove redundant normalizedIcon in NoteMdx
+  - rename components for consistency (CodeBlock → CodeBlockMdx, CardGroup → CardsMdx, etc.)
+  - consolidate registry imports from single barrel
+  - update all import paths (components, client, server, index, registry)
+  - add unit tests for all components (82 tests across 19 files)
+  - add dedicated utils/ test subfolder for shared utility tests
+  - fix ExpandableCode test race condition with React 19 scheduler
+
 ## 3.0.3
 
 ### Patch Changes

@@ -3,32 +3,32 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 type CopyButtonProps = {
-    content: string;
+  content: string;
 };
 
 export function CopyButton({ content }: CopyButtonProps) {
-    const [copied, setCopied] = useState(false);
-    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const statusId = useId();
+  const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const statusId = useId();
 
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-        };
-    }, []);
+    };
+  }, []);
 
   async function onCopy() {
     try {
-        await navigator.clipboard.writeText(content);
-        setCopied(true);
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-        timeoutRef.current = setTimeout(() => setCopied(false), 1600);
+      timeoutRef.current = setTimeout(() => setCopied(false), 1600);
     } catch {
-        setCopied(false);
+      setCopied(false);
     }
   }
 
@@ -58,5 +58,5 @@ export function CopyButton({ content }: CopyButtonProps) {
         {copied ? "Code copied to clipboard" : "Ready to copy code"}
       </span>
     </button>
-    );
+  );
 }

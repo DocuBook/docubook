@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 
 type KeyboardMdxProps = {
   show: string;
@@ -66,7 +66,6 @@ const macSymbols: Record<string, string> = {
   left: "←",
   right: "→",
 };
-
 
 function normalize(show: string, type: "window" | "mac") {
   const token = (show || "").toLowerCase();

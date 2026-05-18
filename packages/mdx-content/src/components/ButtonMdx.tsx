@@ -1,20 +1,20 @@
 import type { ButtonHTMLAttributes, ComponentType, CSSProperties } from "react";
 import { LinkMdx } from "./LinkMdx";
-import { IconProp, resolveLucideIcon } from "./IconMdx";
+import { IconProp, resolveLucideIcon } from "../utils/Icon";
 import type { LinkMdxProps } from "./LinkMdx";
 
 type LinkRenderer = ComponentType<LinkMdxProps>;
 
 export type ButtonMdxProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-    href?: string;
-    variant?: "primary" | "secondary" | "ghost";
-    variation?: "primary" | "secondary" | "ghost";
-    size?: "sm" | "md" | "lg";
-    icon?: IconProp;
-    text?: string;
-    target?: string;
+  href?: string;
+  variant?: "primary" | "secondary" | "ghost";
+  variation?: "primary" | "secondary" | "ghost";
+  size?: "sm" | "md" | "lg";
+  icon?: IconProp;
+  text?: string;
+  target?: string;
   /** Internal adapter hook: inject framework link component without duplicating styles. */
-    __LinkComponent?: LinkRenderer;
+  __LinkComponent?: LinkRenderer;
 };
 
 const baseStyle: CSSProperties = {
@@ -57,11 +57,28 @@ const sizeStyles: Record<NonNullable<ButtonMdxProps["size"]>, CSSProperties> = {
   lg: { padding: "0.8rem 1rem", fontSize: "0.96rem" },
 };
 
-export function ButtonMdx({ href, variant, variation, size = "md", icon, text, style, children, target, __LinkComponent, ...props }: ButtonMdxProps) {
-    const resolvedVariant = variation ?? variant ?? "secondary";
-    const mergedStyle = { ...baseStyle, ...variantStyles[resolvedVariant], ...sizeStyles[size], ...style };
-    const resolvedIcon = resolveLucideIcon(icon);
-    const LinkComponent = __LinkComponent ?? LinkMdx;
+export function ButtonMdx({
+  href,
+  variant,
+  variation,
+  size = "md",
+  icon,
+  text,
+  style,
+  children,
+  target,
+  __LinkComponent,
+  ...props
+}: ButtonMdxProps) {
+  const resolvedVariant = variation ?? variant ?? "secondary";
+  const mergedStyle = {
+    ...baseStyle,
+    ...variantStyles[resolvedVariant],
+    ...sizeStyles[size],
+    ...style,
+  };
+  const resolvedIcon = resolveLucideIcon(icon);
+  const LinkComponent = __LinkComponent ?? LinkMdx;
   const content = (
     <>
       {resolvedIcon ? (
@@ -74,19 +91,19 @@ export function ButtonMdx({ href, variant, variation, size = "md", icon, text, s
       ) : null}
       {text ?? children}
     </>
-    );
+  );
 
   if (href) {
     return (
       <LinkComponent href={href} target={target} style={mergedStyle}>
         {content}
       </LinkComponent>
-        );
+    );
   }
 
   return (
     <button type={props.type ?? "button"} {...props} style={mergedStyle}>
       {content}
     </button>
-    );
+  );
 }

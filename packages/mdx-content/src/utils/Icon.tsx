@@ -8,16 +8,12 @@ export type IconProp = IconName | string;
 const DEFAULT_ICON_SIZE = 20;
 
 export function resolveLucideIcon(icon?: IconProp): ReactNode {
-    if (!icon) {
-        return undefined;
-    }
+  const normalized = typeof icon === "string" ? icon.trim() : icon;
+  if (!normalized || !Object.hasOwn(LucideIcons, normalized)) {
+    return undefined;
+  }
 
-    const IconComponent = LucideIcons[icon as IconName] as ComponentType<LucideProps> | undefined;
+  const IconComponent = LucideIcons[normalized as IconName] as ComponentType<LucideProps>;
 
-    if (!IconComponent) {
-        // Unknown icon key: avoid rendering invalid React elements.
-        return undefined;
-    }
-
-    return <IconComponent size={DEFAULT_ICON_SIZE} />;
+  return <IconComponent size={DEFAULT_ICON_SIZE} />;
 }
