@@ -5,6 +5,15 @@ import { logger } from "./logger";
 const DIST_DIR = resolve("./.docu/dist");
 const PORT = process.env.PORT || "4173";
 
+const SECURITY_HEADERS: Record<string, string> = {
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+  "X-Frame-Options": "DENY",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'",
+};
+
 logger.buildStart();
 
 if (!existsSync(DIST_DIR)) {
@@ -61,15 +70,16 @@ const server = Bun.serve({
 
     const filePath = resolveFile(pathname);
     if (filePath) {
-      return new Response(Bun.file(filePath), {
-        headers: { "Content-Type": getContentType(filePath) },
-      });
+      const contentType = getContentType(filePath);
+      const headers: Record<string, string> = { "Content-Type": contentType };
+      if (contentType === "text/html") Object.assign(headers, SECURITY_HEADERS);
+      return new Response(Bun.file(filePath), { headers });
     }
 
     if (existsSync(notFoundPath)) {
       return new Response(Bun.file(notFoundPath), {
         status: 404,
-        headers: { "Content-Type": "text/html" },
+        headers: { "Content-Type": "text/html", ...SECURITY_HEADERS },
       });
     }
 

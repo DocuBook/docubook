@@ -25,6 +25,15 @@ const DOCS_DIR = resolve("./docs");
 const DIST_DIR = resolve("./.docu/dist");
 const PORT = process.env.PORT ?? "3000";
 
+const SECURITY_HEADERS: Record<string, string> = {
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+  "X-Frame-Options": "DENY",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'",
+};
+
 logger.buildStart();
 
 logger.bundleStart();
@@ -243,7 +252,7 @@ async function handleDocsIndex(): Promise<Response> {
 
   const body = renderToString(page);
   const html = htmlShell(title, description, body);
-  return new Response(html, { headers: { "Content-Type": "text/html" } });
+  return new Response(html, { headers: { "Content-Type": "text/html", ...SECURITY_HEADERS } });
 }
 
 async function handleDocsRoute(slug: string[]): Promise<Response> {
@@ -272,7 +281,7 @@ async function handleDocsRoute(slug: string[]): Promise<Response> {
 
   const body = renderToString(page);
   const html = htmlShell(title, description, body);
-  return new Response(html, { headers: { "Content-Type": "text/html" } });
+  return new Response(html, { headers: { "Content-Type": "text/html", ...SECURITY_HEADERS } });
 }
 
 function renderPage(
@@ -289,7 +298,7 @@ function renderPage(
   );
   const body = renderToString(page);
   const html = htmlShell(title, description, body);
-  return new Response(html, { status, headers: { "Content-Type": "text/html" } });
+  return new Response(html, { status, headers: { "Content-Type": "text/html", ...SECURITY_HEADERS } });
 }
 
 function handleIndex(): Response {
@@ -300,7 +309,7 @@ function handleIndex(): Response {
     docuConfig.meta?.description || "",
     body
   );
-  return new Response(html, { headers: { "Content-Type": "text/html" } });
+  return new Response(html, { headers: { "Content-Type": "text/html", ...SECURITY_HEADERS } });
 }
 
 function getContentType(pathname: string): string {
@@ -425,7 +434,7 @@ h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;
 .msg{color:#ff6b6b;font-weight:bold}</style></head><body>
 <h1>🔥 Server Error</h1>
 <pre><span class="msg">${Bun.escapeHTML(message)}</span>\n\n${Bun.escapeHTML(stack)}</pre></body></html>`;
-      return new Response(html, { status: 500, headers: { "Content-Type": "text/html" } });
+      return new Response(html, { status: 500, headers: { "Content-Type": "text/html", ...SECURITY_HEADERS } });
     }
   },
 
@@ -438,7 +447,7 @@ h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;
 .msg{color:#ff6b6b;font-weight:bold}</style></head><body>
 <h1>🔥 Server Error</h1>
 <pre><span class="msg">${msg}</span>\n\n${stack}</pre></body></html>`;
-    return new Response(html, { status: 500, headers: { "Content-Type": "text/html" } });
+    return new Response(html, { status: 500, headers: { "Content-Type": "text/html", ...SECURITY_HEADERS } });
   },
 });
 
