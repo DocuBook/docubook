@@ -1,0 +1,8 @@
+pnpm exec commitlint --from $(git rev-parse @{push} 2>/dev/null || git rev-parse origin/main 2>/dev/null || echo HEAD~1) --to HEAD --verbose || {
+  echo ""
+  echo "💡 To fix invalid commit messages:"
+  echo "   - Last commit only:    git commit --amend"
+  echo "   - Multiple commits:    git rebase -i @{upstream}"
+  echo ""
+  exit 1
+}
