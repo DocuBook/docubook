@@ -101,6 +101,11 @@ function getPackageManagerSpec(packageManager) {
  * @returns {Promise<string>} Path to template directory
  */
 async function getOrDownloadTemplate(templateId, state) {
+  // Validate templateId to prevent path traversal
+  if (!/^[a-zA-Z0-9_-]+$/.test(templateId)) {
+    throw new Error(`Invalid template ID "${templateId}". Only alphanumeric characters, hyphens, and underscores are allowed.`);
+  }
+
   // Try local path first (for dev environment)
   const localPath = getLocalTemplatePath(templateId);
   if (localPath && fs.existsSync(localPath)) {

@@ -1,4 +1,4 @@
-import { execSync, execFileSync } from "child_process";
+import { execFileSync } from "child_process";
 import ora from "ora";
 import fs from "fs";
 import os from "os";
@@ -108,28 +108,28 @@ function detectInstalledPackageManager() {
     // Fallback: check what's available in PATH
     // Priority: npm > bun > yarn > pnpm (based on common usage and reliability)
     try {
-      execSync("npm --version", { stdio: "ignore" });
+      execFileSync("npm", ["--version"], { stdio: "ignore" });
       return "npm";
     } catch {
       // try next
     }
 
     try {
-      execSync("pnpm --version", { stdio: "ignore" });
+      execFileSync("pnpm", ["--version"], { stdio: "ignore" });
       return "pnpm";
     } catch {
       // try next
     }
 
     try {
-      execSync("yarn --version", { stdio: "ignore" });
+      execFileSync("yarn", ["--version"], { stdio: "ignore" });
       return "yarn";
     } catch {
       // try next
     }
 
     try {
-      execSync("bun --version", { stdio: "ignore" });
+      execFileSync("bun", ["--version"], { stdio: "ignore" });
       return "bun";
     } catch {
       // try next
@@ -350,16 +350,16 @@ function installGlobal(packageName, version, packageManager) {
   try {
     switch (packageManager) {
       case "npm":
-        execSync("npm cache clean --force", { stdio: "pipe" });
+        execFileSync("npm", ["cache", "clean", "--force"], { stdio: "pipe" });
         break;
       case "yarn":
-        execSync("yarn cache clean", { stdio: "pipe" });
+        execFileSync("yarn", ["cache", "clean"], { stdio: "pipe" });
         break;
       case "pnpm":
-        execSync("pnpm store prune", { stdio: "pipe" });
+        execFileSync("pnpm", ["store", "prune"], { stdio: "pipe" });
         break;
       case "bun":
-        execSync("bun pm cache rm", { stdio: "pipe" });
+        execFileSync("bun", ["pm", "cache", "rm"], { stdio: "pipe" });
         break;
     }
   } catch {
