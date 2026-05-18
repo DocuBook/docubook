@@ -1,5 +1,13 @@
 # @docubook/cli
 
+## 0.5.4
+
+### Patch Changes
+
+- GitHub Issue #90 requests two security improvements in packages/cli:
+  - Replace `execSync()` with `execFileSync()` in `updateHandler.js` (detectInstalledPackageManager and installGlobal cache clean)
+  - Add templateId validation in `projectInstaller.js` to prevent path traversal
+
 ## 0.5.3
 
 ### Patch Changes
