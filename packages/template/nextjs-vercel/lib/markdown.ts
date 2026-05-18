@@ -61,7 +61,7 @@ async function getFileLastCommitDate(absoluteFilePath: string): Promise<Date | u
     }
 
     const relativePath = path.relative(gitRoot, absoluteFilePath)
-    if (relativePath.startsWith("..")) {
+    if (relativePath.startsWith("..") || !/^[a-zA-Z0-9\-_/.\s]+$/.test(relativePath) || /(^|\/)\.\.($|\/)/.test(relativePath)) {
       fileGitDateCache.set(absoluteFilePath, undefined)
       return undefined
     }

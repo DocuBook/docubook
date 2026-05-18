@@ -66,6 +66,7 @@ export function formatDate2(dateStr: string | Date): string {
 export async function getGitLastModified(filePath: string): Promise<string | null> {
   try {
     const cleanPath = filePath.replace(/^\//, "");
+    if (!cleanPath || !/^[a-zA-Z0-9\-_/.\s]+$/.test(cleanPath) || /(^|\/)\.\.($|\/)/.test(cleanPath)) return null;
     const proc = Bun.spawn(["git", "log", "-1", "--format=%cI", "--", cleanPath]);
     const text = await new Response(proc.stdout).text();
     const date = text.trim();
