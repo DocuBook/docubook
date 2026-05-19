@@ -31,7 +31,8 @@ const SECURITY_HEADERS: Record<string, string> = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-  "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'",
+  "Content-Security-Policy":
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'",
 };
 
 logger.buildStart();
@@ -298,7 +299,10 @@ function renderPage(
   );
   const body = renderToString(page);
   const html = htmlShell(title, description, body);
-  return new Response(html, { status, headers: { "Content-Type": "text/html", ...SECURITY_HEADERS } });
+  return new Response(html, {
+    status,
+    headers: { "Content-Type": "text/html", ...SECURITY_HEADERS },
+  });
 }
 
 function handleIndex(): Response {
@@ -370,6 +374,7 @@ const server = Bun.serve({
   async fetch(req) {
     const url = new URL(req.url);
     const pathname = url.pathname;
+    const startTime = performance.now();
 
     try {
       if (pathname === "/__hmr") {
@@ -422,19 +427,27 @@ const server = Bun.serve({
         response = renderPage(NotFoundPage, "404 - Not Found", "", 404);
       }
 
-      logger.request(req.method, pathname, response.status);
+      logger.request(
+        req.method,
+        pathname,
+        response.status,
+        Math.round(performance.now() - startTime)
+      );
       return response;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       const stack = err instanceof Error ? err.stack || "" : "";
-      logger.request(req.method, pathname, 500);
+      logger.request(req.method, pathname, 500, Math.round(performance.now() - startTime));
       const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Error</title>
 <style>body{margin:0;padding:2rem;font-family:ui-monospace,monospace;background:#1a1a2e;color:#e0e0e0}
 h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;padding:1.5rem;overflow-x:auto;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
 .msg{color:#ff6b6b;font-weight:bold}</style></head><body>
 <h1>🔥 Server Error</h1>
 <pre><span class="msg">${Bun.escapeHTML(message)}</span>\n\n${Bun.escapeHTML(stack)}</pre></body></html>`;
-      return new Response(html, { status: 500, headers: { "Content-Type": "text/html", ...SECURITY_HEADERS } });
+      return new Response(html, {
+        status: 500,
+        headers: { "Content-Type": "text/html", ...SECURITY_HEADERS },
+      });
     }
   },
 
@@ -447,7 +460,10 @@ h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;
 .msg{color:#ff6b6b;font-weight:bold}</style></head><body>
 <h1>🔥 Server Error</h1>
 <pre><span class="msg">${msg}</span>\n\n${stack}</pre></body></html>`;
-    return new Response(html, { status: 500, headers: { "Content-Type": "text/html", ...SECURITY_HEADERS } });
+    return new Response(html, {
+      status: 500,
+      headers: { "Content-Type": "text/html", ...SECURITY_HEADERS },
+    });
   },
 });
 
