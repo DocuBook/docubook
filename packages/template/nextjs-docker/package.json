@@ -1,5 +1,5 @@
 {
-  "name": "@docubook/next-docker",
+  "name": "nextjs-docker",
   "template": "nextjs-docker",
   "description": "Next.js standalone with docker image documentation template for DocuBook",
   "version": "1.0.0",
@@ -15,8 +15,8 @@
   "dependencies": {
     "@docsearch/css": "^4.6.2",
     "@docsearch/react": "^4.6.2",
-    "@docubook/core": "^1.6.1",
-    "@docubook/mdx-content": "^3.0.0",
+    "@docubook/core": "^1.6.3",
+    "@docubook/mdx-content": "^3.1.0",
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
