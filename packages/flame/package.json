@@ -37,6 +37,14 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
+  "peerDependencies": {
+    "@sentry/bun": "^9.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@sentry/bun": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@tailwindcss/cli": "4.3.0",

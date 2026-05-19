@@ -20,6 +20,7 @@ import IndexPage from "../pages/index";
 import { buildClientBundle } from "./hydrate";
 import { generateSearchIndex } from "./search-indexer";
 import { logger } from "./logger";
+import { initSentry, captureException } from "./sentry";
 
 const DOCS_DIR = resolve("./docs");
 const DIST_DIR = resolve("./.docu/dist");
@@ -36,6 +37,8 @@ const SECURITY_HEADERS: Record<string, string> = {
 };
 
 logger.buildStart();
+
+await initSentry();
 
 logger.bundleStart();
 let t = performance.now();
@@ -435,6 +438,7 @@ const server = Bun.serve({
       );
       return response;
     } catch (err) {
+      captureException(err, { method: req.method, pathname });
       const message = err instanceof Error ? err.message : String(err);
       const stack = err instanceof Error ? err.stack || "" : "";
       logger.request(req.method, pathname, 500, Math.round(performance.now() - startTime));
@@ -452,6 +456,7 @@ h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;
   },
 
   error(error) {
+    captureException(error);
     const msg = Bun.escapeHTML(error?.message || "Unknown error");
     const stack = Bun.escapeHTML(error?.stack || "");
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Error</title>

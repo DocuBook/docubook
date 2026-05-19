@@ -17,6 +17,7 @@ import docuConfig from "../../docu.json" with { type: "json" };
 import { generateSearchIndex } from "./search-indexer";
 import { buildClientBundle } from "./hydrate";
 import { logger } from "./logger";
+import { initSentry, captureException } from "./sentry";
 import type { BuildCache, CliArgs } from "./types";
 import DocsPage from "../pages/docs/[[...slug]]";
 import IndexPage from "../pages/index";
@@ -415,7 +416,10 @@ async function build() {
   }
 }
 
-build().catch((err) => {
-  console.error("Build failed:", err);
-  process.exit(1);
-});
+initSentry()
+  .then(() => build())
+  .catch((err) => {
+    captureException(err);
+    console.error("Build failed:", err);
+    process.exit(1);
+  });
