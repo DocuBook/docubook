@@ -4,8 +4,8 @@ on:
   pull_request:
     branches: [main]
 
-  permissions:
-    contents: read
+permissions:
+  contents: read
 
 jobs:
   commitlint:
