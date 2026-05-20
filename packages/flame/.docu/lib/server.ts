@@ -59,7 +59,7 @@ try {
     dir: resolve("./.docu/pages"),
   });
 } catch (e) {
-  logger.spinner.info(`FileSystemRouter failed: ${e instanceof Error ? e.message : String(e)}`);
+  logger.warn(`FileSystemRouter failed: ${e instanceof Error ? e.message : String(e)}`);
 }
 
 const hmrClients = new Set<ReadableStreamDefaultController>();
