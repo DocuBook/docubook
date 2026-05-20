@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, {
   useId,
@@ -7,11 +7,18 @@ import React, {
   type HTMLAttributes,
   type KeyboardEvent,
   type ReactNode,
-} from "react"
+} from "react";
 import { ChevronRight, File as FileIcon, Folder as FolderIcon, FolderOpen } from "lucide-react";
 
-type FilesMdxProps = HTMLAttributes<HTMLDivElement> & { children?: ReactNode; style?: CSSProperties };
-type FolderMdxProps = HTMLAttributes<HTMLDivElement> & { name: string; children?: ReactNode; style?: CSSProperties };
+type FilesMdxProps = HTMLAttributes<HTMLDivElement> & {
+  children?: ReactNode;
+  style?: CSSProperties;
+};
+type FolderMdxProps = HTMLAttributes<HTMLDivElement> & {
+  name: string;
+  children?: ReactNode;
+  style?: CSSProperties;
+};
 type FileMdxProps = HTMLAttributes<HTMLDivElement> & { name: string; style?: CSSProperties };
 
 export function FilesMdx({ children, style, className, ...props }: FilesMdxProps) {
@@ -34,15 +41,15 @@ export function FilesMdx({ children, style, className, ...props }: FilesMdxProps
     >
       {children}
     </div>
-    );
+  );
 }
 
 export function FolderMdx({ name, children, style, className, ...props }: FolderMdxProps) {
-    const [isOpen, setIsOpen] = useState(true);
-    const [isHovered, setIsHovered] = useState(false);
-    const [isFocused, setIsFocused] = useState(false);
-    const hasChildren = React.Children.count(children) > 0;
-    const groupId = useId();
+  const [isOpen, setIsOpen] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const hasChildren = React.Children.count(children) > 0;
+  const groupId = useId();
 
   const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     if (!hasChildren) {
@@ -157,7 +164,7 @@ export function FolderMdx({ name, children, style, className, ...props }: Folder
         </div>
       )}
     </div>
-    );
+  );
 }
 
 export function FileMdx({ name, style, className, ...props }: FileMdxProps) {
@@ -218,5 +225,5 @@ export function FileMdx({ name, style, className, ...props }: FileMdxProps) {
         </span>
       )}
     </div>
-    );
+  );
 }

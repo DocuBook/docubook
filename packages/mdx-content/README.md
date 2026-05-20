@@ -66,14 +66,6 @@ import {
     TableRowMdx,
     TooltipMdx,
     YoutubeMdx,
-    // remove API components on v3
-    // TabsContentMdx,
-    // TabsListMdx,
-    // TabsTriggerMdx,
-    // AccordionGroupMdx,
-    // CardGroupMdx,
-    // StepperItemMdx,
-    // StepperMdx,
 } from "@docubook/mdx-content";
 import { ImageMdx, LinkMdx, ButtonMdx, CardMdx } from "@docubook/mdx-content/next";
 import { customMdxComponents } from "@/lib/mdx";
@@ -108,15 +100,6 @@ const builtInOverrides: MdxComponentMap = {
     img: ImageMdx,
     a: LinkMdx,
     Link: LinkMdx,
-
-    // remove API components on v3
-    // Stepper: StepperMdx,
-    // StepperItem: StepperItemMdx,
-    // AccordionGroup: AccordionGroupMdx,
-    // CardGroup: CardGroupMdx,
-    // TabsContent: TabsContentMdx,
-    // TabsList: TabsListMdx,
-    // TabsTrigger: TabsTriggerMdx,
 };
 
 export const mdxComponents = createMdxComponents({
@@ -200,10 +183,8 @@ export const customMdxComponents: MdxComponentMap = {
 The current rename rollout uses a migration phase, not an immediate hard-breaking change:
 
 - New tags are the primary API (`Accordions`, `Cards`, `Steps`, `Step`).
-- Legacy tags are still supported as deprecated aliases for backward compatibility (`AccordionGroup`, `CardGroup`, `Stepper`, `StepperItem`).
-- A true breaking change happens when deprecated aliases are removed in a future major release.
-
-For migration examples, see [components.md](https://github.com/DocuBook/docubook/blob/main/packages/mdx-content/components.md).
+- Legacy tags are still supported as deprecated aliases for backward compatibility `only v2`(`AccordionGroup`, `CardGroup`, `Stepper`, `StepperItem`).
+- A true breaking change happens when deprecated aliases are removed in a future major release. `v3 remove legacy API`
 
 ---
 
@@ -213,9 +194,9 @@ For full usage examples of all built-in components, refer to [components.md](htt
 
 Components included out of the box:
 
-- `Accordion` / `Accordions` (legacy alias for migration: `AccordionGroup`)
+- `Accordion` / `Accordions`
 - `Button`
-- `Card` / `Cards` (legacy alias for migration: `CardGroup`)
+- `Card` / `Cards`
 - Code Block (`pre`)
 - `Files` / `Folder` / `File`
 - `Image` / `img`
@@ -223,8 +204,8 @@ Components included out of the box:
 - `Link` / `a`
 - `Note`
 - `Release` / `Changes`
-- `Steps` / `Step` (legacy aliases for migration: `Stepper` / `StepperItem`)
-- `Tabs` / `Tab` (legacy aliases for migration: `TabsList` / `TabsTrigger` / `TabsContent`)
+- `Steps` / `Step`
+- `Tabs` / `Tab`
 - `Tooltip`
 - `Youtube`
 - Table (`table`, `thead`, `tbody`, `tfoot`, `tr`, `th`, `td`)

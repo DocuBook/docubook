@@ -1,5 +1,19 @@
 # @docubook/mdx-content
 
+## 3.2.0
+
+### Minor Changes
+
+- refactor: clean up exports and fix unsafe inline style casts ;
+  - remove type `note` because there is already type `info` 
+  - delete components.md standalone docs 
+  - remove legacy API from README and docs - fix re-exports missing server components 
+  - fix re-exports missing client components 
+  - delete re-exports shared utility from public API this internal usage API 
+  - Remove width: "max-content !important" and backgroundColor: "transparent !important" inline style assignments. 
+  - Use a CSS class (e.g., .mdx-expandable-code) with !important in a `<style>` tag or CSS file to handle these properties. 
+  - remove props variation in `<Button>`
+
 ## 3.1.0
 
 ### Minor Changes

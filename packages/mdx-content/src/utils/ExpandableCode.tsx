@@ -70,6 +70,12 @@ export function ExpandableCode({
 
   return (
     <>
+      <style
+        dangerouslySetInnerHTML={{
+          __html:
+            ".mdx-expandable-code{width:max-content!important;background-color:transparent!important}",
+        }}
+      />
       <div
         style={{
           overflowX: "auto",
@@ -84,13 +90,11 @@ export function ExpandableCode({
             margin: 0,
             padding: "0.9rem",
             overflowX: "visible",
-            width: "max-content !important" as unknown as string,
             minWidth: "100%",
             maxHeight: isCollapsed ? collapsedMaxHeight : "none",
             overflowY: isCollapsed ? "hidden" : "visible",
             transition: "max-height 0.3s ease",
             scrollbarWidth: "thin",
-            backgroundColor: "transparent !important" as unknown as string,
           }}
         >
           {preContent}
