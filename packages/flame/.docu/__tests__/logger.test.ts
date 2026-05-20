@@ -93,7 +93,7 @@ describe("logger", () => {
 
     it("outputs JSON for warn with debug level", async () => {
       const logger = await importLogger({ LOG_FORMAT: "json", LOG_LEVEL: "debug" });
-      const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+      const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
       logger.warn("caution", { detail: "x" });
       expect(spy).toHaveBeenCalledTimes(1);
       const parsed = JSON.parse(spy.mock.calls[0][0]);

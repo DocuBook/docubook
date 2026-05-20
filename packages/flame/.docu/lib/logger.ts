@@ -24,8 +24,9 @@ function shouldLog(level: LogLevel): boolean {
 
 function jsonLog(level: LogLevel, msg: string, meta?: Record<string, unknown>) {
   if (!shouldLog(level)) return;
-  const entry = { ts: new Date().toISOString(), level, msg, ...meta };
-  console.log(JSON.stringify(entry));
+  const entry = { ts: new Date().toISOString(), ...meta, level, msg };
+  const out = level === "error" ? console.error : level === "warn" ? console.warn : console.log;
+  out(JSON.stringify(entry));
 }
 
 /** Returns true if the caller should skip (already handled or filtered). */
@@ -183,7 +184,7 @@ export const logger = {
   },
 
   routes() {
-    if (isJSON || !shouldLog("debug")) return;
+    if (guard("debug", "routes")) return;
     const routes = docuConfig.routes as RouteItem[] | undefined;
     if (!routes?.length) return;
 

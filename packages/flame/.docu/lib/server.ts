@@ -456,6 +456,7 @@ h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;
   },
 
   error(error) {
+    console.error(error);
     captureException(error);
     const msg = Bun.escapeHTML(error?.message || "Unknown error");
     const stack = Bun.escapeHTML(error?.stack || "");
