@@ -1,7 +1,7 @@
 import type { CSSProperties, HTMLAttributes, ReactNode } from "react";
 import { IconProp, IconName, resolveLucideIcon } from "../utils/Icon";
 
-type NoteType = "note" | "danger" | "warning" | "success" | "info" | "tip";
+type NoteType = "danger" | "warning" | "success" | "info" | "tip";
 
 type NoteMdxProps = HTMLAttributes<HTMLElement> & {
   type?: NoteType;
@@ -22,14 +22,6 @@ const palette: Record<
     defaultIcon: IconName;
   }
 > = {
-  note: {
-    border: "hsl(var(--primary, 210 81% 56%))",
-    bg: "hsl(var(--primary, 210 81% 56%) / 0.16)",
-    text: "hsl(var(--foreground, 220 30% 15%))",
-    header: "hsl(var(--primary, 210 81% 56%))",
-    content: "hsl(var(--primary, 210 81% 56%) / 0.75)",
-    defaultIcon: "Info",
-  },
   danger: {
     border: "hsl(var(--destructive, 0 85% 60%))",
     bg: "hsl(var(--destructive, 0 85% 60%) / 0.16)",
@@ -73,7 +65,7 @@ const palette: Record<
 };
 
 export function NoteMdx({
-  type = "note",
+  type = "info",
   title,
   icon,
   children,

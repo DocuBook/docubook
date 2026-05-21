@@ -31,4 +31,22 @@ describe("CardMdx", () => {
     );
     expect(container.querySelector("span")?.textContent).toBe("Child");
   });
+
+  it("applies data-card-hover attribute when href is provided", () => {
+    const { container } = render(
+      <CardMdx title="Link Card" href="/docs">
+        Body
+      </CardMdx>
+    );
+    expect(container.querySelector("[data-card-hover]")).not.toBeNull();
+  });
+
+  it("does not inject inline style tag", () => {
+    const { container } = render(
+      <CardMdx title="Card" href="/docs">
+        Body
+      </CardMdx>
+    );
+    expect(container.querySelector("style")).toBeNull();
+  });
 });

@@ -8,7 +8,6 @@ type LinkRenderer = ComponentType<LinkMdxProps>;
 export type ButtonMdxProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   href?: string;
   variant?: "primary" | "secondary" | "ghost";
-  variation?: "primary" | "secondary" | "ghost";
   size?: "sm" | "md" | "lg";
   icon?: IconProp;
   text?: string;
@@ -60,7 +59,6 @@ const sizeStyles: Record<NonNullable<ButtonMdxProps["size"]>, CSSProperties> = {
 export function ButtonMdx({
   href,
   variant,
-  variation,
   size = "md",
   icon,
   text,
@@ -70,7 +68,7 @@ export function ButtonMdx({
   __LinkComponent,
   ...props
 }: ButtonMdxProps) {
-  const resolvedVariant = variation ?? variant ?? "secondary";
+  const resolvedVariant = variant ?? "secondary";
   const mergedStyle = {
     ...baseStyle,
     ...variantStyles[resolvedVariant],

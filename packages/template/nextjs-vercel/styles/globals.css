@@ -1,6 +1,5 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 @plugin '@tailwindcss/typography';
-
 
 @custom-variant dark (&:is(.dark *));
 
@@ -106,7 +105,6 @@
   }
 
   @keyframes shiny-text {
-
     0%,
     90%,
     100% {
@@ -129,7 +127,6 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
-
   *,
   ::after,
   ::before,
@@ -235,7 +232,7 @@
     overflow-x: auto;
   }
 
-  pre>code {
+  pre > code {
     display: grid;
     max-width: inherit !important;
     padding: 14px 0 !important;
@@ -259,20 +256,19 @@
   }
 
   .highlight-line {
-    @apply bg-primary/5 border-l-2 border-primary/30;
+    @apply bg-primary/5 border-primary/30 border-l-2;
   }
 
   .rehype-code-title {
-    @apply px-2 -mb-8 w-full text-sm pb-5 font-medium mt-5 font-code;
+    @apply font-code mt-5 -mb-8 w-full px-2 pb-5 text-sm font-medium;
   }
 
-  .highlight-comp>code {
+  .highlight-comp > code {
     background-color: transparent !important;
   }
 }
 
 @layer utilities {
-
   @keyframes shine {
     0% {
       background-position: 0% 0%;

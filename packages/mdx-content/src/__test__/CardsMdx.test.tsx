@@ -37,4 +37,9 @@ describe("CardsMdx", () => {
     const el = container.querySelector(".docubook-card-group") as HTMLElement;
     expect(el?.style.gap).toBe("2rem");
   });
+
+  it("does not inject inline style tag", () => {
+    const { container } = render(<CardsMdx>x</CardsMdx>);
+    expect(container.querySelector("style")).toBeNull();
+  });
 });

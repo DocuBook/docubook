@@ -70,12 +70,7 @@ export function ExpandableCode({
 
   return (
     <>
-      <div
-        style={{
-          overflowX: "auto",
-          overscrollBehaviorX: "contain",
-        }}
-      >
+      <div className="mdx-expandable-code-container">
         <pre
           ref={preRef}
           {...preProps}
@@ -84,13 +79,11 @@ export function ExpandableCode({
             margin: 0,
             padding: "0.9rem",
             overflowX: "visible",
-            width: "max-content !important" as unknown as string,
             minWidth: "100%",
             maxHeight: isCollapsed ? collapsedMaxHeight : "none",
             overflowY: isCollapsed ? "hidden" : "visible",
             transition: "max-height 0.3s ease",
             scrollbarWidth: "thin",
-            backgroundColor: "transparent !important" as unknown as string,
           }}
         >
           {preContent}

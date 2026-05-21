@@ -8,7 +8,7 @@ description: A component used to display different types of messages such as gen
 <Note type="tip" title="Tip">
   This is a tip to suggests a helpful.
 </Note>
-<Note type="note" title="Note">
+<Note type="info" title="Info">
   This is a general note to convey information to the user.
 </Note>
 <Note type="danger" title="Danger">
@@ -23,10 +23,10 @@ description: A component used to display different types of messages such as gen
 
 ## Props
 
-|  Prop   |                   Type                    |              Default              |                              Description                              |
-| ------- | ----------------------------------------- | --------------------------------- | --------------------------------------------------------------------- |
-| `title` | string                                    | fallback to "type" with Uppercase | Sets the title of the note.                                             |
-| `type`  | "note" "danger" "success" "warning" "tip" | `"note"`                         | Determines the visual style of the note.                                |
+|  Prop   |                   Type                    |              Default              |                                    Description                                    |
+| ------- | ----------------------------------------- | --------------------------------- | --------------------------------------------------------------------------------- |
+| `title` | string                                    | fallback to "type" with Uppercase | Sets the title of the note.                                                       |
+| `type`  | "info" "danger" "success" "warning" "tip" | `"info"`                          | Determines the visual style of the note.                                          |
 | `icon`  | string                                    | fallback icon based on `type`     | Optional Lucide icon name. If empty/undefined, icon automatically follows `type`. |
 
 ## Output Markdown
@@ -35,7 +35,7 @@ description: A component used to display different types of messages such as gen
 <Note type="tip" title="Tip">
   This is a tip to suggests a helpful.
 </Note>
-<Note type="note" title="Note">
+<Note type="info" title="Info">
   This is a general note to convey information to the user.
 </Note>
 <Note type="danger" title="Danger">

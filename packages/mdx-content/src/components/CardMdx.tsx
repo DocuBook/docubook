@@ -33,8 +33,6 @@ const baseStyle: CSSProperties = {
   overflow: "hidden",
 };
 
-const hoverCSS = `[data-card-hover]:hover{border-color:hsl(var(--primary,210 81% 56%))!important;box-shadow:0 11px 28px rgba(34,129,227,0.15)!important;transform:translateY(-2px)!important}[data-card-hover]:hover [data-card-icon]{transform:scale(1.05)}`;
-
 export function CardMdx({
   title,
   icon,
@@ -107,19 +105,16 @@ export function CardMdx({
 
   if (href) {
     return (
-      <>
-        <style dangerouslySetInnerHTML={{ __html: hoverCSS }} />
-        <LinkComponent
-          href={href}
-          data-card-hover=""
-          data-card-link=""
-          style={combinedStyle}
-          {...(className ? { className } : {})}
-          {...(props as React.ComponentProps<typeof LinkComponent>)}
-        >
-          {content}
-        </LinkComponent>
-      </>
+      <LinkComponent
+        href={href}
+        data-card-hover=""
+        data-card-link=""
+        style={combinedStyle}
+        {...(className ? { className } : {})}
+        {...(props as React.ComponentProps<typeof LinkComponent>)}
+      >
+        {content}
+      </LinkComponent>
     );
   }
 
