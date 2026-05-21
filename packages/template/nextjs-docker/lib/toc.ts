@@ -1,8 +1,5 @@
-export interface TocItem {
-  level: number;
-  text: string;
-  href: string;
-}
+export type { TocItem } from "@docubook/core";
+import type { TocItem } from "@docubook/core";
 
 export interface MobTocProps {
   tocs: TocItem[];
