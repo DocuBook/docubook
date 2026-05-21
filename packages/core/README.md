@@ -79,6 +79,7 @@ const tocs = await docsService.getTocsForSlug("getting-started/introduction");
 | `parseMdxFile` | Convert raw file result into `frontmatter`, `tocs`, `content`, `filePath` | `ParsedMdxFile<Frontmatter, TocItem>` |
 | `compileParsedMdxFile` | Compile parsed MDX while preserving metadata and TOCs | `CompiledMdxFile<Frontmatter, TocItem>` |
 | `extractFrontmatter` | Parse frontmatter only from raw markdown/MDX | `Frontmatter` |
+| `extractFrontmatterWithContent` | Extract frontmatter and stripped content in one pass (avoids double parsing) | `{ frontmatter, strippedContent }` |
 | `extractTocsFromRawMdx` | Extract headings for table of contents generation | `TocItem[]` |
 | `sluggify` | Convert heading text into URL-safe slug | `string` |
 | `createDefaultRehypePlugins` | Get default DocuBook rehype plugin stack | `unknown[]` |
@@ -118,7 +119,17 @@ import { extractFrontmatter } from "@docubook/core";
 
 Use this for metadata pages where full MDX compilation is unnecessary.
 
-#### 3. Build TOC from raw content
+#### 3. Extract frontmatter and content in one pass
+
+```ts
+import { extractFrontmatterWithContent } from "@docubook/core";
+
+const { frontmatter, strippedContent } = extractFrontmatterWithContent<{ title: string }>(raw);
+```
+
+Use this when you need both frontmatter and the content body without the frontmatter block — avoids parsing the file twice compared to calling `extractFrontmatter` and manually stripping.
+
+#### 4. Build TOC from raw content
 
 ```ts
 import { extractTocsFromRawMdx } from "@docubook/core";
@@ -126,7 +137,7 @@ import { extractTocsFromRawMdx } from "@docubook/core";
 
 Use this when you need heading navigation from markdown/MDX text.
 
-#### 4. Slug-based docs service (recommended for app integration)
+#### 5. Slug-based docs service (recommended for app integration)
 
 ```ts
 import { createMdxContentService } from "@docubook/core";
@@ -134,7 +145,7 @@ import { createMdxContentService } from "@docubook/core";
 
 Use this as the default app-level integration for frontmatter, TOC, and compiled docs in one service.
 
-#### 5. Frontmatter enrichment (date fallback, computed fields)
+#### 6. Frontmatter enrichment (date fallback, computed fields)
 
 ```ts
 import { createMdxContentService } from "@docubook/core";
@@ -155,7 +166,7 @@ const docsService = createMdxContentService<Frontmatter, TocItem>({
 
 Use this to inject computed or fallback values into frontmatter after parsing — such as a last-modified date from the filesystem or a git commit timestamp. The enricher receives the already-parsed frontmatter and the absolute path of the MDX file on disk, and runs once per slug before caching.
 
-#### 6. Custom TOC extraction (`tocsExtractor`)
+#### 7. Custom TOC extraction (`tocsExtractor`)
 
 ```ts
 import { createMdxContentService } from "@docubook/core";
@@ -179,7 +190,7 @@ const docsService = createMdxContentService<Frontmatter, TocItem>({
 
 Use this when the default TOC extraction doesn't match your heading structure or you need to filter/transform headings before rendering.
 
-#### 7. Custom docs directory (`readOptions`)
+#### 8. Custom docs directory (`readOptions`)
 
 ```ts
 import { createMdxContentService } from "@docubook/core";
@@ -196,7 +207,7 @@ const docsService = createMdxContentService<Frontmatter, TocItem>({
 
 Use this when your MDX files live in a non-standard directory (e.g. `content/` instead of `docs/`) or when the working directory differs from the project root.
 
-#### 8. Root slug behavior
+#### 9. Root slug behavior
 
 When an empty or blank slug is passed to `readMdxFileBySlug` or the content service, it resolves to `"index"` — meaning it reads `docs/index.mdx`:
 
@@ -209,7 +220,7 @@ const doc = await docsService.getCompiledForSlug("index");
 
 For nested slugs, the resolver tries `docs/{slug}.mdx` first, then falls back to `docs/{slug}/index.mdx`.
 
-#### 9. Low-level file pipeline (advanced)
+#### 10. Low-level file pipeline (advanced)
 
 ```ts
 import {
