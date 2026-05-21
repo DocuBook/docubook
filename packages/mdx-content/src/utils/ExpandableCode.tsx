@@ -70,12 +70,7 @@ export function ExpandableCode({
 
   return (
     <>
-      <div
-        style={{
-          overflowX: "auto",
-          overscrollBehaviorX: "contain",
-        }}
-      >
+      <div className="mdx-expandable-code-container">
         <pre
           ref={preRef}
           {...preProps}

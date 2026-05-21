@@ -80,4 +80,34 @@ describe("ExpandableCode", () => {
     });
     expect(container!.querySelector("pre")).not.toBeNull();
   });
+
+  it("applies mdx-expandable-code class to pre element", async () => {
+    let container: HTMLElement;
+    await act(async () => {
+      ({ container } = render(
+        <ExpandableCode
+          isExpandable={false}
+          totalLines={5}
+          preContent={<code>x</code>}
+          preProps={{}}
+        />
+      ));
+    });
+    expect(container!.querySelector("pre.mdx-expandable-code")).not.toBeNull();
+  });
+
+  it("does not inject inline style tag", async () => {
+    let container: HTMLElement;
+    await act(async () => {
+      ({ container } = render(
+        <ExpandableCode
+          isExpandable={true}
+          totalLines={30}
+          preContent={<code>x</code>}
+          preProps={{}}
+        />
+      ));
+    });
+    expect(container!.querySelector("style")).toBeNull();
+  });
 });

@@ -134,6 +134,13 @@ const docsService = createMdxContentService({
 | `@docubook/mdx-content/client` | Client-only components (accordion, tabs, tooltip, etc.)        |
 | `@docubook/mdx-content/server` | Server-side components                                         |
 | `@docubook/mdx-content/next`   | Next.js-optimized adapters (`Link`, `Button`, `Card`, `Image`) |
+| `@docubook/mdx-content/styles.css` | Stylesheet for MDX components (required)                   |
+
+> **Important:** You must import the stylesheet in your app's root layout or global CSS entry point:
+>
+> ```ts
+> import "@docubook/mdx-content/styles.css";
+> ```
 
 ---
 
@@ -175,6 +182,40 @@ export const customMdxComponents: MdxComponentMap = {
   This is a custom callout component.
 </Callout>
 ```
+
+---
+
+## Customization
+
+All components expose stable CSS class names you can target for style overrides. Import `@docubook/mdx-content/styles.css` for base styles, then override as needed.
+
+### CSS Classes
+
+|              Class               |  Component   |                    Description                    |
+| -------------------------------- | ------------ | ------------------------------------------------- |
+| `.mdx-expandable-code`           | `CodeBlock`  | The `<pre>` element inside expandable code blocks |
+| `.mdx-expandable-code-container` | `CodeBlock`  | Scroll container wrapping the `<pre>`             |
+| `.code-block-container`          | `CodeBlock`  | Outer wrapper of the entire code block            |
+| `.code-block-header`             | `CodeBlock`  | Header bar (filename, language label)             |
+| `.code-block-actions`            | `CodeBlock`  | Action buttons area (copy button)                 |
+| `.code-block-body`               | `CodeBlock`  | Body area containing the code                     |
+| `.code-block-expandable-footer`  | `CodeBlock`  | Footer with expand/collapse toggle                |
+| `.code-block-expandable-toggle`  | `CodeBlock`  | The expand/collapse button                        |
+| `.docubook-card-group`           | `Cards`      | Grid container for card layouts                   |
+| `[data-card-hover]`              | `Card`       | Card with link — target for hover styles          |
+| `[data-card-icon]`               | `Card`       | Icon element inside a card                        |
+| `.mdx-accordion`                 | `Accordion`  | Single accordion wrapper                          |
+| `.mdx-accordion-group`           | `Accordions` | Group wrapper for multiple accordions             |
+| `.mdx-accordion-group-item`      | `Accordion`  | Accordion when inside a group                     |
+| `.mdx-accordion-header`          | `Accordion`  | Clickable header/trigger                          |
+| `.mdx-accordion-chevron`         | `Accordion`  | Chevron icon in header                            |
+| `.mdx-accordion-content`         | `Accordion`  | Collapsible content area                          |
+
+### CSS Custom Properties
+
+|             Variable             | Component |                       Description                        |
+| -------------------------------- | --------- | -------------------------------------------------------- |
+| `--docubook-card-group-template` | `Cards`   | Grid column template (set automatically via `cols` prop) |
 
 ---
 

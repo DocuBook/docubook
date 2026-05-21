@@ -3,6 +3,11 @@
   background-color: transparent !important;
 }
 
+.mdx-expandable-code-container {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
 [data-card-hover]:hover {
   border-color: hsl(var(--primary, 210 81% 56%)) !important;
   box-shadow: 0 11px 28px rgba(34, 129, 227, 0.15) !important;
