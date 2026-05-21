@@ -10,8 +10,7 @@
     "changeset": "changeset",
     "package": "changeset version",
     "prepare": "husky",
-    "commit": "czg",
-    "rename": "scripts/rename.sh"
+    "commit": "czg"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
