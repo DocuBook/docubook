@@ -1,4 +1,4 @@
-import docsTree from "@/lib/docs-tree.json"; // Import prebuilt navigation tree
+import docuConfig from "@/docu.json";
 
 export type ContextInfo = {
   icon: string;
@@ -14,7 +14,7 @@ export type EachRoute = {
   items?: EachRoute[];
 };
 
-export const ROUTES: EachRoute[] = docsTree;
+export const ROUTES: EachRoute[] = (docuConfig as { routes: EachRoute[] }).routes;
 
 type Page = { title: string; href: string };
 

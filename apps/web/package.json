@@ -6,7 +6,6 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "prebuild": "node lib/docs-tree.js",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
