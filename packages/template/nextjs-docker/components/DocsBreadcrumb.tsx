@@ -33,8 +33,23 @@ export default function DocsBreadcrumb({ paths }: { paths: string[] }) {
   );
 }
 
+const acronyms = new Set([
+  "mdx",
+  "api",
+  "pdf",
+  "cli",
+  "ui",
+  "css",
+  "html",
+  "yaml",
+  "json",
+  "ssr",
+  "ssg",
+]);
+
 function toTitleCase(input: string): string {
-  const words = input.split("-");
-  const capitalizedWords = words.map((word) => word.charAt(0).toUpperCase() + word.slice(1));
-  return capitalizedWords.join(" ");
+  return input
+    .split("-")
+    .map((w) => (acronyms.has(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
+    .join(" ");
 }
