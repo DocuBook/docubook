@@ -20,9 +20,9 @@ export default function DocsBreadcrumb({ paths }: { paths: string[] }) {
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 {index < paths.length - 1 ? (
-                  <span className="a">{toTitleCase(path)}</span>
+                  <span>{toTitleCase(path)}</span>
                 ) : (
-                  <BreadcrumbPage className="b">{toTitleCase(path)}</BreadcrumbPage>
+                  <BreadcrumbPage>{toTitleCase(path)}</BreadcrumbPage>
                 )}
               </BreadcrumbItem>
             </Fragment>
