@@ -13,6 +13,7 @@
   - Remove width: "max-content !important" and backgroundColor: "transparent !important" inline style assignments. 
   - Use a CSS class (e.g., .mdx-expandable-code) with !important in a `<style>` tag or CSS file to handle these properties. 
   - remove props variation in `<Button>`
+  - move duplicated inline style tags to global stylesheet
 
 ## 3.1.0
 

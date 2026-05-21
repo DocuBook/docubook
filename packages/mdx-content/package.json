@@ -25,10 +25,12 @@
       "types": "./dist/adapters/next/index.d.ts",
       "import": "./dist/adapters/next/index.js",
       "default": "./dist/adapters/next/index.js"
-    }
+    },
+    "./styles.css": "./styles.css"
   },
   "files": [
-    "dist"
+    "dist",
+    "styles.css"
   ],
   "scripts": {
     "build": "rm -rf dist tsconfig.tsbuildinfo && tsc -p tsconfig.json",

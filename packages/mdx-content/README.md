@@ -190,8 +190,6 @@ The current rename rollout uses a migration phase, not an immediate hard-breakin
 
 ## Available Components
 
-For full usage examples of all built-in components, refer to [components.md](https://github.com/DocuBook/docubook/blob/main/packages/mdx-content/components.md).
-
 Components included out of the box:
 
 - `Accordion` / `Accordions`

@@ -70,12 +70,6 @@ export function ExpandableCode({
 
   return (
     <>
-      <style
-        dangerouslySetInnerHTML={{
-          __html:
-            ".mdx-expandable-code{width:max-content!important;background-color:transparent!important}",
-        }}
-      />
       <div
         style={{
           overflowX: "auto",
