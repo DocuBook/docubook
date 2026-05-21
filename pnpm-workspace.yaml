@@ -1,6 +1,8 @@
 packages:
   - "apps/*"
   - "packages/*"
-onlyBuiltDependencies:
-  - bun
-  - "@parcel/watcher"
+allowBuilds:
+  "@parcel/watcher": true
+  bun: true
+  sharp: true
+  unrs-resolver: true
