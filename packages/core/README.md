@@ -97,7 +97,8 @@ const tocs = await docsService.getTocsForSlug("getting-started/introduction");
 | `ReadMdxFileResult`              | Return type for `readMdxFileBySlug`                                       |
 | `ParsedMdxFile`                  | Parsed file structure before compile                                      |
 | `CompiledMdxFile`                | Compiled file structure with metadata and TOC                             |
-| `CreateMdxContentServiceOptions` | Options for creating the content service, including `frontmatterEnricher` |
+| `CreateMdxContentServiceOptions` | Options for creating the content service, including `frontmatterEnricher`, `tocsExtractor`, and `readOptions` |
+| `ReadMdxBySlugOptions`           | Options for `readMdxFileBySlug` — configure `rootDir` and `docsDir`       |
 
 ### Quick Import Recipes
 
@@ -154,7 +155,61 @@ const docsService = createMdxContentService<Frontmatter, TocItem>({
 
 Use this to inject computed or fallback values into frontmatter after parsing — such as a last-modified date from the filesystem or a git commit timestamp. The enricher receives the already-parsed frontmatter and the absolute path of the MDX file on disk, and runs once per slug before caching.
 
-#### 6. Low-level file pipeline (advanced)
+#### 6. Custom TOC extraction (`tocsExtractor`)
+
+```ts
+import { createMdxContentService } from "@docubook/core";
+
+const docsService = createMdxContentService<Frontmatter, TocItem>({
+  parseOptions: { components },
+  cacheFn: cache,
+  tocsExtractor: (rawMdx) => {
+    // Custom logic to extract headings — e.g. only h2 and h3
+    return rawMdx
+      .split("\n")
+      .filter((line) => /^#{2,3}\s/.test(line))
+      .map((line) => {
+        const level = line.startsWith("###") ? 3 : 2;
+        const text = line.replace(/^#{2,3}\s+/, "");
+        return { level, text, href: `#${text.toLowerCase().replace(/\s+/g, "-")}` };
+      });
+  },
+});
+```
+
+Use this when the default TOC extraction doesn't match your heading structure or you need to filter/transform headings before rendering.
+
+#### 7. Custom docs directory (`readOptions`)
+
+```ts
+import { createMdxContentService } from "@docubook/core";
+
+const docsService = createMdxContentService<Frontmatter, TocItem>({
+  parseOptions: { components },
+  cacheFn: cache,
+  readOptions: {
+    rootDir: "/absolute/path/to/project", // defaults to process.cwd()
+    docsDir: "content", // defaults to "docs"
+  },
+});
+```
+
+Use this when your MDX files live in a non-standard directory (e.g. `content/` instead of `docs/`) or when the working directory differs from the project root.
+
+#### 8. Root slug behavior
+
+When an empty or blank slug is passed to `readMdxFileBySlug` or the content service, it resolves to `"index"` — meaning it reads `docs/index.mdx`:
+
+```ts
+// These are equivalent:
+const doc = await docsService.getCompiledForSlug("");
+const doc = await docsService.getCompiledForSlug("index");
+// Both read from: docs/index.mdx
+```
+
+For nested slugs, the resolver tries `docs/{slug}.mdx` first, then falls back to `docs/{slug}/index.mdx`.
+
+#### 9. Low-level file pipeline (advanced)
 
 ```ts
 import {
