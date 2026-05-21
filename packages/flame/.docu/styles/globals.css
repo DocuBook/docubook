@@ -297,3 +297,42 @@
 .dark .punctuation {
   color: #9ca3af;
 }
+
+/* @docubook/mdx-content: ExpandableCode */
+.mdx-expandable-code {
+  width: max-content !important;
+  background-color: transparent !important;
+}
+
+.mdx-expandable-code-container {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+/* @docubook/mdx-content: CardMdx hover */
+[data-card-hover]:hover {
+  border-color: hsl(var(--primary, 210 81% 56%)) !important;
+  box-shadow: 0 11px 28px rgba(34, 129, 227, 0.15) !important;
+  transform: translateY(-2px) !important;
+}
+
+[data-card-hover]:hover [data-card-icon] {
+  transform: scale(1.05);
+}
+
+/* @docubook/mdx-content: CardsMdx grid */
+.docubook-card-group {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin: 1.2rem 0;
+  align-items: stretch;
+  width: 100%;
+  grid-auto-rows: minmax(0, auto);
+}
+
+@media (min-width: 768px) {
+  .docubook-card-group {
+    grid-template-columns: var(--docubook-card-group-template, repeat(2, minmax(220px, 1fr)));
+  }
+}

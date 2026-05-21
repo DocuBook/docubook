@@ -1,6 +1,5 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 @plugin '@tailwindcss/typography';
-
 
 @custom-variant dark (&:is(.dark *));
 
@@ -106,7 +105,6 @@
   }
 
   @keyframes shiny-text {
-
     0%,
     90%,
     100% {
@@ -129,7 +127,6 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
-
   *,
   ::after,
   ::before,
@@ -235,7 +232,7 @@
     overflow-x: auto;
   }
 
-  pre>code {
+  pre > code {
     display: grid;
     max-width: inherit !important;
     padding: 14px 0 !important;
@@ -259,20 +256,19 @@
   }
 
   .highlight-line {
-    @apply bg-primary/5 border-l-2 border-primary/30;
+    @apply bg-primary/5 border-primary/30 border-l-2;
   }
 
   .rehype-code-title {
-    @apply px-2 -mb-8 w-full text-sm pb-5 font-medium mt-5 font-code;
+    @apply font-code mt-5 -mb-8 w-full px-2 pb-5 text-sm font-medium;
   }
 
-  .highlight-comp>code {
+  .highlight-comp > code {
     background-color: transparent !important;
   }
 }
 
 @layer utilities {
-
   @keyframes shine {
     0% {
       background-position: 0% 0%;
@@ -285,5 +281,44 @@
     100% {
       background-position: 0% 0%;
     }
+  }
+}
+
+/* @docubook/mdx-content: ExpandableCode */
+.mdx-expandable-code {
+  width: max-content !important;
+  background-color: transparent !important;
+}
+
+.mdx-expandable-code-container {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+/* @docubook/mdx-content: CardMdx hover */
+[data-card-hover]:hover {
+  border-color: hsl(var(--primary, 210 81% 56%)) !important;
+  box-shadow: 0 11px 28px rgba(34, 129, 227, 0.15) !important;
+  transform: translateY(-2px) !important;
+}
+
+[data-card-hover]:hover [data-card-icon] {
+  transform: scale(1.05);
+}
+
+/* @docubook/mdx-content: CardsMdx grid */
+.docubook-card-group {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin: 1.2rem 0;
+  align-items: stretch;
+  width: 100%;
+  grid-auto-rows: minmax(0, auto);
+}
+
+@media (min-width: 768px) {
+  .docubook-card-group {
+    grid-template-columns: var(--docubook-card-group-template, repeat(2, minmax(220px, 1fr)));
   }
 }

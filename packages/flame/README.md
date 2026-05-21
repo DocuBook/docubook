@@ -79,6 +79,7 @@ your-project/
 ## Commands
 
 ```bash
+bun clean     # Clean build artifacts and internal state
 bun dev       # start dev server with HMR
 bun run build # static build to .docu/dist
 bun preview   # serve built output locally

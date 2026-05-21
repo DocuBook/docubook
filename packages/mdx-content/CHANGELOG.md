@@ -15,6 +15,13 @@
   - remove props variation in `<Button>`
   - move duplicated inline style tags to global stylesheet
 
+#### Migration
+
+- **Breaking (styles):** Inline `<style>` tags have been removed from `ExpandableCode`, `CardMdx`, and `CardsMdx`. You must now import the stylesheet in your root layout:
+  ```ts
+  import "@docubook/mdx-content/styles.css";
+  ```
+
 ## 3.1.0
 
 ### Minor Changes

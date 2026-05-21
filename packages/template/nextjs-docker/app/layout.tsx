@@ -7,6 +7,7 @@ import { Footer } from "@/components/footer";
 import { SearchProvider } from "@/components/SearchContext";
 import docuConfig from "@/docu.json";
 import "@docsearch/css";
+import "@docubook/mdx-content/styles.css";
 import "@/styles/algolia.css";
 import "@/styles/override.css";
 import "@/styles/globals.css";
@@ -61,14 +62,16 @@ export function getMetadata({
       ...defaultMetadata.openGraph,
       title: title || defaultMetadata.openGraph?.title,
       description: description || defaultMetadata.openGraph?.description,
-      images: ogImage ? [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: String(title || defaultMetadata.openGraph?.title),
-        },
-      ] : defaultMetadata.openGraph?.images,
+      images: ogImage
+        ? [
+            {
+              url: ogImage,
+              width: 1200,
+              height: 630,
+              alt: String(title || defaultMetadata.openGraph?.title),
+            },
+          ]
+        : defaultMetadata.openGraph?.images,
     },
   };
 }
@@ -92,7 +95,7 @@ export default function RootLayout({
         >
           <SearchProvider>
             <Navbar id="main-navbar" />
-            <main id="main-content" className="sm:container mx-auto w-[90vw] h-auto scroll-smooth">
+            <main id="main-content" className="mx-auto h-auto w-[90vw] scroll-smooth sm:container">
               {children}
             </main>
             <Footer id="main-footer" />
