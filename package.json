@@ -2,10 +2,6 @@
   "name": "@docubook/monorepo",
   "type": "module",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
     "build": "turbo build",
     "lint": "turbo lint",
@@ -14,7 +10,8 @@
     "changeset": "changeset",
     "package": "changeset version",
     "prepare": "husky",
-    "commit": "czg"
+    "commit": "czg",
+    "rename": "scripts/rename.sh"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
