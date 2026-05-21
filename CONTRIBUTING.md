@@ -129,12 +129,18 @@ Validates commit messages using **Commitlint** with
 
 ## Project Structure (High Level)
 
-- `apps/web`: Next.js documentation app
+> **Note**: This monorepo uses **pnpm** for workspace management, dependency resolution, and
+> scripting across all packages. **Bun** is used exclusively as the runtime and bundler inside
+> `packages/flame` — it does not affect the rest of the workspace.
+
+- `apps/web`: Next.js documentation app (production site)
 - `packages/cli`: CLI scaffold and installer utilities
-- `packages/core`: Shared compile/content utilities
-- `packages/flame`: A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.
-- `packages/mdx-content`: MDX content helpers
-- `template/*`: starter templates
+- `packages/core`: Shared MDX compile pipeline and content utilities
+- `packages/flame`: Bun-powered React + MDX documentation framework (uses Bun as runtime/bundler)
+- `packages/mdx-content`: Portable MDX components and framework adapters
+- `packages/template/nextjs-vercel`: Starter template for Vercel deployment
+- `packages/template/nextjs-docker`: Starter template for Docker/self-host deployment
+- `packages/template/react-router`: Starter template with React Router (SSR)
 
 ## Branch and Commit Guidelines
 
@@ -279,6 +285,9 @@ pnpm changeset
 ```
 
 ### Version Bump Guide
+
+> **Note**: The `pnpm package` command runs `changeset version` under the hood — it consumes
+> pending changesets, bumps package versions, and updates CHANGELOGs accordingly.
 
 Choose the bump type based on the nature of the change:
 
