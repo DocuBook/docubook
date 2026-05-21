@@ -50,12 +50,32 @@
   "sponsor": {
     "title": "Sponsor us",
     "item": {
-        "title": "GitHub Sponsors",
-        "description": "Support us on GitHub Sponsors to help us continue developing and maintaining DocuBook.",
-        "image": "/images/funding.svg",
-        "url": "https://github.com/sponsors/gitfromwildan"
+      "title": "GitHub Sponsors",
+      "description": "Support us on GitHub Sponsors to help us continue developing and maintaining DocuBook.",
+      "image": "/images/funding.svg",
+      "url": "https://github.com/sponsors/gitfromwildan"
     }
   },
+  "showcase": [
+    {
+      "title": "Tutor Addons",
+      "description": "Supercharge Your TutorLMS With Powerful Addons like Payment Gateway, Affiliates, and more.",
+      "image": "/images/tutoraddons.svg",
+      "url": "https://docs.tutoraddons.com/"
+    },
+    {
+      "title": "Addon Sejoli Pro",
+      "description": "Functions for the sejoli plugin from custom member areas, orders manager, tracking UTM, courses and invoices.",
+      "image": "/images/addonpro.svg",
+      "url": "https://docs.addonsejoli.pro/"
+    },
+    {
+      "title": "WooNoow",
+      "description": "WooNooW bridges the divide between standard WooCommerce and a premium e-commerce experience.",
+      "image": "/images/woonoow.png",
+      "url": "https://docs.woonoow.com/"
+    }
+  ],
   "routes": [
     {
       "title": "Getting Started",
@@ -76,9 +96,7 @@
         {
           "title": "Search",
           "href": "/search",
-          "items": [
-            { "title": "Algolia", "href": "/algolia" }
-          ]
+          "items": [{ "title": "Algolia", "href": "/algolia" }]
         }
       ]
     },
