@@ -103,7 +103,9 @@ function getPackageManagerSpec(packageManager) {
 async function getOrDownloadTemplate(templateId, state) {
   // Validate templateId to prevent path traversal
   if (!/^[a-zA-Z0-9_-]+$/.test(templateId)) {
-    throw new Error(`Invalid template ID "${templateId}". Only alphanumeric characters, hyphens, and underscores are allowed.`);
+    throw new Error(
+      `Invalid template ID "${templateId}". Only alphanumeric characters, hyphens, and underscores are allowed.`
+    );
   }
 
   const templateInfo = getTemplate(templateId);
@@ -130,7 +132,13 @@ async function getOrDownloadTemplate(templateId, state) {
       copyDirectoryRecursive(localOverlayPath, tempDir);
       return {
         templatePath: tempDir,
-        cleanup: () => { try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch {} },
+        cleanup: () => {
+          try {
+            fs.rmSync(tempDir, { recursive: true, force: true });
+          } catch {
+            /* non-fatal */
+          }
+        },
       };
     }
   }
@@ -139,17 +147,7 @@ async function getOrDownloadTemplate(templateId, state) {
   state?.setCurrentStep("Downloading template...");
   renderScaffolding(state || {});
 
-  const result = await downloadTemplateFromGitHub(baseId, templateInfo.url);
-
-  if (overlayId) {
-    // Apply overlay from local or downloaded overlay directory
-    const localOverlayPath = getLocalTemplatePath(overlayId);
-    if (localOverlayPath && fs.existsSync(localOverlayPath)) {
-      copyDirectoryRecursive(localOverlayPath, result.templatePath);
-    }
-  }
-
-  return result;
+  return await downloadTemplateFromGitHub(baseId, templateInfo.url, overlayId);
 }
 
 /**
@@ -179,9 +177,10 @@ function getLocalTemplatePath(templateId) {
  * Downloads template from GitHub repository
  * @param {string} templateId - Template ID
  * @param {string} templateUrl - Template URL from templates.json
- * @returns {Promise<string>} Path to downloaded template
+ * @param {string|null} overlayId - Optional overlay template ID to merge on top of base
+ * @returns {Promise<{templatePath: string, cleanup: Function}>}
  */
-async function downloadTemplateFromGitHub(templateId, templateUrl) {
+async function downloadTemplateFromGitHub(templateId, templateUrl, overlayId = null) {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "docubook-"));
 
   try {
@@ -227,6 +226,14 @@ async function downloadTemplateFromGitHub(templateId, templateUrl) {
 
     if (!fs.existsSync(extractedDir)) {
       throw new Error(`Template "${templateId}" not found in repository.`);
+    }
+
+    // Apply overlay from the same extracted archive if specified
+    if (overlayId) {
+      const overlayDir = path.join(tempDir, `${repoName}-main`, "packages", "template", overlayId);
+      if (fs.existsSync(overlayDir)) {
+        copyDirectoryRecursive(overlayDir, extractedDir);
+      }
     }
 
     return {
