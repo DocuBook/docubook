@@ -34,10 +34,10 @@ function _writePreferences(obj) {
  */
 export function detectInstalledPackageManager() {
   const userAgent = process.env.npm_config_user_agent || "";
-  if (userAgent.includes("pnpm")) return "pnpm";
-  if (userAgent.includes("yarn")) return "yarn";
-  if (userAgent.includes("bun")) return "bun";
-  if (userAgent.includes("npm")) return "npm";
+  if (userAgent.startsWith("pnpm")) return "pnpm";
+  if (userAgent.startsWith("yarn")) return "yarn";
+  if (userAgent.startsWith("bun")) return "bun";
+  if (userAgent.startsWith("npm")) return "npm";
 
   // Fallback: check what's available in PATH
   const candidates = ["npm", "pnpm", "yarn", "bun"];
