@@ -58,9 +58,10 @@ export async function collectUserInput(cliProvidedDir) {
       name: "template",
       message: "Select your template:",
       choices: availableTemplates.map((template) => ({
-        title: template.name,
+        title: template.status === "coming-soon" ? `${template.name} (Coming Soon)` : template.name,
         description: template.description,
         value: template.id,
+        disabled: template.status === "coming-soon",
       })),
       initial: 0,
     },

@@ -95,6 +95,12 @@ export function initializeProgram(version) {
             );
           }
 
+          if (tmpl.status === "coming-soon") {
+            throw new Error(
+              `Template "${selectedTemplate}" is coming soon and not yet available.`
+            );
+          }
+
           state.setTemplate(tmpl.name);
         } else {
           throw new Error("No templates available");
