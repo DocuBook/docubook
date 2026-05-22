@@ -27,10 +27,16 @@ export default tseslint.config(
       globals: {
         process: "readonly",
         console: "readonly",
+        fetch: "readonly",
+        AbortController: "readonly",
+        ReadableStream: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
       },
     },
     rules: {
       "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
   {

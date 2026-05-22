@@ -13,7 +13,8 @@
   },
   "main": "./src/index.js",
   "scripts": {
-    "dev": "node src/index.js"
+    "dev": "node src/index.js",
+    "test": "vitest run"
   },
   "keywords": [
     "docubook",
@@ -36,7 +37,8 @@
     "commander": "^12.1.0",
     "ora": "^8.2.0",
     "prompts": "^2.4.2",
-    "semver": "^7.7.4"
+    "semver": "^7.7.4",
+    "tar": "^7.5.15"
   },
   "engines": {
     "node": ">=18.0.0"
