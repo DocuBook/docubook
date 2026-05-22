@@ -2,10 +2,6 @@
   "name": "@docubook/monorepo",
   "type": "module",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
     "build": "turbo build",
     "lint": "turbo lint",

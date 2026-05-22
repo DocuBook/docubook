@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { useEffect, useMemo, useState, useRef } from "react"
-import { ArrowUpIcon, ArrowDownIcon, CornerDownLeftIcon, FileTextIcon } from "lucide-react"
-import Anchor from "./anchor"
-import { cn } from "@/lib/utils"
-import { advanceSearch } from "@/lib/search/built-in"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { page_routes } from "@/lib/routes"
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { ArrowUpIcon, ArrowDownIcon, CornerDownLeftIcon, FileTextIcon } from "lucide-react";
+import Anchor from "./anchor";
+import { cn } from "@/lib/utils";
+import { advanceSearch } from "@/lib/search/built-in";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { page_routes } from "@/lib/routes";
 import {
   DialogContent,
   DialogHeader,
@@ -15,49 +15,48 @@ import {
   DialogClose,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 
 type ContextInfo = {
-  icon: string
-  description: string
-  title?: string
-}
+  icon: string;
+  description: string;
+  title?: string;
+};
 
 type SearchResult = {
-  title: string
-  href: string
-  noLink?: boolean
-  items?: undefined
-  score?: number
-  context?: ContextInfo
-}
+  title: string;
+  href: string;
+  noLink?: boolean;
+  items?: undefined;
+  score?: number;
+  context?: ContextInfo;
+};
 
 const paddingMap = {
   1: "pl-2",
   2: "pl-4",
   3: "pl-10",
-} as const
+} as const;
 
 interface SearchModalProps {
-  isOpen: boolean
-  setIsOpen: (open: boolean) => void
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
 }
 
 export function SearchModal({ isOpen, setIsOpen }: SearchModalProps) {
-  const router = useRouter()
-  const [searchedInput, setSearchedInput] = useState("")
-  const [selectedIndex, setSelectedIndex] = useState(0)
-  const itemRefs = useRef<(HTMLDivElement | null)[]>([])
+  const router = useRouter();
+  const [searchedInput, setSearchedInput] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     if (!isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSearchedInput("")
+      queueMicrotask(() => setSearchedInput(""));
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   const filteredResults = useMemo<SearchResult[]>(() => {
-    const trimmedInput = searchedInput.trim()
+    const trimmedInput = searchedInput.trim();
 
     if (trimmedInput.length < 3) {
       return page_routes
@@ -68,50 +67,50 @@ export function SearchModal({ isOpen, setIsOpen }: SearchModalProps) {
           href: route.href,
           noLink: route.noLink,
           context: route.context,
-        }))
+        }));
     }
-    return advanceSearch(trimmedInput) as unknown as SearchResult[]
-  }, [searchedInput])
+    return advanceSearch(trimmedInput) as unknown as SearchResult[];
+  }, [searchedInput]);
 
-  // useEffect(() => {
-  //   setSelectedIndex(0);
-  // }, [filteredResults]);
+  useEffect(() => {
+    queueMicrotask(() => setSelectedIndex(0));
+  }, [filteredResults]);
 
   useEffect(() => {
     const handleNavigation = (event: KeyboardEvent) => {
-      if (!isOpen || filteredResults.length === 0) return
+      if (!isOpen || filteredResults.length === 0) return;
 
       if (event.key === "ArrowDown") {
-        event.preventDefault()
-        setSelectedIndex((prev) => (prev + 1) % filteredResults.length)
+        event.preventDefault();
+        setSelectedIndex((prev) => (prev + 1) % filteredResults.length);
       } else if (event.key === "ArrowUp") {
-        event.preventDefault()
-        setSelectedIndex((prev) => (prev - 1 + filteredResults.length) % filteredResults.length)
+        event.preventDefault();
+        setSelectedIndex((prev) => (prev - 1 + filteredResults.length) % filteredResults.length);
       } else if (event.key === "Enter") {
-        event.preventDefault()
-        const selectedItem = filteredResults[selectedIndex]
+        event.preventDefault();
+        const selectedItem = filteredResults[selectedIndex];
         if (selectedItem) {
-          router.push(`/docs${selectedItem.href}`)
-          setIsOpen(false)
+          router.push(`/docs${selectedItem.href}`);
+          setIsOpen(false);
         }
       }
-    }
+    };
 
-    window.addEventListener("keydown", handleNavigation)
-    return () => window.removeEventListener("keydown", handleNavigation)
-  }, [isOpen, filteredResults, selectedIndex, router, setIsOpen])
+    window.addEventListener("keydown", handleNavigation);
+    return () => window.removeEventListener("keydown", handleNavigation);
+  }, [isOpen, filteredResults, selectedIndex, router, setIsOpen]);
 
   useEffect(() => {
     if (itemRefs.current[selectedIndex]) {
       itemRefs.current[selectedIndex]?.scrollIntoView({
         behavior: "smooth",
         block: "nearest",
-      })
+      });
     }
-  }, [selectedIndex])
+  }, [selectedIndex]);
 
   return (
-    <DialogContent className="rounded-md! top-[45%] max-w-[650px] p-0 sm:top-[38%]">
+    <DialogContent className="top-[45%] max-w-[650px] rounded-md! p-0 sm:top-[38%]">
       <DialogHeader>
         <DialogTitle className="sr-only">Search Documentation</DialogTitle>
         <DialogDescription className="sr-only">Search through the documentation</DialogDescription>
@@ -120,8 +119,8 @@ export function SearchModal({ isOpen, setIsOpen }: SearchModalProps) {
       <input
         value={searchedInput}
         onChange={(e) => {
-          setSearchedInput(e.target.value)
-          setSelectedIndex(0)
+          setSearchedInput(e.target.value);
+          setSelectedIndex(0);
         }}
         placeholder="Type something to search..."
         autoFocus
@@ -137,15 +136,15 @@ export function SearchModal({ isOpen, setIsOpen }: SearchModalProps) {
       <ScrollArea className="max-h-[400px] overflow-y-auto">
         <div className="flex flex-col items-start overflow-y-auto px-1 pb-4 sm:px-2">
           {filteredResults.map((item, index) => {
-            const level = (item.href.split("/").slice(1).length - 1) as keyof typeof paddingMap
-            const paddingClass = paddingMap[level] || "pl-2"
-            const isActive = index === selectedIndex
+            const level = (item.href.split("/").slice(1).length - 1) as keyof typeof paddingMap;
+            const paddingClass = paddingMap[level] || "pl-2";
+            const isActive = index === selectedIndex;
 
             return (
               <DialogClose key={item.href} asChild>
                 <Anchor
                   ref={(el) => {
-                    itemRefs.current[index] = el as HTMLDivElement | null
+                    itemRefs.current[index] = el as HTMLDivElement | null;
                   }}
                   className={cn(
                     "dark:hover:bg-accent/15 hover:bg-accent/10 flex w-full items-center gap-2.5 rounded-sm px-3 text-sm",
@@ -174,7 +173,7 @@ export function SearchModal({ isOpen, setIsOpen }: SearchModalProps) {
                   </div>
                 </Anchor>
               </DialogClose>
-            )
+            );
           })}
         </div>
       </ScrollArea>
@@ -196,5 +195,5 @@ export function SearchModal({ isOpen, setIsOpen }: SearchModalProps) {
         </div>
       </DialogFooter>
     </DialogContent>
-  )
+  );
 }

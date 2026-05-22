@@ -16,20 +16,21 @@ export const AuroraText = memo(
     colors = ["#FF0080", "#7928CA", "#0070F3", "#38bdf8"],
     speed = 1,
   }: AuroraTextProps) => {
+    const safeSpeed = Math.max(0.1, speed);
+    const safeColors = colors.length > 0 ? colors : ["#FF0080", "#7928CA", "#0070F3", "#38bdf8"];
+
     const gradientStyle = {
-      backgroundImage: `linear-gradient(135deg, ${colors.join(", ")}, ${
-        colors[0]
-      })`,
+      backgroundImage: `linear-gradient(135deg, ${safeColors.join(", ")}, ${safeColors[0]})`,
       WebkitBackgroundClip: "text",
       WebkitTextFillColor: "transparent",
-      animationDuration: `${10 / speed}s`,
+      animationDuration: `${10 / safeSpeed}s`,
     };
 
     return (
       <span className={`relative inline-block ${className}`}>
         <span className="sr-only">{children}</span>
         <span
-          className="relative animate-aurora bg-[length:200%_auto] bg-clip-text text-transparent"
+          className="animate-aurora relative bg-[length:200%_auto] bg-clip-text text-transparent"
           style={gradientStyle}
           aria-hidden="true"
         >
@@ -37,7 +38,7 @@ export const AuroraText = memo(
         </span>
       </span>
     );
-  },
+  }
 );
 
 AuroraText.displayName = "AuroraText";

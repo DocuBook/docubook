@@ -6,6 +6,7 @@ node_modules
 .pnp.js
 .yarn/install-state.gz
 .pnp.cjs
+bun.lock
 
 # Build outputs
 .next
@@ -32,7 +33,6 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
-next-env.d.ts
 
 # Local development
 .cache

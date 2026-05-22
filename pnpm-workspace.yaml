@@ -2,7 +2,7 @@ packages:
   - "apps/*"
   - "packages/*"
 allowBuilds:
-  "@parcel/watcher": false
+  "@parcel/watcher": true
   bun: true
-  sharp: false
-  unrs-resolver: false
+  sharp: true
+  unrs-resolver: true
