@@ -182,7 +182,7 @@ function getLocalTemplatePath(templateId) {
  * @param {string|null} overlayId - Optional overlay template ID to merge on top of base
  * @returns {Promise<{templatePath: string, cleanup: Function}>}
  */
-async function downloadTemplateFromGitHub(templateId, templateUrl, overlayId = null) {
+export async function downloadTemplateFromGitHub(templateId, templateUrl, overlayId = null) {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "docubook-"));
 
   try {
@@ -199,8 +199,10 @@ async function downloadTemplateFromGitHub(templateId, templateUrl, overlayId = n
     const downloadSpinner = ora(`Downloading template...`).start();
 
     let response;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
     try {
-      response = await fetch(archiveUrl);
+      response = await fetch(archiveUrl, { signal: controller.signal });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
@@ -208,9 +210,16 @@ async function downloadTemplateFromGitHub(templateId, templateUrl, overlayId = n
     } catch (error) {
       downloadSpinner.fail("Failed to download template");
       throw error;
+    } finally {
+      clearTimeout(timeout);
     }
 
     const extractSpinner = ora(`Extracting template...`).start();
+
+    if (!response.body) {
+      extractSpinner.fail("Failed to extract template");
+      throw new Error("Empty response body from GitHub");
+    }
 
     try {
       await pipeline(response.body, tarExtract({ cwd: tempDir, strip: 0 }));
@@ -222,7 +231,13 @@ async function downloadTemplateFromGitHub(templateId, templateUrl, overlayId = n
 
     // Find template in extracted repo
     const repoName = repoMatch[1].split("/")[1];
-    const extractedDir = path.join(tempDir, `${repoName}-${branch}`, "packages", "template", templateId);
+    const extractedDir = path.join(
+      tempDir,
+      `${repoName}-${branch}`,
+      "packages",
+      "template",
+      templateId
+    );
 
     if (!fs.existsSync(extractedDir)) {
       throw new Error(`Template "${templateId}" not found in repository.`);
