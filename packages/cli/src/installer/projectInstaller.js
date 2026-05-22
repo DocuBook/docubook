@@ -98,7 +98,7 @@ function getPackageManagerSpec(packageManager) {
  * Gets template from local cache or downloads from GitHub
  * @param {string} templateId - Template ID
  * @param {Object} state - CLI state for progress updates
- * @returns {Promise<string>} Path to template directory
+ * @returns {Promise<{templatePath: string, cleanup: Function|null}>}
  */
 async function getOrDownloadTemplate(templateId, state) {
   // Validate templateId to prevent path traversal
@@ -106,25 +106,50 @@ async function getOrDownloadTemplate(templateId, state) {
     throw new Error(`Invalid template ID "${templateId}". Only alphanumeric characters, hyphens, and underscores are allowed.`);
   }
 
+  const templateInfo = getTemplate(templateId);
+  if (!templateInfo) {
+    throw new Error(`Template "${templateId}" not found.`);
+  }
+
+  // Determine the base template directory name
+  const baseId = templateInfo.base || templateId;
+  const overlayId = templateInfo.overlay || null;
+
   // Try local path first (for dev environment)
-  const localPath = getLocalTemplatePath(templateId);
-  if (localPath && fs.existsSync(localPath)) {
-    return {
-      templatePath: localPath,
-      cleanup: null,
-    };
+  const localBasePath = getLocalTemplatePath(baseId);
+  if (localBasePath && fs.existsSync(localBasePath)) {
+    if (!overlayId) {
+      return { templatePath: localBasePath, cleanup: null };
+    }
+
+    // Apply overlay: copy base to temp, then overlay on top
+    const localOverlayPath = getLocalTemplatePath(overlayId);
+    if (localOverlayPath && fs.existsSync(localOverlayPath)) {
+      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "docubook-overlay-"));
+      copyDirectoryRecursive(localBasePath, tempDir);
+      copyDirectoryRecursive(localOverlayPath, tempDir);
+      return {
+        templatePath: tempDir,
+        cleanup: () => { try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch {} },
+      };
+    }
   }
 
   // Download from GitHub
   state?.setCurrentStep("Downloading template...");
   renderScaffolding(state || {});
 
-  const templateInfo = getTemplate(templateId);
-  if (!templateInfo) {
-    throw new Error(`Template "${templateId}" not found.`);
+  const result = await downloadTemplateFromGitHub(baseId, templateInfo.url);
+
+  if (overlayId) {
+    // Apply overlay from local or downloaded overlay directory
+    const localOverlayPath = getLocalTemplatePath(overlayId);
+    if (localOverlayPath && fs.existsSync(localOverlayPath)) {
+      copyDirectoryRecursive(localOverlayPath, result.templatePath);
+    }
   }
 
-  return await downloadTemplateFromGitHub(templateId, templateInfo.url);
+  return result;
 }
 
 /**
@@ -161,7 +186,7 @@ async function downloadTemplateFromGitHub(templateId, templateUrl) {
 
   try {
     // Build archive URL from template URL
-    // https://github.com/DocuBook/docubook/tree/main/packages/template/nextjs-vercel
+    // https://github.com/DocuBook/docubook/tree/main/packages/template/nextjs
     // -> https://github.com/DocuBook/docubook/archive/refs/heads/main.tar.gz
     const repoMatch = templateUrl.match(/https:\/\/github\.com\/([^/]+\/[^/]+)\//);
     if (!repoMatch) {

@@ -22,8 +22,8 @@ npx @docubook/cli@latest
 
 ---
 
-## Hosting & Optimization
+## Hosting & Deployment
 
-This template is optimized for deployment on Vercel (the default hosting target). The project structure and default Next.js configuration are tuned so that deploying to Vercel is straightforward and uses Next.js features like ISR, image optimization, and edge-friendly routing where applicable.
+This template is the base Next.js documentation template for DocuBook. It is optimized for deployment on Vercel by default, but can be used with any hosting platform that supports Next.js.
 
-If you want to deploy elsewhere (Docker, Kubernetes, Fly.io, Railway, Render), prefer the `nextjs-docker` template which provides a Docker-oriented build setup. The `nextjs-vercel` template keeps the developer experience focused on Vercel-first defaults while remaining compatible with standard Next.js deployment options.
+For Docker-based deployments (Coolify, Kubernetes, Railway, Fly.io, Render), use the `nextjs-docker` template which adds a production-ready Dockerfile and standalone build configuration on top of this base.

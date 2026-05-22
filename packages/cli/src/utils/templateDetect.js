@@ -46,6 +46,7 @@ export function getAvailableTemplates() {
         name: config.name || entry.name,
         description: config.description,
         features: config.features,
+        base: config.base || null,
       });
     } catch {
       console.error(`Failed to read template config for ${entry.name}`);
