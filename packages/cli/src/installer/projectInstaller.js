@@ -2,10 +2,12 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 import { URL, fileURLToPath } from "url";
+import { pipeline } from "stream/promises";
 import ora from "ora";
 import chalk from "chalk";
 import { execFileSync } from "child_process";
 import prompts from "prompts";
+import { extract as tarExtract } from "tar";
 import log from "../utils/logger.js";
 import { displayManualSteps } from "../utils/display.js";
 import { renderScaffolding } from "../tui/renderer.js";
@@ -184,9 +186,6 @@ async function downloadTemplateFromGitHub(templateId, templateUrl, overlayId = n
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "docubook-"));
 
   try {
-    // Build archive URL from template URL
-    // https://github.com/DocuBook/docubook/tree/main/packages/template/nextjs
-    // -> https://github.com/DocuBook/docubook/archive/refs/heads/main.tar.gz
     const repoMatch = templateUrl.match(/https:\/\/github\.com\/([^/]+\/[^/]+)\//);
     if (!repoMatch) {
       throw new Error(`Invalid template URL: ${templateUrl}`);
@@ -196,24 +195,25 @@ async function downloadTemplateFromGitHub(templateId, templateUrl, overlayId = n
     const branch = branchMatch?.[1] || "main";
 
     const archiveUrl = `https://github.com/${repoMatch[1]}/archive/refs/heads/${branch}.tar.gz`;
-    const archivePath = path.join(tempDir, "repo.tar.gz");
 
-    // Show progress for download
     const downloadSpinner = ora(`Downloading template...`).start();
 
+    let response;
     try {
-      execFileSync("curl", ["-L", "-o", archivePath, archiveUrl], { stdio: "pipe" });
+      response = await fetch(archiveUrl);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
       downloadSpinner.succeed("Template downloaded");
     } catch (error) {
       downloadSpinner.fail("Failed to download template");
       throw error;
     }
 
-    // Show progress for extraction
     const extractSpinner = ora(`Extracting template...`).start();
 
     try {
-      execFileSync("tar", ["-xzf", archivePath, "-C", tempDir], { stdio: "pipe" });
+      await pipeline(response.body, tarExtract({ cwd: tempDir, strip: 0 }));
       extractSpinner.succeed("Template extracted");
     } catch (error) {
       extractSpinner.fail("Failed to extract template");
@@ -222,7 +222,7 @@ async function downloadTemplateFromGitHub(templateId, templateUrl, overlayId = n
 
     // Find template in extracted repo
     const repoName = repoMatch[1].split("/")[1];
-    const extractedDir = path.join(tempDir, `${repoName}-main`, "packages", "template", templateId);
+    const extractedDir = path.join(tempDir, `${repoName}-${branch}`, "packages", "template", templateId);
 
     if (!fs.existsSync(extractedDir)) {
       throw new Error(`Template "${templateId}" not found in repository.`);
@@ -230,7 +230,7 @@ async function downloadTemplateFromGitHub(templateId, templateUrl, overlayId = n
 
     // Apply overlay from the same extracted archive if specified
     if (overlayId) {
-      const overlayDir = path.join(tempDir, `${repoName}-main`, "packages", "template", overlayId);
+      const overlayDir = path.join(tempDir, `${repoName}-${branch}`, "packages", "template", overlayId);
       if (fs.existsSync(overlayDir)) {
         copyDirectoryRecursive(overlayDir, extractedDir);
       }
