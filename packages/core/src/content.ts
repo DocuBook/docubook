@@ -59,10 +59,8 @@ export async function readMdxFileBySlug(
     path.join(/*turbopackIgnore: true*/ docsRoot, slug, "index.mdx"),
   ];
   // console.log(`Attempting to read slug: "${slug}", paths:`, paths); // Debug log
-  const attempted: string[] = [];
 
   for (const p of paths) {
-    attempted.push(p);
     // Guard: reject any path that escapes the docs root.
     const resolvedP = path.resolve(/*turbopackIgnore: true*/ p);
     if (!resolvedP.startsWith(resolvedRoot + path.sep) && resolvedP !== resolvedRoot) {
