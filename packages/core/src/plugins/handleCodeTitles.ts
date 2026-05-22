@@ -8,6 +8,8 @@ interface TextNode extends Node {
 }
 
 export const handleCodeTitles = () => (tree: Node) => {
+  const toRemove: { parent: Parent; index: number }[] = []
+
   visit(tree, "element", (node: ElementNode, index: number | null, parent: Parent | null) => {
     if (!parent || index === null || node.tagName !== "div") {
       return
@@ -35,9 +37,14 @@ export const handleCodeTitles = () => (tree: Node) => {
         }
         nextElement.properties["data-title"] = titleNode.value
         nextElement.codeTitle = titleNode.value
-        parent.children.splice(index, 1)
-        return index
+        toRemove.push({ parent, index })
       }
     }
   })
+
+  // Remove title divs in reverse order to preserve indices
+  for (let i = toRemove.length - 1; i >= 0; i--) {
+    const { parent, index } = toRemove[i]
+    parent.children.splice(index, 1)
+  }
 }
