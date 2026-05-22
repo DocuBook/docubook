@@ -3,6 +3,7 @@
   "id": "nextjs-vercel",
   "description": "Next.js and Vercel deployment (optimized for vercel)",
   "framework": "nextjs",
+  "base": "nextjs",
   "packageManagers": ["npm", "yarn", "pnpm", "bun"],
   "features": [
     "Next.js 16",
@@ -15,6 +16,6 @@
     "Responsive Design"
   ],
   "author": "wildan.nrs",
-  "repository": "https://github.com/DocuBook/packages/template/nextjs-vercel",
+  "repository": "https://github.com/DocuBook/packages/template/nextjs",
   "homepage": "https://docubook.pro"
 }

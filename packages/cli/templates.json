@@ -4,6 +4,7 @@
       "id": "nextjs-vercel",
       "name": "nextjs-vercel",
       "description": "Next.js and Vercel deployment (optimized for vercel)",
+      "base": "nextjs",
       "features": [
         "Next.js 16",
         "React 19",
@@ -14,12 +15,14 @@
         "Search (Algolia)",
         "Responsive Design"
       ],
-      "url": "https://github.com/DocuBook/docubook/tree/main/packages/template/nextjs-vercel"
+      "url": "https://github.com/DocuBook/docubook/tree/main/packages/template/nextjs"
     },
     {
       "id": "nextjs-docker",
       "name": "nextjs-docker",
       "description": "Next.js standalone with Docker image (optimized for coolify, etc.)",
+      "base": "nextjs",
+      "overlay": "nextjs-docker",
       "features": [
         "Next.js 16",
         "React 19",
@@ -31,7 +34,7 @@
         "Responsive Design",
         "Docker Deployment"
       ],
-      "url": "https://github.com/DocuBook/docubook/tree/main/packages/template/nextjs-docker"
+      "url": "https://github.com/DocuBook/docubook/tree/main/packages/template/nextjs"
     },
     {
       "id": "react-router",
