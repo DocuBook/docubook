@@ -1,10 +1,7 @@
 import { colors, success, info, loading, dim } from './colors.js';
 import { createWelcomeBanner, createScaffoldingBanner, createSuccessBanner, createBoxedMessage } from './ascii.js';
-import { getVersion } from '../utils/version.js';
 
-const version = getVersion();
-
-export function renderWelcome() {
+export function renderWelcome(version) {
   console.clear();
   console.log('');
   console.log(createWelcomeBanner(version));
