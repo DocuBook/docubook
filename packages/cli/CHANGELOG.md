@@ -1,5 +1,38 @@
 # @docubook/cli
 
+## 0.6.0
+
+### Minor Changes
+
+- feat: Deduplicate Next.js templates with base + overlay pattern
+  - Templates now support `base` and `overlay` fields in `templates.json`
+  - `nextjs-vercel` and `nextjs-docker` share a single `nextjs` base template
+  - Overlay files (e.g. Dockerfile) are merged on top of the base during scaffolding
+  - Removes duplicated template directories, reducing maintenance burden
+
+- feat: Replace `curl`/`tar` shell commands with native `fetch` + `tar` (npm package)
+  - Template downloads no longer depend on system `curl` binary
+  - Extraction uses `tar` npm package via `stream/promises.pipeline`
+  - Adds 30s timeout with `AbortController` for download requests
+  - Adds `tar` as a dependency
+
+- feat: Refactor package manager detection into dedicated module
+  - Moved `detectInstalledPackageManager`, `getPreferredPackageManager`, and `setPreferredPackageManager` from `updateHandler.js` to `src/utils/packageManagerDetect.js`
+  - Cleaner separation of concerns between update logic and PM detection
+
+- feat: Enhanced logger with log levels and CI support
+  - Added `LOG_LEVEL` env var support (`debug`, `info`, `warn`, `error`)
+  - Added CI-friendly plain text output when `CI` or `NO_COLOR` env is set
+  - Added `log.debug()` method
+
+- feat: CLI handles "coming soon" templates consistently
+  - Templates with `status: "coming-soon"` are shown with `(Coming Soon)` suffix and disabled in interactive prompt
+  - CLI argument validation rejects coming-soon templates with a clear error message
+  - `templateDetect.js` fallback scanner now propagates `base` and `status` fields
+
+- fix: `renderWelcome()` now accepts `version` as parameter instead of importing internally
+- chore: Added `vitest` test script to package.json
+
 ## 0.5.4
 
 ### Patch Changes
