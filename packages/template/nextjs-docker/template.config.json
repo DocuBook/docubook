@@ -3,6 +3,7 @@
   "id": "nextjs-docker",
   "description": "Next.js standalone with Docker image (optimized for coolify, etc.)",
   "framework": "nextjs",
+  "base": "nextjs",
   "packageManagers": ["npm", "yarn", "pnpm", "bun"],
   "features": [
     "Next.js 16",
