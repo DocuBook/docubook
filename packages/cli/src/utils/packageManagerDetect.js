@@ -33,28 +33,24 @@ function _writePreferences(obj) {
  * @returns {string} Package manager name ('npm' | 'pnpm' | 'yarn' | 'bun')
  */
 export function detectInstalledPackageManager() {
-  try {
-    const userAgent = process.env.npm_config_user_agent || "";
-    if (userAgent.includes("npm")) return "npm";
-    if (userAgent.includes("pnpm")) return "pnpm";
-    if (userAgent.includes("yarn")) return "yarn";
-    if (userAgent.includes("bun")) return "bun";
+  const userAgent = process.env.npm_config_user_agent || "";
+  if (userAgent.includes("pnpm")) return "pnpm";
+  if (userAgent.includes("yarn")) return "yarn";
+  if (userAgent.includes("bun")) return "bun";
+  if (userAgent.includes("npm")) return "npm";
 
-    // Fallback: check what's available in PATH
-    const candidates = ["npm", "pnpm", "yarn", "bun"];
-    for (const pm of candidates) {
-      try {
-        execFileSync(pm, ["--version"], { stdio: "ignore" });
-        return pm;
-      } catch {
-        // try next
-      }
+  // Fallback: check what's available in PATH
+  const candidates = ["npm", "pnpm", "yarn", "bun"];
+  for (const pm of candidates) {
+    try {
+      execFileSync(pm, ["--version"], { stdio: "ignore" });
+      return pm;
+    } catch {
+      // try next
     }
-
-    return "npm";
-  } catch {
-    return "npm";
   }
+
+  return "npm";
 }
 
 /**
