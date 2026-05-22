@@ -4,10 +4,10 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import { lt } from "semver";
+import { getPreferredPackageManager, setPreferredPackageManager } from "../utils/packageManagerDetect.js";
 
 const _DOCUBOOK_DIR = path.join(os.homedir(), ".docubook");
 const _CHANGELOGS_DIR = path.join(_DOCUBOOK_DIR, "changelogs");
-const _PREFERENCES_FILE = path.join(_DOCUBOOK_DIR, "cli-config.json");
 
 function _ensureChangelogsDir() {
   try {
@@ -61,86 +61,7 @@ function _markChangelogShown(version) {
   }
 }
 
-function _readPreferences() {
-  try {
-    const raw = fs.readFileSync(_PREFERENCES_FILE, "utf8");
-    return JSON.parse(raw || "{}");
-  } catch {
-    return {};
-  }
-}
 
-function _writePreferences(obj) {
-  try {
-    _ensureChangelogsDir();
-    fs.writeFileSync(_PREFERENCES_FILE, JSON.stringify(obj, null, 2), { mode: 0o600 });
-  } catch {
-    // non-fatal
-  }
-}
-
-function getPreferredPackageManager() {
-  const prefs = _readPreferences();
-  if (prefs.packageManager) return prefs.packageManager;
-  return detectInstalledPackageManager();
-}
-
-function setPreferredPackageManager(pm) {
-  if (!pm) return;
-  const prefs = _readPreferences();
-  prefs.packageManager = pm;
-  _writePreferences(prefs);
-}
-
-/**
- * Detect which package manager was used to install this CLI globally
- * Returns: 'npm', 'bun', 'yarn', or 'pnpm'
- */
-function detectInstalledPackageManager() {
-  try {
-    // Check npm_config_user_agent environment variable (set by package manager when running scripts)
-    const userAgent = process.env.npm_config_user_agent || "";
-    if (userAgent.includes("npm")) return "npm";
-    if (userAgent.includes("pnpm")) return "pnpm";
-    if (userAgent.includes("yarn")) return "yarn";
-    if (userAgent.includes("bun")) return "bun";
-
-    // Fallback: check what's available in PATH
-    // Priority: npm > bun > yarn > pnpm (based on common usage and reliability)
-    try {
-      execFileSync("npm", ["--version"], { stdio: "ignore" });
-      return "npm";
-    } catch {
-      // try next
-    }
-
-    try {
-      execFileSync("pnpm", ["--version"], { stdio: "ignore" });
-      return "pnpm";
-    } catch {
-      // try next
-    }
-
-    try {
-      execFileSync("yarn", ["--version"], { stdio: "ignore" });
-      return "yarn";
-    } catch {
-      // try next
-    }
-
-    try {
-      execFileSync("bun", ["--version"], { stdio: "ignore" });
-      return "bun";
-    } catch {
-      // try next
-    }
-
-    // Default to npm
-    return "npm";
-  } catch {
-    return "npm";
-  }
-}
 
 /**
  * Fetch release info from GitHub API
