@@ -1,4 +1,4 @@
-import { hydrateRoot, createRoot } from "react-dom/client";
+import { createRoot } from "react-dom/client";
 import React from "react";
 import { MDXRemote } from "@docubook/core";
 import { createMdxComponents } from "@docubook/mdx-content";
@@ -54,9 +54,9 @@ function hydrateMdxContent() {
   try {
     const compiledSource = JSON.parse(sourceEl.textContent || "");
     const components = createMdxComponents();
-    hydrateRoot(island, React.createElement(MDXRemote, { compiledSource, components, lazy: true }));
-  } catch {
-    // Hydration failed — SSR content remains visible as fallback
+    createRoot(island).render(React.createElement(MDXRemote, { compiledSource, components }));
+  } catch (e) {
+    console.error("[mdx-hydrate]", e);
   }
 }
 

@@ -230,7 +230,6 @@ async function getDocsForSlug(slug: string) {
   const content = React.createElement(MDXRemote, {
     compiledSource: serialized.compiledSource,
     components,
-    lazy: true,
   });
 
   const relPath = filePath.replace(resolve("./"), "");

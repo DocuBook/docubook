@@ -201,7 +201,7 @@ async function renderDocsPage(slug: string, rawMdx: string, filePath: string): P
     throw new Error(`MDX Error in: docs/${slug}.mdx\n${msg}`, { cause: err });
   }
 
-  const content = React.createElement(MDXRemote, { compiledSource, components, lazy: true });
+  const content = React.createElement(MDXRemote, { compiledSource, components });
 
   const title = frontmatter.title || slug;
   const description = frontmatter.description || "";
@@ -363,7 +363,6 @@ async function build() {
   const indexContent = React.createElement(MDXRemote, {
     compiledSource: indexSerialized.compiledSource,
     components: createMdxComponents(),
-    lazy: true,
   });
   const indexRelPath = indexMdxPath.replace(resolve("./"), "");
   const indexDate = indexFm.date || (await getGitLastModified(indexRelPath)) || undefined;

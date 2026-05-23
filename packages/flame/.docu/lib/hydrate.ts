@@ -23,13 +23,28 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
   await mkdir(ASSETS_DIR, { recursive: true });
   await cleanOldBundles();
 
+  const nodeEnv = process.env.NODE_ENV || "development";
   const result = await Bun.build({
     entrypoints: [resolve("./.docu/lib/client.ts")],
     outdir: ASSETS_DIR,
     naming: "client-[hash].[ext]",
     target: "browser",
-    minify: true,
-    define: { "process.env.NODE_ENV": '"production"' },
+    minify: nodeEnv === "production",
+    define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
+    plugins: [
+      {
+        name: "mdx-jsx-runtime",
+        setup(build) {
+          build.onLoad({ filter: /next-mdx-remote\/dist\/jsx-runtime\.cjs$/ }, () => {
+            const source =
+              nodeEnv === "production"
+                ? `module.exports.jsxRuntime = require("react/jsx-runtime");`
+                : `module.exports.jsxRuntime = require("react/jsx-dev-runtime");`;
+            return { contents: source, loader: "js" };
+          });
+        },
+      },
+    ],
   });
 
   if (!result.success) {
