@@ -405,8 +405,6 @@ async function build() {
   const notFoundHtml = htmlShell("404 - Not Found", "", renderToString(notFoundPage));
   await writeFile(join(DIST_DIR, "404.html"), notFoundHtml);
 
-  await writeCache(cache);
-
   logger.spinner.stop(
     `Built ${built} pages (${skipped} cached) \x1b[90m(${Math.round(performance.now() - t)}ms)\x1b[0m`
   );
@@ -423,6 +421,8 @@ async function build() {
     console.error(`\n\u274C Build completed with ${errors.length} error(s)\n`);
     process.exit(1);
   }
+
+  await writeCache(cache);
 }
 
 initSentry()
