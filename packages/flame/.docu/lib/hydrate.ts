@@ -1,6 +1,5 @@
 import { resolve, join } from "node:path";
 import { mkdir, readdir, unlink } from "node:fs/promises";
-import { $ } from "bun";
 
 const ASSETS_DIR = resolve("./.docu/dist/assets");
 
@@ -55,7 +54,11 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
 
   const jsFile = result.outputs[0]?.path.split("/").pop() || "client.js";
   const tmpCss = join(ASSETS_DIR, "_tmp.css");
-  await $`npx @tailwindcss/cli -i .docu/styles/globals.css -o ${tmpCss} --minify`.quiet();
+  const proc = Bun.spawn(
+    ["bunx", "@tailwindcss/cli", "-i", ".docu/styles/globals.css", "-o", tmpCss, "--minify"],
+    { stdout: "ignore", stderr: "ignore" }
+  );
+  await proc.exited;
   const cssContent = await Bun.file(tmpCss).arrayBuffer();
   const cssHash = new Bun.CryptoHasher("md5").update(cssContent).digest("hex").slice(0, 8);
   const cssFile = `client-${cssHash}.css`;
