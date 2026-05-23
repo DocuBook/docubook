@@ -43,16 +43,17 @@ function getContentType(pathname: string): string {
 
 function resolveFile(pathname: string): string | null {
   const path = pathname.slice(1);
+  const isWithinDist = (p: string) => p === DIST_DIR || p.startsWith(DIST_DIR + "/");
 
   if (!path.includes(".")) {
     const withIndex = resolve(DIST_DIR, path, "index.html");
-    if (withIndex.startsWith(DIST_DIR) && existsSync(withIndex)) return withIndex;
+    if (isWithinDist(withIndex) && existsSync(withIndex)) return withIndex;
     const withHtml = resolve(DIST_DIR, path + ".html");
-    if (withHtml.startsWith(DIST_DIR) && existsSync(withHtml)) return withHtml;
+    if (isWithinDist(withHtml) && existsSync(withHtml)) return withHtml;
   }
 
   const exact = resolve(DIST_DIR, path);
-  if (!exact.startsWith(DIST_DIR)) return null;
+  if (!isWithinDist(exact)) return null;
   try {
     if (statSync(exact).isFile()) return exact;
   } catch (err) {
