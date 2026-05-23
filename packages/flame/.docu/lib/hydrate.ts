@@ -30,6 +30,7 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
     naming: "client-[hash].[ext]",
     target: "browser",
     minify: nodeEnv === "production",
+    optimizeImports: ["lucide-react"],
     define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
     plugins: [
       {
