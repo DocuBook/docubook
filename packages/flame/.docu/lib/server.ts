@@ -5,11 +5,12 @@ import { watch } from "node:fs";
 import React from "react";
 import { renderToString } from "react-dom/server";
 import {
-  parseMdx,
+  serialize,
   extractTocsFromRawMdx,
   extractFrontmatterWithContent,
   createDefaultRehypePlugins,
   createDefaultRemarkPlugins,
+  MDXRemote,
 } from "@docubook/core";
 import { createMdxComponents } from "@docubook/mdx-content";
 import { getGitLastModified } from "./utils";
@@ -33,7 +34,7 @@ const SECURITY_HEADERS: Record<string, string> = {
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
   "Content-Security-Policy":
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'",
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'",
 };
 
 logger.buildStart();
@@ -220,17 +221,23 @@ async function getDocsForSlug(slug: string) {
   }>(raw);
 
   const components = createMdxComponents();
-  const { content } = await parseMdx(strippedContent, {
+  const serialized = await serialize(strippedContent, {
+    mdxOptions: {
+      rehypePlugins: createDefaultRehypePlugins(),
+      remarkPlugins: createDefaultRemarkPlugins(),
+    },
+  });
+  const content = React.createElement(MDXRemote, {
+    compiledSource: serialized.compiledSource,
     components,
-    rehypePlugins: createDefaultRehypePlugins(),
-    remarkPlugins: createDefaultRemarkPlugins(),
-    parseFrontmatter: false,
+    lazy: true,
   });
 
   const relPath = filePath.replace(resolve("./"), "");
   const date = frontmatter.date || (await getGitLastModified(relPath)) || undefined;
   return {
     content,
+    compiledSource: serialized.compiledSource,
     frontmatter: { ...frontmatter, date },
     tocs,
     filePath: relPath,
@@ -256,6 +263,7 @@ async function handleDocsIndex(): Promise<Response> {
       tocs: doc.tocs,
       filePath: doc.filePath,
       repoUrl: docuConfig.repo?.url,
+      compiledSource: doc.compiledSource,
     })
   );
 
@@ -285,6 +293,7 @@ async function handleDocsRoute(slug: string[]): Promise<Response> {
       tocs: doc.tocs,
       filePath: doc.filePath,
       repoUrl: docuConfig.repo?.url,
+      compiledSource: doc.compiledSource,
     })
   );
 

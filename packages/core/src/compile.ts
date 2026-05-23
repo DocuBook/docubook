@@ -16,6 +16,9 @@ import type { Pluggable } from "unified";
 // Re-export serialize for non-RSC usage
 export { serialize };
 
+// Re-export MDXRemote for client-side hydration
+export { MDXRemote } from "next-mdx-remote";
+
 interface TextNode extends Node {
   type: "text";
   value: string;

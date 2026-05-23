@@ -5,11 +5,12 @@ import { resolve, join, dirname } from "node:path";
 import React from "react";
 import { renderToString } from "react-dom/server";
 import {
-  parseMdx,
+  serialize,
   extractTocsFromRawMdx,
   extractFrontmatterWithContent,
   createDefaultRehypePlugins,
   createDefaultRemarkPlugins,
+  MDXRemote,
 } from "@docubook/core";
 import { createMdxComponents } from "@docubook/mdx-content";
 import { getGitLastModified } from "./utils";
@@ -186,19 +187,21 @@ async function renderDocsPage(slug: string, rawMdx: string, filePath: string): P
   }>(rawMdx);
 
   const components = createMdxComponents();
-  let content;
+  let compiledSource: string;
   try {
-    const result = await parseMdx(strippedContent, {
-      components,
-      rehypePlugins: createDefaultRehypePlugins(),
-      remarkPlugins: createDefaultRemarkPlugins(),
-      parseFrontmatter: false,
+    const serialized = await serialize(strippedContent, {
+      mdxOptions: {
+        rehypePlugins: createDefaultRehypePlugins(),
+        remarkPlugins: createDefaultRemarkPlugins(),
+      },
     });
-    content = result.content;
+    compiledSource = serialized.compiledSource;
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown MDX error";
     throw new Error(`MDX Error in: docs/${slug}.mdx\n${msg}`, { cause: err });
   }
+
+  const content = React.createElement(MDXRemote, { compiledSource, components, lazy: true });
 
   const title = frontmatter.title || slug;
   const description = frontmatter.description || "";
@@ -217,6 +220,7 @@ async function renderDocsPage(slug: string, rawMdx: string, filePath: string): P
       tocs,
       filePath,
       repoUrl: docuConfig.repo?.url,
+      compiledSource,
     })
   );
 
@@ -350,11 +354,16 @@ async function build() {
     description?: string;
     date?: string;
   }>(indexRaw);
-  const { content: indexContent } = await parseMdx(indexStripped, {
+  const indexSerialized = await serialize(indexStripped, {
+    mdxOptions: {
+      rehypePlugins: createDefaultRehypePlugins(),
+      remarkPlugins: createDefaultRemarkPlugins(),
+    },
+  });
+  const indexContent = React.createElement(MDXRemote, {
+    compiledSource: indexSerialized.compiledSource,
     components: createMdxComponents(),
-    rehypePlugins: createDefaultRehypePlugins(),
-    remarkPlugins: createDefaultRemarkPlugins(),
-    parseFrontmatter: false,
+    lazy: true,
   });
   const indexRelPath = indexMdxPath.replace(resolve("./"), "");
   const indexDate = indexFm.date || (await getGitLastModified(indexRelPath)) || undefined;
@@ -370,6 +379,7 @@ async function build() {
       tocs: indexTocs,
       filePath: indexRelPath,
       repoUrl: docuConfig.repo?.url,
+      compiledSource: indexSerialized.compiledSource,
     })
   );
   const indexHtml = htmlShell(
