@@ -172,12 +172,28 @@
   }
 
   .rehype-code-title {
-    @apply mt-5 -mb-8 w-full px-2 pb-5 text-sm font-medium;
+    @apply -mb-8 mt-5 w-full px-2 pb-5 text-sm font-medium;
   }
 
   .highlight-comp > code {
     background-color: transparent !important;
   }
+}
+
+/* Card hover - CSS only */
+[data-card-link] {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.24s ease,
+    transform 0.24s ease;
+}
+[data-card-link]:hover {
+  border-color: hsl(var(--primary, 210 81% 56%));
+  box-shadow: 0 11px 28px rgba(34, 129, 227, 0.15);
+  transform: translateY(-2px);
+}
+[data-card-link]:hover [aria-hidden="true"] {
+  transform: scale(1.05);
 }
 
 /* Custom components */

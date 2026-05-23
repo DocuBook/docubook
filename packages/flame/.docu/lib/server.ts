@@ -229,7 +229,12 @@ async function getDocsForSlug(slug: string) {
 
   const relPath = filePath.replace(resolve("./"), "");
   const date = frontmatter.date || (await getGitLastModified(relPath)) || undefined;
-  return { content, frontmatter: { ...frontmatter, date }, tocs, filePath: relPath };
+  return {
+    content,
+    frontmatter: { ...frontmatter, date },
+    tocs,
+    filePath: relPath,
+  };
 }
 
 async function handleDocsIndex(): Promise<Response> {
