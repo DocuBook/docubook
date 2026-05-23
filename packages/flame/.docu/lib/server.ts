@@ -33,9 +33,15 @@ const SECURITY_HEADERS: Record<string, string> = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-  "Content-Security-Policy":
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'",
 };
+
+function generateNonce(): string {
+  return crypto.randomUUID();
+}
+
+function cspHeader(nonce: string): string {
+  return `default-src 'self'; script-src 'self' 'nonce-${nonce}' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'`;
+}
 
 logger.buildStart();
 
@@ -99,7 +105,7 @@ process.on("SIGTERM", () => {
   process.exit(0);
 });
 
-function htmlShell(title: string, description: string, body: string): string {
+function htmlShell(title: string, description: string, body: string, nonce: string): string {
   const favicon = docuConfig.meta?.favicon || "/favicon.ico";
   return `<!DOCTYPE html>
 <html lang="en">
@@ -110,14 +116,27 @@ function htmlShell(title: string, description: string, body: string): string {
   <meta name="description" content="${Bun.escapeHTML(description)}">
   <link rel="icon" type="image/x-icon" href="${Bun.escapeHTML(favicon)}">
   <link rel="stylesheet" href="/assets/${assetManifest.css}">
-  <script>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>
+  <script nonce="${nonce}">try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>
 </head>
 <body>
   <div id="root">${body}</div>
-  <script src="/assets/${assetManifest.js}"></script>
-  ${HMR_SCRIPT}
+  <script nonce="${nonce}" src="/assets/${assetManifest.js}"></script>
+  ${HMR_SCRIPT.replace("<script>", `<script nonce="${nonce}">`)}
 </body>
 </html>`;
+}
+
+function htmlResponse(title: string, description: string, body: string, status = 200): Response {
+  const nonce = generateNonce();
+  const html = htmlShell(title, description, body, nonce);
+  return new Response(html, {
+    status,
+    headers: {
+      "Content-Type": "text/html",
+      ...SECURITY_HEADERS,
+      "Content-Security-Policy": cspHeader(nonce),
+    },
+  });
 }
 
 function DocsLayout({ children, repoUrl }: { children?: React.ReactNode; repoUrl?: string }) {
@@ -267,8 +286,7 @@ async function handleDocsIndex(): Promise<Response> {
   );
 
   const body = renderToString(page);
-  const html = htmlShell(title, description, body);
-  return new Response(html, { headers: { "Content-Type": "text/html", ...SECURITY_HEADERS } });
+  return htmlResponse(title, description, body);
 }
 
 async function handleDocsRoute(slug: string[]): Promise<Response> {
@@ -297,8 +315,7 @@ async function handleDocsRoute(slug: string[]): Promise<Response> {
   );
 
   const body = renderToString(page);
-  const html = htmlShell(title, description, body);
-  return new Response(html, { headers: { "Content-Type": "text/html", ...SECURITY_HEADERS } });
+  return htmlResponse(title, description, body);
 }
 
 function renderPage(
@@ -314,22 +331,17 @@ function renderPage(
     React.createElement(Component, props)
   );
   const body = renderToString(page);
-  const html = htmlShell(title, description, body);
-  return new Response(html, {
-    status,
-    headers: { "Content-Type": "text/html", ...SECURITY_HEADERS },
-  });
+  return htmlResponse(title, description, body, status);
 }
 
 function handleIndex(): Response {
   const page = React.createElement(IndexPage);
   const body = renderToString(page);
-  const html = htmlShell(
+  return htmlResponse(
     docuConfig.meta?.title || "DocuBook",
     docuConfig.meta?.description || "",
     body
   );
-  return new Response(html, { headers: { "Content-Type": "text/html", ...SECURITY_HEADERS } });
 }
 
 function getContentType(pathname: string): string {
@@ -463,7 +475,11 @@ h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;
 <pre><span class="msg">${Bun.escapeHTML(message)}</span>\n\n${Bun.escapeHTML(stack)}</pre></body></html>`;
       return new Response(html, {
         status: 500,
-        headers: { "Content-Type": "text/html", ...SECURITY_HEADERS },
+        headers: {
+          "Content-Type": "text/html",
+          ...SECURITY_HEADERS,
+          "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
+        },
       });
     }
   },
@@ -481,7 +497,11 @@ h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;
 <pre><span class="msg">${msg}</span>\n\n${stack}</pre></body></html>`;
     return new Response(html, {
       status: 500,
-      headers: { "Content-Type": "text/html", ...SECURITY_HEADERS },
+      headers: {
+        "Content-Type": "text/html",
+        ...SECURITY_HEADERS,
+        "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
+      },
     });
   },
 });
