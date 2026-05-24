@@ -1,5 +1,19 @@
 # @docubook/mdx-content
 
+## 3.2.1
+
+### Patch Changes
+
+- docs(mdx-content): add styles.css import guide and CSS customization reference
+  - Add README documentation for importing `@docubook/mdx-content/styles.css`
+  - Add CSS customization reference for theme tokens
+  - Add tests for CardMdx, CardsMdx, and ExpandableCode
+
+- fix: import mdx-content styles.css in all consumer layouts #161
+  - Update apps/web layout.tsx to import styles.css
+  - Update packages/flame globals.css with mdx-content styles
+  - Update nextjs-docker and nextjs-vercel templates
+
 ## 3.2.0
 
 ### Minor Changes
