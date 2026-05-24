@@ -300,6 +300,12 @@ This means app-level users should focus on content and integration. Plugin upgra
 - remark-gfm
 - unist-util-visit
 
+### Managed Utility Dependencies
+
+- clsx — class name composition for the `cn()` utility
+- tailwind-merge — intelligent Tailwind class merging for the `cn()` utility
+- next-mdx-remote — MDX runtime/compile engine (`serialize`, `MDXRemote`)
+
 The `remark` and `rehype` plugin stack is intentionally owned by this package to avoid dependency drift across apps.
 
 ## Why This Matters
