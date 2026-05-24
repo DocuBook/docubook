@@ -87,6 +87,16 @@ const tocs = await docsService.getTocsForSlug("getting-started/introduction");
 | `preProcess` | Add pre-processing behavior for code blocks (advanced) | transformer function |
 | `postProcess` | Add post-processing behavior for code blocks (advanced) | transformer function |
 | `handleCodeTitles` | Move code title metadata to `<pre>` attributes (advanced) | transformer function |
+| `handleCodeExpandableRemark` | Remark plugin that detects `Expandable` meta on code blocks and injects expandable data attributes | transformer function |
+| `handleCodeExpandable` | Rehype plugin that propagates expandable metadata from `<code>` to `<pre>` elements | transformer function |
+| `serialize` | Re-exported from `next-mdx-remote/serialize` for non-RSC MDX compilation workflows | `MDXRemoteSerializeResult` |
+| `MDXRemote` | Re-exported from `next-mdx-remote` for client-side MDX hydration | React component |
+| `cn` | Merge class names using `clsx` + `tailwind-merge` | `string` |
+| `parseDate` | Parse `dd-MM-yyyy` or ISO 8601 date strings into a Date object | `Date` |
+| `stringToDate` | Convert a string or Date value to a Date object | `Date` |
+| `formatDate` | Format date to long format (e.g. "Thursday, April 5, 2026") | `string` |
+| `formatDate2` | Format date to short format (e.g. "Apr 5, 2026") | `string` |
+| `toIsoDateOnly` | Convert date to ISO date-only string (e.g. "2026-04-05") | `string` |
 
 #### Type Exports
 
@@ -232,6 +242,57 @@ import {
 
 Use this when you need full control over each pipeline step.
 
+#### 11. Non-RSC MDX compilation (`serialize` + `MDXRemote`)
+
+```ts
+import { serialize, MDXRemote } from "@docubook/core";
+
+const mdxSource = await serialize(rawMdx, { parseFrontmatter: true });
+// Then in your component:
+<MDXRemote {...mdxSource} components={components} />;
+```
+
+Use this for Pages Router or non-RSC environments where `compileMDX` (used internally by `parseMdx`) is not available. `serialize` compiles MDX on the server and `MDXRemote` hydrates it on the client.
+
+#### 12. Expandable code blocks (code plugins)
+
+```ts
+import {
+  handleCodeExpandableRemark,
+  handleCodeExpandable,
+} from "@docubook/core";
+```
+
+These plugins enable collapsible/expandable code blocks in MDX. Add `Expandable` to the code block meta:
+
+````md
+```ts Expandable
+// long code block that will be collapsible
+```
+````
+
+`handleCodeExpandableRemark` runs during remark phase to inject `data-expandable` attributes. `handleCodeExpandable` runs during rehype phase to propagate those attributes to the rendered `<pre>` element. Both are included in `createDefaultRehypePlugins()` and `createDefaultRemarkPlugins()` by default.
+
+#### 13. Utility functions (`cn`, date helpers)
+
+```ts
+import { cn, parseDate, formatDate, formatDate2, toIsoDateOnly } from "@docubook/core";
+
+// Merge Tailwind classes
+const className = cn("px-4 py-2", isActive && "bg-blue-500");
+
+// Parse dates
+const date = parseDate("05-04-2026"); // dd-MM-yyyy
+const isoDate = parseDate("2026-04-05"); // ISO 8601
+
+// Format dates
+formatDate("2026-04-05"); // "Saturday, April 5, 2026"
+formatDate2("2026-04-05"); // "Apr 5, 2026"
+toIsoDateOnly("2026-04-05"); // "2026-04-05"
+```
+
+These utilities are also available via the subpath export `@docubook/core/utils`.
+
 ### Basic Compile Helpers
 
 ```ts
@@ -283,6 +344,25 @@ const docsService = createMdxContentService<Frontmatter>({
 
 const doc = await docsService.getCompiledForSlug("getting-started/introduction");
 ```
+
+## Subpath Exports
+
+### `@docubook/core/utils`
+
+A lightweight subpath export containing only the utility functions — no MDX compilation dependencies. Use this when you only need class merging or date helpers without pulling in the full compile pipeline.
+
+```ts
+import { cn, parseDate, stringToDate, formatDate, formatDate2, toIsoDateOnly } from "@docubook/core/utils";
+```
+
+|    Function     |                         Description                         |
+| --------------- | ----------------------------------------------------------- |
+| `cn`            | Merge class names using `clsx` + `tailwind-merge`           |
+| `parseDate`     | Parse `dd-MM-yyyy` or ISO 8601 date strings into a Date     |
+| `stringToDate`  | Convert a string or Date value to a Date object             |
+| `formatDate`    | Format date to long format (e.g. "Thursday, April 5, 2026") |
+| `formatDate2`   | Format date to short format (e.g. "Apr 5, 2026")            |
+| `toIsoDateOnly` | Convert date to ISO date-only string (e.g. "2026-04-05")    |
 
 ## Dependency Management Policy
 
