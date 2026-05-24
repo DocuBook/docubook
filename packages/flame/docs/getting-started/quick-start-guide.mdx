@@ -134,7 +134,34 @@ When ready to deploy:
 ```bash
 # Build the production version
 bun run build
+```
 
-# Preview the production build
+### Previewing the Build
+
+After building, preview the static output locally:
+
+```bash
 bun preview
 ```
+
+This starts a local server at [http://localhost:4173](http://localhost:4173) serving the `.docu/dist/` output with production-like security headers (HSTS, CSP, X-Frame-Options). Run `bun run build` first — the preview server requires the build output to exist.
+
+### Deploying to GitHub Pages
+
+Deploy your documentation to GitHub Pages with a single command:
+
+```bash
+bun deploy
+```
+
+This command:
+
+1. Runs a production build
+2. Adds a `.nojekyll` file (prevents GitHub Pages from ignoring files starting with `_`)
+3. Generates `.github/workflows/deploy.yml` if it doesn't exist
+
+After running, push to GitHub and enable Pages in your repository settings:
+
+**Settings → Pages → Source: GitHub Actions**
+
+The generated workflow automatically builds and deploys on every push to `main`.
