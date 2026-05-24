@@ -5,4 +5,4 @@ export {
   formatDate,
   formatDate2,
   toIsoDateOnly,
-} from "@docubook/core";
+} from "@docubook/core/utils";
