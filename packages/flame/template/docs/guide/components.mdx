@@ -10,7 +10,7 @@ DocuBook Flame includes pre-built MDX components you can use directly in your do
 
 Display messages with different severity levels.
 
-```mdx
+```jsx
 <Note type="info" title="Info">
   General information for the user.
 </Note>
@@ -32,7 +32,7 @@ Display messages with different severity levels.
 
 Organize content into switchable sections.
 
-```mdx
+```jsx
 <Tabs>
   <Tab title="npm">
     npm install @docubook/flame
@@ -47,7 +47,7 @@ Organize content into switchable sections.
 
 Display content in a compact card layout.
 
-```mdx
+```jsx
 <Card title="Getting Started" icon="BookOpen" href="/docs/getting-started">
   Learn the basics of DocuBook Flame.
 </Card>
@@ -61,7 +61,7 @@ Display content in a compact card layout.
 
 Group multiple cards in a grid.
 
-```mdx
+```jsx
 <CardGroup cols={2}>
   <Card title="First" icon="Zap" href="/docs/first">
     First card content.
@@ -76,7 +76,7 @@ Group multiple cards in a grid.
 
 Collapsible content sections.
 
-```mdx
+```jsx
 <Accordion title="Click to expand">
   Hidden content revealed on click.
 </Accordion>
@@ -86,7 +86,7 @@ Collapsible content sections.
 
 Group multiple accordions together.
 
-```mdx
+```jsx
 <Accordions>
   <Accordion title="Question 1">
     Answer to question 1.
@@ -101,7 +101,7 @@ Group multiple accordions together.
 
 Display step-by-step instructions.
 
-```mdx
+```jsx
 <Steps>
   <Step title="Install">
     bun add @docubook/flame
@@ -119,7 +119,7 @@ Display step-by-step instructions.
 
 Styled buttons with icons.
 
-```mdx
+```jsx
 <Button
   text="Learn More"
   href="https://example.com"
@@ -134,7 +134,7 @@ Styled buttons with icons.
 
 Display hierarchical file structures.
 
-```mdx
+```jsx
 <Files>
   <Folder name="src">
     <File name="App.tsx" />
@@ -151,7 +151,7 @@ Display hierarchical file structures.
 
 Syntax-highlighted code with title and line highlighting.
 
-````mdx
+````jsx
 ```ts:server.ts {3-5}
 import { serve } from "bun";
 
@@ -166,7 +166,7 @@ serve({
 
 Responsive images with optional caption.
 
-```mdx
+```jsx
 <Image
   src="/docs/assets/images/example.png"
   alt="Example screenshot"
@@ -178,7 +178,7 @@ Responsive images with optional caption.
 
 Styled links with external indicator.
 
-```mdx
+```jsx
 <Link href="https://bun.sh" external>
   Bun Documentation
 </Link>
@@ -188,7 +188,7 @@ Styled links with external indicator.
 
 Display keyboard shortcuts.
 
-```mdx
+```jsx
 <Keyboard keys={["Cmd", "Shift", "P"]} />
 ```
 
@@ -196,7 +196,7 @@ Display keyboard shortcuts.
 
 Hover tooltips for inline content.
 
-```mdx
+```jsx
 <Tooltip content="This is a tooltip">
   Hover me
 </Tooltip>
@@ -206,7 +206,7 @@ Hover tooltips for inline content.
 
 Embed YouTube videos.
 
-```mdx
+```jsx
 <YouTube id="dQw4w9WgXcQ" />
 ```
 
@@ -214,7 +214,7 @@ Embed YouTube videos.
 
 Display changelog entries.
 
-```mdx
+```jsx
 <ReleaseNote version="1.0.0" date="2025-01-01">
   - Initial release
   - Added core components
