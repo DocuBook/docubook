@@ -53,7 +53,7 @@ The CLI will:
 
 - **Next.js - Vercel** : Next.js and Vercel deployment (optimized for vercel).
 - **Next.js - standalone** : Next.js standalone with Docker image (optimized for coolify, etc.).
-- **React Router** : Client-side app with React Router (coming soon)
+- **React Router** : Client-side app with React Router (in development)
 
 ## Package Manager Detection
 
