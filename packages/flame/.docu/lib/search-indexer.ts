@@ -134,11 +134,7 @@ function extractRecords(filePath: string, raw: string): SearchRecord[] {
     }
     if (inCodeBlock) continue;
 
-    if (
-      /^import\s+[\w{*]/.test(trimmed) ||
-      /^export\s+(default|{|\w+\s+function|\w+\s+const)/.test(trimmed)
-    )
-      continue;
+    if (/^import\s+[\w{*]/.test(trimmed) || /^export\s+[\w{*]/.test(trimmed)) continue;
     if (/^<\/?[A-Z][\w.]*[\s/>]/.test(trimmed) && !/>(.+)<\//.test(trimmed)) continue;
 
     const headingMatch = trimmed.match(/^(#{1,6})\s+(.+)$/);
