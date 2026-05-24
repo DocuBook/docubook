@@ -22,26 +22,11 @@ import { buildClientBundle } from "./hydrate";
 import { generateSearchIndex } from "./search-indexer";
 import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
+import { SECURITY_HEADERS, generateNonce, htmlResponse } from "./security";
 
 const DOCS_DIR = resolve("./docs");
 const DIST_DIR = resolve("./.docu/dist");
 const PORT = process.env.PORT ?? "3000";
-
-const SECURITY_HEADERS: Record<string, string> = {
-  "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
-  "X-Frame-Options": "DENY",
-  "X-Content-Type-Options": "nosniff",
-  "Referrer-Policy": "strict-origin-when-cross-origin",
-  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-};
-
-function generateNonce(): string {
-  return crypto.randomUUID();
-}
-
-function cspHeader(nonce: string): string {
-  return `default-src 'self'; script-src 'self' 'nonce-${nonce}' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'`;
-}
 
 logger.buildStart();
 
@@ -126,17 +111,15 @@ function htmlShell(title: string, description: string, body: string, nonce: stri
 </html>`;
 }
 
-function htmlResponse(title: string, description: string, body: string, status = 200): Response {
+function createHtmlResponse(
+  title: string,
+  description: string,
+  body: string,
+  status = 200
+): Response {
   const nonce = generateNonce();
   const html = htmlShell(title, description, body, nonce);
-  return new Response(html, {
-    status,
-    headers: {
-      "Content-Type": "text/html",
-      ...SECURITY_HEADERS,
-      "Content-Security-Policy": cspHeader(nonce),
-    },
-  });
+  return htmlResponse(html, nonce, status);
 }
 
 function DocsLayout({ children, repoUrl }: { children?: React.ReactNode; repoUrl?: string }) {
@@ -286,7 +269,7 @@ async function handleDocsIndex(): Promise<Response> {
   );
 
   const body = renderToString(page);
-  return htmlResponse(title, description, body);
+  return createHtmlResponse(title, description, body);
 }
 
 async function handleDocsRoute(slug: string[]): Promise<Response> {
@@ -315,7 +298,7 @@ async function handleDocsRoute(slug: string[]): Promise<Response> {
   );
 
   const body = renderToString(page);
-  return htmlResponse(title, description, body);
+  return createHtmlResponse(title, description, body);
 }
 
 function renderPage(
@@ -331,13 +314,13 @@ function renderPage(
     React.createElement(Component, props)
   );
   const body = renderToString(page);
-  return htmlResponse(title, description, body, status);
+  return createHtmlResponse(title, description, body, status);
 }
 
 function handleIndex(): Response {
   const page = React.createElement(IndexPage);
   const body = renderToString(page);
-  return htmlResponse(
+  return createHtmlResponse(
     docuConfig.meta?.title || "DocuBook",
     docuConfig.meta?.description || "",
     body
