@@ -1,14 +1,17 @@
-# DocuBook
+# DocuBook — Next.js (Vercel)
 
-**DocuBook** is a documentation web project designed to provide a simple and user-friendly interface for accessing various types of documentation. This site is crafted for developers and teams who need quick access to references, guides, and essential documents.
+A documentation starter template optimized for **zero-config deployment on Vercel**. Built on Next.js App Router with automatic static optimization and edge-ready performance.
 
 ## Features
 
-- **Easy Navigation**: Simple layout for quick navigation between pages.
-- **Quick Search**: Easily find documentation using a search function.
-- **Responsive Theme**: Responsive design optimized for devices ranging from desktops to mobile.
-- **Markdown Content**: Support for markdown-based documents.
-- **SEO Friendly**: Optimized structure for search visibility, enhancing accessibility on search engines.
+- **Vercel-optimized** — deploys with zero configuration via `vercel` or Git integration
+- **Automatic Static Optimization** — pages pre-rendered at build time for instant loads
+- **Edge & ISR Support** — incremental static regeneration for content updates without full rebuilds
+- **Built-in Analytics** — compatible with Vercel Analytics and Speed Insights
+- **MDX Content** — write documentation in Markdown/MDX with full component support
+- **SEO Friendly** — automatic sitemap, meta tags, and structured data
+- **Responsive Design** — optimized for desktop and mobile devices
+- **Quick Search** — fast client-side documentation search
 
 ## Installation
 
@@ -22,8 +25,8 @@ npx @docubook/cli@latest
 
 ---
 
-## Hosting & Deployment
+## Deployment
 
-This template is the base Next.js documentation template for DocuBook. It is optimized for deployment on Vercel by default, but can be used with any hosting platform that supports Next.js.
+Push to GitHub and connect to [Vercel](https://vercel.com) — no additional configuration needed. The framework is auto-detected and deployed.
 
-For Docker-based deployments (Coolify, Kubernetes, Railway, Fly.io, Render), use the `nextjs-docker` template which adds a production-ready Dockerfile and standalone build configuration on top of this base.
+For Docker-based or self-hosted deployments, use the [`nextjs-docker`](../nextjs-docker) template instead.

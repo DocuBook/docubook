@@ -1,14 +1,17 @@
-# DocuBook
+# DocuBook — Next.js (Docker)
 
-**DocuBook** is a documentation web project designed to provide a simple and user-friendly interface for accessing various types of documentation. This site is crafted for developers and teams who need quick access to references, guides, and essential documents.
+A documentation starter template with a **production-ready Docker setup** using multi-stage builds and Next.js standalone output. Designed for self-hosted and containerized environments.
 
 ## Features
 
-- **Easy Navigation**: Simple layout for quick navigation between pages.
-- **Quick Search**: Easily find documentation using a search function.
-- **Responsive Theme**: Responsive design optimized for devices ranging from desktops to mobile.
-- **Markdown Content**: Support for markdown-based documents.
-- **SEO Friendly**: Optimized structure for search visibility, enhancing accessibility on search engines.
+- **Multi-stage Dockerfile** — build stage compiles, production stage runs on minimal Alpine base
+- **Standalone Output** — only runtime artifacts in the final image (~100MB vs ~1GB full node_modules)
+- **Container-native** — single-process design compatible with any orchestrator
+- **Platform-agnostic** — works with Coolify, Kubernetes, Railway, Fly.io, Render, or any Docker host
+- **MDX Content** — write documentation in Markdown/MDX with full component support
+- **SEO Friendly** — automatic sitemap, meta tags, and structured data
+- **Responsive Design** — optimized for desktop and mobile devices
+- **Quick Search** — fast client-side documentation search
 
 ## Installation
 
@@ -22,34 +25,21 @@ npx @docubook/cli@latest
 
 ---
 
-## Docker & Deployment (template notes)
+## Deployment
 
-This template includes an opinionated Docker setup optimized for building a small, production-ready Next.js standalone image using multi-stage builds and an Alpine base. It's intended for hosting on environments such as Coolify, generic Docker VPS, Kubernetes, Railway, Fly.io, and Render.
-
-Key points:
-
-- Uses Next.js "standalone" build (next build + next export/standalone) so only runtime artifacts are copied into the final image.
-- Multi-stage Dockerfile: build stage (node toolchain) → production stage (lightweight Alpine / node runtime).
-- Final image is minimal (Alpine-based) to reduce size and attack surface.
-- Works with container platforms that expect a single-process container (node server) and supports common env vars (PORT, NODE_ENV).
-
-Quick usage (from project root):
+Build and run the Docker image:
 
 ```bash
-docker build -t docubook:latest -f packages/template/nextjs-docker/Dockerfile .
+docker build -t docubook:latest .
 docker run -p 3000:3000 -e NODE_ENV=production docubook:latest
 ```
 
-Notes for specific platforms:
+### Platform notes
 
-- Coolify / Docker VPS: push this image to your registry and deploy as a standard container. Ensure PORT is set (default 3000).
-- Kubernetes: create a Deployment and Service — the image expects a single process on PORT.
-- Railway / Fly.io / Render: use the image or the build commands; these providers typically detect and run the exported server. Use the provider's env var panel to set NEXT_PUBLIC or backend secrets.
+| Platform | Notes |
+|----------|-------|
+| **Coolify / Docker VPS** | Push image to registry, deploy as standard container (PORT=3000) |
+| **Kubernetes** | Create Deployment + Service; image runs single process on PORT |
+| **Railway / Fly.io / Render** | Auto-detected from Dockerfile; set env vars via provider panel |
 
-Authoring tips:
-
-- Keep NODE_ENV=production when building the runtime image.
-- If you need native dependencies, install them in the build stage only.
-- For smaller images, prefer node:alpine for the final stage and remove dev dependencies early.
-
-This section augments the existing README with deployment guidance specifically for the Next.js Docker template; it does not replace the template's Dockerfile or other files — it documents the intended usage and hosting targets.
+For Vercel deployment (no Docker needed), use the [`nextjs`](../nextjs) template instead.
