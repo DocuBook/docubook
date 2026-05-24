@@ -43,12 +43,12 @@ Algolia provides `DocSearch` for open-source projects for free. To apply:
     - Application ID
     - Search API Key
     - Index Name
-    > Store your environment variables securely by creating a .env.local file
+    > Store your environment variables securely by creating a .env file
     >  ```plaintext
-    >    NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_ID="your_app_id"
-    >    NEXT_PUBLIC_ALGOLIA_DOCSEARCH_API_KEY="your_api_key"
-    >    NEXT_PUBLIC_ALGOLIA_DOCSEARCH_INDEX_NAME="your_index_name"
-    >    NEXT_PUBLIC_ALGOLIA_DOCSEARCH_ASKAI_ASSISTANT_ID="your_assistant_id" // optional
+    >    ALGOLIA_DOCSEARCH_APP_ID="your_app_id"
+    >    ALGOLIA_DOCSEARCH_API_KEY="your_api_key"
+    >    ALGOLIA_DOCSEARCH_INDEX_NAME="your_index_name"
+    >    ALGOLIA_DOCSEARCH_ASKAI_ASSISTANT_ID="your_assistant_id" // optional
     >  ```
   </Step>
 </Steps>
@@ -202,16 +202,15 @@ new Crawler({
 });
 ```
 
-## Vercel
+## Deployment
 
-If you are deploying your DocuBook project using the Vercel platform, here are the steps to bring
-your local environment variables to production:
+When deploying your DocuBook Flame project, ensure the environment variables are available at build time. Add them to your `.env` file or configure them in your hosting platform:
 
-| **key**                                          | **value**           |
-| ------------------------------------------------ | ------------------- |
-| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_ID             | `your_app_id`       |
-| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_APP_KEY            | `your_api_key`      |
-| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_INDEX_NAME         | `your_index_name`   |
-| NEXT_PUBLIC_ALGOLIA_DOCSEARCH_ASKAI_ASSISTANT_ID | `your_assistant_id` |
+| **key**                              | **value**           |
+| ------------------------------------ | ------------------- |
+| ALGOLIA_DOCSEARCH_APP_ID             | `your_app_id`       |
+| ALGOLIA_DOCSEARCH_API_KEY            | `your_api_key`      |
+| ALGOLIA_DOCSEARCH_INDEX_NAME         | `your_index_name`   |
+| ALGOLIA_DOCSEARCH_ASKAI_ASSISTANT_ID | `your_assistant_id` |
 
-or you can import the .env.local file
+For GitHub Pages deployment, use `bun deploy` which builds and generates the GitHub Actions workflow automatically. Environment variables can be configured as repository secrets in your GitHub repository settings.
