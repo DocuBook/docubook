@@ -56,7 +56,8 @@ try {
 
 const hmrClients = new Set<ReadableStreamDefaultController>();
 
-const HMR_SCRIPT = `<script>
+function hmrScript(nonce: string): string {
+  return `<script nonce="${nonce}">
 (function(){
   const es = new EventSource("/__hmr");
   es.onmessage = function(e) {
@@ -65,6 +66,7 @@ const HMR_SCRIPT = `<script>
   es.onerror = function() { es.close(); setTimeout(() => { window.location.reload(); }, 2000); };
 })();
 </script>`;
+}
 
 let hmrTimeout: ReturnType<typeof setTimeout> | null = null;
 const watcher = watch(DOCS_DIR, { recursive: true }, (_event, filename) => {
@@ -106,7 +108,7 @@ function htmlShell(title: string, description: string, body: string, nonce: stri
 <body>
   <div id="root">${body}</div>
   <script nonce="${nonce}" src="/assets/${assetManifest.js}"></script>
-  ${HMR_SCRIPT.replace("<script>", `<script nonce="${nonce}">`)}
+  ${hmrScript(nonce)}
 </body>
 </html>`;
 }

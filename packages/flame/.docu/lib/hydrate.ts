@@ -56,9 +56,13 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
   const tmpCss = join(ASSETS_DIR, "_tmp.css");
   const proc = Bun.spawn(
     ["bunx", "@tailwindcss/cli", "-i", ".docu/styles/globals.css", "-o", tmpCss, "--minify"],
-    { stdout: "ignore", stderr: "ignore" }
+    { stdout: "ignore", stderr: "pipe" }
   );
   await proc.exited;
+  if (proc.exitCode !== 0) {
+    const err = await new Response(proc.stderr).text();
+    throw new Error(`Tailwind CSS build failed:\n${err}`);
+  }
   const cssContent = await Bun.file(tmpCss).arrayBuffer();
   const cssHash = new Bun.CryptoHasher("md5").update(cssContent).digest("hex").slice(0, 8);
   const cssFile = `client-${cssHash}.css`;
