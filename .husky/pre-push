@@ -1,3 +1,24 @@
+echo "🔍 Running lint checks..."
+pnpm turbo lint || {
+  echo ""
+  echo "🚫 Push rejected: lint errors found."
+  echo "   Run 'pnpm turbo lint' locally to see details."
+  echo ""
+  exit 1
+}
+
+echo ""
+echo "🔨 Running build checks..."
+pnpm turbo build || {
+  echo ""
+  echo "🚫 Push rejected: build failed."
+  echo "   Run 'pnpm turbo build' locally to see details."
+  echo ""
+  exit 1
+}
+
+echo ""
+echo "📝 Validating commit messages..."
 pnpm exec commitlint --from $(git rev-parse @{push} 2>/dev/null || git rev-parse origin/main 2>/dev/null || echo HEAD~1) --to HEAD --verbose || {
   echo ""
   echo "🚫 Push rejected: commit message does not follow conventional commit rules."
