@@ -1,0 +1,223 @@
+---
+title: Components
+description: Built-in MDX components available in DocuBook Flame.
+date: 2026-05-25
+---
+
+DocuBook Flame includes pre-built MDX components you can use directly in your docs.
+
+## Note
+
+Display messages with different severity levels.
+
+```mdx
+<Note type="info" title="Info">
+  General information for the user.
+</Note>
+
+<Note type="tip" title="Tip">
+  A helpful suggestion.
+</Note>
+
+<Note type="warning" title="Warning">
+  Something to be careful about.
+</Note>
+
+<Note type="danger" title="Danger">
+  A critical issue or breaking change.
+</Note>
+```
+
+## Tabs
+
+Organize content into switchable sections.
+
+```mdx
+<Tabs>
+  <Tab title="npm">
+    npm install @docubook/flame
+  </Tab>
+  <Tab title="bun">
+    bun add @docubook/flame
+  </Tab>
+</Tabs>
+```
+
+## Card
+
+Display content in a compact card layout.
+
+```mdx
+<Card title="Getting Started" icon="BookOpen" href="/docs/getting-started">
+  Learn the basics of DocuBook Flame.
+</Card>
+
+<Card title="Horizontal" icon="Layout" horizontal>
+  A horizontal card layout.
+</Card>
+```
+
+## Card Group
+
+Group multiple cards in a grid.
+
+```mdx
+<CardGroup cols={2}>
+  <Card title="First" icon="Zap" href="/docs/first">
+    First card content.
+  </Card>
+  <Card title="Second" icon="Code" href="/docs/second">
+    Second card content.
+  </Card>
+</CardGroup>
+```
+
+## Accordion
+
+Collapsible content sections.
+
+```mdx
+<Accordion title="Click to expand">
+  Hidden content revealed on click.
+</Accordion>
+```
+
+## Accordion Group
+
+Group multiple accordions together.
+
+```mdx
+<Accordions>
+  <Accordion title="Question 1">
+    Answer to question 1.
+  </Accordion>
+  <Accordion title="Question 2">
+    Answer to question 2.
+  </Accordion>
+</Accordions>
+```
+
+## Steps / Stepper
+
+Display step-by-step instructions.
+
+```mdx
+<Steps>
+  <Step title="Install">
+    bun add @docubook/flame
+  </Step>
+  <Step title="Initialize">
+    bunx flame init
+  </Step>
+  <Step title="Run">
+    bun run dev
+  </Step>
+</Steps>
+```
+
+## Button
+
+Styled buttons with icons.
+
+```mdx
+<Button
+  text="Learn More"
+  href="https://example.com"
+  icon="MoveUpRight"
+  size="md"
+  variant="secondary"
+  target="_blank"
+/>
+```
+
+## File Tree
+
+Display hierarchical file structures.
+
+```mdx
+<Files>
+  <Folder name="src">
+    <File name="App.tsx" />
+    <File name="index.tsx" />
+    <Folder name="components">
+      <File name="Button.tsx" />
+    </Folder>
+  </Folder>
+  <File name="package.json" />
+</Files>
+```
+
+## Code Block
+
+Syntax-highlighted code with title and line highlighting.
+
+````mdx
+```ts:server.ts {3-5}
+import { serve } from "bun";
+
+serve({
+  port: 3000,
+  fetch: () => new Response("Hello!"),
+});
+```
+````
+
+## Image
+
+Responsive images with optional caption.
+
+```mdx
+<Image
+  src="/docs/assets/images/example.png"
+  alt="Example screenshot"
+  caption="An example image"
+/>
+```
+
+## Link
+
+Styled links with external indicator.
+
+```mdx
+<Link href="https://bun.sh" external>
+  Bun Documentation
+</Link>
+```
+
+## Keyboard
+
+Display keyboard shortcuts.
+
+```mdx
+<Keyboard keys={["Cmd", "Shift", "P"]} />
+```
+
+## Tooltips
+
+Hover tooltips for inline content.
+
+```mdx
+<Tooltip content="This is a tooltip">
+  Hover me
+</Tooltip>
+```
+
+## YouTube
+
+Embed YouTube videos.
+
+```mdx
+<YouTube id="dQw4w9WgXcQ" />
+```
+
+## Release Note
+
+Display changelog entries.
+
+```mdx
+<ReleaseNote version="1.0.0" date="2025-01-01">
+  - Initial release
+  - Added core components
+  - MDX support
+</ReleaseNote>
+```

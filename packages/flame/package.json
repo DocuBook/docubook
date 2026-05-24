@@ -1,8 +1,29 @@
 {
   "name": "@docubook/flame",
-  "version": "1.0.0-beta.4",
+  "version": "1.0.0-beta.20",
   "description": "A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.",
   "type": "module",
+  "bin": {
+    "flame": "./bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "template",
+    "docu.schema.json",
+    ".docu",
+    "!.docu/__tests__",
+    "!.docu/dist",
+    "!.docu/build-cache.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "engines": {
+    "bun": ">=1.1.0"
+  },
   "scripts": {
     "dev": "bun .docu/lib/server.ts",
     "build": "NODE_ENV=production bun .docu/lib/build.ts",
@@ -10,7 +31,8 @@
     "preview": "bun .docu/lib/preview.ts",
     "deploy": "bun .docu/lib/deploy.ts",
     "test": "vitest run",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prepublishOnly": "bun .docu/lib/clean.ts && eslint . && vitest run"
   },
   "keywords": [
     "docubook",
@@ -29,8 +51,9 @@
   "author-url": "https://wildan.dev",
   "license": "MIT",
   "dependencies": {
-    "@docubook/core": "workspace:*",
-    "@docubook/mdx-content": "workspace:*",
+    "@docubook/core": "workspace:^",
+    "@docubook/mdx-content": "workspace:^",
+    "@tailwindcss/cli": "4.3.0",
     "@tailwindcss/typography": "0.5.16",
     "bun-plugin-tailwind": "^0.1.2",
     "daisyui": "^5.5.19",
@@ -48,7 +71,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@tailwindcss/cli": "4.3.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

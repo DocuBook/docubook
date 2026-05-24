@@ -1,5 +1,7 @@
-import docuConfig from "../../docu.json" with { type: "json" };
+import { loadDocuConfig } from "./paths";
 import type { SocialLink } from "./types";
+
+const docuConfig = loadDocuConfig();
 
 export function getEditLink(url: string, filePath: string): string {
   const configPath = docuConfig?.repo?.path || "blob/main/{filePath}";

@@ -1,7 +1,7 @@
 import { readFile, writeFile, mkdir, readdir, copyFile, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { resolve, join, dirname } from "node:path";
+import { join, dirname } from "node:path";
 import React from "react";
 import { renderToString } from "react-dom/server";
 import {
@@ -14,7 +14,15 @@ import {
 } from "@docubook/core";
 import { createMdxComponents } from "@docubook/mdx-content";
 import { getGitLastModified } from "./utils";
-import docuConfig from "../../docu.json" with { type: "json" };
+import {
+  DOCS_DIR,
+  DIST_DIR,
+  ASSETS_DIR,
+  CACHE_FILE,
+  DOCS_ASSETS_DIR,
+  PROJECT_ROOT,
+  loadDocuConfig,
+} from "./paths";
 import { generateSearchIndex } from "./search-indexer";
 import { buildClientBundle } from "./hydrate";
 import { logger } from "./logger";
@@ -23,12 +31,9 @@ import type { BuildCache, CliArgs } from "./types";
 import DocsPage from "../pages/docs/[[...slug]]";
 import IndexPage from "../pages/index";
 import NotFoundPage from "../pages/404";
+import { DocsLayout } from "../components/DocsLayout";
 
-const DOCS_DIR = resolve("./docs");
-const DIST_DIR = resolve("./.docu/dist");
-const ASSETS_DIR = resolve("./.docu/dist/assets");
-const CACHE_FILE = resolve("./.docu/build-cache.json");
-const DOCS_ASSETS_DIR = resolve("./docs/assets");
+const docuConfig = loadDocuConfig();
 
 function parseArgs(): CliArgs {
   const args = process.argv.slice(2);
@@ -112,70 +117,6 @@ function htmlShell(title: string, description: string, body: string): string {
   <script src="/assets/${assetManifest.js}"></script>
 </body>
 </html>`;
-}
-
-function DocsLayout({ children, repoUrl }: { children?: React.ReactNode; repoUrl?: string }) {
-  return React.createElement(
-    "div",
-    { className: "docs-layout flex flex-col min-h-screen w-full" },
-    React.createElement(
-      "div",
-      { className: "flex flex-1 items-start w-full" },
-      React.createElement("aside", {
-        id: "sidebar-island",
-        className:
-          "sticky top-0 hidden h-screen w-[280px] shrink-0 flex-col lg:flex border-r border-base-200 bg-base-100",
-        "data-tocs": "[]",
-        "data-title": "",
-        "data-repo": repoUrl || "",
-      }),
-      React.createElement(
-        "main",
-        { className: "flex-1 min-w-0 min-h-screen flex flex-col" },
-        React.createElement(
-          "div",
-          { className: "hidden lg:flex items-center justify-end gap-6 h-14 px-8" },
-          React.createElement(
-            "nav",
-            { className: "flex items-center gap-6 text-sm font-medium text-base-content/80" },
-            ...(docuConfig.navbar?.menu || []).map((item: { title: string; href: string }) => {
-              const isExternal = /^https?:\/\//.test(item.href);
-              const isDocsActive = item.href === "/docs";
-              return React.createElement(
-                "a",
-                {
-                  key: item.title,
-                  href: item.href,
-                  className: `flex items-center gap-1 hover:text-base-content transition-colors${isDocsActive ? " text-primary font-semibold" : ""}`,
-                  ...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {}),
-                },
-                item.title,
-                isExternal
-                  ? React.createElement(
-                      "svg",
-                      {
-                        xmlns: "http://www.w3.org/2000/svg",
-                        width: "14",
-                        height: "14",
-                        viewBox: "0 0 24 24",
-                        fill: "none",
-                        stroke: "currentColor",
-                        strokeWidth: "2",
-                        strokeLinecap: "round",
-                        strokeLinejoin: "round",
-                      },
-                      React.createElement("path", { d: "M7 7h10v10" }),
-                      React.createElement("path", { d: "M7 17 17 7" })
-                    )
-                  : null
-              );
-            })
-          )
-        ),
-        React.createElement("div", { className: "flex-1 w-full" }, children)
-      )
-    )
-  );
 }
 
 async function renderDocsPage(slug: string, rawMdx: string, filePath: string): Promise<string> {
@@ -318,7 +259,7 @@ async function build() {
       continue;
     }
 
-    const relPath = absPath.replace(resolve("./"), "");
+    const relPath = absPath.replace(PROJECT_ROOT + "/", "");
     const capturedRawMdx = rawMdx;
     const capturedFile = file;
 
@@ -364,7 +305,7 @@ async function build() {
     compiledSource: indexSerialized.compiledSource,
     components: createMdxComponents(),
   });
-  const indexRelPath = indexMdxPath.replace(resolve("./"), "");
+  const indexRelPath = indexMdxPath.replace(PROJECT_ROOT + "/", "");
   const indexDate = indexFm.date || (await getGitLastModified(indexRelPath)) || undefined;
   const indexPageEl = React.createElement(
     DocsLayout,

@@ -13,19 +13,20 @@ import {
   MDXRemote,
 } from "@docubook/core";
 import { createMdxComponents } from "@docubook/mdx-content";
-import { getGitLastModified } from "./utils";
-import docuConfig from "../../docu.json" with { type: "json" };
+import { getGitLastModified, getContentType } from "./utils";
+import { DOCS_DIR, DIST_DIR, PAGES_DIR, PROJECT_ROOT, loadDocuConfig } from "./paths";
 import DocsPage from "../pages/docs/[[...slug]]";
 import NotFoundPage from "../pages/404";
 import IndexPage from "../pages/index";
+import { DocsLayout } from "../components/DocsLayout";
 import { buildClientBundle } from "./hydrate";
 import { generateSearchIndex } from "./search-indexer";
 import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
 import { SECURITY_HEADERS, generateNonce, htmlResponse } from "./security";
 
-const DOCS_DIR = resolve("./docs");
-const DIST_DIR = resolve("./.docu/dist");
+const docuConfig = loadDocuConfig();
+
 const PORT = process.env.PORT ?? "3000";
 
 logger.buildStart();
@@ -48,7 +49,7 @@ let router: InstanceType<typeof Bun.FileSystemRouter> | null = null;
 try {
   router = new Bun.FileSystemRouter({
     style: "nextjs",
-    dir: resolve("./.docu/pages"),
+    dir: PAGES_DIR,
   });
 } catch (e) {
   logger.warn(`FileSystemRouter failed: ${e instanceof Error ? e.message : String(e)}`);
@@ -124,75 +125,6 @@ function createHtmlResponse(
   return htmlResponse(html, nonce, status);
 }
 
-function DocsLayout({ children, repoUrl }: { children?: React.ReactNode; repoUrl?: string }) {
-  const tocsJson = "[]";
-  return React.createElement(
-    "div",
-    { className: "docs-layout flex flex-col min-h-screen w-full" },
-    React.createElement(
-      "div",
-      { className: "flex flex-1 items-start w-full" },
-      // Leftbar (desktop sidebar island)
-      React.createElement("aside", {
-        id: "sidebar-island",
-        className:
-          "sticky top-0 hidden h-screen w-[280px] shrink-0 flex-col lg:flex border-r border-base-200 bg-base-100",
-        "data-tocs": tocsJson,
-        "data-title": "",
-        "data-repo": repoUrl || "",
-      }),
-      // Main area
-      React.createElement(
-        "main",
-        { className: "flex-1 min-w-0 min-h-screen flex flex-col" },
-        // DocsNavbar (desktop only)
-        React.createElement(
-          "div",
-          { className: "hidden lg:flex items-center justify-end gap-6 h-14 px-8" },
-          React.createElement(
-            "nav",
-            { className: "flex items-center gap-6 text-sm font-medium text-base-content/80" },
-            ...(docuConfig.navbar?.menu || []).map((item: { title: string; href: string }) => {
-              const isExternal = /^https?:\/\//.test(item.href);
-              const isDocsActive = item.href === "/docs";
-              return React.createElement(
-                "a",
-                {
-                  key: item.title,
-                  href: item.href,
-                  className: `flex items-center gap-1 hover:text-base-content transition-colors${isDocsActive ? " text-primary font-semibold" : ""}`,
-                  ...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {}),
-                },
-                item.title,
-                isExternal
-                  ? React.createElement(
-                      "svg",
-                      {
-                        xmlns: "http://www.w3.org/2000/svg",
-                        width: "14",
-                        height: "14",
-                        viewBox: "0 0 24 24",
-                        fill: "none",
-                        stroke: "currentColor",
-                        strokeWidth: "2",
-                        strokeLinecap: "round",
-                        strokeLinejoin: "round",
-                      },
-                      React.createElement("path", { d: "M7 7h10v10" }),
-                      React.createElement("path", { d: "M7 17 17 7" })
-                    )
-                  : null
-              );
-            })
-          )
-        ),
-        // Page content
-        React.createElement("div", { className: "flex-1 w-full" }, children)
-      )
-    )
-  );
-}
-
 async function getDocsForSlug(slug: string) {
   const resolved = resolve(DOCS_DIR, slug);
   if (!resolved.startsWith(DOCS_DIR)) return null;
@@ -236,7 +168,7 @@ async function getDocsForSlug(slug: string) {
     components,
   });
 
-  const relPath = filePath.replace(resolve("./"), "");
+  const relPath = filePath.replace(PROJECT_ROOT + "/", "");
   const date = frontmatter.date || (await getGitLastModified(relPath)) || undefined;
   return {
     content,
@@ -256,7 +188,7 @@ async function handleDocsIndex(): Promise<Response> {
 
   const page = React.createElement(
     DocsLayout,
-    { repoUrl: docuConfig.repo?.url },
+    { repoUrl: docuConfig.repo?.url, pathname: "/docs" },
     React.createElement(DocsPage, {
       slug: [],
       title,
@@ -285,7 +217,7 @@ async function handleDocsRoute(slug: string[]): Promise<Response> {
 
   const page = React.createElement(
     DocsLayout,
-    { repoUrl: docuConfig.repo?.url },
+    { repoUrl: docuConfig.repo?.url, pathname: `/docs/${path}` },
     React.createElement(DocsPage, {
       slug,
       title,
@@ -312,7 +244,7 @@ function renderPage(
 ): Response {
   const page = React.createElement(
     DocsLayout,
-    { repoUrl: docuConfig.repo?.url },
+    { repoUrl: docuConfig.repo?.url, pathname: "/docs" },
     React.createElement(Component, props)
   );
   const body = renderToString(page);
@@ -327,24 +259,6 @@ function handleIndex(): Response {
     docuConfig.meta?.description || "",
     body
   );
-}
-
-function getContentType(pathname: string): string {
-  const ext = pathname.split(".").pop()?.toLowerCase();
-  const types: Record<string, string> = {
-    html: "text/html",
-    css: "text/css",
-    js: "application/javascript",
-    json: "application/json",
-    png: "image/png",
-    jpg: "image/jpeg",
-    jpeg: "image/jpeg",
-    svg: "image/svg+xml",
-    ico: "image/x-icon",
-    woff: "font/woff",
-    woff2: "font/woff2",
-  };
-  return types[ext || ""] || "application/octet-stream";
 }
 
 function serveStatic(pathname: string): Response | null {

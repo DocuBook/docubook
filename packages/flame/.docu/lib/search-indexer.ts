@@ -13,7 +13,9 @@
 
 import { readFile, writeFile, readdir, mkdir } from "node:fs/promises";
 import { resolve, join } from "node:path";
-import docuConfig from "../../docu.json" with { type: "json" };
+import { DOCS_DIR, ASSETS_DIR, loadDocuConfig } from "./paths";
+
+const docuConfig = loadDocuConfig();
 
 export interface SearchRecord {
   url: string;
@@ -205,8 +207,8 @@ async function scanMdxFiles(dir: string, base = ""): Promise<{ path: string; abs
 }
 
 export async function generateSearchIndex(docsDir?: string, outputDir?: string): Promise<number> {
-  const docs = resolve(docsDir || "./docs");
-  const dist = resolve(outputDir || "./.docu/dist/assets");
+  const docs = resolve(docsDir || DOCS_DIR);
+  const dist = resolve(outputDir || ASSETS_DIR);
   await mkdir(dist, { recursive: true });
 
   const mdxFiles = await scanMdxFiles(docs);

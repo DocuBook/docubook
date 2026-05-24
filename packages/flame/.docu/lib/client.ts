@@ -1,4 +1,4 @@
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import React from "react";
 import { MDXRemote } from "@docubook/core";
 import { createMdxComponents } from "@docubook/mdx-content";
@@ -21,7 +21,12 @@ function mountIslands() {
     const tocs: TocItem[] = safeParseTocs(sidebarEl.dataset.tocs);
     const title = sidebarEl.dataset.title || "";
     const repoUrl = sidebarEl.dataset.repo || "";
-    createRoot(sidebarEl).render(React.createElement(Sidebar, { tocs, title, repoUrl }));
+    const el = React.createElement(Sidebar, { tocs, title, repoUrl });
+    if (sidebarEl.childElementCount > 0) {
+      hydrateRoot(sidebarEl, el);
+    } else {
+      createRoot(sidebarEl).render(el);
+    }
   }
 
   const mobileBarEl = document.getElementById("mobile-bar-island");
@@ -35,7 +40,12 @@ function mountIslands() {
   const tocEl = document.getElementById("toc-island");
   if (tocEl) {
     const tocs: TocItem[] = safeParseTocs(tocEl.dataset.tocs);
-    createRoot(tocEl).render(React.createElement(Toc, { tocs }));
+    const el = React.createElement(Toc, { tocs });
+    if (tocEl.childElementCount > 0) {
+      hydrateRoot(tocEl, el);
+    } else {
+      createRoot(tocEl).render(el);
+    }
   }
 
   const themeEl = document.getElementById("theme-island");

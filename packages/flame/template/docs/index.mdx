@@ -1,0 +1,108 @@
+---
+title: DocuBook Flame
+description: A Bun-native framework for modern documentation experiences.
+date: 2026-05-24
+---
+
+# DocuBook Flame 🔥
+
+**@docubook/flame** is a lightweight runtime for building documentation websites using React, MDX, and filesystem-based routing — all running on Bun.
+
+## Quick Start
+
+```bash
+mkdir my-docs && cd my-docs
+bun add @docubook/flame
+bunx flame init
+bun run dev
+```
+
+## Project Structure
+
+```
+my-docs/
+├── docs/              # Your MDX content
+│   └── index.mdx     # Home page
+├── docu.json          # Site configuration (navbar, routes, meta)
+├── package.json       # Dependencies
+└── .docu/
+    └── dist/          # Build output (after bun run build)
+```
+
+## Commands
+
+|      Command      |           Description            |
+| ----------------- | -------------------------------- |
+| `bun run dev`     | Start dev server with HMR        |
+| `bun run build`   | Static build to `.docu/dist/`    |
+| `bun run preview` | Serve built output locally       |
+| `bun run deploy`  | Build + prepare for GitHub Pages |
+
+## Configuration
+
+`docu.json` controls your site:
+
+```json
+{
+  "meta": {
+    "title": "My Docs",
+    "description": "Documentation powered by DocuBook Flame"
+  },
+  "navbar": {
+    "logoText": "My Docs",
+    "menu": [
+      { "title": "Home", "href": "/" },
+      { "title": "Docs", "href": "/docs" }
+    ]
+  },
+  "routes": []
+}
+```
+
+When `routes` is empty, navigation is auto-generated from your `docs/` folder structure.
+
+## Routing
+
+```
+docs/
+├── index.mdx                    → /docs
+├── getting-started/
+│   ├── introduction.mdx         → /docs/getting-started/introduction
+│   └── installation.mdx         → /docs/getting-started/installation
+└── components/
+    ├── button.mdx               → /docs/components/button
+    └── card.mdx                 → /docs/components/card
+```
+
+## Deployment
+
+### GitHub Pages
+
+```bash
+bun run deploy
+```
+
+This will run a production build, add `.nojekyll`, and generate `.github/workflows/deploy.yml`.
+
+Then push to GitHub and enable Pages: **Settings → Pages → Source: GitHub Actions**
+
+### Other Hosts
+
+```bash
+bun run build
+```
+
+Upload `.docu/dist/` to any static hosting (Netlify, Cloudflare Pages, Vercel, S3, etc).
+
+## Environment Variables
+
+Copy `.env.example` to `.env`:
+
+```env
+PORT=3000
+# SENTRY_DSN=https://your-dsn@sentry.io/project-id
+```
+
+## Requirements
+
+- [Bun](https://bun.sh) >= 1.1.0

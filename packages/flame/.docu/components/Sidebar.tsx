@@ -17,7 +17,7 @@ import { ThemeToggle } from "./Theme";
 import { GitHubLink } from "./Navbar";
 import Search from "./Search";
 import type { TocItem } from "../lib/types";
-import docuConfig from "../../docu.json" with { type: "json" };
+import { config as docuConfig, routes } from "../lib/client-routes";
 
 interface SidebarProps {
   tocs?: TocItem[];
@@ -62,7 +62,7 @@ function DesktopSidebar({ className, repoUrl }: { className?: string; repoUrl?: 
       {/* Context + Menu */}
       <div className="flex-1 overflow-y-auto px-4">
         <Context className="mb-2" />
-        <Menu />
+        <Menu routes={routes} />
       </div>
 
       {/* Bottom: Theme + GitHub */}
@@ -278,7 +278,7 @@ function MobileDrawer({
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-2">
           <Context className="mb-2" />
-          <Menu onNavigate={onClose} />
+          <Menu onNavigate={onClose} routes={routes} />
         </div>
       </div>
     </div>
