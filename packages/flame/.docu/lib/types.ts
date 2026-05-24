@@ -16,6 +16,7 @@ export interface DocuMeta {
   title: string;
   description: string;
   baseURL: string;
+  favicon?: string;
 }
 
 export interface SocialLink {
@@ -25,6 +26,7 @@ export interface SocialLink {
 
 export interface DocuNavbar {
   logoText: string;
+  logo?: { src?: string; alt?: string };
   menu: { title: string; href: string }[];
 }
 
