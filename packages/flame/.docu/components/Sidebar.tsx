@@ -90,18 +90,25 @@ export function MobileBar({
 
   useEffect(() => {
     if (!tocs.length) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.filter((e) => e.isIntersecting);
-        if (visible.length) setActiveId(visible[0].target.id);
-      },
-      { rootMargin: "-80px 0px -60% 0px", threshold: 0 }
-    );
-    tocs.forEach((toc) => {
-      const el = document.getElementById(toc.href.slice(1));
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
+
+    const handleScroll = () => {
+      let currentId: string | null = null;
+      for (const toc of tocs) {
+        const id = toc.href.slice(1);
+        const el = document.getElementById(id);
+        if (!el) continue;
+        if (el.getBoundingClientRect().top <= 100) {
+          currentId = id;
+        } else {
+          break;
+        }
+      }
+      if (currentId) setActiveId(currentId);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [tocs]);
 
   useEffect(() => {
@@ -254,7 +261,7 @@ function MobileDrawer({
   return (
     <div className="fixed inset-0 z-[100]">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden="true" />
-      <div className="bg-base-100 absolute top-0 right-0 flex h-full w-80 max-w-[85vw] flex-col shadow-xl">
+      <div className="bg-base-100 absolute right-0 top-0 flex h-full w-80 max-w-[85vw] flex-col shadow-xl">
         <div className="border-base-200 flex items-center justify-between border-b px-4 py-3">
           <div className="flex items-center gap-2">
             <GitHubLink repoUrl={repoUrl} />

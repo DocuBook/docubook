@@ -12,7 +12,6 @@ interface TocProps {
 
 export default function Toc({ tocs }: TocProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
   const clickedIdRef = useRef<string | null>(null);
   const clickTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
   const activeIdRef = useRef<string | null>(null);
@@ -24,46 +23,61 @@ export default function Toc({ tocs }: TocProps) {
   useEffect(() => {
     if (typeof document === "undefined" || !tocs.length) return;
 
-    const handleIntersect = (entries: IntersectionObserverEntry[]) => {
+    const isDesktop = window.innerWidth >= 1024;
+    const container = isDesktop ? document.getElementById("scroll-container") : null;
+    const scrollTarget = container || window;
+    const offset = isDesktop ? 80 : 100;
+
+    const handleScroll = () => {
       if (clickedIdRef.current) return;
 
-      const visibleEntries = entries.filter((entry) => entry.isIntersecting);
-      if (!visibleEntries.length) return;
+      let currentId: string | null = null;
+      for (const toc of tocs) {
+        const id = toc.href.slice(1);
+        const el = document.getElementById(id);
+        if (!el) continue;
 
-      const mostVisibleEntry = visibleEntries.reduce((prev, current) => {
-        return current.intersectionRatio > prev.intersectionRatio ? current : prev;
-      }, visibleEntries[0]);
+        const top = container ? el.offsetTop - container.scrollTop : el.getBoundingClientRect().top;
 
-      const newActiveId = mostVisibleEntry.target.id;
-      if (newActiveId !== activeIdRef.current) {
-        setActiveId(newActiveId);
+        if (top <= offset) {
+          currentId = id;
+        } else {
+          break;
+        }
+      }
+
+      if (currentId && currentId !== activeIdRef.current) {
+        setActiveId(currentId);
+        history.replaceState(null, "", `#${currentId}`);
       }
     };
 
-    const isDesktop = window.innerWidth >= 1024;
-    const container = isDesktop ? document.getElementById("scroll-container") : null;
+    handleScroll(); // set initial active on mount
 
-    observerRef.current = new IntersectionObserver(handleIntersect, {
-      root: container,
-      rootMargin: isDesktop ? "0px 0px -60% 0px" : "-160px 0px -60% 0px",
-      threshold: 0,
-    });
+    let throttleTimer: ReturnType<typeof setTimeout> | null = null;
+    const listener =
+      tocs.length > 30
+        ? () => {
+            if (throttleTimer) return;
+            throttleTimer = setTimeout(() => {
+              throttleTimer = null;
+              handleScroll();
+            }, 50);
+          }
+        : handleScroll;
 
-    tocs.forEach((toc) => {
-      const element = document.getElementById(toc.href.slice(1));
-      if (element) {
-        observerRef.current?.observe(element);
-      }
-    });
+    scrollTarget.addEventListener("scroll", listener, { passive: true });
 
     return () => {
-      observerRef.current?.disconnect();
+      scrollTarget.removeEventListener("scroll", listener);
+      if (throttleTimer) clearTimeout(throttleTimer);
     };
   }, [tocs]);
 
   const handleLinkClick = useCallback((id: string) => {
     clickedIdRef.current = id;
     setActiveId(id);
+    history.replaceState(null, "", `#${id}`);
     if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
     clickTimerRef.current = setTimeout(() => {
       clickedIdRef.current = null;
