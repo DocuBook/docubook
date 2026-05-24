@@ -1,5 +1,38 @@
 # @docubook/core
 
+## 1.7.0
+
+### Minor Changes
+
+- feat(core): extract duplicated utils to @docubook/core #125
+  - Add `clsx` and `tailwind-merge` deps to `@docubook/core`
+  - Create shared utils in `packages/core/src/utils.ts` with helper functions:
+    - `cn()` - clsx + tailwind-merge utility
+    - `parseDate()`, `stringToDate()`, `formatDate()`, `formatDate2()`, `toIsoDateOnly()`
+  - Re-export from apps and packages using `@docubook/core/utils` subpath
+  - Add `./utils` subpath export to package.json to avoid fs in client bundle
+
+### Patch Changes
+
+- fix(core): #154 - correct moduleResolution casing in tsconfig.json
+
+- refactor(core): #113 - remove unused `attempted` array from `readMdxFileBySlug`
+
+- test(core): #117 - add unit tests for custom rehype/remark plugins
+  - 7 tests for `handleCodeTitles` (title transfer, removal, edge cases)
+  - 19 tests for `handleCodeExpandable` (remark + rehype, line counting, resolution chains)
+
+- refactor(core): #110 - safe two-pass tree mutation in `handleCodeTitles`
+  - Replace in-place splice during visit() with a two-pass approach
+  - First pass collects title divs, second pass removes them in reverse order
+
+- docs(core): #182 - document all missing exported APIs in README
+  - Add `serialize` and `MDXRemote` to Runtime APIs table
+  - Add `handleCodeExpandableRemark` and `handleCodeExpandable` plugins
+  - Add utility functions to Runtime APIs table
+  - Add import recipes for non-RSC compilation, code plugins, and utility functions
+  - Add Subpath Exports section documenting `@docubook/core/utils`
+
 ## 1.6.3
 
 ### Patch Changes
