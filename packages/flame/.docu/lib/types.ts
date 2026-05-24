@@ -67,8 +67,4 @@ export interface ParsedDoc {
   scope?: Record<string, unknown>;
 }
 
-export interface TocItem {
-  level: number;
-  text: string;
-  href: string;
-}
+export type { TocItem } from "@docubook/core";

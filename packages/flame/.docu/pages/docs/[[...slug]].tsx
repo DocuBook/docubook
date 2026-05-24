@@ -16,6 +16,7 @@ interface DocsPageProps {
   tocs: TocItem[];
   filePath: string;
   repoUrl?: string;
+  compiledSource?: string;
 }
 
 export default function DocsPage({
@@ -27,6 +28,7 @@ export default function DocsPage({
   tocs,
   filePath,
   repoUrl,
+  compiledSource,
 }: DocsPageProps) {
   const pathname = slug.join("/");
   const tocsJson = JSON.stringify(tocs);
@@ -35,7 +37,7 @@ export default function DocsPage({
     <div className="flex w-full flex-1 px-0 pb-4 lg:h-[calc(100vh-4rem)] lg:px-8 lg:pb-8">
       <div
         id="scroll-container"
-        className="bg-base-100 border-base-300 relative flex w-full flex-col items-start rounded-b-3xl border shadow-md max-lg:scroll-p-54 lg:h-full lg:flex-row lg:overflow-y-auto lg:rounded-xl"
+        className="bg-base-100 border-base-300 max-lg:scroll-p-54 relative flex w-full flex-col items-start rounded-b-3xl border shadow-md lg:h-full lg:flex-row lg:overflow-y-auto lg:rounded-xl"
       >
         {/* Mobile bar - island */}
         <div
@@ -53,7 +55,14 @@ export default function DocsPage({
             {description && (
               <p className="text-muted-foreground -mt-4 text-[16.5px]">{description}</p>
             )}
-            <div>{content}</div>
+            <div id="mdx-content-island">{content}</div>
+            {compiledSource && (
+              <script
+                id="mdx-compiled-source"
+                type="application/json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(compiledSource) }}
+              />
+            )}
             <div className="border-base-300 my-8 flex items-center border-b-2 border-dashed">
               <EditWith className="text-muted-foreground" filePath={filePath} />
               {date && (

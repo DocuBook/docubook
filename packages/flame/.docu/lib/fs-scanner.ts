@@ -104,7 +104,7 @@ function fileNodesToRoutes(nodes: FileNode[], parentHref = ""): DocuRoute[] {
     if (!node.isDirectory) {
       const baseName = node.name.replace(/\.(mdx|md)$/, "");
       const isIndexFile = /^(index|readme)$/i.test(baseName);
-      if (isIndexFile && parentHref === "") continue;
+      if (isIndexFile) continue;
 
       const href = parentHref
         ? `${parentHref}/${node.relPath.split("/").pop()}`
@@ -124,16 +124,15 @@ function fileNodesToRoutes(nodes: FileNode[], parentHref = ""): DocuRoute[] {
 
       if (children.length === 0) continue;
 
-      const indexChild = children.find(
-        (c) => /\/index$/i.test(c.href) || /\/readme$/i.test(c.href)
+      const hasIndexFile = (node.children || []).some(
+        (c) => !c.isDirectory && /^(index|readme)\.(mdx|md)$/i.test(c.name)
       );
 
-      if (indexChild) {
-        const baseHref = indexChild.href.replace(/\/(index|readme)$/i, "");
+      if (hasIndexFile) {
         routes.push({
           title: dirTitle,
-          href: baseHref,
-          items: children.filter((c) => c !== indexChild),
+          href: dirHref,
+          items: children,
         });
       } else {
         routes.push({

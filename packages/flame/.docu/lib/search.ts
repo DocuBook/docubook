@@ -71,9 +71,10 @@ function fuzzyMatch(query: string, text: string): number {
     }
 
     const maxDist = q.length <= 3 ? 1 : q.length <= 6 ? 2 : 3;
-    const dist = levenshtein(q, word.slice(0, q.length + maxDist));
+    const sliced = word.slice(0, q.length + maxDist);
+    const dist = levenshtein(q, sliced);
     if (dist <= maxDist) {
-      const score = 1 - dist / Math.max(q.length, word.length);
+      const score = 1 - dist / Math.max(q.length, sliced.length);
       bestScore = Math.max(bestScore, score * 0.6);
     }
   }

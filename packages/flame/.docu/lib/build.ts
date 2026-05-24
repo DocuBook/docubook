@@ -5,11 +5,12 @@ import { resolve, join, dirname } from "node:path";
 import React from "react";
 import { renderToString } from "react-dom/server";
 import {
-  parseMdx,
+  serialize,
   extractTocsFromRawMdx,
   extractFrontmatterWithContent,
   createDefaultRehypePlugins,
   createDefaultRemarkPlugins,
+  MDXRemote,
 } from "@docubook/core";
 import { createMdxComponents } from "@docubook/mdx-content";
 import { getGitLastModified } from "./utils";
@@ -100,9 +101,9 @@ function htmlShell(title: string, description: string, body: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title}</title>
-  <meta name="description" content="${description}">
-  <link rel="icon" type="image/x-icon" href="${favicon}">
+  <title>${Bun.escapeHTML(title)}</title>
+  <meta name="description" content="${Bun.escapeHTML(description)}">
+  <link rel="icon" type="image/x-icon" href="${Bun.escapeHTML(favicon)}">
   <link rel="stylesheet" href="/assets/${assetManifest.css}">
   <script>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>
 </head>
@@ -186,19 +187,21 @@ async function renderDocsPage(slug: string, rawMdx: string, filePath: string): P
   }>(rawMdx);
 
   const components = createMdxComponents();
-  let content;
+  let compiledSource: string;
   try {
-    const result = await parseMdx(strippedContent, {
-      components,
-      rehypePlugins: createDefaultRehypePlugins(),
-      remarkPlugins: createDefaultRemarkPlugins(),
-      parseFrontmatter: false,
+    const serialized = await serialize(strippedContent, {
+      mdxOptions: {
+        rehypePlugins: createDefaultRehypePlugins(),
+        remarkPlugins: createDefaultRemarkPlugins(),
+      },
     });
-    content = result.content;
+    compiledSource = serialized.compiledSource;
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown MDX error";
     throw new Error(`MDX Error in: docs/${slug}.mdx\n${msg}`, { cause: err });
   }
+
+  const content = React.createElement(MDXRemote, { compiledSource, components });
 
   const title = frontmatter.title || slug;
   const description = frontmatter.description || "";
@@ -217,6 +220,7 @@ async function renderDocsPage(slug: string, rawMdx: string, filePath: string): P
       tocs,
       filePath,
       repoUrl: docuConfig.repo?.url,
+      compiledSource,
     })
   );
 
@@ -350,11 +354,15 @@ async function build() {
     description?: string;
     date?: string;
   }>(indexRaw);
-  const { content: indexContent } = await parseMdx(indexStripped, {
+  const indexSerialized = await serialize(indexStripped, {
+    mdxOptions: {
+      rehypePlugins: createDefaultRehypePlugins(),
+      remarkPlugins: createDefaultRemarkPlugins(),
+    },
+  });
+  const indexContent = React.createElement(MDXRemote, {
+    compiledSource: indexSerialized.compiledSource,
     components: createMdxComponents(),
-    rehypePlugins: createDefaultRehypePlugins(),
-    remarkPlugins: createDefaultRemarkPlugins(),
-    parseFrontmatter: false,
   });
   const indexRelPath = indexMdxPath.replace(resolve("./"), "");
   const indexDate = indexFm.date || (await getGitLastModified(indexRelPath)) || undefined;
@@ -370,6 +378,7 @@ async function build() {
       tocs: indexTocs,
       filePath: indexRelPath,
       repoUrl: docuConfig.repo?.url,
+      compiledSource: indexSerialized.compiledSource,
     })
   );
   const indexHtml = htmlShell(
@@ -396,8 +405,6 @@ async function build() {
   const notFoundHtml = htmlShell("404 - Not Found", "", renderToString(notFoundPage));
   await writeFile(join(DIST_DIR, "404.html"), notFoundHtml);
 
-  await writeCache(cache);
-
   logger.spinner.stop(
     `Built ${built} pages (${skipped} cached) \x1b[90m(${Math.round(performance.now() - t)}ms)\x1b[0m`
   );
@@ -414,6 +421,8 @@ async function build() {
     console.error(`\n\u274C Build completed with ${errors.length} error(s)\n`);
     process.exit(1);
   }
+
+  await writeCache(cache);
 }
 
 initSentry()

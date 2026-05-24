@@ -14,6 +14,7 @@ export default function Toc({ tocs }: TocProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const clickedIdRef = useRef<string | null>(null);
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
   const activeIdRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -63,12 +64,16 @@ export default function Toc({ tocs }: TocProps) {
   const handleLinkClick = useCallback((id: string) => {
     clickedIdRef.current = id;
     setActiveId(id);
-
-    const timer = setTimeout(() => {
+    if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+    clickTimerRef.current = setTimeout(() => {
       clickedIdRef.current = null;
     }, 1000);
+  }, []);
 
-    return () => clearTimeout(timer);
+  useEffect(() => {
+    return () => {
+      if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+    };
   }, []);
 
   if (!tocs.length) return null;
@@ -82,7 +87,7 @@ export default function Toc({ tocs }: TocProps) {
 
       <div className="relative">
         <div className="relative text-sm">
-          <div className="bg-base-300 absolute top-0 left-0 h-full w-px" />
+          <div className="bg-base-300 absolute left-0 top-0 h-full w-px" />
 
           <div className="flex flex-col">
             {tocs.map(({ href, level, text }) => {
@@ -134,7 +139,7 @@ export default function Toc({ tocs }: TocProps) {
                     )}
                     style={{ paddingLeft: `${levelPadding + 6}px` }}
                   >
-                    <span className="line-clamp-2 text-sm break-words">{text}</span>
+                    <span className="line-clamp-2 break-words text-sm">{text}</span>
                   </a>
                 </div>
               );
