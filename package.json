@@ -31,6 +31,10 @@
     "typescript-eslint": "^8.57.2",
     "vitest": "^4.1.6"
   },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "engines": {
     "node": ">=20.0.0"
   },
