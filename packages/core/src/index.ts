@@ -1,4 +1,5 @@
 export type { TocItem, MdxCompileResult } from "./types";
+export { cn, parseDate, stringToDate, formatDate, formatDate2, toIsoDateOnly } from "./utils";
 export {
   parseMdx,
   serialize,
