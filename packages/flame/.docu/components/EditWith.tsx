@@ -20,7 +20,7 @@ export default function EditWith({
   const editUrl = getEditLink(repoUrl, filePath);
 
   return (
-    <div className={`text-right ${className}`}>
+    <div className={`text-right text-sm ${className}`}>
       <a
         href={editUrl}
         target="_blank"

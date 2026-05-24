@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: oven-sh/setup-bun@v2
-        if: matrix.task == 'build'
+        if: matrix.task == 'build' || matrix.task == 'test'
 
       - uses: pnpm/action-setup@v4
 
