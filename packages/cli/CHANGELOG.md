@@ -1,5 +1,19 @@
 # @docubook/cli
 
+## 0.6.1
+
+### Patch Changes
+
+- docs(cli): update react-router template status to 'in development'
+  - Replace 'coming soon' with 'in development' in CLI README
+  - Replace 'comingsoon' with 'in development' in root README
+  - Template directory exists with plan and config files
+  - Refs: #183
+
+- fix(cli): use startsWith() for robust user agent parsing
+  - Improved package manager detection reliability
+  - Fixed edge cases in user agent string parsing
+
 ## 0.6.0
 
 ### Minor Changes
