@@ -15,35 +15,48 @@ function safeParseTocs(raw: string | undefined): TocItem[] {
   }
 }
 
-function mountIsland(id: string, render: (el: HTMLElement) => React.ReactElement) {
+function mountIsland(
+  id: string,
+  render: (el: HTMLElement) => React.ReactElement,
+  forceCreate = false
+) {
   const el = document.getElementById(id);
   if (!el) return;
   const node = render(el);
-  if (el.childElementCount > 0) {
+  if (!forceCreate && el.childElementCount > 0) {
     hydrateRoot(el, node);
   } else {
+    el.innerHTML = "";
     createRoot(el).render(node);
   }
 }
 
 function mountIslands() {
-  mountIsland("sidebar-island", (el) => {
-    const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
-    return React.createElement(Sidebar, {
-      tocs,
-      title: el.dataset.title || "",
-      repoUrl: el.dataset.repo || "",
-    });
-  });
+  mountIsland(
+    "sidebar-island",
+    (el) => {
+      const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
+      return React.createElement(Sidebar, {
+        tocs,
+        title: el.dataset.title || "",
+        repoUrl: el.dataset.repo || "",
+      });
+    },
+    true
+  );
 
-  mountIsland("mobile-bar-island", (el) => {
-    const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
-    return React.createElement(MobileBar, {
-      tocs,
-      title: el.dataset.title || "",
-      repoUrl: el.dataset.repo || "",
-    });
-  });
+  mountIsland(
+    "mobile-bar-island",
+    (el) => {
+      const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
+      return React.createElement(MobileBar, {
+        tocs,
+        title: el.dataset.title || "",
+        repoUrl: el.dataset.repo || "",
+      });
+    },
+    true
+  );
 
   mountIsland("toc-island", (el) => {
     const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
