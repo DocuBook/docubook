@@ -107,7 +107,7 @@ function fileNodesToRoutes(nodes: FileNode[], parentHref = ""): DocuRoute[] {
       if (isIndexFile) continue;
 
       const segment = node.relPath.split("/").pop()!;
-      const href = parentHref ? `${parentHref}/${segment}` : `/${node.relPath}`;
+      const href = `/${segment}`;
 
       routes.push({
         title: toTitleCase(baseName),
@@ -116,7 +116,7 @@ function fileNodesToRoutes(nodes: FileNode[], parentHref = ""): DocuRoute[] {
     } else {
       const dirTitle = toTitleCase(node.name);
       const segment = node.relPath.split("/").pop()!;
-      const dirHref = parentHref ? `${parentHref}/${segment}` : `/${node.relPath}`;
+      const dirHref = `/${segment}`;
 
       const children = fileNodesToRoutes(node.children || [], dirHref);
 
