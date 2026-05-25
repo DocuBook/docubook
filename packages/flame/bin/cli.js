@@ -2,7 +2,9 @@
 /* global process, console */
 
 import { resolve, join } from "node:path";
-import { cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, readFileSync, writeFileSync, renameSync } from "node:fs";
+
+const __dirname = import.meta.dirname;
 
 const COMMAND_MAP = {
   dev: "server.ts",
@@ -16,7 +18,7 @@ const command = process.argv[2];
 
 if (!command || command === "--help" || command === "-h") {
   console.log(`
-  @docubook/flame —  A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.,
+  @docubook/flame — A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.
 
   Usage: flame <command>
 
@@ -35,26 +37,40 @@ if (!command || command === "--help" || command === "-h") {
 }
 
 if (command === "init") {
-  const scaffoldDir = resolve(import.meta.dirname, "../template");
-  const targetDir = process.cwd();
+  try {
+    const scaffoldDir = resolve(__dirname, "../template");
+    const targetDir = process.cwd();
 
-  if (existsSync(join(targetDir, "docu.json"))) {
-    console.error("docu.json already exists. Aborting to avoid overwriting.");
+    if (!existsSync(scaffoldDir)) {
+      console.error("Template directory not found. Package may be corrupted.");
+      process.exit(1);
+    }
+
+    if (existsSync(join(targetDir, "docu.json"))) {
+      console.error("docu.json already exists. Aborting to avoid overwriting.");
+      process.exit(1);
+    }
+
+    cpSync(scaffoldDir, targetDir, { recursive: true });
+
+    const gitignoreSrc = join(targetDir, "gitignore");
+    if (existsSync(gitignoreSrc)) {
+      renameSync(gitignoreSrc, join(targetDir, ".gitignore"));
+    }
+
+    const pkgPath = join(targetDir, "package.json");
+    const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+    const flamePkg = JSON.parse(readFileSync(resolve(__dirname, "../package.json"), "utf-8"));
+    pkg.dependencies = pkg.dependencies || {};
+    pkg.dependencies["@docubook/flame"] = `^${flamePkg.version}`;
+    writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
+
+    console.log(`\n  ✓ Project scaffolded!\n\n  Next steps:\n    bun install\n    bun run dev\n`);
+    process.exit(0);
+  } catch (err) {
+    console.error(`Failed to scaffold project: ${err.message}`);
     process.exit(1);
   }
-
-  cpSync(scaffoldDir, targetDir, { recursive: true });
-
-  const pkgPath = join(targetDir, "package.json");
-  const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
-  const flamePkg = JSON.parse(
-    readFileSync(resolve(import.meta.dirname, "../package.json"), "utf-8")
-  );
-  pkg.dependencies["@docubook/flame"] = `^${flamePkg.version}`;
-  writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
-
-  console.log(`\n  ✓ Project scaffolded!\n\n  Next steps:\n    bun install\n    bun run dev\n`);
-  process.exit(0);
 }
 
 if (!(command in COMMAND_MAP)) {
@@ -62,5 +78,5 @@ if (!(command in COMMAND_MAP)) {
   process.exit(1);
 }
 
-const scriptPath = resolve(import.meta.dirname, "../.docu/lib", COMMAND_MAP[command]);
+const scriptPath = resolve(__dirname, "../.docu/lib", COMMAND_MAP[command]);
 await import(scriptPath);

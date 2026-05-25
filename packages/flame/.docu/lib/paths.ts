@@ -1,5 +1,6 @@
 import { resolve, join } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
+import type { DocuConfig } from "./types";
 
 /**
  * FRAMEWORK_ROOT: Where the package code lives (.docu/components, .docu/pages, .docu/styles, .docu/lib)
@@ -26,9 +27,9 @@ export const DOCS_ASSETS_DIR = join(PROJECT_ROOT, "docs/assets");
 export const DOCU_CONFIG_PATH = join(PROJECT_ROOT, "docu.json");
 
 // Config singleton
-let _config: Record<string, unknown> | null = null;
+let _config: DocuConfig | null = null;
 
-export function loadDocuConfig(): Record<string, unknown> {
+export function loadDocuConfig(): DocuConfig {
   if (_config) return _config;
   if (!existsSync(DOCU_CONFIG_PATH)) {
     throw new Error(`docu.json not found at ${DOCU_CONFIG_PATH}`);

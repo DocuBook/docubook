@@ -24,6 +24,7 @@ import { generateSearchIndex } from "./search-indexer";
 import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
 import { SECURITY_HEADERS, generateNonce, htmlResponse } from "./security";
+import { htmlShell as createHtmlShell } from "./html";
 
 const docuConfig = loadDocuConfig();
 
@@ -58,7 +59,7 @@ try {
 const hmrClients = new Set<ReadableStreamDefaultController>();
 
 function hmrScript(nonce: string): string {
-  return `<script nonce="${nonce}">
+  return `<script nonce="${Bun.escapeHTML(nonce)}">
 (function(){
   const es = new EventSource("/__hmr");
   es.onmessage = function(e) {
@@ -93,27 +94,6 @@ process.on("SIGTERM", () => {
   process.exit(0);
 });
 
-function htmlShell(title: string, description: string, body: string, nonce: string): string {
-  const favicon = docuConfig.meta?.favicon || "/favicon.ico";
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${Bun.escapeHTML(title)}</title>
-  <meta name="description" content="${Bun.escapeHTML(description)}">
-  <link rel="icon" type="image/x-icon" href="${Bun.escapeHTML(favicon)}">
-  <link rel="stylesheet" href="/assets/${assetManifest.css}">
-  <script nonce="${nonce}">try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>
-</head>
-<body>
-  <div id="root">${body}</div>
-  <script nonce="${nonce}" src="/assets/${assetManifest.js}"></script>
-  ${hmrScript(nonce)}
-</body>
-</html>`;
-}
-
 function createHtmlResponse(
   title: string,
   description: string,
@@ -121,7 +101,17 @@ function createHtmlResponse(
   status = 200
 ): Response {
   const nonce = generateNonce();
-  const html = htmlShell(title, description, body, nonce);
+  const favicon = docuConfig.meta?.favicon || "/favicon.ico";
+  const html = createHtmlShell({
+    title,
+    description,
+    body,
+    favicon,
+    css: assetManifest.css,
+    js: assetManifest.js,
+    nonce,
+    extraScripts: hmrScript(nonce),
+  });
   return htmlResponse(html, nonce, status);
 }
 
@@ -165,6 +155,8 @@ async function getDocsForSlug(slug: string) {
   });
   const content = React.createElement(MDXRemote, {
     compiledSource: serialized.compiledSource,
+    scope: {},
+    frontmatter: {},
     components,
   });
 

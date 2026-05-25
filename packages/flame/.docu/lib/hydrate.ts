@@ -70,7 +70,10 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
     throw new Error("Client bundle failed");
   }
 
-  const jsFile = result.outputs[0]?.path.split("/").pop() || "client.js";
+  if (!result.outputs[0]) {
+    throw new Error("Client bundle produced no output files");
+  }
+  const jsFile = result.outputs[0].path.split("/").pop()!;
   const tmpCss = join(ASSETS_DIR, "_tmp.css");
   const proc = Bun.spawn(
     [

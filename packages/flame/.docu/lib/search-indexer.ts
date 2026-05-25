@@ -200,7 +200,11 @@ async function scanMdxFiles(dir: string, base = ""): Promise<{ path: string; abs
       files.push(...(await scanMdxFiles(fullPath, relPath)));
     } else if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
       if (entry.name === "index.mdx" && !base) continue;
-      files.push({ path: relPath.replace(/\.(mdx|md)$/, ""), absPath: fullPath });
+      let path = relPath.replace(/\.(mdx|md)$/, "");
+      if (/\/index$/.test(path)) {
+        path = path.replace(/\/index$/, "");
+      }
+      files.push({ path, absPath: fullPath });
     }
   }
   return files;
@@ -212,13 +216,13 @@ export async function generateSearchIndex(docsDir?: string, outputDir?: string):
   await mkdir(dist, { recursive: true });
 
   const mdxFiles = await scanMdxFiles(docs);
-  const allRecords: SearchRecord[] = [];
-
-  for (const file of mdxFiles) {
-    const raw = await readFile(file.absPath, "utf-8");
-    const records = extractRecords(file.path, raw);
-    allRecords.push(...records);
-  }
+  const results = await Promise.all(
+    mdxFiles.map(async (file) => {
+      const raw = await readFile(file.absPath, "utf-8");
+      return extractRecords(file.path, raw);
+    })
+  );
+  const allRecords = results.flat();
 
   await writeFile(join(dist, "search-index.json"), JSON.stringify(allRecords));
   return allRecords.length;

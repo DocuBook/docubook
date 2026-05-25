@@ -15,43 +15,42 @@ function safeParseTocs(raw: string | undefined): TocItem[] {
   }
 }
 
+function mountIsland(id: string, render: (el: HTMLElement) => React.ReactElement) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const node = render(el);
+  if (el.childElementCount > 0) {
+    hydrateRoot(el, node);
+  } else {
+    createRoot(el).render(node);
+  }
+}
+
 function mountIslands() {
-  const sidebarEl = document.getElementById("sidebar-island");
-  if (sidebarEl) {
-    const tocs: TocItem[] = safeParseTocs(sidebarEl.dataset.tocs);
-    const title = sidebarEl.dataset.title || "";
-    const repoUrl = sidebarEl.dataset.repo || "";
-    const el = React.createElement(Sidebar, { tocs, title, repoUrl });
-    if (sidebarEl.childElementCount > 0) {
-      hydrateRoot(sidebarEl, el);
-    } else {
-      createRoot(sidebarEl).render(el);
-    }
-  }
+  mountIsland("sidebar-island", (el) => {
+    const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
+    return React.createElement(Sidebar, {
+      tocs,
+      title: el.dataset.title || "",
+      repoUrl: el.dataset.repo || "",
+    });
+  });
 
-  const mobileBarEl = document.getElementById("mobile-bar-island");
-  if (mobileBarEl) {
-    const tocs: TocItem[] = safeParseTocs(mobileBarEl.dataset.tocs);
-    const title = mobileBarEl.dataset.title || "";
-    const repoUrl = mobileBarEl.dataset.repo || "";
-    createRoot(mobileBarEl).render(React.createElement(MobileBar, { tocs, title, repoUrl }));
-  }
+  mountIsland("mobile-bar-island", (el) => {
+    const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
+    return React.createElement(MobileBar, {
+      tocs,
+      title: el.dataset.title || "",
+      repoUrl: el.dataset.repo || "",
+    });
+  });
 
-  const tocEl = document.getElementById("toc-island");
-  if (tocEl) {
-    const tocs: TocItem[] = safeParseTocs(tocEl.dataset.tocs);
-    const el = React.createElement(Toc, { tocs });
-    if (tocEl.childElementCount > 0) {
-      hydrateRoot(tocEl, el);
-    } else {
-      createRoot(tocEl).render(el);
-    }
-  }
+  mountIsland("toc-island", (el) => {
+    const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
+    return React.createElement(Toc, { tocs });
+  });
 
-  const themeEl = document.getElementById("theme-island");
-  if (themeEl) {
-    createRoot(themeEl).render(React.createElement(ThemeToggle));
-  }
+  mountIsland("theme-island", () => React.createElement(ThemeToggle));
 
   hydrateMdxContent();
 }
@@ -64,7 +63,9 @@ function hydrateMdxContent() {
   try {
     const compiledSource = JSON.parse(sourceEl.textContent || "");
     const components = createMdxComponents();
-    createRoot(island).render(React.createElement(MDXRemote, { compiledSource, components }));
+    createRoot(island).render(
+      React.createElement(MDXRemote, { compiledSource, scope: {}, frontmatter: {}, components })
+    );
   } catch (e) {
     console.error("[mdx-hydrate]", e);
   }

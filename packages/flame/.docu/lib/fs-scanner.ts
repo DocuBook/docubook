@@ -62,7 +62,7 @@ function scanDir(dirPath: string, docsRoot: string): FileNode[] {
   }
 
   for (const entry of entries) {
-    if (entry.startsWith(".")) continue;
+    if (entry.startsWith(".") || entry === "assets") continue;
 
     const absPath = join(dirPath, entry);
 
@@ -107,7 +107,7 @@ function fileNodesToRoutes(nodes: FileNode[], parentHref = ""): DocuRoute[] {
       if (isIndexFile) continue;
 
       const segment = node.relPath.split("/").pop()!;
-      const href = parentHref ? `/${segment}` : `/${node.relPath}`;
+      const href = parentHref ? `${parentHref}/${segment}` : `/${node.relPath}`;
 
       routes.push({
         title: toTitleCase(baseName),
@@ -116,10 +116,9 @@ function fileNodesToRoutes(nodes: FileNode[], parentHref = ""): DocuRoute[] {
     } else {
       const dirTitle = toTitleCase(node.name);
       const segment = node.relPath.split("/").pop()!;
-      const dirHref = parentHref ? `/${segment}` : `/${node.relPath}`;
+      const dirHref = parentHref ? `${parentHref}/${segment}` : `/${node.relPath}`;
 
-      const fullDirHref = parentHref ? `${parentHref}/${segment}` : `/${node.relPath}`;
-      const children = fileNodesToRoutes(node.children || [], fullDirHref);
+      const children = fileNodesToRoutes(node.children || [], dirHref);
 
       if (children.length === 0) continue;
 
