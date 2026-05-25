@@ -84,7 +84,34 @@ bun run deploy    # Build + prepare for GitHub Pages
 }
 ```
 
-When `routes` is empty, navigation is auto-generated from your `docs/` folder structure.
+### Routes
+
+When `routes` is an empty array `[]`, Flame automatically scans your `docs/` folder at build-time and generates the sidebar navigation from the directory structure. Folders become collapsible sections, and `.mdx`/`.md` files become links — sorted alphabetically.
+
+To define navigation manually, populate the `routes` array:
+
+```json
+{
+  "routes": [
+    {
+      "title": "Getting Started",
+      "href": "/getting-started",
+      "noLink": true,
+      "context": {
+        "icon": "BookOpen",
+        "title": "Guides",
+        "description": "Set up your Documentation"
+      },
+      "items": [
+        { "title": "Introduction", "href": "/introduction" },
+        { "title": "Installation", "href": "/installation" }
+      ]
+    }
+  ]
+}
+```
+
+> Manual routes take priority — if `routes` has entries, folder scanning is skipped entirely.
 
 ---
 
@@ -100,6 +127,30 @@ docs/
     ├── button.mdx               → /docs/components/button
     └── card.mdx                 → /docs/components/card
 ```
+
+---
+
+## Assets
+
+Place images and static files in `docs/assets/`. They are copied to the build output and accessible at `/docs/assets/`.
+
+```
+docs/
+├── assets/
+│   └── images/
+│       ├── logo.svg
+│       └── screenshot.png
+└── getting-started/
+    └── introduction.mdx
+```
+
+Reference in MDX:
+
+```mdx
+![Screenshot](/docs/assets/images/screenshot.png)
+```
+
+> The `docs/assets/` directory is excluded from route scanning — files inside it won't appear in the sidebar.
 
 ---
 

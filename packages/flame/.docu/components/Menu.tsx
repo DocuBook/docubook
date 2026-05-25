@@ -38,7 +38,14 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
     ? menuRoutes[0]?.href.replace(/^\/+|\/+$/, "")
     : getCurrentContext(currentPath);
 
-  const contextRoute = currentContext ? getContextRoute(currentContext, menuRoutes) : undefined;
+  const contextRoute =
+    isDocsRoot && menuRoutes[0]
+      ? currentContext
+        ? getContextRoute(currentContext, menuRoutes)
+        : menuRoutes[0]
+      : currentContext
+        ? getContextRoute(currentContext, menuRoutes)
+        : undefined;
 
   if (!contextRoute) return null;
 

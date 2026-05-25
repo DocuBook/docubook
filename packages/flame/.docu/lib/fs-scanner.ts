@@ -55,7 +55,7 @@ function scanDir(dirPath: string, docsRoot: string): FileNode[] {
 
   let entries: string[];
   try {
-    entries = readdirSync(dirPath);
+    entries = readdirSync(dirPath).sort();
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
     return nodes;
@@ -106,9 +106,8 @@ function fileNodesToRoutes(nodes: FileNode[], parentHref = ""): DocuRoute[] {
       const isIndexFile = /^(index|readme)$/i.test(baseName);
       if (isIndexFile) continue;
 
-      const href = parentHref
-        ? `${parentHref}/${node.relPath.split("/").pop()}`
-        : `/${node.relPath}`;
+      const segment = node.relPath.split("/").pop()!;
+      const href = parentHref ? `/${segment}` : `/${node.relPath}`;
 
       routes.push({
         title: toTitleCase(baseName),
@@ -116,11 +115,11 @@ function fileNodesToRoutes(nodes: FileNode[], parentHref = ""): DocuRoute[] {
       });
     } else {
       const dirTitle = toTitleCase(node.name);
-      const dirHref = parentHref
-        ? `${parentHref}/${node.relPath.split("/").pop()}`
-        : `/${node.relPath}`;
+      const segment = node.relPath.split("/").pop()!;
+      const dirHref = parentHref ? `/${segment}` : `/${node.relPath}`;
 
-      const children = fileNodesToRoutes(node.children || [], dirHref);
+      const fullDirHref = parentHref ? `${parentHref}/${segment}` : `/${node.relPath}`;
+      const children = fileNodesToRoutes(node.children || [], fullDirHref);
 
       if (children.length === 0) continue;
 
@@ -132,6 +131,9 @@ function fileNodesToRoutes(nodes: FileNode[], parentHref = ""): DocuRoute[] {
         routes.push({
           title: dirTitle,
           href: dirHref,
+          ...(parentHref === "" && {
+            context: { title: dirTitle, icon: "CircleHelp", description: dirTitle },
+          }),
           items: children,
         });
       } else {
@@ -139,6 +141,9 @@ function fileNodesToRoutes(nodes: FileNode[], parentHref = ""): DocuRoute[] {
           title: dirTitle,
           href: dirHref,
           noLink: true,
+          ...(parentHref === "" && {
+            context: { title: dirTitle, icon: "CircleHelp", description: dirTitle },
+          }),
           items: children,
         });
       }

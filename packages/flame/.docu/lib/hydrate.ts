@@ -1,6 +1,8 @@
 import { join } from "node:path";
 import { mkdir, readdir, unlink } from "node:fs/promises";
-import { ASSETS_DIR, LIB_DIR, STYLES_DIR, DOCU_CONFIG_PATH } from "./paths";
+import { ASSETS_DIR, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
+import { resolveRoutes } from "./fs-scanner";
+import type { DocuRoute } from "./types";
 
 async function cleanOldBundles() {
   try {
@@ -34,9 +36,18 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
       {
         name: "docu-config",
         setup(build) {
-          build.onResolve({ filter: /docu\.json$/ }, () => ({
-            path: DOCU_CONFIG_PATH,
+          build.onResolve({ filter: /docu\.json$/ }, (args) => ({
+            path: args.path,
+            namespace: "docu-config",
           }));
+          build.onLoad({ filter: /.*/, namespace: "docu-config" }, () => {
+            const config = loadDocuConfig();
+            const resolved = {
+              ...config,
+              routes: resolveRoutes(config.routes as DocuRoute[] | undefined),
+            };
+            return { contents: JSON.stringify(resolved), loader: "json" };
+          });
         },
       },
       {
