@@ -6,25 +6,27 @@ date: 2026-05-25
 
 DocuBook Flame includes pre-built MDX components you can use directly in your docs.
 
+> For full documentation and live examples, visit [docubook.pro/docs/components](https://www.docubook.pro/docs/components/accordion).
+
 ## Note
 
 Display messages with different severity levels.
 
-```jsx
-<Note type="info" title="Info">
-  General information for the user.
-</Note>
-
+```jsx:filename.mdx
 <Note type="tip" title="Tip">
-  A helpful suggestion.
+  This is a tip to suggests a helpful.
 </Note>
-
-<Note type="warning" title="Warning">
-  Something to be careful about.
+<Note type="info" title="Info">
+  This is a general note to convey information to the user.
 </Note>
-
 <Note type="danger" title="Danger">
-  A critical issue or breaking change.
+  This is a danger alert to notify the user of a critical issue.
+</Note>
+<Note type="warning">
+  This note uses default title and default icon from its type.
+</Note>
+<Note type="success" title="Success">
+  This is a success message to inform the user of successful actions.
 </Note>
 ```
 
@@ -32,28 +34,38 @@ Display messages with different severity levels.
 
 Organize content into switchable sections.
 
-```jsx
-<Tabs>
-  <Tab title="npm">
-    npm install @docubook/flame
+````jsx:filename.mdx
+<Tabs className="pt-5 pb-1">
+  <Tab title="Java">
+    ```java:HelloWorld.java
+    // HelloWorld.java
+    public class HelloWorld {
+        public static void main(String[] args) {
+            System.out.println("Hello, World!");
+        }
+    }
+    ```
   </Tab>
-  <Tab title="bun">
-    bun add @docubook/flame
+  <Tab title="TypeScript">
+    ```typescript:helloWorld.ts
+    // helloWorld.ts
+    function helloWorld(): void {
+        console.log("Hello, World!");
+    }
+    helloWorld();
+    ```
   </Tab>
 </Tabs>
-```
+````
 
 ## Card
 
 Display content in a compact card layout.
 
-```jsx
-<Card title="Getting Started" icon="BookOpen" href="/docs/getting-started">
-  Learn the basics of DocuBook Flame.
-</Card>
-
-<Card title="Horizontal" icon="Layout" horizontal>
-  A horizontal card layout.
+```jsx:filename.mdx
+<Card title="Card with Link and icon" icon="Link" href="/docs/components/card-group">
+  This is how you use a card with an icon and a link. Clicking on this card
+  brings you to the Card Group page.
 </Card>
 ```
 
@@ -61,59 +73,71 @@ Display content in a compact card layout.
 
 Group multiple cards in a grid.
 
-```jsx
-<CardGroup cols={2}>
-  <Card title="First" icon="Zap" href="/docs/first">
-    First card content.
+```jsx:filename.mdx
+<Cards cols={2}>
+  <Card title="Heading 1" icon="Heading1">
+    This is an example of card content with columns.
   </Card>
-  <Card title="Second" icon="Code" href="/docs/second">
-    Second card content.
+  <Card title="Heading 2" icon="Heading2">
+    This is an example of card content with columns.
   </Card>
-</CardGroup>
+  <Card title="Grid Card" icon="Grid" horizontal>
+      This is a horizontal card layout.
+  </Card>
+  <Card title="Horizontal Card" icon="Layout" horizontal>
+      This is a horizontal card layout.
+  </Card>
+</Cards>
 ```
 
 ## Accordion
 
-Collapsible content sections.
-
-```jsx
-<Accordion title="Click to expand">
-  Hidden content revealed on click.
-</Accordion>
-```
-
-## Accordion Group
-
-Group multiple accordions together.
-
-```jsx
+````markdown:filename.mdx
 <Accordions>
-  <Accordion title="Question 1">
-    Answer to question 1.
-  </Accordion>
-  <Accordion title="Question 2">
-    Answer to question 2.
-  </Accordion>
-</Accordions>
+<Accordion title="Basic Usage">
+    This accordion includes a [Lucide Icon](https://lucide.dev/icons/) because the `icon` prop is provided.
+</Accordion>
+
+<Accordion title="With icon props" icon="MousePointerClick">
+    This accordion includes a Lucide icon because the `icon` prop is provided.
+</Accordion>
+
+<Accordion title="With Code Block">
+    You can put other components inside Accordions.
+```jsx:helloword.jsx
+class HelloWorld {
+public static void main(String[] args) {
+        System.out.println("Hello, World!");
+        }
+}
 ```
+</Accordion>
+</Accordions>
+````
 
 ## Steps / Stepper
 
 Display step-by-step instructions.
 
-```jsx
+````jsx:filename.mdx
 <Steps>
-  <Step title="Install">
-    bun add @docubook/flame
+  <Step title="Step 1: Clone the DocuBook Repository">
+    ```bash
+    git clone https://github.com/DocuBook/docubook.git
+    ```
   </Step>
-  <Step title="Initialize">
-    bunx flame init
+  <Step title="Step 2: Access the Project Directory">
+    ```bash
+    cd docubook
+    ```
   </Step>
-  <Step title="Run">
-    bun run dev
+  <Step title="Step 3: Install Required Dependencies">
+    ```bash
+    pnpm install
+    ```
   </Step>
 </Steps>
-```
+````
 
 ## Button
 
@@ -166,58 +190,67 @@ serve({
 
 Responsive images with optional caption.
 
-```jsx
-<Image
-  src="/docs/assets/images/example.png"
-  alt="Example screenshot"
-  caption="An example image"
-/>
+```markdown:filename.mdx
+![Alt text for the image](https://via.placeholder.com/150)
 ```
 
 ## Link
 
 Styled links with external indicator.
 
-```jsx
-<Link href="https://bun.sh" external>
-  Bun Documentation
-</Link>
+```markdown:filename.mdx
+[Visit OpenAI](https://www.openai.com)
 ```
 
 ## Keyboard
 
 Display keyboard shortcuts.
 
-```jsx
-<Keyboard keys={["Cmd", "Shift", "P"]} />
+```tsx
+{/* Windows style (default) */}
+<Kbd show="ctrl" /> + <Kbd show="v" />
+
+{/* Mac style */}
+<Kbd show="cmd" type="mac" /> + <Kbd show="v" type="mac" />
 ```
+
+Renders as:
+- Windows: <Kbd show="ctrl" type="window" /> + <Kbd show="v" type="window" />
+- Mac: <Kbd show="cmd" type="mac" /> + <Kbd show="v" type="mac" />
 
 ## Tooltips
 
 Hover tooltips for inline content.
 
-```jsx
-<Tooltip content="This is a tooltip">
-  Hover me
-</Tooltip>
+```markdown:filename.mdx
+This a tooltip <Tooltip text="Hover me show on top" tip="npx @docubook/cli@latest" side="top" /> and <Tooltip text="Hover me show on bottom" tip="npx @docubook/cli@latest" side="bottom" /> thanks you.
 ```
 
 ## YouTube
 
 Embed YouTube videos.
 
-```jsx
-<YouTube id="dQw4w9WgXcQ" />
+```markdown:filename.mdx
+<Youtube videoId="OPM2t54T-Vo" />
 ```
+
+> Usage
+> for example the youtube URL show this https://www.youtube.com/watch?v=OPM2t54T-Vo 
+> the ID is `OPM2t54T-Vo`
 
 ## Release Note
 
 Display changelog entries.
 
-```jsx
-<ReleaseNote version="1.0.0" date="2025-01-01">
-  - Initial release
-  - Added core components
-  - MDX support
-</ReleaseNote>
+```markdown:filename.mdx
+<Release version="1.10.1" date="2025-05-24" title="Accessibility Improvements and Bug Fixes">
+  <Changes type="added">
+    - New feature to improve accessibility
+    - Keyboard navigation support for dialog components
+  </Changes>
+  <Changes type="fixed">
+    - Bug fix for mobile menu
+    - Fixed loading issues on documentation pages
+  </Changes>
+</Release>
 ```
