@@ -1,20 +1,20 @@
 import { readFile, writeFile, mkdir, readdir, copyFile, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { resolve, join, dirname } from "node:path";
+import { join, dirname } from "node:path";
 import React from "react";
 import { renderToString } from "react-dom/server";
+import { compileMdx, getGitLastModifiedBatch } from "./mdx";
 import {
-  serialize,
-  extractTocsFromRawMdx,
-  extractFrontmatterWithContent,
-  createDefaultRehypePlugins,
-  createDefaultRemarkPlugins,
-  MDXRemote,
-} from "@docubook/core";
-import { createMdxComponents } from "@docubook/mdx-content";
-import { getGitLastModified } from "./utils";
-import docuConfig from "../../docu.json" with { type: "json" };
+  DOCS_DIR,
+  DIST_DIR,
+  ASSETS_DIR,
+  CACHE_FILE,
+  DOCS_ASSETS_DIR,
+  PROJECT_ROOT,
+  loadDocuConfig,
+} from "./paths";
+import { htmlShell as createHtmlShell } from "./html";
 import { generateSearchIndex } from "./search-indexer";
 import { buildClientBundle } from "./hydrate";
 import { logger } from "./logger";
@@ -23,12 +23,9 @@ import type { BuildCache, CliArgs } from "./types";
 import DocsPage from "../pages/docs/[[...slug]]";
 import IndexPage from "../pages/index";
 import NotFoundPage from "../pages/404";
+import { DocsLayout } from "../components/DocsLayout";
 
-const DOCS_DIR = resolve("./docs");
-const DIST_DIR = resolve("./.docu/dist");
-const ASSETS_DIR = resolve("./.docu/dist/assets");
-const CACHE_FILE = resolve("./.docu/build-cache.json");
-const DOCS_ASSETS_DIR = resolve("./docs/assets");
+const docuConfig = loadDocuConfig();
 
 function parseArgs(): CliArgs {
   const args = process.argv.slice(2);
@@ -96,117 +93,33 @@ let assetManifest = { js: "client.js", css: "client.css" };
 
 function htmlShell(title: string, description: string, body: string): string {
   const favicon = docuConfig.meta?.favicon || "/favicon.ico";
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${Bun.escapeHTML(title)}</title>
-  <meta name="description" content="${Bun.escapeHTML(description)}">
-  <link rel="icon" type="image/x-icon" href="${Bun.escapeHTML(favicon)}">
-  <link rel="stylesheet" href="/assets/${assetManifest.css}">
-  <script>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>
-</head>
-<body>
-  <div id="root">${body}</div>
-  <script src="/assets/${assetManifest.js}"></script>
-</body>
-</html>`;
+  return createHtmlShell({
+    title,
+    description,
+    body,
+    favicon,
+    css: assetManifest.css,
+    js: assetManifest.js,
+  });
 }
 
-function DocsLayout({ children, repoUrl }: { children?: React.ReactNode; repoUrl?: string }) {
-  return React.createElement(
-    "div",
-    { className: "docs-layout flex flex-col min-h-screen w-full" },
-    React.createElement(
-      "div",
-      { className: "flex flex-1 items-start w-full" },
-      React.createElement("aside", {
-        id: "sidebar-island",
-        className:
-          "sticky top-0 hidden h-screen w-[280px] shrink-0 flex-col lg:flex border-r border-base-200 bg-base-100",
-        "data-tocs": "[]",
-        "data-title": "",
-        "data-repo": repoUrl || "",
-      }),
-      React.createElement(
-        "main",
-        { className: "flex-1 min-w-0 min-h-screen flex flex-col" },
-        React.createElement(
-          "div",
-          { className: "hidden lg:flex items-center justify-end gap-6 h-14 px-8" },
-          React.createElement(
-            "nav",
-            { className: "flex items-center gap-6 text-sm font-medium text-base-content/80" },
-            ...(docuConfig.navbar?.menu || []).map((item: { title: string; href: string }) => {
-              const isExternal = /^https?:\/\//.test(item.href);
-              const isDocsActive = item.href === "/docs";
-              return React.createElement(
-                "a",
-                {
-                  key: item.title,
-                  href: item.href,
-                  className: `flex items-center gap-1 hover:text-base-content transition-colors${isDocsActive ? " text-primary font-semibold" : ""}`,
-                  ...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {}),
-                },
-                item.title,
-                isExternal
-                  ? React.createElement(
-                      "svg",
-                      {
-                        xmlns: "http://www.w3.org/2000/svg",
-                        width: "14",
-                        height: "14",
-                        viewBox: "0 0 24 24",
-                        fill: "none",
-                        stroke: "currentColor",
-                        strokeWidth: "2",
-                        strokeLinecap: "round",
-                        strokeLinejoin: "round",
-                      },
-                      React.createElement("path", { d: "M7 7h10v10" }),
-                      React.createElement("path", { d: "M7 17 17 7" })
-                    )
-                  : null
-              );
-            })
-          )
-        ),
-        React.createElement("div", { className: "flex-1 w-full" }, children)
-      )
-    )
-  );
-}
-
-async function renderDocsPage(slug: string, rawMdx: string, filePath: string): Promise<string> {
-  const tocs = extractTocsFromRawMdx(rawMdx);
-  const { frontmatter, strippedContent } = extractFrontmatterWithContent<{
-    title?: string;
-    description?: string;
-    date?: string;
-  }>(rawMdx);
-
-  const components = createMdxComponents();
-  let compiledSource: string;
+async function renderDocsPage(
+  slug: string,
+  rawMdx: string,
+  filePath: string,
+  gitDates?: Map<string, string>
+): Promise<string> {
+  let result;
   try {
-    const serialized = await serialize(strippedContent, {
-      mdxOptions: {
-        rehypePlugins: createDefaultRehypePlugins(),
-        remarkPlugins: createDefaultRemarkPlugins(),
-      },
-    });
-    compiledSource = serialized.compiledSource;
+    result = await compileMdx(rawMdx, filePath, gitDates);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown MDX error";
     throw new Error(`MDX Error in: docs/${slug}.mdx\n${msg}`, { cause: err });
   }
 
-  const content = React.createElement(MDXRemote, { compiledSource, components });
-
-  const title = frontmatter.title || slug;
-  const description = frontmatter.description || "";
-  const date = frontmatter.date || (await getGitLastModified(filePath));
-  const slugParts = slug.split("/");
+  const title = result.frontmatter.title || slug || "Docs";
+  const description = result.frontmatter.description || "";
+  const slugParts = slug ? slug.split("/") : [];
 
   const page = React.createElement(
     DocsLayout,
@@ -215,12 +128,12 @@ async function renderDocsPage(slug: string, rawMdx: string, filePath: string): P
       slug: slugParts,
       title,
       description,
-      date: date || undefined,
-      content,
-      tocs,
+      date: result.frontmatter.date || undefined,
+      content: result.content,
+      tocs: result.tocs,
       filePath,
       repoUrl: docuConfig.repo?.url,
-      compiledSource,
+      compiledSource: result.compiledSource,
     })
   );
 
@@ -286,7 +199,20 @@ async function build() {
   logger.spinner.start("Building pages...");
   t = performance.now();
 
-  const CONCURRENCY = 10;
+  const allRelPaths = mdxFiles
+    .map((f) => {
+      const mdxPath1 = join(DOCS_DIR, f.path, "index.mdx");
+      const mdxPath2 = join(DOCS_DIR, `${f.path}.mdx`);
+      const mdxPath3 = join(DOCS_DIR, `${f.path}.md`);
+      for (const p of [mdxPath1, mdxPath2, mdxPath3]) {
+        if (existsSync(p)) return p.replace(PROJECT_ROOT + "/", "");
+      }
+      return null;
+    })
+    .filter((p): p is string => p !== null);
+  const gitDates = await getGitLastModifiedBatch(allRelPaths);
+
+  const CONCURRENCY = Math.max(1, parseInt(process.env.BUILD_CONCURRENCY || "10", 10) || 10);
   const buildTasks = [];
   const errors: string[] = [];
 
@@ -318,13 +244,13 @@ async function build() {
       continue;
     }
 
-    const relPath = absPath.replace(resolve("./"), "");
+    const relPath = absPath.replace(PROJECT_ROOT + "/", "");
     const capturedRawMdx = rawMdx;
     const capturedFile = file;
 
     buildTasks.push(async () => {
       try {
-        const html = await renderDocsPage(capturedFile.path, capturedRawMdx, relPath);
+        const html = await renderDocsPage(capturedFile.path, capturedRawMdx, relPath, gitDates);
         const outputPath = join(DIST_DIR, "docs", `${capturedFile.path}.html`);
         await mkdir(dirname(outputPath), { recursive: true });
         await writeFile(outputPath, html);
@@ -346,48 +272,18 @@ async function build() {
     await Promise.all(buildTasks.slice(i, i + CONCURRENCY).map((fn) => fn()));
   }
 
-  const indexMdxPath = join(DOCS_DIR, "index.mdx");
-  const indexRaw = await readFile(indexMdxPath, "utf-8");
-  const indexTocs = extractTocsFromRawMdx(indexRaw);
-  const { frontmatter: indexFm, strippedContent: indexStripped } = extractFrontmatterWithContent<{
-    title?: string;
-    description?: string;
-    date?: string;
-  }>(indexRaw);
-  const indexSerialized = await serialize(indexStripped, {
-    mdxOptions: {
-      rehypePlugins: createDefaultRehypePlugins(),
-      remarkPlugins: createDefaultRemarkPlugins(),
-    },
-  });
-  const indexContent = React.createElement(MDXRemote, {
-    compiledSource: indexSerialized.compiledSource,
-    components: createMdxComponents(),
-  });
-  const indexRelPath = indexMdxPath.replace(resolve("./"), "");
-  const indexDate = indexFm.date || (await getGitLastModified(indexRelPath)) || undefined;
-  const indexPageEl = React.createElement(
-    DocsLayout,
-    { repoUrl: docuConfig.repo?.url },
-    React.createElement(DocsPage, {
-      slug: [],
-      title: indexFm.title || "Docs",
-      description: indexFm.description || "",
-      date: indexDate,
-      content: indexContent,
-      tocs: indexTocs,
-      filePath: indexRelPath,
-      repoUrl: docuConfig.repo?.url,
-      compiledSource: indexSerialized.compiledSource,
-    })
-  );
-  const indexHtml = htmlShell(
-    indexFm.title || docuConfig.meta?.title || "DocuBook",
-    indexFm.description || docuConfig.meta?.description || "",
-    renderToString(indexPageEl)
-  );
-  await mkdir(join(DIST_DIR, "docs"), { recursive: true });
-  await writeFile(join(DIST_DIR, "docs", "index.html"), indexHtml);
+  try {
+    const indexMdxPath = join(DOCS_DIR, "index.mdx");
+    const indexRaw = await readFile(indexMdxPath, "utf-8");
+    const indexRelPath = indexMdxPath.replace(PROJECT_ROOT + "/", "");
+    const indexHtml = await renderDocsPage("", indexRaw, indexRelPath, gitDates);
+    await mkdir(join(DIST_DIR, "docs"), { recursive: true });
+    await writeFile(join(DIST_DIR, "docs", "index.html"), indexHtml);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    errors.push(`index.mdx: ${msg}`);
+    console.error(`\n\u274C Failed to build index: ${msg}\n`);
+  }
 
   const landingPage = React.createElement(IndexPage);
   const landingHtml = htmlShell(
@@ -417,12 +313,12 @@ async function build() {
   logger.routes();
   console.log("");
 
+  await writeCache(cache);
+
   if (errors.length > 0) {
     console.error(`\n\u274C Build completed with ${errors.length} error(s)\n`);
     process.exit(1);
   }
-
-  await writeCache(cache);
 }
 
 initSentry()

@@ -1,136 +1,17 @@
 "use client";
 
-import { cn } from "../../lib/utils";
+import { cn } from "../../../node/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useMemo, type ReactNode } from "react";
-
-type PaginationSize = "lg" | "md" | "sm" | "xs";
-type PaginationVariant = "default" | "square" | "rounded";
-
-interface PaginationRootProps {
-  children?: ReactNode;
-  className?: string;
-  size?: PaginationSize;
-  variant?: PaginationVariant;
-}
-
-interface PaginationItemProps {
-  children: ReactNode;
-  active?: boolean;
-  disabled?: boolean;
-  onClick?: () => void;
-  className?: string;
-  size?: PaginationSize;
-  variant?: PaginationVariant;
-  "aria-label"?: string;
-}
-
-interface PaginationRangeProps {
-  start: number;
-  end: number;
-  total: number;
-  current: number;
-  onPageChange: (page: number) => void;
-  siblingCount?: number;
-  className?: string;
-  size?: PaginationSize;
-  variant?: PaginationVariant;
-}
-
-interface PaginationButtonsProps {
-  page: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  className?: string;
-  size?: PaginationSize;
-  showFirstLast?: boolean;
-  showPrevNext?: boolean;
-  prevLabel?: string;
-  nextLabel?: string;
-  firstLabel?: string;
-  lastLabel?: string;
-  disabled?: boolean;
-}
-
-interface PaginationInfoProps {
-  current: number;
-  total: number;
-  pageSize?: number;
-  className?: string;
-  label?: string;
-  showTotal?: boolean;
-}
-
-interface PaginationFullProps {
-  current: number;
-  total: number;
-  pageSize?: number;
-  onPageChange: (page: number) => void;
-  siblingCount?: number;
-  className?: string;
-  size?: PaginationSize;
-  variant?: PaginationVariant;
-  showFirstLast?: boolean;
-  showPrevNext?: boolean;
-  infoClassName?: string;
-}
-
-interface PaginationDocsProps {
-  prev?: { href: string; title: string };
-  next?: { href: string; title: string };
-  className?: string;
-}
-
-function getPaginationRange({
-  totalCount,
-  pageSize,
-  siblingCount = 1,
-  currentPage,
-}: {
-  totalCount: number;
-  pageSize: number;
-  siblingCount?: number;
-  currentPage: number;
-}): (number | "ellipsis")[] {
-  const totalPages = Math.ceil(totalCount / pageSize);
-  const DOTS = "ellipsis" as const;
-
-  if (totalPages === 1) {
-    return [1];
-  }
-
-  const totalPageNumbers = siblingCount + 5;
-
-  if (totalPages < totalPageNumbers) {
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
-  }
-
-  const leftSiblingIndex = Math.max(currentPage - siblingCount, 1);
-  const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages);
-
-  const showLeftDots = leftSiblingIndex > 2;
-  const showRightDots = rightSiblingIndex < totalPages - 1;
-
-  if (!showLeftDots && showRightDots) {
-    const leftRange = Array.from({ length: 3 }, (_, i) => i + 1);
-    return [...leftRange, DOTS, totalPages - 1, totalPages];
-  }
-
-  if (showLeftDots && !showRightDots) {
-    const rightRange = Array.from({ length: 3 }, (_, i) => totalPages - 2 + i);
-    return [1, 2, DOTS, ...rightRange];
-  }
-
-  if (showLeftDots && showRightDots) {
-    const middleRange = Array.from(
-      { length: rightSiblingIndex - leftSiblingIndex + 1 },
-      (_, i) => leftSiblingIndex + i
-    );
-    return [1, 2, DOTS, ...middleRange, DOTS, totalPages - 1, totalPages];
-  }
-
-  return [1];
-}
+import { useMemo } from "react";
+import {
+  getPaginationRange,
+  type PaginationRootProps,
+  type PaginationItemProps,
+  type PaginationButtonsProps,
+  type PaginationRangeProps,
+  type PaginationInfoProps,
+  type PaginationFullProps,
+} from "./types";
 
 export function Pagination({
   children,
@@ -496,53 +377,3 @@ export function PaginationFull({
     </div>
   );
 }
-
-export function PaginationDocs({ prev, next, className }: PaginationDocsProps) {
-  return (
-    <div className={cn("grid grow grid-cols-1 gap-4 py-8 sm:grid-cols-2", className)}>
-      <div>
-        {prev && (
-          <a
-            href={prev.href}
-            className="btn btn-outline border-base-300 h-auto w-full flex-col items-start! py-2! pl-4 no-underline"
-          >
-            <span className="text-muted-foreground flex items-center text-xs">
-              <ChevronLeft className="mr-1 h-4 w-4" />
-              Previous
-            </span>
-            <span className="text-base-content mt-1 text-sm font-medium">{prev.title}</span>
-          </a>
-        )}
-      </div>
-
-      <div>
-        {next && (
-          <a
-            href={next.href}
-            className="btn btn-outline border-base-300 h-auto w-full flex-col items-end! py-2! pr-4 no-underline"
-          >
-            <span className="text-muted-foreground flex items-center text-xs">
-              Next
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </span>
-            <span className="text-base-content mt-1 text-sm font-medium">{next.title}</span>
-          </a>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export type {
-  PaginationRootProps as PaginationProps,
-  PaginationItemProps,
-  PaginationRangeProps,
-  PaginationButtonsProps,
-  PaginationInfoProps,
-  PaginationFullProps,
-  PaginationDocsProps,
-  PaginationSize,
-  PaginationVariant,
-};
-
-export { getPaginationRange };

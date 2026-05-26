@@ -1,6 +1,6 @@
 import { AnchorHTMLAttributes, ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { cn, isExternalUrl } from "../lib/utils";
+import { cn, isExternalUrl } from "../node/utils";
 
 export interface AnchorProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   href?: string;

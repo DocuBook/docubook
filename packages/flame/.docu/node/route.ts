@@ -1,7 +1,8 @@
-import docuConfig from "../../docu.json" with { type: "json" };
+import { loadDocuConfig } from "./paths";
 import type { DocuRoute } from "./types";
 import { resolveRoutes } from "./fs-scanner";
 
+const docuConfig = loadDocuConfig();
 export const routes: DocuRoute[] = resolveRoutes(docuConfig.routes);
 
 export function flattenRoutes(): string[] {

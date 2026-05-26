@@ -1,5 +1,7 @@
 import * as icons from "lucide-react";
-import docuConfig from "../../docu.json" with { type: "json" };
+import { loadDocuConfig } from "../node/paths";
+
+const docuConfig = loadDocuConfig();
 
 interface RouteContext {
   icon?: string;
@@ -21,7 +23,7 @@ export default function IndexPage() {
 
   return (
     <div className="bg-base-100 relative isolate min-h-screen overflow-hidden">
-      <div className="absolute top-4 right-4 z-10" id="theme-island" />
+      <div className="absolute right-4 top-4 z-10" id="theme-island" />
 
       {/* Background gradient blobs */}
       <div
@@ -40,10 +42,10 @@ export default function IndexPage() {
       {/* Hero */}
       <div className="mx-auto max-w-2xl py-32 sm:py-44">
         <div className="text-center">
-          <h1 className="text-5xl font-semibold tracking-tight text-balance sm:text-7xl">
+          <h1 className="text-balance text-5xl font-semibold tracking-tight sm:text-7xl">
             {meta.title}
           </h1>
-          <p className="text-muted-foreground mt-8 text-lg text-pretty sm:text-xl">
+          <p className="text-muted-foreground mt-8 text-pretty text-lg sm:text-xl">
             {meta.description}
           </p>
         </div>

@@ -7,10 +7,10 @@
 
 import { writeFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { resolve, join } from "node:path";
+import { join } from "node:path";
+import { DIST_DIR, PROJECT_ROOT } from "./paths";
 
-const DIST_DIR = resolve("./.docu/dist");
-const WORKFLOW_DIR = resolve("./.github/workflows");
+const WORKFLOW_DIR = join(PROJECT_ROOT, ".github/workflows");
 const WORKFLOW_FILE = join(WORKFLOW_DIR, "deploy.yml");
 
 async function deploy() {

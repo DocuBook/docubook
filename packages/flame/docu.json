@@ -1,5 +1,5 @@
 {
-  "$schema": "https://docubook.pro/docu.schema.json",
+  "$schema": "https://cdn.jsdelivr.net/npm/@docubook/flame/docu.schema.json",
   "meta": {
     "title": "DocuBook Flame",
     "description": "A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.",

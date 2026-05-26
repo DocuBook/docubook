@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
 import Anchor from "./Anchor";
-import { cn } from "../lib/utils";
+import { cn } from "../node/utils";
 import {
   Navbar as BaseNavbar,
   Logo as BaseLogo,

@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import docuConfig from "../../docu.json" with { type: "json" };
 import Sublink from "./Sublink";
-import type { DocuRoute } from "../lib/types";
-import { cn } from "../lib/utils";
+import type { DocuRoute } from "../node/types";
+import { cn } from "../node/utils";
 
 interface MenuProps {
   onNavigate?: () => void;
   className?: string;
+  pathname?: string;
+  routes?: DocuRoute[];
 }
 
 function getCurrentContext(path: string): string | undefined {
@@ -17,27 +18,34 @@ function getCurrentContext(path: string): string | undefined {
   return match ? match[1] : undefined;
 }
 
-function getContextRoute(contextPath: string): DocuRoute | undefined {
-  return docuConfig.routes?.find((route) => {
+function getContextRoute(contextPath: string, routeList: DocuRoute[]): DocuRoute | undefined {
+  return routeList.find((route) => {
     const normalizedHref = route.href.replace(/^\/+|\/+$/, "");
     return normalizedHref === contextPath;
   });
 }
 
-export default function Menu({ onNavigate, className = "" }: MenuProps) {
-  const [currentPath] = useState(() =>
-    typeof window !== "undefined" ? window.location.pathname : "/"
+export default function Menu({ onNavigate, className = "", pathname, routes = [] }: MenuProps) {
+  const menuRoutes = routes;
+  const [currentPath] = useState(
+    () => pathname || (typeof window !== "undefined" ? window.location.pathname : "/docs")
   );
-  const mounted = typeof window !== "undefined";
 
-  if (!mounted || !currentPath.startsWith("/docs")) return null;
+  if (!currentPath.startsWith("/docs")) return null;
 
   const isDocsRoot = currentPath === "/docs" || currentPath === "/docs/";
   const currentContext = isDocsRoot
-    ? docuConfig.routes?.[0]?.href.replace(/^\/+|\/+$/, "")
+    ? menuRoutes[0]?.href.replace(/^\/+|\/+$/, "")
     : getCurrentContext(currentPath);
 
-  const contextRoute = currentContext ? getContextRoute(currentContext) : undefined;
+  const contextRoute =
+    isDocsRoot && menuRoutes[0]
+      ? currentContext
+        ? getContextRoute(currentContext, menuRoutes)
+        : menuRoutes[0]
+      : currentContext
+        ? getContextRoute(currentContext, menuRoutes)
+        : undefined;
 
   if (!contextRoute) return null;
 

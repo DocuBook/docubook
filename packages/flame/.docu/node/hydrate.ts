@@ -1,7 +1,8 @@
-import { resolve, join } from "node:path";
+import { join } from "node:path";
 import { mkdir, readdir, unlink } from "node:fs/promises";
-
-const ASSETS_DIR = resolve("./.docu/dist/assets");
+import { ASSETS_DIR, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
+import { resolveRoutes } from "./fs-scanner";
+import type { DocuRoute } from "./types";
 
 async function cleanOldBundles() {
   try {
@@ -24,7 +25,7 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
 
   const nodeEnv = process.env.NODE_ENV || "development";
   const result = await Bun.build({
-    entrypoints: [resolve("./.docu/lib/client.ts")],
+    entrypoints: [join(LIB_DIR, "client.ts")],
     outdir: ASSETS_DIR,
     naming: "client-[hash].[ext]",
     target: "browser",
@@ -32,6 +33,23 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
     optimizeImports: ["lucide-react"],
     define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
     plugins: [
+      {
+        name: "docu-config",
+        setup(build) {
+          build.onResolve({ filter: /docu\.json$/ }, (args) => ({
+            path: args.path,
+            namespace: "docu-config",
+          }));
+          build.onLoad({ filter: /.*/, namespace: "docu-config" }, () => {
+            const config = loadDocuConfig();
+            const resolved = {
+              ...config,
+              routes: resolveRoutes(config.routes as DocuRoute[] | undefined),
+            };
+            return { contents: JSON.stringify(resolved), loader: "json" };
+          });
+        },
+      },
       {
         name: "mdx-jsx-runtime",
         setup(build) {
@@ -52,10 +70,22 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
     throw new Error("Client bundle failed");
   }
 
-  const jsFile = result.outputs[0]?.path.split("/").pop() || "client.js";
+  if (!result.outputs[0]) {
+    throw new Error("Client bundle produced no output files");
+  }
+  const jsFile = result.outputs[0].path.split("/").pop()!;
   const tmpCss = join(ASSETS_DIR, "_tmp.css");
   const proc = Bun.spawn(
-    ["bunx", "@tailwindcss/cli", "-i", ".docu/styles/globals.css", "-o", tmpCss, "--minify"],
+    [
+      "bun",
+      "x",
+      "@tailwindcss/cli",
+      "-i",
+      join(STYLES_DIR, "globals.css"),
+      "-o",
+      tmpCss,
+      "--minify",
+    ],
     { stdout: "ignore", stderr: "pipe" }
   );
   await proc.exited;

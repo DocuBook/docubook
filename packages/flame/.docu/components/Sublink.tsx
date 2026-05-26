@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import Anchor from "./Anchor";
-import type { DocuRoute } from "../lib/types";
-import { cn } from "../lib/utils";
+import type { DocuRoute } from "../node/types";
+import { cn } from "../node/utils";
 
 interface SublinkProps extends DocuRoute {
   level: number;
   onNavigate?: () => void;
   parentHref?: string;
+  pathname?: string;
 }
 
 export default function Sublink({
@@ -20,21 +21,21 @@ export default function Sublink({
   level,
   onNavigate,
   parentHref = "",
+  pathname: pathnameProp,
 }: SublinkProps) {
   const fullHref = parentHref ? `${parentHref}${href}` : `/docs${href}`;
+  const currentPathname =
+    pathnameProp || (typeof window !== "undefined" ? window.location.pathname : "/docs");
 
   const [isOpen, setIsOpen] = useState(() => {
     if (level === 0) return true;
-    if (typeof window === "undefined" || !items) return false;
-    const pathname = window.location.pathname;
-    return pathname.startsWith(fullHref) && pathname !== fullHref;
+    if (!items) return false;
+    return currentPathname.startsWith(fullHref) && currentPathname !== fullHref;
   });
 
   // Leaf node (no children)
   if (!items) {
-    const isActive =
-      typeof window !== "undefined" &&
-      (window.location.pathname === fullHref || window.location.pathname === `${fullHref}.html`);
+    const isActive = currentPathname === fullHref || currentPathname === `${fullHref}.html`;
 
     const link = (
       <Anchor
@@ -106,6 +107,7 @@ export default function Sublink({
               level={level + 1}
               onNavigate={onNavigate}
               parentHref={fullHref}
+              pathname={pathnameProp}
             />
           ))}
         </div>

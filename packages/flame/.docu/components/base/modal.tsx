@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, useRef, useCallback } from "react";
-import { cn } from "../../lib/utils";
+import { cn } from "../../node/utils";
 
 interface ModalProps extends React.DialogHTMLAttributes<HTMLDialogElement> {
   children: React.ReactNode;

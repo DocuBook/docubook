@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "../lib/utils";
+import { cn } from "../node/utils";
 import { Dropdown, DropdownItem } from "./base/dropdown";
-import { routes } from "../lib/route";
+import { routes } from "../node/client-routes";
 import { ChevronsUpDown, Check, type LucideIcon } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 

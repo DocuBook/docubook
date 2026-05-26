@@ -1,0 +1,35 @@
+{
+  "$schema": "https://cdn.jsdelivr.net/npm/@docubook/flame/docu.schema.json",
+  "meta": {
+    "title": "My Docs",
+    "description": "Documentation powered by DocuBook Flame",
+    "baseURL": "http://localhost:3000",
+    "favicon": "/docs/assets/images/favicon.ico"
+  },
+  "navbar": {
+    "logo": {
+      "src": "/docs/assets/images/docu.svg",
+      "alt": "DocuBook"
+    },
+    "logoText": "My Docs",
+    "menu": [
+      {
+        "title": "Home",
+        "href": "/"
+      },
+      {
+        "title": "Docs",
+        "href": "/docs"
+      }
+    ]
+  },
+  "footer": {
+    "social": []
+  },
+  "repo": {
+    "url": "",
+    "path": "blob/main/{filePath}",
+    "edit": false
+  },
+  "routes": []
+}

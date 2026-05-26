@@ -7,9 +7,10 @@
  * - LOG_FORMAT: json | pretty (default: pretty)
  */
 
-import docuConfig from "../../docu.json" with { type: "json" };
+import { loadDocuConfig } from "./paths";
 import pkg from "../../package.json" with { type: "json" };
 
+const docuConfig = loadDocuConfig();
 const isCI = !!(process.env.CI || process.env.NO_COLOR || !process.stdout.isTTY);
 const LOG_FORMAT = process.env.LOG_FORMAT || "pretty";
 const isJSON = LOG_FORMAT === "json";

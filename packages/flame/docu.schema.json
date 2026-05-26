@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DocuBook Configuration",
+  "description": "Configuration schema for docu.json used by @docubook/flame",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "meta": {
+      "type": "object",
+      "description": "Site metadata",
+      "properties": {
+        "title": { "type": "string", "description": "Site title" },
+        "description": { "type": "string", "description": "Site description" },
+        "baseURL": { "type": "string", "description": "Base URL for the site" },
+        "favicon": { "type": "string", "description": "Path to favicon" }
+      },
+      "required": ["title"]
+    },
+    "navbar": {
+      "type": "object",
+      "description": "Navigation bar configuration",
+      "properties": {
+        "logo": {
+          "type": "object",
+          "properties": {
+            "src": { "type": "string", "description": "Logo image path" },
+            "alt": { "type": "string", "description": "Logo alt text" }
+          }
+        },
+        "logoText": { "type": "string", "description": "Text displayed next to logo" },
+        "menu": {
+          "type": "array",
+          "description": "Top navigation menu items",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "href": { "type": "string" }
+            },
+            "required": ["title", "href"]
+          }
+        }
+      }
+    },
+    "footer": {
+      "type": "object",
+      "description": "Footer configuration",
+      "properties": {
+        "social": {
+          "type": "array",
+          "description": "Social media links",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Social platform name",
+                "enum": [
+                  "github",
+                  "gitlab",
+                  "bitbucket",
+                  "npm",
+                  "youtube",
+                  "twitter",
+                  "x",
+                  "instagram",
+                  "linkedin",
+                  "facebook",
+                  "telegram",
+                  "discord",
+                  "threads",
+                  "mastodon"
+                ]
+              },
+              "url": { "type": "string", "format": "uri" }
+            },
+            "required": ["name", "url"]
+          }
+        }
+      }
+    },
+    "repo": {
+      "type": "object",
+      "description": "Repository configuration for edit links",
+      "properties": {
+        "url": { "type": "string", "description": "Repository URL" },
+        "path": {
+          "type": "string",
+          "description": "Path template for edit links. Use {filePath} as placeholder."
+        },
+        "edit": { "type": "boolean", "description": "Enable edit link on pages" }
+      }
+    },
+    "routes": {
+      "type": "array",
+      "description": "Documentation navigation routes. Leave empty for auto-detection from docs/ folder.",
+      "items": { "$ref": "#/$defs/route" }
+    }
+  },
+  "$defs": {
+    "route": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Display title" },
+        "href": { "type": "string", "description": "URL path" },
+        "noLink": {
+          "type": "boolean",
+          "description": "If true, title is not clickable (section header only)"
+        },
+        "context": {
+          "type": "object",
+          "description": "Context metadata for sidebar section",
+          "properties": {
+            "icon": { "type": "string", "description": "Lucide icon name" },
+            "title": { "type": "string", "description": "Context switcher title" },
+            "description": { "type": "string", "description": "Context switcher description" }
+          }
+        },
+        "items": {
+          "type": "array",
+          "description": "Child routes",
+          "items": { "$ref": "#/$defs/route" }
+        }
+      },
+      "required": ["title", "href"]
+    }
+  }
+}

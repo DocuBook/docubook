@@ -1,8 +1,9 @@
 import { existsSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import { logger } from "./logger";
+import { DIST_DIR } from "./paths";
+import { getContentType } from "./utils";
 
-const DIST_DIR = resolve("./.docu/dist");
 const PORT = process.env.PORT || "4173";
 
 const SECURITY_HEADERS: Record<string, string> = {
@@ -21,24 +22,6 @@ if (!existsSync(DIST_DIR)) {
   logger.spinner.start("Checking build output...");
   logger.spinner.info("dist not found. Run \x1b[1mbun run build\x1b[0m first.");
   process.exit(0);
-}
-
-function getContentType(pathname: string): string {
-  const ext = pathname.split(".").pop()?.toLowerCase();
-  const types: Record<string, string> = {
-    html: "text/html",
-    css: "text/css",
-    js: "application/javascript",
-    json: "application/json",
-    png: "image/png",
-    jpg: "image/jpeg",
-    jpeg: "image/jpeg",
-    svg: "image/svg+xml",
-    ico: "image/x-icon",
-    woff: "font/woff",
-    woff2: "font/woff2",
-  };
-  return types[ext || ""] || "application/octet-stream";
 }
 
 function resolveFile(pathname: string): string | null {

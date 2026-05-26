@@ -1,0 +1,14 @@
+{
+  "name": "flame",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "flame dev",
+    "build": "flame build",
+    "preview": "flame preview",
+    "deploy": "flame deploy"
+  },
+  "dependencies": {
+    "@docubook/flame": "latest"
+  }
+}

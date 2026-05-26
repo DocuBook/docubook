@@ -13,7 +13,10 @@
 
 import { readFile, writeFile, readdir, mkdir } from "node:fs/promises";
 import { resolve, join } from "node:path";
-import docuConfig from "../../docu.json" with { type: "json" };
+import { extractFrontmatterWithContent } from "@docubook/core";
+import { DOCS_DIR, ASSETS_DIR, loadDocuConfig } from "./paths";
+
+const docuConfig = loadDocuConfig();
 
 export interface SearchRecord {
   url: string;
@@ -35,25 +38,6 @@ interface Frontmatter {
   description?: string;
 }
 
-function parseFrontmatter(raw: string): { frontmatter: Frontmatter; content: string } {
-  if (!raw.startsWith("---")) return { frontmatter: {}, content: raw };
-  const end = raw.indexOf("---", 3);
-  if (end < 0) return { frontmatter: {}, content: raw };
-
-  const fm: Frontmatter = {};
-  const lines = raw.slice(3, end).trim().split("\n");
-  for (const line of lines) {
-    const match = line.match(/^(\w+):\s*(.+)$/);
-    if (match) {
-      const [, key, value] = match;
-      if (key === "title" || key === "description") {
-        fm[key] = value.trim();
-      }
-    }
-  }
-  return { frontmatter: fm, content: raw.slice(end + 3) };
-}
-
 function getSectionTitle(filePath: string): string {
   const parts = filePath.split("/");
   if (parts.length > 1) {
@@ -73,7 +57,7 @@ function slugify(text: string): string {
 }
 
 function extractRecords(filePath: string, raw: string): SearchRecord[] {
-  const { frontmatter, content } = parseFrontmatter(raw);
+  const { frontmatter, strippedContent: content } = extractFrontmatterWithContent<Frontmatter>(raw);
   const records: SearchRecord[] = [];
   const url = `/docs/${filePath}`;
   const lvl0 = getSectionTitle(filePath);
@@ -198,25 +182,29 @@ async function scanMdxFiles(dir: string, base = ""): Promise<{ path: string; abs
       files.push(...(await scanMdxFiles(fullPath, relPath)));
     } else if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
       if (entry.name === "index.mdx" && !base) continue;
-      files.push({ path: relPath.replace(/\.(mdx|md)$/, ""), absPath: fullPath });
+      let path = relPath.replace(/\.(mdx|md)$/, "");
+      if (/\/index$/.test(path)) {
+        path = path.replace(/\/index$/, "");
+      }
+      files.push({ path, absPath: fullPath });
     }
   }
   return files;
 }
 
 export async function generateSearchIndex(docsDir?: string, outputDir?: string): Promise<number> {
-  const docs = resolve(docsDir || "./docs");
-  const dist = resolve(outputDir || "./.docu/dist/assets");
+  const docs = resolve(docsDir || DOCS_DIR);
+  const dist = resolve(outputDir || ASSETS_DIR);
   await mkdir(dist, { recursive: true });
 
   const mdxFiles = await scanMdxFiles(docs);
-  const allRecords: SearchRecord[] = [];
-
-  for (const file of mdxFiles) {
-    const raw = await readFile(file.absPath, "utf-8");
-    const records = extractRecords(file.path, raw);
-    allRecords.push(...records);
-  }
+  const results = await Promise.all(
+    mdxFiles.map(async (file) => {
+      const raw = await readFile(file.absPath, "utf-8");
+      return extractRecords(file.path, raw);
+    })
+  );
+  const allRecords = results.flat();
 
   await writeFile(join(dist, "search-index.json"), JSON.stringify(allRecords));
   return allRecords.length;

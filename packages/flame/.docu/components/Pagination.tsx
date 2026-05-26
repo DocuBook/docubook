@@ -1,6 +1,6 @@
 "use client";
 
-import { getPreviousNext } from "../lib/route";
+import { getPreviousNext } from "../node/route";
 import { PaginationDocs } from "./base/pagination";
 
 interface PaginationProps {

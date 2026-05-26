@@ -3,9 +3,10 @@ import DocsBreadcrumb from "../../components/Breadcrumb";
 import Pagination from "../../components/Pagination";
 import { Typography } from "../../components/Typography";
 import EditWith from "../../components/EditWith";
-import { formatDate2 } from "../../lib/utils";
-import type { TocItem } from "../../lib/types";
-import { Footer } from "@/.docu/components/Footer";
+import { formatDate2 } from "../../node/utils";
+import type { TocItem } from "../../node/types";
+import { Footer } from "../../components/Footer";
+import Toc from "../../components/Toc";
 
 interface DocsPageProps {
   slug: string[];
@@ -76,13 +77,15 @@ export default function DocsPage({
           </Typography>
         </div>
 
-        {/* Desktop TOC - island */}
+        {/* Desktop TOC - SSR rendered */}
         {tocs.length > 0 && (
           <div
             id="toc-island"
             data-tocs={tocsJson}
             className="sticky top-4 hidden h-[calc(100vh-8rem)] min-w-[240px] flex-[3] self-start lg:flex lg:px-4 lg:py-6"
-          />
+          >
+            <Toc tocs={tocs} />
+          </div>
         )}
       </div>
     </div>

@@ -1,0 +1,256 @@
+---
+title: Components
+description: Built-in MDX components available in DocuBook Flame.
+date: 2026-05-25
+---
+
+DocuBook Flame includes pre-built MDX components you can use directly in your docs.
+
+> For full documentation and live examples, visit [docubook.pro/docs/components](https://www.docubook.pro/docs/components/accordion).
+
+## Note
+
+Display messages with different severity levels.
+
+```jsx:filename.mdx
+<Note type="tip" title="Tip">
+  This is a tip to suggests a helpful.
+</Note>
+<Note type="info" title="Info">
+  This is a general note to convey information to the user.
+</Note>
+<Note type="danger" title="Danger">
+  This is a danger alert to notify the user of a critical issue.
+</Note>
+<Note type="warning">
+  This note uses default title and default icon from its type.
+</Note>
+<Note type="success" title="Success">
+  This is a success message to inform the user of successful actions.
+</Note>
+```
+
+## Tabs
+
+Organize content into switchable sections.
+
+````jsx:filename.mdx
+<Tabs className="pt-5 pb-1">
+  <Tab title="Java">
+    ```java:HelloWorld.java
+    // HelloWorld.java
+    public class HelloWorld {
+        public static void main(String[] args) {
+            System.out.println("Hello, World!");
+        }
+    }
+    ```
+  </Tab>
+  <Tab title="TypeScript">
+    ```typescript:helloWorld.ts
+    // helloWorld.ts
+    function helloWorld(): void {
+        console.log("Hello, World!");
+    }
+    helloWorld();
+    ```
+  </Tab>
+</Tabs>
+````
+
+## Card
+
+Display content in a compact card layout.
+
+```jsx:filename.mdx
+<Card title="Card with Link and icon" icon="Link" href="/docs/components/card-group">
+  This is how you use a card with an icon and a link. Clicking on this card
+  brings you to the Card Group page.
+</Card>
+```
+
+## Card Group
+
+Group multiple cards in a grid.
+
+```jsx:filename.mdx
+<Cards cols={2}>
+  <Card title="Heading 1" icon="Heading1">
+    This is an example of card content with columns.
+  </Card>
+  <Card title="Heading 2" icon="Heading2">
+    This is an example of card content with columns.
+  </Card>
+  <Card title="Grid Card" icon="Grid" horizontal>
+      This is a horizontal card layout.
+  </Card>
+  <Card title="Horizontal Card" icon="Layout" horizontal>
+      This is a horizontal card layout.
+  </Card>
+</Cards>
+```
+
+## Accordion
+
+````markdown:filename.mdx
+<Accordions>
+<Accordion title="Basic Usage">
+    This accordion includes a [Lucide Icon](https://lucide.dev/icons/) because the `icon` prop is provided.
+</Accordion>
+
+<Accordion title="With icon props" icon="MousePointerClick">
+    This accordion includes a Lucide icon because the `icon` prop is provided.
+</Accordion>
+
+<Accordion title="With Code Block">
+    You can put other components inside Accordions.
+```jsx:helloword.jsx
+class HelloWorld {
+public static void main(String[] args) {
+        System.out.println("Hello, World!");
+        }
+}
+```
+</Accordion>
+</Accordions>
+````
+
+## Steps / Stepper
+
+Display step-by-step instructions.
+
+````jsx:filename.mdx
+<Steps>
+  <Step title="Step 1: Clone the DocuBook Repository">
+    ```bash
+    git clone https://github.com/DocuBook/docubook.git
+    ```
+  </Step>
+  <Step title="Step 2: Access the Project Directory">
+    ```bash
+    cd docubook
+    ```
+  </Step>
+  <Step title="Step 3: Install Required Dependencies">
+    ```bash
+    pnpm install
+    ```
+  </Step>
+</Steps>
+````
+
+## Button
+
+Styled buttons with icons.
+
+```jsx
+<Button
+  text="Learn More"
+  href="https://example.com"
+  icon="MoveUpRight"
+  size="md"
+  variant="secondary"
+  target="_blank"
+/>
+```
+
+## File Tree
+
+Display hierarchical file structures.
+
+```jsx
+<Files>
+  <Folder name="src">
+    <File name="App.tsx" />
+    <File name="index.tsx" />
+    <Folder name="components">
+      <File name="Button.tsx" />
+    </Folder>
+  </Folder>
+  <File name="package.json" />
+</Files>
+```
+
+## Code Block
+
+Syntax-highlighted code with title and line highlighting.
+
+````jsx
+```ts:server.ts {3-5}
+import { serve } from "bun";
+
+serve({
+  port: 3000,
+  fetch: () => new Response("Hello!"),
+});
+```
+````
+
+## Image
+
+Responsive images with optional caption.
+
+```markdown:filename.mdx
+![Alt text for the image](https://via.placeholder.com/150)
+```
+
+## Link
+
+Styled links with external indicator.
+
+```markdown:filename.mdx
+[Visit OpenAI](https://www.openai.com)
+```
+
+## Keyboard
+
+Display keyboard shortcuts.
+
+```tsx
+{/* Windows style (default) */}
+<Kbd show="ctrl" /> + <Kbd show="v" />
+
+{/* Mac style */}
+<Kbd show="cmd" type="mac" /> + <Kbd show="v" type="mac" />
+```
+
+Renders as:
+- Windows: <Kbd show="ctrl" type="window" /> + <Kbd show="v" type="window" />
+- Mac: <Kbd show="cmd" type="mac" /> + <Kbd show="v" type="mac" />
+
+## Tooltips
+
+Hover tooltips for inline content.
+
+```markdown:filename.mdx
+This a tooltip <Tooltip text="Hover me show on top" tip="npx @docubook/cli@latest" side="top" /> and <Tooltip text="Hover me show on bottom" tip="npx @docubook/cli@latest" side="bottom" /> thanks you.
+```
+
+## YouTube
+
+Embed YouTube videos.
+
+```markdown:filename.mdx
+<Youtube videoId="OPM2t54T-Vo" />
+```
+
+> Usage
+> for example the youtube URL show this https://www.youtube.com/watch?v=OPM2t54T-Vo 
+> the ID is `OPM2t54T-Vo`
+
+## Release Note
+
+Display changelog entries.
+
+```markdown:filename.mdx
+<Release version="1.10.1" date="2025-05-24" title="Accessibility Improvements and Bug Fixes">
+  <Changes type="added">
+    - New feature to improve accessibility
+    - Keyboard navigation support for dialog components
+  </Changes>
+  <Changes type="fixed">
+    - Bug fix for mobile menu
+    - Fixed loading issues on documentation pages
+  </Changes>
+</Release>
+```
