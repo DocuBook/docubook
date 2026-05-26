@@ -5,16 +5,8 @@ import { createMdxComponents } from "@docubook/mdx-content";
 import Sidebar, { MobileBar } from "../components/Sidebar";
 import Toc from "../components/Toc";
 import { ThemeToggle } from "../components/Theme";
+import { safeParseTocs } from "./parse-tocs";
 import type { TocItem } from "./types";
-
-export function safeParseTocs(raw: string | undefined): TocItem[] {
-  try {
-    const parsed = JSON.parse(raw || "[]");
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
 
 function mountIsland(
   id: string,

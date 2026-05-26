@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { safeParseTocs } from "../node/client";
+import { safeParseTocs } from "../node/parse-tocs";
 
 describe("client hydration", () => {
   describe("safeParseTocs", () => {
