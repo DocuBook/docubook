@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import fs from "fs";
-import path from "path";
 
 vi.mock("prompts", () => ({ default: vi.fn() }));
 vi.mock("../utils/templateDetect.js", () => ({
