@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { join, dirname } from "node:path";
 import React from "react";
 import { renderToString } from "react-dom/server";
-import { compileMdx } from "./mdx";
+import { compileMdx, getGitLastModifiedBatch } from "./mdx";
 import {
   DOCS_DIR,
   DIST_DIR,
@@ -103,10 +103,15 @@ function htmlShell(title: string, description: string, body: string): string {
   });
 }
 
-async function renderDocsPage(slug: string, rawMdx: string, filePath: string): Promise<string> {
+async function renderDocsPage(
+  slug: string,
+  rawMdx: string,
+  filePath: string,
+  gitDates?: Map<string, string>
+): Promise<string> {
   let result;
   try {
-    result = await compileMdx(rawMdx, filePath);
+    result = await compileMdx(rawMdx, filePath, gitDates);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown MDX error";
     throw new Error(`MDX Error in: docs/${slug}.mdx\n${msg}`, { cause: err });
@@ -194,6 +199,19 @@ async function build() {
   logger.spinner.start("Building pages...");
   t = performance.now();
 
+  const allRelPaths = mdxFiles
+    .map((f) => {
+      const mdxPath1 = join(DOCS_DIR, f.path, "index.mdx");
+      const mdxPath2 = join(DOCS_DIR, `${f.path}.mdx`);
+      const mdxPath3 = join(DOCS_DIR, `${f.path}.md`);
+      for (const p of [mdxPath1, mdxPath2, mdxPath3]) {
+        if (existsSync(p)) return p.replace(PROJECT_ROOT + "/", "");
+      }
+      return null;
+    })
+    .filter((p): p is string => p !== null);
+  const gitDates = await getGitLastModifiedBatch(allRelPaths);
+
   const CONCURRENCY = Math.max(1, parseInt(process.env.BUILD_CONCURRENCY || "10", 10) || 10);
   const buildTasks = [];
   const errors: string[] = [];
@@ -232,7 +250,7 @@ async function build() {
 
     buildTasks.push(async () => {
       try {
-        const html = await renderDocsPage(capturedFile.path, capturedRawMdx, relPath);
+        const html = await renderDocsPage(capturedFile.path, capturedRawMdx, relPath, gitDates);
         const outputPath = join(DIST_DIR, "docs", `${capturedFile.path}.html`);
         await mkdir(dirname(outputPath), { recursive: true });
         await writeFile(outputPath, html);
@@ -258,7 +276,7 @@ async function build() {
     const indexMdxPath = join(DOCS_DIR, "index.mdx");
     const indexRaw = await readFile(indexMdxPath, "utf-8");
     const indexRelPath = indexMdxPath.replace(PROJECT_ROOT + "/", "");
-    const indexHtml = await renderDocsPage("", indexRaw, indexRelPath);
+    const indexHtml = await renderDocsPage("", indexRaw, indexRelPath, gitDates);
     await mkdir(join(DIST_DIR, "docs"), { recursive: true });
     await writeFile(join(DIST_DIR, "docs", "index.html"), indexHtml);
   } catch (err) {

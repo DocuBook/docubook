@@ -13,6 +13,7 @@
 
 import { readFile, writeFile, readdir, mkdir } from "node:fs/promises";
 import { resolve, join } from "node:path";
+import { extractFrontmatterWithContent } from "@docubook/core";
 import { DOCS_DIR, ASSETS_DIR, loadDocuConfig } from "./paths";
 
 const docuConfig = loadDocuConfig();
@@ -37,25 +38,6 @@ interface Frontmatter {
   description?: string;
 }
 
-function parseFrontmatter(raw: string): { frontmatter: Frontmatter; content: string } {
-  if (!raw.startsWith("---")) return { frontmatter: {}, content: raw };
-  const end = raw.indexOf("---", 3);
-  if (end < 0) return { frontmatter: {}, content: raw };
-
-  const fm: Frontmatter = {};
-  const lines = raw.slice(3, end).trim().split("\n");
-  for (const line of lines) {
-    const match = line.match(/^(\w+):\s*(.+)$/);
-    if (match) {
-      const [, key, value] = match;
-      if (key === "title" || key === "description") {
-        fm[key] = value.trim();
-      }
-    }
-  }
-  return { frontmatter: fm, content: raw.slice(end + 3) };
-}
-
 function getSectionTitle(filePath: string): string {
   const parts = filePath.split("/");
   if (parts.length > 1) {
@@ -75,7 +57,7 @@ function slugify(text: string): string {
 }
 
 function extractRecords(filePath: string, raw: string): SearchRecord[] {
-  const { frontmatter, content } = parseFrontmatter(raw);
+  const { frontmatter, strippedContent: content } = extractFrontmatterWithContent<Frontmatter>(raw);
   const records: SearchRecord[] = [];
   const url = `/docs/${filePath}`;
   const lvl0 = getSectionTitle(filePath);

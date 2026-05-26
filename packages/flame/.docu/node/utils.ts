@@ -33,6 +33,35 @@ export async function getGitLastModified(filePath: string): Promise<string | nul
   }
 }
 
+/** Batch git last modified dates for multiple files in a single spawn */
+export async function getGitLastModifiedBatch(filePaths: string[]): Promise<Map<string, string>> {
+  const result = new Map<string, string>();
+  if (filePaths.length === 0) return result;
+
+  try {
+    const proc = Bun.spawn(
+      ["git", "log", "--format=%cI", "--name-only", "--diff-filter=ACMR", ...filePaths],
+      { stderr: "ignore" }
+    );
+    const text = await new Response(proc.stdout).text();
+    let currentDate = "";
+
+    for (const line of text.split("\n")) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      if (/^\d{4}-\d{2}-\d{2}T/.test(trimmed)) {
+        currentDate = trimmed;
+      } else if (currentDate && !result.has(trimmed)) {
+        result.set(trimmed, currentDate);
+      }
+    }
+  } catch {
+    // fallback: return empty map, callers use frontmatter date
+  }
+
+  return result;
+}
+
 const MIME_TYPES: Record<string, string> = {
   html: "text/html",
   css: "text/css",

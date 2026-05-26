@@ -8,7 +8,9 @@ import {
   MDXRemote,
 } from "@docubook/core";
 import { createMdxComponents } from "@docubook/mdx-content";
-import { getGitLastModified } from "./utils";
+import { getGitLastModified, getGitLastModifiedBatch } from "./utils";
+
+export { getGitLastModifiedBatch };
 
 export interface MdxResult {
   content: React.ReactElement;
@@ -17,7 +19,11 @@ export interface MdxResult {
   tocs: ReturnType<typeof extractTocsFromRawMdx>;
 }
 
-export async function compileMdx(rawMdx: string, filePath: string): Promise<MdxResult> {
+export async function compileMdx(
+  rawMdx: string,
+  filePath: string,
+  gitDates?: Map<string, string>
+): Promise<MdxResult> {
   const tocs = extractTocsFromRawMdx(rawMdx);
   const { frontmatter, strippedContent } = extractFrontmatterWithContent<{
     title?: string;
@@ -40,7 +46,11 @@ export async function compileMdx(rawMdx: string, filePath: string): Promise<MdxR
     components,
   });
 
-  const date = frontmatter.date || (await getGitLastModified(filePath)) || undefined;
+  const date =
+    frontmatter.date ||
+    gitDates?.get(filePath) ||
+    (await getGitLastModified(filePath)) ||
+    undefined;
 
   return {
     content,
