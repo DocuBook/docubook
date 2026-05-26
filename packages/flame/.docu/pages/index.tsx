@@ -1,5 +1,5 @@
 import * as icons from "lucide-react";
-import { loadDocuConfig } from "../lib/paths";
+import { loadDocuConfig } from "../node/paths";
 
 const docuConfig = loadDocuConfig();
 

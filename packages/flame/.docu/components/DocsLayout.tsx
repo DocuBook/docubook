@@ -1,5 +1,5 @@
 import React from "react";
-import { loadDocuConfig } from "../lib/paths";
+import { loadDocuConfig } from "../node/paths";
 import Menu from "./Menu";
 
 const docuConfig = loadDocuConfig();

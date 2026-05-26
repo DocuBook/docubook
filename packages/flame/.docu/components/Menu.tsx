@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Sublink from "./Sublink";
-import type { DocuRoute } from "../lib/types";
-import { cn } from "../lib/utils";
+import type { DocuRoute } from "../node/types";
+import { cn } from "../node/utils";
 
 interface MenuProps {
   onNavigate?: () => void;

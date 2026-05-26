@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import Anchor from "./Anchor";
-import type { DocuRoute } from "../lib/types";
-import { cn } from "../lib/utils";
+import type { DocuRoute } from "../node/types";
+import { cn } from "../node/utils";
 
 interface SublinkProps extends DocuRoute {
   level: number;

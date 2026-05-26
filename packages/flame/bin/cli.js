@@ -78,5 +78,7 @@ if (!(command in COMMAND_MAP)) {
   process.exit(1);
 }
 
-const scriptPath = resolve(__dirname, "../.docu/lib", COMMAND_MAP[command]);
+const nodePath = resolve(__dirname, "../.docu/node", COMMAND_MAP[command]);
+const libPath = resolve(__dirname, "../.docu/lib", COMMAND_MAP[command]);
+const scriptPath = existsSync(nodePath) ? nodePath : libPath;
 await import(scriptPath);

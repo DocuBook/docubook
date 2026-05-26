@@ -4,16 +4,8 @@ import { resolve, join } from "node:path";
 import { watch } from "node:fs";
 import React from "react";
 import { renderToString } from "react-dom/server";
-import {
-  serialize,
-  extractTocsFromRawMdx,
-  extractFrontmatterWithContent,
-  createDefaultRehypePlugins,
-  createDefaultRemarkPlugins,
-  MDXRemote,
-} from "@docubook/core";
-import { createMdxComponents } from "@docubook/mdx-content";
-import { getGitLastModified, getContentType } from "./utils";
+import { getContentType } from "./utils";
+import { compileMdx } from "./mdx";
 import { DOCS_DIR, DIST_DIR, PAGES_DIR, PROJECT_ROOT, loadDocuConfig } from "./paths";
 import DocsPage from "../pages/docs/[[...slug]]";
 import NotFoundPage from "../pages/404";
@@ -139,34 +131,15 @@ async function getDocsForSlug(slug: string) {
     }
   }
   if (!filePath || !raw) return null;
-  const tocs = extractTocsFromRawMdx(raw);
-  const { frontmatter, strippedContent } = extractFrontmatterWithContent<{
-    title?: string;
-    description?: string;
-    date?: string;
-  }>(raw);
-
-  const components = createMdxComponents();
-  const serialized = await serialize(strippedContent, {
-    mdxOptions: {
-      rehypePlugins: createDefaultRehypePlugins(),
-      remarkPlugins: createDefaultRemarkPlugins(),
-    },
-  });
-  const content = React.createElement(MDXRemote, {
-    compiledSource: serialized.compiledSource,
-    scope: {},
-    frontmatter: {},
-    components,
-  });
 
   const relPath = filePath.replace(PROJECT_ROOT + "/", "");
-  const date = frontmatter.date || (await getGitLastModified(relPath)) || undefined;
+  const result = await compileMdx(raw, relPath);
+
   return {
-    content,
-    compiledSource: serialized.compiledSource,
-    frontmatter: { ...frontmatter, date },
-    tocs,
+    content: result.content,
+    compiledSource: result.compiledSource,
+    frontmatter: result.frontmatter,
+    tocs: result.tocs,
     filePath: relPath,
   };
 }

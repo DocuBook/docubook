@@ -1,6 +1,6 @@
 {
   "name": "@docubook/flame",
-  "version": "1.0.0-beta.60",
+  "version": "1.0.0-beta.70",
   "description": "A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.",
   "type": "module",
   "bin": {
@@ -25,14 +25,14 @@
     "bun": ">=1.1.0"
   },
   "scripts": {
-    "dev": "bun .docu/lib/server.ts",
-    "build": "NODE_ENV=production bun .docu/lib/build.ts",
-    "clean": "bun .docu/lib/clean.ts",
-    "preview": "bun .docu/lib/preview.ts",
-    "deploy": "bun .docu/lib/deploy.ts",
+    "dev": "bun .docu/node/server.ts",
+    "build": "NODE_ENV=production bun .docu/node/build.ts",
+    "clean": "bun .docu/node/clean.ts",
+    "preview": "bun .docu/node/preview.ts",
+    "deploy": "bun .docu/node/deploy.ts",
     "test": "vitest run",
     "lint": "eslint .",
-    "prepublishOnly": "bun .docu/lib/clean.ts && eslint . && vitest run"
+    "prepublishOnly": "bun .docu/node/clean.ts && eslint . && vitest run"
   },
   "keywords": [
     "docubook",

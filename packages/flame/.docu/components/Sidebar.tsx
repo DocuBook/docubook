@@ -10,14 +10,14 @@ import {
   FileText,
 } from "lucide-react";
 import { Dropdown, DropdownLink } from "./base/dropdown";
-import { cn } from "../lib/utils";
+import { cn } from "../node/utils";
 import { Context } from "./Context";
 import Menu from "./Menu";
 import { ThemeToggle } from "./Theme";
 import { GitHubLink } from "./Navbar";
 import Search from "./Search";
-import type { TocItem } from "../lib/types";
-import { config as docuConfig, routes } from "../lib/client-routes";
+import type { TocItem } from "../node/types";
+import { config as docuConfig, routes } from "../node/client-routes";
 
 interface SidebarProps {
   tocs?: TocItem[];

@@ -13,7 +13,7 @@ import {
   Delete,
   ArrowRightToLine,
 } from "lucide-react";
-import { cn } from "../../lib/utils";
+import { cn } from "../../node/utils";
 
 type KbdSize = "xs" | "sm" | "md" | "lg" | "xl";
 

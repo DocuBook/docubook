@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { scanDocsFolder } from "../lib/fs-scanner";
+import { scanDocsFolder } from "../node/fs-scanner";
 
 const TMP_DOCS = join(process.cwd(), ".tmp-test-docs");
 

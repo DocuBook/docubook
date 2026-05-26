@@ -23,7 +23,7 @@ describe("sentry", () => {
   });
 
   async function importSentry() {
-    return await import("../lib/sentry.ts");
+    return await import("../node/sentry.js");
   }
 
   describe("initSentry", () => {

@@ -2,9 +2,9 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { ListIcon } from "lucide-react";
-import { cn } from "../lib/utils";
+import { cn } from "../node/utils";
 import { ScrollTo } from "./ScrollTo";
-import { TocItem } from "../lib/types";
+import { TocItem } from "../node/types";
 
 interface TocProps {
   tocs: TocItem[];

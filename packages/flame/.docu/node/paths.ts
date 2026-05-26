@@ -3,18 +3,20 @@ import { existsSync, readFileSync } from "node:fs";
 import type { DocuConfig } from "./types";
 
 /**
- * FRAMEWORK_ROOT: Where the package code lives (.docu/components, .docu/pages, .docu/styles, .docu/lib)
+ * FRAMEWORK_ROOT: Where the package code lives (.docu/components, .docu/pages, .docu/styles, .docu/node)
  * PROJECT_ROOT: Where the user's project lives (docs/, docu.json)
  */
 
-// .docu/lib/paths.ts → package root is 2 levels up
+// .docu/node/paths.ts → package root is 2 levels up
 export const FRAMEWORK_ROOT = resolve(import.meta.dirname, "../..");
 export const PROJECT_ROOT = process.cwd();
 
 // Framework paths (internal)
 export const PAGES_DIR = join(FRAMEWORK_ROOT, ".docu/pages");
 export const STYLES_DIR = join(FRAMEWORK_ROOT, ".docu/styles");
-export const LIB_DIR = join(FRAMEWORK_ROOT, ".docu/lib");
+const nodeDir = join(FRAMEWORK_ROOT, ".docu/node");
+const libDir = join(FRAMEWORK_ROOT, ".docu/lib");
+export const LIB_DIR = existsSync(nodeDir) ? nodeDir : libDir;
 
 // Build output (user project)
 export const DIST_DIR = join(PROJECT_ROOT, ".docu/dist");

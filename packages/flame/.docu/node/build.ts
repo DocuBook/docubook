@@ -4,16 +4,7 @@ import { createHash } from "node:crypto";
 import { join, dirname } from "node:path";
 import React from "react";
 import { renderToString } from "react-dom/server";
-import {
-  serialize,
-  extractTocsFromRawMdx,
-  extractFrontmatterWithContent,
-  createDefaultRehypePlugins,
-  createDefaultRemarkPlugins,
-  MDXRemote,
-} from "@docubook/core";
-import { createMdxComponents } from "@docubook/mdx-content";
-import { getGitLastModified } from "./utils";
+import { compileMdx } from "./mdx";
 import {
   DOCS_DIR,
   DIST_DIR,
@@ -113,38 +104,16 @@ function htmlShell(title: string, description: string, body: string): string {
 }
 
 async function renderDocsPage(slug: string, rawMdx: string, filePath: string): Promise<string> {
-  const tocs = extractTocsFromRawMdx(rawMdx);
-  const { frontmatter, strippedContent } = extractFrontmatterWithContent<{
-    title?: string;
-    description?: string;
-    date?: string;
-  }>(rawMdx);
-
-  const components = createMdxComponents();
-  let compiledSource: string;
+  let result;
   try {
-    const serialized = await serialize(strippedContent, {
-      mdxOptions: {
-        rehypePlugins: createDefaultRehypePlugins(),
-        remarkPlugins: createDefaultRemarkPlugins(),
-      },
-    });
-    compiledSource = serialized.compiledSource;
+    result = await compileMdx(rawMdx, filePath);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown MDX error";
     throw new Error(`MDX Error in: docs/${slug}.mdx\n${msg}`, { cause: err });
   }
 
-  const content = React.createElement(MDXRemote, {
-    compiledSource,
-    scope: {},
-    frontmatter: {},
-    components,
-  });
-
-  const title = frontmatter.title || slug || "Docs";
-  const description = frontmatter.description || "";
-  const date = frontmatter.date || (await getGitLastModified(filePath));
+  const title = result.frontmatter.title || slug || "Docs";
+  const description = result.frontmatter.description || "";
   const slugParts = slug ? slug.split("/") : [];
 
   const page = React.createElement(
@@ -154,12 +123,12 @@ async function renderDocsPage(slug: string, rawMdx: string, filePath: string): P
       slug: slugParts,
       title,
       description,
-      date: date || undefined,
-      content,
-      tocs,
+      date: result.frontmatter.date || undefined,
+      content: result.content,
+      tocs: result.tocs,
       filePath,
       repoUrl: docuConfig.repo?.url,
-      compiledSource,
+      compiledSource: result.compiledSource,
     })
   );
 
@@ -225,7 +194,7 @@ async function build() {
   logger.spinner.start("Building pages...");
   t = performance.now();
 
-  const CONCURRENCY = parseInt(process.env.BUILD_CONCURRENCY || "10", 10);
+  const CONCURRENCY = Math.max(1, parseInt(process.env.BUILD_CONCURRENCY || "10", 10) || 10);
   const buildTasks = [];
   const errors: string[] = [];
 

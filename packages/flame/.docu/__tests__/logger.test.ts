@@ -25,7 +25,7 @@ describe("logger", () => {
     clearEnv(ENV_KEYS);
     setEnv({ CI: "1", ...env }); // CI=1 to disable spinner TTY logic
     vi.resetModules();
-    const mod = await import("../lib/logger.ts");
+    const mod = await import("../node/logger.js");
     return mod.logger;
   }
 

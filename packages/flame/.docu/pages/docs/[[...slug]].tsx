@@ -3,8 +3,8 @@ import DocsBreadcrumb from "../../components/Breadcrumb";
 import Pagination from "../../components/Pagination";
 import { Typography } from "../../components/Typography";
 import EditWith from "../../components/EditWith";
-import { formatDate2 } from "../../lib/utils";
-import type { TocItem } from "../../lib/types";
+import { formatDate2 } from "../../node/utils";
+import type { TocItem } from "../../node/types";
 import { Footer } from "../../components/Footer";
 import Toc from "../../components/Toc";
 

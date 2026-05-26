@@ -1,7 +1,7 @@
 "use client";
 
 import { type HTMLAttributes, type ReactNode, forwardRef, useRef, useEffect } from "react";
-import { cn } from "../../lib/utils";
+import { cn } from "../../node/utils";
 
 export interface DropdownProps extends HTMLAttributes<HTMLDetailsElement> {
   align?: "start" | "end";

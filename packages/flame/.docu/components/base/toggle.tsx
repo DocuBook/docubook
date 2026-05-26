@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "../../lib/utils";
+import { cn } from "../../node/utils";
 import type { InputHTMLAttributes, ReactNode } from "react";
 import { forwardRef, useState, useEffect } from "react";
 
