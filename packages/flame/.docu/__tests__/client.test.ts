@@ -1,13 +1,5 @@
 import { describe, it, expect } from "vitest";
-
-// Extracted from client.ts for testability
-function safeParseTocs(raw: string | undefined): { depth: number; text: string; id: string }[] {
-  try {
-    return JSON.parse(raw || "[]");
-  } catch {
-    return [];
-  }
-}
+import { safeParseTocs } from "../node/client";
 
 describe("client hydration", () => {
   describe("safeParseTocs", () => {
@@ -29,7 +21,7 @@ describe("client hydration", () => {
     });
 
     it("returns empty array for null-like string", () => {
-      expect(safeParseTocs("null")).toBeNull();
+      expect(safeParseTocs("null")).toEqual([]);
     });
   });
 });

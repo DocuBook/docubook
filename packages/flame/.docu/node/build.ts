@@ -83,7 +83,11 @@ async function findMdxFiles(dir: string, baseDir = ""): Promise<{ path: string; 
   return files;
 }
 
-function shouldRebuild(path: string, mtime: number, cache: BuildCache): boolean {
+export function parseConcurrency(): number {
+  return Math.max(1, parseInt(process.env.BUILD_CONCURRENCY || "10", 10) || 10);
+}
+
+export function shouldRebuild(path: string, mtime: number, cache: BuildCache): boolean {
   const cached = cache[path];
   if (!cached) return true;
   return mtime > cached.builtAt;
@@ -212,7 +216,7 @@ async function build() {
     .filter((p): p is string => p !== null);
   const gitDates = await getGitLastModifiedBatch(allRelPaths);
 
-  const CONCURRENCY = Math.max(1, parseInt(process.env.BUILD_CONCURRENCY || "10", 10) || 10);
+  const CONCURRENCY = parseConcurrency();
   const buildTasks = [];
   const errors: string[] = [];
 

@@ -7,9 +7,10 @@ import Toc from "../components/Toc";
 import { ThemeToggle } from "../components/Theme";
 import type { TocItem } from "./types";
 
-function safeParseTocs(raw: string | undefined): TocItem[] {
+export function safeParseTocs(raw: string | undefined): TocItem[] {
   try {
-    return JSON.parse(raw || "[]");
+    const parsed = JSON.parse(raw || "[]");
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }

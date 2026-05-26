@@ -16,7 +16,7 @@ import { generateSearchIndex } from "./search-indexer";
 import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
 import { SECURITY_HEADERS, generateNonce, htmlResponse } from "./security";
-import { htmlShell as createHtmlShell } from "./html";
+import { htmlShell as createHtmlShell, hmrScript } from "./html";
 
 const docuConfig = loadDocuConfig();
 
@@ -49,18 +49,6 @@ try {
 }
 
 const hmrClients = new Set<ReadableStreamDefaultController>();
-
-function hmrScript(nonce: string): string {
-  return `<script nonce="${Bun.escapeHTML(nonce)}">
-(function(){
-  const es = new EventSource("/__hmr");
-  es.onmessage = function(e) {
-    if (e.data === "reload") window.location.reload();
-  };
-  es.onerror = function() { es.close(); setTimeout(() => { window.location.reload(); }, 2000); };
-})();
-</script>`;
-}
 
 let hmrTimeout: ReturnType<typeof setTimeout> | null = null;
 const watcher = watch(DOCS_DIR, { recursive: true }, (_event, filename) => {

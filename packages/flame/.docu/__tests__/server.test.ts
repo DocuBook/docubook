@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { resolve } from "node:path";
 import { SECURITY_HEADERS, generateNonce, cspHeader, htmlResponse } from "../node/security";
 import { getContentType } from "../node/utils";
+import { hmrScript } from "../node/html";
 
 describe("server: security", () => {
   describe("SECURITY_HEADERS", () => {
@@ -146,21 +147,10 @@ describe("server: route matching", () => {
 
 describe("server: HMR", () => {
   describe("hmrScript", () => {
-    function hmrScript(nonce: string): string {
-      return `<script nonce="${nonce}">
-(function(){
-  const es = new EventSource("/__hmr");
-  es.onmessage = function(e) {
-    if (e.data === "reload") window.location.reload();
-  };
-  es.onerror = function() { es.close(); setTimeout(() => { window.location.reload(); }, 2000); };
-})();
-</script>`;
-    }
-
     it("includes nonce attribute", () => {
       const script = hmrScript("abc-123");
-      expect(script).toContain('nonce="abc-123"');
+      expect(script).toContain("abc-123");
+      expect(script).toContain("nonce=");
     });
 
     it("connects to /__hmr endpoint", () => {

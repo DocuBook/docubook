@@ -29,3 +29,15 @@ export function htmlShell(opts: HtmlShellOptions): string {
 </body>
 </html>`;
 }
+
+export function hmrScript(nonce: string): string {
+  return `<script nonce="${Bun.escapeHTML(nonce)}">
+(function(){
+  const es = new EventSource("/__hmr");
+  es.onmessage = function(e) {
+    if (e.data === "reload") window.location.reload();
+  };
+  es.onerror = function() { es.close(); setTimeout(() => { window.location.reload(); }, 2000); };
+})();
+</script>`;
+}

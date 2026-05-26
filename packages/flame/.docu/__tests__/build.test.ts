@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { parseConcurrency, shouldRebuild } from "../node/build";
 
 describe("build pipeline", () => {
   describe("BUILD_CONCURRENCY parsing", () => {
@@ -15,10 +16,6 @@ describe("build pipeline", () => {
         process.env.BUILD_CONCURRENCY = originalEnv;
       }
     });
-
-    function parseConcurrency(): number {
-      return Math.max(1, parseInt(process.env.BUILD_CONCURRENCY || "10", 10) || 10);
-    }
 
     it("defaults to 10 when env is unset", () => {
       delete process.env.BUILD_CONCURRENCY;
@@ -52,16 +49,6 @@ describe("build pipeline", () => {
   });
 
   describe("shouldRebuild logic", () => {
-    function shouldRebuild(
-      path: string,
-      mtime: number,
-      cache: Record<string, { builtAt: number }>
-    ): boolean {
-      const cached = cache[path];
-      if (!cached) return true;
-      return mtime > cached.builtAt;
-    }
-
     it("returns true when path is not in cache", () => {
       expect(shouldRebuild("docs/intro", 1000, {})).toBe(true);
     });
