@@ -26,6 +26,46 @@
         "types": "./dist/cn.d.cts",
         "default": "./dist/cn.cjs"
       }
+    },
+    "./input": {
+      "import": {
+        "types": "./dist/input/index.d.ts",
+        "default": "./dist/input/index.js"
+      },
+      "require": {
+        "types": "./dist/input/index.d.cts",
+        "default": "./dist/input/index.cjs"
+      }
+    },
+    "./kbd": {
+      "import": {
+        "types": "./dist/kbd/index.d.ts",
+        "default": "./dist/kbd/index.js"
+      },
+      "require": {
+        "types": "./dist/kbd/index.d.cts",
+        "default": "./dist/kbd/index.cjs"
+      }
+    },
+    "./toggle": {
+      "import": {
+        "types": "./dist/toggle/index.d.ts",
+        "default": "./dist/toggle/index.js"
+      },
+      "require": {
+        "types": "./dist/toggle/index.d.cts",
+        "default": "./dist/toggle/index.cjs"
+      }
+    },
+    "./dropdown": {
+      "import": {
+        "types": "./dist/dropdown/index.d.ts",
+        "default": "./dist/dropdown/index.js"
+      },
+      "require": {
+        "types": "./dist/dropdown/index.d.cts",
+        "default": "./dist/dropdown/index.cjs"
+      }
     }
   },
   "files": [
