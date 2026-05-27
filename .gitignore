@@ -7,6 +7,8 @@ node_modules
 .yarn/install-state.gz
 .pnp.cjs
 bun.lock
+skills-reference.mdx
+PLUGIN_DESIGN.md
 
 # Build outputs
 .next
