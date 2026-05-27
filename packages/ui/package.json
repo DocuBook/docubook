@@ -66,6 +66,46 @@
         "types": "./dist/dropdown/index.d.cts",
         "default": "./dist/dropdown/index.cjs"
       }
+    },
+    "./modal": {
+      "import": {
+        "types": "./dist/modal/index.d.ts",
+        "default": "./dist/modal/index.js"
+      },
+      "require": {
+        "types": "./dist/modal/index.d.cts",
+        "default": "./dist/modal/index.cjs"
+      }
+    },
+    "./drawer": {
+      "import": {
+        "types": "./dist/drawer/index.d.ts",
+        "default": "./dist/drawer/index.js"
+      },
+      "require": {
+        "types": "./dist/drawer/index.d.cts",
+        "default": "./dist/drawer/index.cjs"
+      }
+    },
+    "./collapse": {
+      "import": {
+        "types": "./dist/collapse/index.d.ts",
+        "default": "./dist/collapse/index.js"
+      },
+      "require": {
+        "types": "./dist/collapse/index.d.cts",
+        "default": "./dist/collapse/index.cjs"
+      }
+    },
+    "./theme-controller": {
+      "import": {
+        "types": "./dist/theme-controller/index.d.ts",
+        "default": "./dist/theme-controller/index.js"
+      },
+      "require": {
+        "types": "./dist/theme-controller/index.d.cts",
+        "default": "./dist/theme-controller/index.cjs"
+      }
     }
   },
   "files": [
