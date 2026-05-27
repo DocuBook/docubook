@@ -2,7 +2,11 @@
 
 > System architecture documentation for the DocuBook monorepo.
 
-## Documents
+## Consolidated Overview
+
+- [**ARCHITECTURE.md**](./ARCHITECTURE.md) — Full system architecture overview (purpose, components, data flow, ADRs, deployment, trade-offs)
+
+## Detailed Documents
 
 | Document | Description |
 |----------|-------------|
