@@ -106,6 +106,36 @@
         "types": "./dist/theme-controller/index.d.cts",
         "default": "./dist/theme-controller/index.cjs"
       }
+    },
+    "./navbar": {
+      "import": {
+        "types": "./dist/navbar/index.d.ts",
+        "default": "./dist/navbar/index.js"
+      },
+      "require": {
+        "types": "./dist/navbar/index.d.cts",
+        "default": "./dist/navbar/index.cjs"
+      }
+    },
+    "./breadcrumbs": {
+      "import": {
+        "types": "./dist/breadcrumbs/index.d.ts",
+        "default": "./dist/breadcrumbs/index.js"
+      },
+      "require": {
+        "types": "./dist/breadcrumbs/index.d.cts",
+        "default": "./dist/breadcrumbs/index.cjs"
+      }
+    },
+    "./pagination": {
+      "import": {
+        "types": "./dist/pagination/index.d.ts",
+        "default": "./dist/pagination/index.js"
+      },
+      "require": {
+        "types": "./dist/pagination/index.d.cts",
+        "default": "./dist/pagination/index.cjs"
+      }
     }
   },
   "files": [
