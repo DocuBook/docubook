@@ -71,9 +71,7 @@ const Toggle = forwardRef<HTMLInputElement, ToggleProps>(function Toggle(
     >
       <div className="flex items-center pt-0.5">{toggleEl}</div>
       <div className="flex flex-col gap-0.5">
-        {label && (
-          <span className={cn("text-base-content cursor-pointer", labelClassName)}>{label}</span>
-        )}
+        <span className={cn("text-base-content cursor-pointer", labelClassName)}>{label}</span>
         {description && (
           <span className={cn("text-base-content/60 text-sm", descriptionClassName)}>
             {description}
