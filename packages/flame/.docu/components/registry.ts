@@ -1,56 +1,39 @@
 import type { ComponentType } from "react";
 import { createMdxComponents } from "@docubook/mdx-content";
+import { Dropdown, DropdownItem, DropdownLink } from "@docubook/ui-react/dropdown";
 import {
-  Dropdown,
-  DropdownItem,
-  DropdownLink,
-  DropdownLabel,
-  DropdownDivider,
-} from "./base/dropdown";
-import {
-  Pagination,
   PaginationItem,
   PaginationButtons,
   PaginationRange,
   PaginationInfo,
   PaginationFull,
   PaginationDocs,
-} from "./base/pagination";
-import { Toggle, ToggleGroup } from "./base/toggle";
-import {
-  ThemeController,
-  ThemeControllerToggle,
-  ThemeControllerSelect,
-  ThemeControllerRadio,
-} from "./base/theme-controller";
+} from "@docubook/ui-react/pagination";
+import { Toggle, ToggleGroup } from "@docubook/ui-react/toggle";
+import { ThemeControllerToggle } from "@docubook/ui-react/theme-controller";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbPage,
-  BreadcrumbSeparator,
   BreadcrumbList,
-} from "./base/breadcrumbs";
-import Collapse, { Accordion } from "./base/collapse";
+} from "@docubook/ui-react/breadcrumbs";
+import { Collapse, Accordion } from "@docubook/ui-react/collapse";
 import {
   Drawer,
   useDrawerState,
   DrawerTrigger,
   DrawerContent,
   DrawerSidePanel,
-} from "./base/drawer";
-import { Input, InputGroup } from "./base/input";
-import { Kbd, FnKey } from "./base/kbd";
-import { Modal, ModalAction, useModal } from "./base/modal";
+} from "@docubook/ui-react/drawer";
+import { Input, InputGroup } from "@docubook/ui-react/input";
+import { Kbd, FnKey } from "@docubook/ui-react/kbd";
+import { Modal, useModal } from "@docubook/ui-react/modal";
 import {
   Navbar as BaseNavbar,
-  NavbarContainer,
   Logo as BaseLogo,
   NavMenu as BaseNavMenu,
   NavMenuLink,
-  NavToggle,
-  NavbarVersion,
-} from "./base/navbar";
+} from "@docubook/ui-react/navbar";
 import PaginationComp from "./Pagination";
 import Anchor from "./Anchor";
 import { Footer } from "./Footer";
@@ -71,9 +54,8 @@ import {
 import Search from "./Search";
 import Sidebar from "./Sidebar";
 
-export { Dropdown, DropdownItem, DropdownLink, DropdownLabel, DropdownDivider };
+export { Dropdown, DropdownItem, DropdownLink };
 export {
-  Pagination,
   PaginationItem,
   PaginationButtons,
   PaginationRange,
@@ -82,29 +64,14 @@ export {
   PaginationDocs,
 };
 export { Toggle, ToggleGroup };
-export { ThemeController, ThemeControllerToggle, ThemeControllerSelect, ThemeControllerRadio };
-export {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-  BreadcrumbList,
-};
+export { ThemeControllerToggle };
+export { Breadcrumb, BreadcrumbItem, BreadcrumbPage, BreadcrumbList };
 export { Collapse, Accordion };
 export { Drawer, useDrawerState, DrawerTrigger, DrawerContent, DrawerSidePanel };
 export { Input, InputGroup };
 export { Kbd, FnKey };
-export { Modal, ModalAction, useModal };
-export {
-  BaseNavbar,
-  NavbarContainer,
-  BaseLogo,
-  BaseNavMenu,
-  NavMenuLink,
-  NavToggle,
-  NavbarVersion,
-};
+export { Modal, useModal };
+export { BaseNavbar, BaseLogo, BaseNavMenu, NavMenuLink };
 export { Footer };
 export { ThemeToggle };
 export { Context };
@@ -122,11 +89,8 @@ const BASE_COMPONENTS = {
   Dropdown,
   DropdownItem,
   DropdownLink,
-  DropdownLabel,
-  DropdownDivider,
 
   // Pagination
-  Pagination,
   PaginationItem,
   PaginationButtons,
   PaginationRange,
@@ -139,17 +103,12 @@ const BASE_COMPONENTS = {
   ToggleGroup,
 
   // Theme
-  ThemeController,
   ThemeControllerToggle,
-  ThemeControllerSelect,
-  ThemeControllerRadio,
 
   // Breadcrumb
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbPage,
-  BreadcrumbSeparator,
   BreadcrumbList,
 
   // Accordion
@@ -173,17 +132,13 @@ const BASE_COMPONENTS = {
 
   // Modal
   Modal,
-  ModalAction,
   useModal,
 
   // Base Navbar
   BaseNavbar,
-  NavbarContainer,
   BaseLogo,
   BaseNavMenu,
   NavMenuLink,
-  NavToggle,
-  NavbarVersion,
 } as const;
 
 const APP_COMPONENTS = {

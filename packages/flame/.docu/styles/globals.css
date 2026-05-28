@@ -126,6 +126,14 @@
       background-color 0.2s ease,
       color 0.2s ease;
   }
+
+  /* Remove default summary marker from details elements */
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary::marker {
+    display: none;
+  }
 }
 
 /* Code block utilities */

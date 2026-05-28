@@ -1,0 +1,44 @@
+import { forwardRef } from "react";
+import { cn } from "../utils/cn";
+import type { Color, Size } from "../utils/types";
+
+type InputColor = Color;
+type InputSize = Size | "xl";
+
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  color?: InputColor;
+  inputSize?: InputSize;
+  ghost?: boolean;
+}
+
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+  ({ className, color, inputSize, ghost, ...props }, ref) => (
+    <input
+      ref={ref}
+      className={cn(
+        "input",
+        ghost && "input-ghost",
+        color && `input-${color}`,
+        inputSize && `input-${inputSize}`,
+        className
+      )}
+      {...props}
+    />
+  )
+);
+Input.displayName = "Input";
+
+interface InputGroupProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
+  children: React.ReactNode;
+}
+
+export const InputGroup = forwardRef<HTMLLabelElement, InputGroupProps>(
+  ({ children, className, ...props }, ref) => (
+    <label ref={ref} className={cn("input", className)} {...props}>
+      {children}
+    </label>
+  )
+);
+InputGroup.displayName = "InputGroup";
+
+export type { InputProps, InputGroupProps, InputColor, InputSize };

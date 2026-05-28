@@ -265,6 +265,9 @@ importers:
       "@docubook/mdx-content":
         specifier: workspace:^
         version: link:../mdx-content
+      "@docubook/ui-react":
+        specifier: workspace:^
+        version: link:../ui/react
       "@sentry/bun":
         specifier: ^9.0.0
         version: 9.47.1
@@ -370,7 +373,7 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/ui:
+  packages/ui/react:
     dependencies:
       daisyui:
         specifier: ">=5.0.0 <6.0.0"
@@ -11600,10 +11603,10 @@ snapshots:
 
   "@types/unist@3.0.3": {}
 
-  "@typescript-eslint/eslint-plugin@8.59.4(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)":
+  "@typescript-eslint/eslint-plugin@8.59.4(@typescript-eslint/parser@8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3))(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)":
     dependencies:
       "@eslint-community/regexpp": 4.12.2
-      "@typescript-eslint/parser": 8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+      "@typescript-eslint/parser": 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)
       "@typescript-eslint/scope-manager": 8.59.4
       "@typescript-eslint/type-utils": 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)
       "@typescript-eslint/utils": 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)
@@ -15251,7 +15254,7 @@ snapshots:
 
   typescript-eslint@8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3):
     dependencies:
-      "@typescript-eslint/eslint-plugin": 8.59.4(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)
+      "@typescript-eslint/eslint-plugin": 8.59.4(@typescript-eslint/parser@8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3))(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)
       "@typescript-eslint/parser": 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)
       "@typescript-eslint/typescript-estree": 8.59.4(typescript@5.9.3)
       "@typescript-eslint/utils": 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)

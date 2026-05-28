@@ -1,6 +1,7 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - "packages/ui/*"
 overrides:
   flatted: ">=3.4.2"
   postcss: ">=8.5.10"

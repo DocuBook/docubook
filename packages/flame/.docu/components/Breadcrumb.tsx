@@ -1,4 +1,9 @@
-import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "./base/breadcrumbs";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+} from "@docubook/ui-react/breadcrumbs";
 
 export interface DocsBreadcrumbProps {
   paths: string[];
