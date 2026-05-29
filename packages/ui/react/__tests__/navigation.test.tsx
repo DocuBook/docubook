@@ -49,6 +49,18 @@ describe("NavMenu", () => {
     render(<NavMenu items={items} activePath="/docs" />);
     expect(screen.getByText("Docs").className).toContain("active");
   });
+
+  it("marks nested child as active", () => {
+    const items = [{ title: "Docs", href: "/docs" }];
+    render(<NavMenu items={items} activePath="/docs/getting-started" />);
+    expect(screen.getByText("Docs").className).toContain("active");
+  });
+
+  it("does not mark false positive as active", () => {
+    const items = [{ title: "Docs", href: "/docs" }];
+    render(<NavMenu items={items} activePath="/docs-overview" />);
+    expect(screen.getByText("Docs").className).not.toContain("active");
+  });
 });
 
 describe("NavMenuLink", () => {

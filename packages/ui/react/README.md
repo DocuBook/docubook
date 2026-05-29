@@ -74,7 +74,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- | ------------------------- |
 | `Navbar`, `Logo`, `NavMenu`, `NavMenuLink`                                                                                           | `@docubook/ui-react/navbar`      | Navigation bar components |
 | `Breadcrumb`, `BreadcrumbItem`, `BreadcrumbPage`, `BreadcrumbList`                                                                   | `@docubook/ui-react/breadcrumbs` | Breadcrumb navigation     |
-| `PaginationItem`, `PaginationFull`, `PaginationDocs`, `PaginationButtons`, `PaginationRange`, `PaginationInfo`, `getPaginationRange` | `@docubook/ui-react/pagination`  | Page navigation utilities |
+| `PaginationDocs`                                                                                               | `@docubook/ui-react/pagination`  | Page navigation utilities |
 
 ### Utilities
 

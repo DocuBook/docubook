@@ -49,7 +49,7 @@ export function NavMenu({ items, activePath, className }: NavMenuProps) {
         const isActive = activePath
           ? item.href === "/"
             ? activePath === "/"
-            : activePath.startsWith(item.href)
+            : activePath === item.href || activePath.startsWith(item.href + "/")
           : false;
         return (
           <li key={item.href}>
