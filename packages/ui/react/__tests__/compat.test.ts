@@ -21,7 +21,6 @@ import {
   ThemeControllerToggle,
   Navbar,
   Breadcrumb,
-  getPaginationRange,
 } from "../src/index";
 
 // --- Per-component imports (tree-shaking, Vite/Astro pattern) ---
@@ -29,7 +28,7 @@ import { Modal as ModalDirect, useModal as useModalDirect } from "../src/base/mo
 import { Drawer as DrawerDirect } from "../src/base/drawer";
 import { ThemeControllerToggle as TCToggleDirect } from "../src/base/theme-controller";
 import { Navbar as NavbarDirect } from "../src/base/navbar";
-import { getPaginationRange as getRangeDirect } from "../src/base/pagination";
+import { PaginationDocs } from "../src/base/pagination";
 import { cn as cnDirect } from "../src/utils/cn";
 
 describe("Framework compatibility — barrel imports", () => {
@@ -55,9 +54,6 @@ describe("Framework compatibility — barrel imports", () => {
   });
   it("exports Navbar", () => expect(typeof Navbar).toBe("function"));
   it("exports Breadcrumb", () => expect(typeof Breadcrumb).toBe("function"));
-  it("exports getPaginationRange", () => {
-    expect(typeof getPaginationRange).toBe("function");
-  });
 });
 
 describe("Framework compatibility — per-component imports (Vite/Astro pattern)", () => {
@@ -71,24 +67,7 @@ describe("Framework compatibility — per-component imports (Vite/Astro pattern)
   });
   it("@docubook/ui/navbar resolves", () => expect(typeof NavbarDirect).toBe("function"));
   it("@docubook/ui/pagination resolves", () => {
-    expect(typeof getRangeDirect).toBe("function");
+    expect(typeof PaginationDocs).toBe("function");
   });
   it("@docubook/ui/cn resolves", () => expect(typeof cnDirect).toBe("function"));
-});
-
-describe("getPaginationRange edge cases", () => {
-  it("handles 1 page (totalCount <= pageSize)", () => {
-    const range = getPaginationRange({ currentPage: 1, totalCount: 5, pageSize: 10 });
-    expect(range).toEqual([1]);
-  });
-  it("handles large page count", () => {
-    const range = getPaginationRange({
-      currentPage: 50,
-      totalCount: 1000,
-      pageSize: 10,
-      siblingCount: 1,
-    });
-    expect(range.length).toBeGreaterThan(0);
-    expect(range).toContain(50);
-  });
 });

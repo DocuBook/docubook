@@ -37,22 +37,5 @@ export { Navbar, Logo, NavMenu, NavMenuLink } from "./base/navbar";
 export type { NavbarProps, LogoProps, NavMenuItem, NavMenuProps } from "./base/navbar";
 export { Breadcrumb, BreadcrumbItem, BreadcrumbPage, BreadcrumbList } from "./base/breadcrumbs";
 export type { BreadcrumbProps, BreadcrumbItemProps } from "./base/breadcrumbs";
-export {
-  PaginationItem,
-  PaginationFull,
-  PaginationDocs,
-  PaginationButtons,
-  PaginationRange,
-  PaginationInfo,
-  getPaginationRange,
-} from "./base/pagination";
-export type {
-  PaginationItemProps,
-  PaginationFullProps,
-  PaginationDocsProps,
-  PaginationButtonsProps,
-  PaginationRangeProps,
-  PaginationInfoProps,
-  PaginationSize,
-  PaginationVariant,
-} from "./base/pagination";
+export { PaginationDocs } from "./base/pagination";
+export type { PaginationDocsProps } from "./base/pagination";

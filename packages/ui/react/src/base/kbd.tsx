@@ -1,3 +1,4 @@
+"use client";
 import { forwardRef } from "react";
 import { cn } from "../utils/cn";
 import type { Size } from "../utils/types";

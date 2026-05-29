@@ -24,10 +24,4 @@ export default defineConfig({
   splitting: true,
   clean: true,
   external: ["react", "react-dom", "lucide-react"],
-  banner: ({ format }) => {
-    if (format === "esm") {
-      return { js: '"use client";' };
-    }
-    return {};
-  },
 });

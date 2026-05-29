@@ -1,6 +1,6 @@
 {
   "name": "@docubook/ui-react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "React + DaisyUI component library for documentation sites",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -196,5 +196,9 @@
     "docs framework",
     "ui",
     "tailwindcss"
-  ]
+  ],
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.6.1"
+  }
 }

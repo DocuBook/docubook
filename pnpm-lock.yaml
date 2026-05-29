@@ -375,12 +375,18 @@ importers:
 
   packages/ui/react:
     dependencies:
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
       daisyui:
         specifier: ">=5.0.0 <6.0.0"
         version: 5.5.20
       lucide-react:
         specifier: ">=1.0.0"
         version: 1.16.0(react@19.2.3)
+      tailwind-merge:
+        specifier: ^2.6.1
+        version: 2.6.1
       tailwindcss:
         specifier: ">=4.0.0"
         version: 4.3.0
@@ -11603,10 +11609,10 @@ snapshots:
 
   "@types/unist@3.0.3": {}
 
-  "@typescript-eslint/eslint-plugin@8.59.4(@typescript-eslint/parser@8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3))(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)":
+  "@typescript-eslint/eslint-plugin@8.59.4(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)":
     dependencies:
       "@eslint-community/regexpp": 4.12.2
-      "@typescript-eslint/parser": 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)
+      "@typescript-eslint/parser": 8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       "@typescript-eslint/scope-manager": 8.59.4
       "@typescript-eslint/type-utils": 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)
       "@typescript-eslint/utils": 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)
@@ -15254,7 +15260,7 @@ snapshots:
 
   typescript-eslint@8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3):
     dependencies:
-      "@typescript-eslint/eslint-plugin": 8.59.4(@typescript-eslint/parser@8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3))(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)
+      "@typescript-eslint/eslint-plugin": 8.59.4(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)
       "@typescript-eslint/parser": 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)
       "@typescript-eslint/typescript-estree": 8.59.4(typescript@5.9.3)
       "@typescript-eslint/utils": 8.59.4(eslint@10.4.0(jiti@2.7.0))(typescript@5.9.3)

@@ -7,7 +7,7 @@ import {
   BreadcrumbPage,
   BreadcrumbList,
 } from "../src/base/breadcrumbs";
-import { getPaginationRange, PaginationFull } from "../src/base/pagination";
+import { PaginationDocs } from "../src/base/pagination";
 
 describe("Navbar", () => {
   it("renders nav element", () => {
@@ -83,39 +83,6 @@ describe("Breadcrumbs", () => {
   });
 });
 
-describe("getPaginationRange", () => {
-  it("returns single page for small total", () => {
-    const range = getPaginationRange({ totalCount: 5, pageSize: 10, currentPage: 1 });
-    expect(range).toEqual([1]);
-  });
-
-  it("returns full range for few pages", () => {
-    const range = getPaginationRange({ totalCount: 30, pageSize: 10, currentPage: 1 });
-    expect(range).toEqual([1, 2, 3]);
-  });
-
-  it("includes ellipsis for many pages", () => {
-    const range = getPaginationRange({ totalCount: 100, pageSize: 10, currentPage: 5 });
-    expect(range).toContain("ellipsis");
-  });
-
-  it("shows correct range at start", () => {
-    const range = getPaginationRange({ totalCount: 100, pageSize: 10, currentPage: 1 });
-    expect(range[0]).toBe(1);
-    expect(range).toContain("ellipsis");
-  });
-});
-
-describe("PaginationFull", () => {
-  it("renders pagination buttons", () => {
-    render(<PaginationFull current={1} total={50} pageSize={10} onPageChange={() => {}} />);
-    expect(screen.getByText("1")).toBeDefined();
-    expect(screen.getByText("«")).toBeDefined();
-    expect(screen.getByText("»")).toBeDefined();
-  });
-
-  it("marks current page as active", () => {
-    render(<PaginationFull current={2} total={50} pageSize={10} onPageChange={() => {}} />);
-    expect(screen.getByText("2").className).toContain("btn-active");
-  });
+describe("PaginationDocs", () => {
+  it("is exported", () => expect(typeof PaginationDocs).toBe("function"));
 });

@@ -1,14 +1,7 @@
 import type { ComponentType } from "react";
 import { createMdxComponents } from "@docubook/mdx-content";
 import { Dropdown, DropdownItem, DropdownLink } from "@docubook/ui-react/dropdown";
-import {
-  PaginationItem,
-  PaginationButtons,
-  PaginationRange,
-  PaginationInfo,
-  PaginationFull,
-  PaginationDocs,
-} from "@docubook/ui-react/pagination";
+import { PaginationDocs } from "@docubook/ui-react/pagination";
 import { Toggle, ToggleGroup } from "@docubook/ui-react/toggle";
 import { ThemeControllerToggle } from "@docubook/ui-react/theme-controller";
 import {
@@ -55,14 +48,7 @@ import Search from "./Search";
 import Sidebar from "./Sidebar";
 
 export { Dropdown, DropdownItem, DropdownLink };
-export {
-  PaginationItem,
-  PaginationButtons,
-  PaginationRange,
-  PaginationInfo,
-  PaginationFull,
-  PaginationDocs,
-};
+export { PaginationDocs };
 export { Toggle, ToggleGroup };
 export { ThemeControllerToggle };
 export { Breadcrumb, BreadcrumbItem, BreadcrumbPage, BreadcrumbList };
@@ -91,11 +77,6 @@ const BASE_COMPONENTS = {
   DropdownLink,
 
   // Pagination
-  PaginationItem,
-  PaginationButtons,
-  PaginationRange,
-  PaginationInfo,
-  PaginationFull,
   PaginationDocs,
 
   // Toggle
