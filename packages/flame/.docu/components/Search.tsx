@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Search as SearchIcon, FileText, CornerDownLeft, Hash, AlignLeft } from "lucide-react";
-import { Modal, useModal } from "./base/modal";
-import { Kbd, FnKey } from "./base/kbd";
+import { Modal, useModal } from "@docubook/ui-react/modal";
+import { Kbd, FnKey } from "@docubook/ui-react/kbd";
 import { cn } from "../node/utils";
 import { search, type SearchResult } from "../node/search";
 import type { SearchRecord } from "../node/search-indexer";

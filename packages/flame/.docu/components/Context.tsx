@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "../node/utils";
-import { Dropdown, DropdownItem } from "./base/dropdown";
+import { Dropdown, DropdownItem } from "@docubook/ui-react/dropdown";
 import { routes } from "../node/client-routes";
 import { ChevronsUpDown, Check, type LucideIcon } from "lucide-react";
 import * as LucideIcons from "lucide-react";
@@ -51,6 +51,7 @@ export function Context({ className }: ContextProps) {
     <Dropdown
       className={cn("w-full", className)}
       align="start"
+      menuClassName="w-full"
       trigger={
         <div className="border-base-300 flex items-center justify-between rounded-lg border px-3 py-2 text-sm font-semibold">
           <div className="flex min-w-0 items-center gap-2">

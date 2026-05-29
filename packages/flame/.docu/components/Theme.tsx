@@ -1,7 +1,7 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
-import { ThemeControllerToggle } from "./base/theme-controller";
+import { ThemeControllerToggle } from "@docubook/ui-react/theme-controller";
 
 interface ThemeToggleProps {
   className?: string;

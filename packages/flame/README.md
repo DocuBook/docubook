@@ -16,12 +16,12 @@
 
 ```bash
 mkdir my-docs && cd my-docs
-bun add @docubook/flame@beta
+bun add @docubook/flame@rc
 bunx flame init
 bun run dev
 ```
 
-> 📦 **Lightweight** — ~57 kB packed, ~207 kB unpacked. No bloat, just fire.
+> **Lightweight** — 📦 ~57 kB packed, ~207 kB unpacked. No bloat, just fire.
 
 ## Features
 

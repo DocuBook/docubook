@@ -45,7 +45,8 @@
   "homepage": "https://docubook.pro/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DocuBook/docubook.git"
+    "url": "git+https://github.com/DocuBook/docubook.git",
+    "directory": "packages/flame"
   },
   "author": "wildan.nrs",
   "author-url": "https://wildan.dev",
@@ -53,6 +54,7 @@
   "dependencies": {
     "@docubook/core": "workspace:^",
     "@docubook/mdx-content": "workspace:^",
+    "@docubook/ui-react": "workspace:^",
     "@tailwindcss/cli": "4.3.0",
     "@tailwindcss/typography": "0.5.16",
     "bun-plugin-tailwind": "^0.1.2",

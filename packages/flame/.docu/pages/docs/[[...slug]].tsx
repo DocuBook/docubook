@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import DocsBreadcrumb from "../../components/Breadcrumb";
 import Pagination from "../../components/Pagination";
 import { Typography } from "../../components/Typography";
@@ -72,7 +73,11 @@ export default function DocsPage({
                 </p>
               )}
             </div>
-            <Pagination pathname={pathname} />
+            <Pagination
+              pathname={pathname}
+              prevIcon={<ChevronLeft className="h-3 w-3" />}
+              nextIcon={<ChevronRight className="h-3 w-3" />}
+            />
             <Footer />
           </Typography>
         </div>

@@ -9,7 +9,7 @@ import {
   PanelRightClose,
   FileText,
 } from "lucide-react";
-import { Dropdown, DropdownLink } from "./base/dropdown";
+import { Dropdown, DropdownLink } from "@docubook/ui-react/dropdown";
 import { cn } from "../node/utils";
 import { Context } from "./Context";
 import Menu from "./Menu";
@@ -132,6 +132,7 @@ export function MobileBar({
         <div className="flex items-center gap-1 p-2">
           <Dropdown
             align="start"
+            menuClassName="w-52 min-w-0"
             trigger={
               <span className="btn btn-ghost btn-sm btn-square">
                 <EllipsisVertical className="text-base-content/60 h-5 w-5" />

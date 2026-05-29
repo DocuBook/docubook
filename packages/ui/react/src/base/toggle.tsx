@@ -1,19 +1,12 @@
 "use client";
 
-import { cn } from "../../node/utils";
+import { cn } from "../utils/cn";
 import type { InputHTMLAttributes, ReactNode } from "react";
 import { forwardRef, useState, useEffect } from "react";
+import type { Color, Size } from "../utils/types";
 
-type ToggleColor =
-  | "primary"
-  | "secondary"
-  | "accent"
-  | "neutral"
-  | "success"
-  | "warning"
-  | "info"
-  | "error";
-type ToggleSize = "xs" | "sm" | "md" | "lg";
+type ToggleColor = Color;
+type ToggleSize = Size;
 
 interface ToggleProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "size"> {
   color?: ToggleColor;
@@ -45,23 +38,18 @@ const Toggle = forwardRef<HTMLInputElement, ToggleProps>(function Toggle(
   },
   ref
 ) {
-  const colorClass = `toggle-${color}`;
-  const sizeClass = `toggle-${size}`;
-
   useEffect(() => {
     if (indeterminate && ref) {
       const input = (ref as React.RefObject<HTMLInputElement>).current;
-      if (input) {
-        input.indeterminate = true;
-      }
+      if (input) input.indeterminate = true;
     }
   }, [ref, indeterminate]);
 
-  const toggleElement = (
+  const toggleEl = (
     <input
       ref={ref}
       type="checkbox"
-      className={cn(colorClass, sizeClass, className)}
+      className={cn(`toggle-${color}`, `toggle-${size}`, className)}
       disabled={disabled}
       checked={checked}
       defaultChecked={defaultChecked}
@@ -71,9 +59,7 @@ const Toggle = forwardRef<HTMLInputElement, ToggleProps>(function Toggle(
     />
   );
 
-  if (!label) {
-    return toggleElement;
-  }
+  if (!label) return toggleEl;
 
   return (
     <label
@@ -83,19 +69,15 @@ const Toggle = forwardRef<HTMLInputElement, ToggleProps>(function Toggle(
         containerClassName
       )}
     >
-      <div className="flex items-center pt-0.5">{toggleElement}</div>
-      {(label || description) && (
-        <div className="flex flex-col gap-0.5">
-          {label && (
-            <span className={cn("text-base-content cursor-pointer", labelClassName)}>{label}</span>
-          )}
-          {description && (
-            <span className={cn("text-base-content/60 text-sm", descriptionClassName)}>
-              {description}
-            </span>
-          )}
-        </div>
-      )}
+      <div className="flex items-center pt-0.5">{toggleEl}</div>
+      <div className="flex flex-col gap-0.5">
+        <span className={cn("text-base-content cursor-pointer", labelClassName)}>{label}</span>
+        {description && (
+          <span className={cn("text-base-content/60 text-sm", descriptionClassName)}>
+            {description}
+          </span>
+        )}
+      </div>
     </label>
   );
 });
@@ -134,36 +116,30 @@ export function ToggleGroup({
     const next = selectedValues.includes(itemValue)
       ? selectedValues.filter((v) => v !== itemValue)
       : [...selectedValues, itemValue];
-
-    if (!controlled) {
-      setInternalValue(next);
-    }
+    if (!controlled) setInternalValue(next);
     onChange?.(next);
   };
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      {items.map((item) => {
-        const isSelected = selectedValues.includes(item.value);
-        return (
-          <label
-            key={item.value}
-            className={cn(
-              "flex items-center gap-3",
-              item.disabled && "cursor-not-allowed opacity-50"
-            )}
-          >
-            <input
-              type="checkbox"
-              className={cn(`toggle-${color}`, `toggle-${size}`)}
-              checked={isSelected}
-              disabled={item.disabled}
-              onChange={() => !item.disabled && toggle(item.value)}
-            />
-            <span className="text-base-content cursor-pointer">{item.label}</span>
-          </label>
-        );
-      })}
+      {items.map((item) => (
+        <label
+          key={item.value}
+          className={cn(
+            "flex items-center gap-3",
+            item.disabled && "cursor-not-allowed opacity-50"
+          )}
+        >
+          <input
+            type="checkbox"
+            className={cn(`toggle-${color}`, `toggle-${size}`)}
+            checked={selectedValues.includes(item.value)}
+            disabled={item.disabled}
+            onChange={() => !item.disabled && toggle(item.value)}
+          />
+          <span className="text-base-content cursor-pointer">{item.label}</span>
+        </label>
+      ))}
     </div>
   );
 }

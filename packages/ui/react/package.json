@@ -1,0 +1,204 @@
+{
+  "name": "@docubook/ui-react",
+  "version": "0.1.1",
+  "description": "React + DaisyUI component library for documentation sites",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./cn": {
+      "import": {
+        "types": "./dist/cn.d.ts",
+        "default": "./dist/cn.js"
+      },
+      "require": {
+        "types": "./dist/cn.d.cts",
+        "default": "./dist/cn.cjs"
+      }
+    },
+    "./input": {
+      "import": {
+        "types": "./dist/input.d.ts",
+        "default": "./dist/input.js"
+      },
+      "require": {
+        "types": "./dist/input.d.cts",
+        "default": "./dist/input.cjs"
+      }
+    },
+    "./kbd": {
+      "import": {
+        "types": "./dist/kbd.d.ts",
+        "default": "./dist/kbd.js"
+      },
+      "require": {
+        "types": "./dist/kbd.d.cts",
+        "default": "./dist/kbd.cjs"
+      }
+    },
+    "./toggle": {
+      "import": {
+        "types": "./dist/toggle.d.ts",
+        "default": "./dist/toggle.js"
+      },
+      "require": {
+        "types": "./dist/toggle.d.cts",
+        "default": "./dist/toggle.cjs"
+      }
+    },
+    "./dropdown": {
+      "import": {
+        "types": "./dist/dropdown.d.ts",
+        "default": "./dist/dropdown.js"
+      },
+      "require": {
+        "types": "./dist/dropdown.d.cts",
+        "default": "./dist/dropdown.cjs"
+      }
+    },
+    "./modal": {
+      "import": {
+        "types": "./dist/modal.d.ts",
+        "default": "./dist/modal.js"
+      },
+      "require": {
+        "types": "./dist/modal.d.cts",
+        "default": "./dist/modal.cjs"
+      }
+    },
+    "./drawer": {
+      "import": {
+        "types": "./dist/drawer.d.ts",
+        "default": "./dist/drawer.js"
+      },
+      "require": {
+        "types": "./dist/drawer.d.cts",
+        "default": "./dist/drawer.cjs"
+      }
+    },
+    "./collapse": {
+      "import": {
+        "types": "./dist/collapse.d.ts",
+        "default": "./dist/collapse.js"
+      },
+      "require": {
+        "types": "./dist/collapse.d.cts",
+        "default": "./dist/collapse.cjs"
+      }
+    },
+    "./theme-controller": {
+      "import": {
+        "types": "./dist/theme-controller.d.ts",
+        "default": "./dist/theme-controller.js"
+      },
+      "require": {
+        "types": "./dist/theme-controller.d.cts",
+        "default": "./dist/theme-controller.cjs"
+      }
+    },
+    "./navbar": {
+      "import": {
+        "types": "./dist/navbar.d.ts",
+        "default": "./dist/navbar.js"
+      },
+      "require": {
+        "types": "./dist/navbar.d.cts",
+        "default": "./dist/navbar.cjs"
+      }
+    },
+    "./breadcrumbs": {
+      "import": {
+        "types": "./dist/breadcrumbs.d.ts",
+        "default": "./dist/breadcrumbs.js"
+      },
+      "require": {
+        "types": "./dist/breadcrumbs.d.cts",
+        "default": "./dist/breadcrumbs.cjs"
+      }
+    },
+    "./pagination": {
+      "import": {
+        "types": "./dist/pagination.d.ts",
+        "default": "./dist/pagination.js"
+      },
+      "require": {
+        "types": "./dist/pagination.d.cts",
+        "default": "./dist/pagination.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run lint && pnpm run typecheck && pnpm run test"
+  },
+  "peerDependencies": {
+    "daisyui": ">=5.0.0 <6.0.0",
+    "lucide-react": ">=1.0.0",
+    "react": ">=18.0.0",
+    "tailwindcss": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "lucide-react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@types/react": "^19.2.0",
+    "jsdom": "^26.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.6"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://docubook.pro/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DocuBook/docubook.git",
+    "directory": "packages/ui/react"
+  },
+  "author": "wildan.nrs",
+  "author-url": "https://wildan.dev",
+  "license": "MIT",
+  "keywords": [
+    "docubook",
+    "documentation",
+    "static-site",
+    "daisyui",
+    "bun",
+    "docs framework",
+    "ui",
+    "tailwindcss"
+  ],
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.6.1"
+  }
+}
