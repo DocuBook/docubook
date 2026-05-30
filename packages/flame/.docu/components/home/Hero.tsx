@@ -36,15 +36,17 @@ function ActionButton({ action }: { action: HeroAction }) {
 }
 
 export function Hero({ hero, className }: HeroProps) {
-  const { name, text, tagline, image, actions } = hero;
+  const { tagline, headline, description, image, actions } = hero;
 
   return (
     <div className={cn("mx-auto max-w-4xl px-6 py-32 sm:py-44", className)}>
       <div className="text-center">
-        {name && <p className="text-primary mb-4 text-lg font-semibold">{name}</p>}
-        <h1 className="text-balance text-5xl font-semibold tracking-tight sm:text-7xl">{text}</h1>
-        {tagline && (
-          <p className="text-muted-foreground mt-8 text-pretty text-lg sm:text-xl">{tagline}</p>
+        {tagline && <p className="text-primary mb-4 text-lg font-semibold">{tagline}</p>}
+        <h1 className="text-balance text-5xl font-semibold tracking-tight sm:text-7xl">
+          {headline}
+        </h1>
+        {description && (
+          <p className="text-muted-foreground mt-8 text-pretty text-lg sm:text-xl">{description}</p>
         )}
         {actions && actions.length > 0 && (
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">

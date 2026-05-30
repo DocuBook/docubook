@@ -8,9 +8,9 @@
   },
   "home": {
     "hero": {
-      "name": "DocuBook",
-      "text": "Flame",
-      "tagline": "A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.",
+      "tagline": "DocuBook",
+      "headline": "Flame",
+      "description": "A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.",
       "actions": [
         {
           "text": "Get Started",

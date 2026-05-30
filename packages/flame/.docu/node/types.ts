@@ -56,9 +56,9 @@ export interface HeroImage {
 }
 
 export interface Hero {
-  name?: string;
-  text: string;
   tagline?: string;
+  headline: string;
+  description?: string;
   image?: HeroImage;
   actions?: HeroAction[];
 }

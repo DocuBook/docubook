@@ -25,17 +25,41 @@ function FeatureCard({ feature }: FeatureCardProps) {
     <Wrapper
       {...wrapperProps}
       className={cn(
-        "border-base-200 bg-base-100 hover:border-primary/40 group rounded-2xl border p-6 transition-all hover:shadow-lg",
+        "border-primary/20 bg-primary/5 hover:border-primary/40 group relative overflow-hidden rounded-2xl border transition-all",
         feature.link && "cursor-pointer"
       )}
     >
-      {Icon && (
-        <div className="bg-primary/10 mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg">
-          <Icon className="text-primary h-6 w-6" />
-        </div>
-      )}
-      <h3 className="mb-2 text-lg font-semibold">{feature.title}</h3>
-      <p className="text-base-content/70 text-sm">{feature.description}</p>
+      {/* Grid pattern background */}
+      <svg className="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern
+            id={`grid-${feature.title}`}
+            width="40"
+            height="40"
+            patternUnits="userSpaceOnUse"
+          >
+            <path
+              d="M 40 0 L 0 0 0 40"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="0.5"
+              className="text-primary/15"
+            />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill={`url(#grid-${feature.title})`} />
+      </svg>
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center p-6 text-center">
+        {Icon && (
+          <div className="mb-4">
+            <Icon className="text-primary h-16 w-16" strokeWidth={1} />
+          </div>
+        )}
+        <h3 className="mb-2 text-lg font-semibold">{feature.title}</h3>
+        <p className="text-base-content/70 text-sm">{feature.description}</p>
+      </div>
     </Wrapper>
   );
 }

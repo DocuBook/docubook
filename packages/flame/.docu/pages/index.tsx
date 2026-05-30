@@ -35,8 +35,8 @@ export default function IndexPage() {
 
   // Use home.hero if configured, otherwise fallback to meta
   const hero = home?.hero || {
-    text: meta.title,
-    tagline: meta.description,
+    headline: meta.title,
+    description: meta.description,
   };
 
   return (

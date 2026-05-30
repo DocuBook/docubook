@@ -142,14 +142,14 @@
       "type": "object",
       "description": "Hero section configuration for home page",
       "properties": {
-        "name": {
-          "type": "string",
-          "description": "Name displayed above the main text (e.g., product name)"
-        },
-        "text": { "type": "string", "description": "Main heading text" },
         "tagline": {
           "type": "string",
-          "description": "Subheading text displayed below the main text"
+          "description": "Tagline displayed above the headline (e.g., product name)"
+        },
+        "headline": { "type": "string", "description": "Main heading text" },
+        "description": {
+          "type": "string",
+          "description": "Description text displayed below the headline"
         },
         "image": { "$ref": "#/$defs/heroImage" },
         "actions": {
@@ -158,7 +158,7 @@
           "items": { "$ref": "#/$defs/heroAction" }
         }
       },
-      "required": ["text"]
+      "required": ["headline"]
     },
     "heroImage": {
       "type": "object",
