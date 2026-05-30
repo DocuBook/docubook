@@ -141,7 +141,11 @@ export function MobileBar({
             }
           >
             {(docuConfig.navbar?.menu || []).map((item) => (
-              <li key={item.href} className="text-base-content/80 hover:text-base-content">
+              <li
+                key={item.href}
+                role="menuitem"
+                className="text-base-content/80 hover:text-base-content hover:bg-base-200 cursor-pointer"
+              >
                 <Anchor
                   href={item.href}
                   activeWhen={(path: string) =>
