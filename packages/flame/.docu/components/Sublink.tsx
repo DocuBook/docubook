@@ -64,7 +64,7 @@ export default function Sublink({
 
   // Section with children
   return (
-    <div className={cn("flex flex-col", level === 1 && "pl-4")}>
+    <div className={cn("flex flex-col", level === 1 && "pl-2")}>
       {/* Section header */}
       <button
         type="button"
