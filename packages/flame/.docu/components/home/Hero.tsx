@@ -3,16 +3,27 @@
 import * as icons from "lucide-react";
 import type { Hero as HeroType, HeroAction } from "../../node/types";
 import { cn } from "../../node/utils";
+import { getSocialIcon } from "../Social";
 
 interface HeroProps {
   hero: HeroType;
   className?: string;
 }
 
+function getIconComponent(iconName: string) {
+  // First try lucide icons
+  const lucideIcon = (icons as unknown as Record<string, icons.LucideIcon>)[iconName];
+  if (lucideIcon) return lucideIcon;
+
+  // Then try social icons
+  const socialIcon = getSocialIcon(iconName);
+  if (socialIcon) return socialIcon;
+
+  return null;
+}
+
 function ActionButton({ action }: { action: HeroAction }) {
-  const Icon = action.icon
-    ? (icons as unknown as Record<string, icons.LucideIcon>)[action.icon]
-    : null;
+  const Icon = action.icon ? getIconComponent(action.icon) : null;
 
   const themeClasses = {
     primary: "bg-primary text-primary-content hover:bg-primary/90",

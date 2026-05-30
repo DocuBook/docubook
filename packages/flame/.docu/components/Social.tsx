@@ -79,7 +79,7 @@ const iconMap: Record<string, ReturnType<typeof createIcon>> = {
   mastodon: MastodonIcon,
 };
 
-function getIcon(name: string) {
+export function getSocialIcon(name: string) {
   const key = name.toLowerCase().replace(/\s+/g, "");
   return iconMap[key] || null;
 }
@@ -92,7 +92,7 @@ export default function Social({ className = "", size = 16 }: SocialProps) {
   return (
     <div className={`flex gap-1 ${className}`}>
       {socialLinks.map((link) => {
-        const Icon = getIcon(link.name);
+        const Icon = getSocialIcon(link.name);
         return (
           <a
             key={link.name}
