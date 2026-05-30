@@ -60,7 +60,7 @@ function FeatureCard({ feature }: FeatureCardProps) {
           </div>
         )}
         <h3 className="mb-2 text-lg font-semibold">{feature.title}</h3>
-        <p className="text-base-content/70 text-sm">{feature.description}</p>
+        <p className="text-muted-foreground text-sm">{feature.description}</p>
       </div>
     </Wrapper>
   );

@@ -8,13 +8,13 @@
   },
   "home": {
     "hero": {
-      "tagline": "DocuBook",
+      "tagline": "#DocuBook",
       "headline": "Flame",
       "description": "A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.",
       "actions": [
         {
           "text": "Get Started",
-          "link": "/docs/getting-started",
+          "link": "/docs/getting-started/introduction",
           "theme": "primary"
         },
         {
@@ -30,7 +30,7 @@
         "icon": "Zap",
         "title": "Lightning Fast",
         "description": "Powered by Bun for instant builds and hot module replacement.",
-        "link": "/docs/getting-started"
+        "link": "/docs"
       },
       {
         "icon": "Paintbrush",

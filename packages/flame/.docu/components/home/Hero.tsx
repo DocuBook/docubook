@@ -22,6 +22,10 @@ function getIconComponent(iconName: string) {
   return null;
 }
 
+function isExternalLink(link: string): boolean {
+  return /^(https?:\/\/|http:\/\/)/.test(link);
+}
+
 function ActionButton({ action }: { action: HeroAction }) {
   const Icon = action.icon ? getIconComponent(action.icon) : null;
 
@@ -31,10 +35,12 @@ function ActionButton({ action }: { action: HeroAction }) {
     ghost: "bg-transparent border border-base-300 hover:bg-base-200",
   };
 
+  const target = isExternalLink(action.link) ? "_blank" : undefined;
+
   return (
     <a
       href={action.link}
-      target={action.target}
+      target={target}
       className={cn(
         "inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-medium transition-colors",
         themeClasses[action.theme || "primary"]
@@ -47,7 +53,7 @@ function ActionButton({ action }: { action: HeroAction }) {
 }
 
 export function Hero({ hero, className }: HeroProps) {
-  const { tagline, headline, description, image, actions } = hero;
+  const { tagline, headline, description, actions } = hero;
 
   return (
     <div className={cn("mx-auto max-w-4xl px-6 py-32 sm:py-44", className)}>
@@ -64,15 +70,6 @@ export function Hero({ hero, className }: HeroProps) {
             {actions.map((action, index) => (
               <ActionButton key={index} action={action} />
             ))}
-          </div>
-        )}
-        {image && (
-          <div className="mt-12">
-            <img
-              src={image.src}
-              alt={image.alt || ""}
-              className="mx-auto max-h-64 rounded-lg object-contain"
-            />
           </div>
         )}
       </div>
