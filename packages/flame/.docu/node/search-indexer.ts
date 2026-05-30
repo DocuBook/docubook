@@ -56,7 +56,7 @@ function slugify(text: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-function stripJsx(content: string): string {
+export function stripJsx(content: string): string {
   let result = content;
   let prev = "";
   while (result !== prev) {
@@ -68,7 +68,7 @@ function stripJsx(content: string): string {
   return result;
 }
 
-function extractRecords(filePath: string, raw: string): SearchRecord[] {
+export function extractRecords(filePath: string, raw: string): SearchRecord[] {
   const { frontmatter, strippedContent: content } = extractFrontmatterWithContent<Frontmatter>(raw);
   const records: SearchRecord[] = [];
   const url = `/docs/${filePath}`;

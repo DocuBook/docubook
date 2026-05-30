@@ -16,7 +16,7 @@
 
 ```bash
 mkdir my-docs && cd my-docs
-bun add @docubook/flame@rc
+bun add @docubook/flame
 bunx flame init
 bun run dev
 ```
