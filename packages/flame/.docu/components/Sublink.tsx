@@ -52,7 +52,7 @@ export default function Sublink({
       <div
         className={cn(
           "py-1.5",
-          level === 1 && "pl-4",
+          level === 1 && "pl-2",
           level >= 2 && "border-l-2 pl-3",
           level >= 2 && (isActive ? "border-primary" : "border-base-300")
         )}
@@ -64,7 +64,7 @@ export default function Sublink({
 
   // Section with children
   return (
-    <div className="flex flex-col">
+    <div className={cn("flex flex-col", level === 1 && "pl-4")}>
       {/* Section header */}
       <button
         type="button"
