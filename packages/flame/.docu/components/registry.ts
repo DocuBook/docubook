@@ -152,15 +152,13 @@ export function createComponentsRegistry(): Record<string, unknown> {
 export async function createFullComponentsRegistry(): Promise<Record<string, unknown>> {
   const baseComponents = createComponentsRegistry();
 
-  let mdxComponents: ComponentRegistry = {};
   try {
     const mdx = createMdxComponents() as unknown as ComponentRegistry;
-    mdxComponents = mdx;
-  } catch {
-    // MDX components not available
+    return { ...baseComponents, ...mdx };
+  } catch (error) {
+    console.error("Failed to load MDX components:", error);
+    return { ...baseComponents };
   }
-
-  return { ...baseComponents, ...mdxComponents };
 }
 
 export const componentsRegistry = createComponentsRegistry();
