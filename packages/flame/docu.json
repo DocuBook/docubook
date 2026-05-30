@@ -98,6 +98,7 @@
         {
           "title": "Search",
           "href": "/search",
+          "noLink": true,
           "items": [
             {
               "title": "Built-in",
