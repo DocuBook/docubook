@@ -30,7 +30,11 @@ function FeatureCard({ feature }: FeatureCardProps) {
       )}
     >
       {/* Grid pattern background */}
-      <svg className="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        className="absolute inset-0 h-full w-full"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ color: "var(--color-base-300)" }}
+      >
         <defs>
           <pattern
             id={`grid-${feature.title}`}
@@ -41,7 +45,7 @@ function FeatureCard({ feature }: FeatureCardProps) {
             <path
               d="M 40 0 L 0 0 0 40"
               fill="none"
-              stroke="#d1d5db"
+              stroke="currentColor"
               strokeWidth="0.5"
               opacity="0.5"
             />
