@@ -21,6 +21,9 @@ function FeatureCard({ feature }: FeatureCardProps) {
   const Wrapper = feature.link ? "a" : "div";
   const wrapperProps = feature.link ? { href: feature.link } : {};
 
+  // Sanitize pattern ID to remove spaces
+  const patternId = `grid-${feature.title}`.replace(/\s+/g, "-");
+
   return (
     <Wrapper
       {...wrapperProps}
@@ -36,12 +39,7 @@ function FeatureCard({ feature }: FeatureCardProps) {
         style={{ color: "var(--color-primary)" }}
       >
         <defs>
-          <pattern
-            id={`grid-${feature.title}`}
-            width="40"
-            height="40"
-            patternUnits="userSpaceOnUse"
-          >
+          <pattern id={patternId} width="40" height="40" patternUnits="userSpaceOnUse">
             <path
               d="M 40 0 L 0 0 0 40"
               fill="none"
@@ -51,7 +49,7 @@ function FeatureCard({ feature }: FeatureCardProps) {
             />
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill={`url(#grid-${feature.title})`} />
+        <rect width="100%" height="100%" fill={`url(#${patternId})`} />
       </svg>
 
       {/* Content */}
