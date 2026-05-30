@@ -53,8 +53,10 @@ export default function Sublink({
         className={cn(
           "py-1.5",
           level === 1 && "pl-2",
-          level >= 2 && "border-l-2 pl-3",
-          level >= 2 && (isActive ? "border-primary" : "border-base-300")
+          level === 2 && "border-l-2 pl-3",
+          level === 2 && (isActive ? "border-primary" : "border-base-300"),
+          level >= 3 && "border-l-2 pl-6",
+          level >= 3 && (isActive ? "border-primary" : "border-base-300")
         )}
       >
         {link}
