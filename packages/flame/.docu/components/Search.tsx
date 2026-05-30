@@ -217,16 +217,10 @@ function SearchTrigger({ onClick }: { onClick: () => void }) {
           <SearchIcon className="h-4 w-4 shrink-0" />
           <span className="flex-1 text-left">Search</span>
           <div className="flex items-center gap-0.5">
-            <Kbd
-              size="s"
-              className="bg-primary text-[12px text-base-300 dark:text-foreground rounded-md p-1.5 font-medium"
-            >
+            <Kbd className="bg-primary text-[12px text-base-300 dark:text-foreground rounded-md p-1.5 font-medium">
               <FnKey.Cmd />
             </Kbd>
-            <Kbd
-              size="s"
-              className="bg-primary text-base-300 dark:text-foreground rounded-md p-1.5 text-[12px] font-medium"
-            >
+            <Kbd className="bg-primary text-base-300 dark:text-foreground rounded-md p-1.5 text-[12px] font-medium">
               K
             </Kbd>
           </div>

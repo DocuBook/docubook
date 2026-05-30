@@ -1,6 +1,6 @@
 {
   "name": "@docubook/flame",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "description": "A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.",
   "type": "module",
   "bin": {
@@ -40,7 +40,9 @@
     "static-site",
     "daisyui",
     "bun",
-    "docs framework"
+    "docs framework",
+    "react",
+    "react-dom"
   ],
   "homepage": "https://docubook.pro/",
   "repository": {

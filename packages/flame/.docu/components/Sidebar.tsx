@@ -9,8 +9,9 @@ import {
   PanelRightClose,
   FileText,
 } from "lucide-react";
-import { Dropdown, DropdownLink } from "@docubook/ui-react/dropdown";
+import { Dropdown } from "@docubook/ui-react/dropdown";
 import { cn } from "../node/utils";
+import Anchor from "./Anchor";
 import { Context } from "./Context";
 import Menu from "./Menu";
 import { ThemeToggle } from "./Theme";
@@ -140,9 +141,18 @@ export function MobileBar({
             }
           >
             {(docuConfig.navbar?.menu || []).map((item) => (
-              <DropdownLink key={item.href} href={item.href}>
-                {item.title}
-              </DropdownLink>
+              <li key={item.href} className="text-base-content/80 hover:text-base-content">
+                <Anchor
+                  href={item.href}
+                  activeWhen={(path: string) =>
+                    path === item.href || path.startsWith(item.href + "/")
+                  }
+                  activeClassName="text-primary font-semibold"
+                  className="block rounded px-2 py-2 text-sm"
+                >
+                  {item.title}
+                </Anchor>
+              </li>
             ))}
           </Dropdown>
 

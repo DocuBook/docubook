@@ -56,6 +56,18 @@ function slugify(text: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+function stripJsx(content: string): string {
+  let result = content;
+  let prev = "";
+  while (result !== prev) {
+    prev = result;
+    result = result
+      .replace(/<[A-Z][\w.]*[\s\S]*?\/>/g, "")
+      .replace(/<[A-Z][\w.]*[\s\S]*?>([\s\S]*?)<\/[A-Z][\w.]*>/g, "$1");
+  }
+  return result;
+}
+
 function extractRecords(filePath: string, raw: string): SearchRecord[] {
   const { frontmatter, strippedContent: content } = extractFrontmatterWithContent<Frontmatter>(raw);
   const records: SearchRecord[] = [];
@@ -82,7 +94,8 @@ function extractRecords(filePath: string, raw: string): SearchRecord[] {
     });
   }
 
-  const lines = content.split("\n");
+  const plainContent = stripJsx(content);
+  const lines = plainContent.split("\n");
   let currentParagraph: string[] = [];
   let inCodeBlock = false;
 
@@ -119,7 +132,6 @@ function extractRecords(filePath: string, raw: string): SearchRecord[] {
     if (inCodeBlock) continue;
 
     if (/^import\s+[\w{*]/.test(trimmed) || /^export\s+[\w{*]/.test(trimmed)) continue;
-    if (/^<\/?[A-Z][\w.]*[\s/>]/.test(trimmed) && !/>(.+)<\//.test(trimmed)) continue;
 
     const headingMatch = trimmed.match(/^(#{1,6})\s+(.+)$/);
     if (headingMatch) {
@@ -151,6 +163,8 @@ function extractRecords(filePath: string, raw: string): SearchRecord[] {
       flushParagraph();
       continue;
     }
+
+    if (/^\|.+\|/.test(trimmed)) continue;
 
     const cleaned = trimmed
       .replace(/^[-*+]\s+/, "") // list markers
