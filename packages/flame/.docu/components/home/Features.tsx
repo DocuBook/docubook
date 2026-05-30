@@ -25,7 +25,7 @@ function FeatureCard({ feature }: FeatureCardProps) {
     <Wrapper
       {...wrapperProps}
       className={cn(
-        "border-primary/20 bg-primary/5 hover:border-primary/40 group relative overflow-hidden rounded-2xl border transition-all",
+        "border-base-200 bg-base-100 hover:border-primary/40 group relative overflow-hidden rounded-2xl border p-6 transition-all hover:shadow-lg",
         feature.link && "cursor-pointer"
       )}
     >
@@ -43,7 +43,7 @@ function FeatureCard({ feature }: FeatureCardProps) {
               fill="none"
               stroke="currentColor"
               strokeWidth="0.5"
-              className="text-primary/15"
+              className="text-base-300/50"
             />
           </pattern>
         </defs>
@@ -51,10 +51,10 @@ function FeatureCard({ feature }: FeatureCardProps) {
       </svg>
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center p-6 text-center">
+      <div className="relative z-10">
         {Icon && (
-          <div className="mb-4">
-            <Icon className="text-primary h-16 w-16" strokeWidth={1} />
+          <div className="bg-primary/10 mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg">
+            <Icon className="text-primary h-6 w-6" />
           </div>
         )}
         <h3 className="mb-2 text-lg font-semibold">{feature.title}</h3>
