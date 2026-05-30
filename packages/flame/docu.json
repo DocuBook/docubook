@@ -6,6 +6,46 @@
     "baseURL": "https://docubook.pro",
     "favicon": "/docs/assets/images/favicon.ico"
   },
+  "home": {
+    "hero": {
+      "name": "DocuBook",
+      "text": "Flame",
+      "tagline": "A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.",
+      "actions": [
+        {
+          "text": "Get Started",
+          "link": "/docs/getting-started",
+          "theme": "primary"
+        },
+        {
+          "text": "GitHub",
+          "link": "https://github.com/DocuBook/docubook",
+          "theme": "ghost",
+          "icon": "github"
+        }
+      ]
+    },
+    "features": [
+      {
+        "icon": "Zap",
+        "title": "Lightning Fast",
+        "description": "Powered by Bun for instant builds and hot module replacement.",
+        "link": "/docs/getting-started"
+      },
+      {
+        "icon": "Paintbrush",
+        "title": "Themeable",
+        "description": "Customize with Tailwind CSS and DaisyUI for beautiful documentation.",
+        "link": "/docs/getting-started/themes"
+      },
+      {
+        "icon": "Search",
+        "title": "Full-Text Search",
+        "description": "Built-in search with Algolia integration for easy content discovery.",
+        "link": "/docs/getting-started/search"
+      }
+    ]
+  },
   "navbar": {
     "logo": {
       "src": "/docs/assets/images/docu.svg",

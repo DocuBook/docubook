@@ -1,0 +1,55 @@
+"use client";
+
+import * as icons from "lucide-react";
+import type { HomeFeature } from "../../node/types";
+import { cn } from "../../node/utils";
+
+interface FeaturesProps {
+  features: HomeFeature[];
+  className?: string;
+}
+
+interface FeatureCardProps {
+  feature: HomeFeature;
+}
+
+function FeatureCard({ feature }: FeatureCardProps) {
+  const Icon = feature.icon
+    ? (icons as unknown as Record<string, icons.LucideIcon>)[feature.icon]
+    : null;
+
+  const Wrapper = feature.link ? "a" : "div";
+  const wrapperProps = feature.link ? { href: feature.link } : {};
+
+  return (
+    <Wrapper
+      {...wrapperProps}
+      className={cn(
+        "border-base-200 bg-base-100 hover:border-primary/40 group rounded-2xl border p-6 transition-all hover:shadow-lg",
+        feature.link && "cursor-pointer"
+      )}
+    >
+      {Icon && (
+        <div className="bg-primary/10 mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg">
+          <Icon className="text-primary h-6 w-6" />
+        </div>
+      )}
+      <h3 className="mb-2 text-lg font-semibold">{feature.title}</h3>
+      <p className="text-base-content/70 text-sm">{feature.description}</p>
+    </Wrapper>
+  );
+}
+
+export function Features({ features, className }: FeaturesProps) {
+  if (!features || features.length === 0) return null;
+
+  return (
+    <div className={cn("mx-auto max-w-5xl px-6 pb-24", className)}>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {features.map((feature, index) => (
+          <FeatureCard key={index} feature={feature} />
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -18,6 +18,18 @@
       },
       "required": ["title"]
     },
+    "home": {
+      "type": "object",
+      "description": "Home page configuration",
+      "properties": {
+        "hero": { "$ref": "#/$defs/hero" },
+        "features": {
+          "type": "array",
+          "description": "Feature cards displayed on home page",
+          "items": { "$ref": "#/$defs/homeFeature" }
+        }
+      }
+    },
     "navbar": {
       "type": "object",
       "description": "Navigation bar configuration",
@@ -125,6 +137,66 @@
         }
       },
       "required": ["title", "href"]
+    },
+    "hero": {
+      "type": "object",
+      "description": "Hero section configuration for home page",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name displayed above the main text (e.g., product name)"
+        },
+        "text": { "type": "string", "description": "Main heading text" },
+        "tagline": {
+          "type": "string",
+          "description": "Subheading text displayed below the main text"
+        },
+        "image": { "$ref": "#/$defs/heroImage" },
+        "actions": {
+          "type": "array",
+          "description": "Action buttons displayed in the hero section",
+          "items": { "$ref": "#/$defs/heroAction" }
+        }
+      },
+      "required": ["text"]
+    },
+    "heroImage": {
+      "type": "object",
+      "description": "Hero section image configuration",
+      "properties": {
+        "src": { "type": "string", "description": "Image source path" },
+        "alt": { "type": "string", "description": "Image alt text" },
+        "light": { "type": "string", "description": "Image path for light theme" },
+        "dark": { "type": "string", "description": "Image path for dark theme" }
+      },
+      "required": ["src"]
+    },
+    "heroAction": {
+      "type": "object",
+      "description": "Action button in hero section",
+      "properties": {
+        "text": { "type": "string", "description": "Button label" },
+        "link": { "type": "string", "description": "Button link URL" },
+        "theme": {
+          "type": "string",
+          "description": "Button color theme",
+          "enum": ["primary", "secondary", "ghost"]
+        },
+        "icon": { "type": "string", "description": "Lucide icon name" },
+        "target": { "type": "string", "description": "Link target attribute" }
+      },
+      "required": ["text", "link"]
+    },
+    "homeFeature": {
+      "type": "object",
+      "description": "Feature card for home page",
+      "properties": {
+        "icon": { "type": "string", "description": "Lucide icon name" },
+        "title": { "type": "string", "description": "Feature title" },
+        "description": { "type": "string", "description": "Feature description" },
+        "link": { "type": "string", "description": "Feature link URL" }
+      },
+      "required": ["title", "description"]
     }
   }
 }

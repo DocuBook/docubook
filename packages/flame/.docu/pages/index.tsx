@@ -1,5 +1,6 @@
-import * as icons from "lucide-react";
 import { loadDocuConfig } from "../node/paths";
+import { Hero, Features } from "../components/home";
+import type { HomeFeature } from "../node/types";
 
 const docuConfig = loadDocuConfig();
 
@@ -17,9 +18,26 @@ interface RouteItem {
 }
 
 export default function IndexPage() {
-  const { meta } = docuConfig;
+  const { meta, home } = docuConfig;
   const routes = (docuConfig.routes as RouteItem[]) || [];
-  const cards = routes.filter((r) => r.context);
+
+  // Use home.features if configured, otherwise fallback to routes with context
+  const features: HomeFeature[] =
+    home?.features ||
+    routes
+      .filter((r) => r.context)
+      .map((route) => ({
+        icon: route.context?.icon,
+        title: route.context?.title || route.title,
+        description: route.context?.description || "",
+        link: `/docs${route.href}${route.items?.[0]?.href || ""}`,
+      }));
+
+  // Use home.hero if configured, otherwise fallback to meta
+  const hero = home?.hero || {
+    text: meta.title,
+    tagline: meta.description,
+  };
 
   return (
     <div className="bg-base-100 relative isolate min-h-screen overflow-hidden">
@@ -39,70 +57,11 @@ export default function IndexPage() {
         />
       </div>
 
-      {/* Hero */}
-      <div className="mx-auto max-w-2xl py-32 sm:py-44">
-        <div className="text-center">
-          <h1 className="text-balance text-5xl font-semibold tracking-tight sm:text-7xl">
-            {meta.title}
-          </h1>
-          <p className="text-muted-foreground mt-8 text-pretty text-lg sm:text-xl">
-            {meta.description}
-          </p>
-        </div>
-      </div>
+      {/* Hero Section */}
+      <Hero hero={hero} />
 
-      {/* Showcase Cards */}
-      {cards.length > 0 && (
-        <div className="relative mx-auto max-w-4xl px-6 pb-24">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-            {cards.map((route) => {
-              const Icon = (icons as unknown as Record<string, icons.LucideIcon>)[
-                route.context!.icon || ""
-              ];
-              return (
-                <a
-                  key={route.href}
-                  href={`/docs${route.href}${route.items?.[0]?.href || ""}`}
-                  className="group"
-                >
-                  <div className="border-primary/20 bg-primary/5 group-hover:border-primary/40 relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-2xl border transition">
-                    {/* Grid pattern */}
-                    <svg
-                      className="absolute inset-0 h-full w-full"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <defs>
-                        <pattern
-                          id={`grid-${route.href}`}
-                          width="40"
-                          height="40"
-                          patternUnits="userSpaceOnUse"
-                        >
-                          <path
-                            d="M 40 0 L 0 0 0 40"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="0.5"
-                            className="text-primary/15"
-                          />
-                        </pattern>
-                      </defs>
-                      <rect width="100%" height="100%" fill={`url(#grid-${route.href})`} />
-                    </svg>
-                    {Icon && (
-                      <Icon className="text-primary relative z-10" size={80} strokeWidth={1} />
-                    )}
-                  </div>
-                  <h3 className="mt-4 text-lg font-semibold">
-                    {route.context!.title || route.title}
-                  </h3>
-                  <p className="text-muted-foreground text-m mt-1">{route.context!.description}</p>
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* Features Section */}
+      <Features features={features} />
 
       {/* Bottom gradient blob */}
       <div

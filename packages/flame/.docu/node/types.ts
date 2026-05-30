@@ -40,8 +40,44 @@ export interface RepoConfig {
   edit: boolean;
 }
 
+export interface HeroAction {
+  text: string;
+  link: string;
+  theme?: "primary" | "secondary" | "ghost";
+  icon?: string;
+  target?: string;
+}
+
+export interface HeroImage {
+  src: string;
+  alt?: string;
+  light?: string;
+  dark?: string;
+}
+
+export interface Hero {
+  name?: string;
+  text: string;
+  tagline?: string;
+  image?: HeroImage;
+  actions?: HeroAction[];
+}
+
+export interface HomeFeature {
+  icon?: string;
+  title: string;
+  description: string;
+  link?: string;
+}
+
+export interface HomeConfig {
+  hero?: Hero;
+  features?: HomeFeature[];
+}
+
 export interface DocuConfig {
   meta: DocuMeta;
+  home?: HomeConfig;
   navbar: DocuNavbar;
   footer: DocuFooter;
   repo: RepoConfig;
