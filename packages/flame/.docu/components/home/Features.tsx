@@ -33,7 +33,7 @@ function FeatureCard({ feature }: FeatureCardProps) {
       <svg
         className="absolute inset-0 h-full w-full"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ color: "var(--color-base-300)" }}
+        style={{ color: "var(--color-primary)" }}
       >
         <defs>
           <pattern
@@ -47,7 +47,7 @@ function FeatureCard({ feature }: FeatureCardProps) {
               fill="none"
               stroke="currentColor"
               strokeWidth="0.5"
-              opacity="0.5"
+              opacity="0.15"
             />
           </pattern>
         </defs>
