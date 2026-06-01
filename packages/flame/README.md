@@ -121,7 +121,7 @@ The `home` section configures your landing page with a hero section and feature 
 | `hero.tagline`     | Small text above the headline (e.g., product name)                  |
 | `hero.headline`    | **Required.** Main heading text                                     |
 | `hero.description` | Description below the headline                                      |
-| `hero.actions`     | Array of CTA buttons with `text`, `link`, `theme`, `icon`, `target` |
+| `hero.actions`     | Array of CTA buttons with `text`, `link`, `theme`, `icon` |
 | `features`         | Array of feature cards with `icon`, `title`, `description`, `link`  |
 
 ### Routes

@@ -39,6 +39,20 @@
   - Aligned hero field names with docu.json schema
   - Integrated grid pattern styling into Features component
 
+- refactor(flame): centralize Lucide icon handling and fix test mocks
+  - Add Lucide.tsx component with getLucideIcon and renderLucideIcon helpers
+  - Use import * as LucideIcons for tree-shaking compatibility with Bun
+  - Update Hero, Features, and Context components to use centralized helpers
+  - Fix SVG patternId collision by using index instead of feature.title
+  - Add aria-hidden to decorative SVG elements
+  - Fix vitest mock setup for Bun.spawn with vi.spyOn
+
+- fix(flame): add rel="noopener noreferrer" to external links
+  - Security fix for tab-nabbing vulnerability in Hero component
+  - Add rel="noopener noreferrer" to Hero action buttons for external links
+  - Simplify isExternalLink regex pattern
+  - Remove unused HeroAction.target and HeroImage types
+
 ## 1.0.1
 
 ### Patch Changes
