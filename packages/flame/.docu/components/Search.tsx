@@ -1,9 +1,40 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Search as SearchIcon, FileText, CornerDownLeft, Hash, AlignLeft } from "lucide-react";
+import {
+  Search as SearchIcon,
+  FileText,
+  CornerDownLeft,
+  Hash,
+  AlignLeft,
+  Command,
+  Option,
+  ChevronUp,
+  ArrowBigUp,
+  CircleArrowOutUpLeft,
+  Space,
+  Delete,
+  ArrowRightToLine,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Modal, useModal } from "@docubook/ui-react/modal";
 import { Kbd, FnKey } from "@docubook/ui-react/kbd";
+
+FnKey.configure({
+  Command,
+  Option,
+  ChevronUp,
+  ArrowBigUp,
+  CircleArrowOutUpLeft,
+  Space,
+  Delete,
+  ArrowRightToLine,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+});
 import { cn } from "../node/utils";
 import { search, type SearchResult } from "../node/search";
 import type { SearchRecord } from "../node/search-indexer";
@@ -181,16 +212,16 @@ export default function Search({ className }: SearchProps) {
 
           <div className="border-base-300 hidden items-center gap-3 border-t px-4 py-2.5 md:flex">
             <div className="flex items-center gap-1">
-              <Kbd size="xs">
+              <Kbd size="s">
                 <FnKey.Down />
               </Kbd>
-              <Kbd size="xs">
+              <Kbd size="s">
                 <FnKey.Up />
               </Kbd>
               <span className="text-base-content/50 text-xs">navigate</span>
             </div>
             <div className="flex items-center gap-1">
-              <Kbd size="xs">
+              <Kbd size="s">
                 <CornerDownLeft className="h-3 w-3" />
               </Kbd>
               <span className="text-base-content/50 text-xs">select</span>

@@ -26,16 +26,15 @@ type IconComponent = React.ComponentType<{ size?: number }>;
 export interface FnKeyIcons {
   Command?: IconComponent;
   Option?: IconComponent;
-  ChevronUp?: IconComponent;
   ArrowBigUp?: IconComponent;
   CircleArrowOutUpLeft?: IconComponent;
   Space?: IconComponent;
   Delete?: IconComponent;
   ArrowRightToLine?: IconComponent;
-  MoveUp?: IconComponent;
-  MoveDown?: IconComponent;
-  MoveLeft?: IconComponent;
-  MoveRight?: IconComponent;
+  ChevronUp?: IconComponent;
+  ChevronDown?: IconComponent;
+  ChevronLeft?: IconComponent;
+  ChevronRight?: IconComponent;
 }
 
 let _icons: FnKeyIcons = {};
@@ -59,8 +58,8 @@ export const FnKey = {
   Space: () => <Key icon={_icons.Space} entity="␣" />,
   Delete: () => <Key icon={_icons.Delete} entity="⌫" />,
   Tab: () => <Key icon={_icons.ArrowRightToLine} entity="⇥" />,
-  Up: () => <Key icon={_icons.MoveUp} entity="↑" />,
-  Down: () => <Key icon={_icons.MoveDown} entity="↓" />,
-  Left: () => <Key icon={_icons.MoveLeft} entity="←" />,
-  Right: () => <Key icon={_icons.MoveRight} entity="→" />,
+  Up: () => <Key icon={_icons.ChevronUp} entity="↑" />,
+  Down: () => <Key icon={_icons.ChevronDown} entity="↓" />,
+  Left: () => <Key icon={_icons.ChevronLeft} entity="←" />,
+  Right: () => <Key icon={_icons.ChevronRight} entity="→" />,
 };

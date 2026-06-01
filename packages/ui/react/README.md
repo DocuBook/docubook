@@ -54,14 +54,14 @@ import { Modal, Collapse, Input, Navbar } from "@docubook/ui-react";
 import {
   Command, Option, ChevronUp, ArrowBigUp,
   CircleArrowOutUpLeft, Space, Delete, ArrowRightToLine,
-  MoveUp, MoveDown, MoveLeft, MoveRight,
+  ChevronDown, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { FnKey } from "@docubook/ui-react/kbd";
 
 FnKey.configure({
   Command, Option, ChevronUp, ArrowBigUp,
   CircleArrowOutUpLeft, Space, Delete, ArrowRightToLine,
-  MoveUp, MoveDown, MoveLeft, MoveRight,
+  ChevronDown, ChevronLeft, ChevronRight,
 });
 ```
 
