@@ -33,6 +33,9 @@ export default function Sublink({
     return currentPathname.startsWith(fullHref) && currentPathname !== fullHref;
   });
 
+  // Shared padding based on nesting level
+  const levelPadding = cn(level === 1 && "pl-2", level === 2 && "pl-4", level >= 3 && "pl-6");
+
   // Leaf node (no children)
   if (!items) {
     const isActive = currentPathname === fullHref || currentPathname === `${fullHref}.html`;
@@ -52,7 +55,8 @@ export default function Sublink({
       <div
         className={cn(
           "py-1.5",
-          level >= 2 && "border-l-2 pl-3",
+          levelPadding,
+          level >= 2 && "border-l-2",
           level >= 2 && (isActive ? "border-primary" : "border-base-300")
         )}
       >
@@ -63,7 +67,7 @@ export default function Sublink({
 
   // Section with children
   return (
-    <div className="flex flex-col">
+    <div className={cn("flex flex-col", levelPadding)}>
       {/* Section header */}
       <button
         type="button"

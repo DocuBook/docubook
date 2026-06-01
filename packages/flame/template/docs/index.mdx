@@ -1,10 +1,25 @@
 ---
-title: DocuBook Flame
-description: A Bun-native framework for modern documentation experiences.
+title: DocuBook Flame 🔥
+description: Fast as flame — a Bun-native framework for modern documentation experiences.
 date: 2026-05-24
 ---
 
 **@docubook/flame** is a lightweight runtime for building documentation websites using React, MDX, and filesystem-based routing — all running on Bun.
+
+No heavy abstractions. No complex tooling. Just a minimal layer between your content and the browser.
+
+> **Lightweight** — 📦 ~57 kB packed, ~207 kB unpacked. No bloat, just fire.
+
+## Features
+
+- **Bun-native** — instant startup, native TypeScript, fast builds
+- **React-first** — JSX/TSX, hooks, component composition
+- **MDX content** — write Markdown with embedded React components
+- **Filesystem routing** — auto-detect routes from `docs/` folder
+- **Lightweight SSR** — React server-side rendering without a heavy framework
+- **Client hydration** — interactive islands for sidebar, TOC, and MDX components
+- **HMR** — instant reload on docs changes during development
+- **Static build** — pre-render all pages to static HTML for deployment
 
 ## Quick Start
 
@@ -17,6 +32,8 @@ bun run dev
 
 ## Project Structure
 
+After `flame init`, your project looks like:
+
 ```
 my-docs/
 ├── docs/              # Your MDX content
@@ -24,17 +41,17 @@ my-docs/
 ├── docu.json          # Site configuration (navbar, routes, meta)
 ├── package.json       # Dependencies
 └── .docu/
-    └── dist/          # Build output (after bun run build)
+    └── dist/          # Build output (after `bun run build`)
 ```
 
 ## Commands
 
-|      Command      |           Description            |
-| ----------------- | -------------------------------- |
-| `bun run dev`     | Start dev server with HMR        |
-| `bun run build`   | Static build to `.docu/dist/`    |
-| `bun run preview` | Serve built output locally       |
-| `bun run deploy`  | Build + prepare for GitHub Pages |
+```bash
+bun run dev       # Start dev server with HMR
+bun run build     # Static build to .docu/dist/
+bun run preview   # Serve built output locally
+bun run deploy    # Build + prepare for GitHub Pages
+```
 
 ## Configuration
 
@@ -57,7 +74,34 @@ my-docs/
 }
 ```
 
-When `routes` is empty, navigation is auto-generated from your `docs/` folder structure.
+### Routes
+
+When `routes` is an empty array `[]`, Flame automatically scans your `docs/` folder at build-time and generates the sidebar navigation from the directory structure. Folders become collapsible sections, and `.mdx`/`.md` files become links — sorted alphabetically.
+
+To define navigation manually, populate the `routes` array:
+
+```json
+{
+  "routes": [
+    {
+      "title": "Getting Started",
+      "href": "/getting-started",
+      "noLink": true,
+      "context": {
+        "icon": "BookOpen",
+        "title": "Guides",
+        "description": "Set up your Documentation"
+      },
+      "items": [
+        { "title": "Introduction", "href": "/introduction" },
+        { "title": "Installation", "href": "/installation" }
+      ]
+    }
+  ]
+}
+```
+
+> Manual routes take priority — if `routes` has entries, folder scanning is skipped entirely.
 
 ## Routing
 
@@ -72,6 +116,45 @@ docs/
     └── card.mdx                 → /docs/components/card
 ```
 
+## Assets
+
+Place images and static files in `docs/assets/`. They are copied to the build output and accessible at `/docs/assets/`.
+
+```
+docs/
+├── assets/
+│   └── images/
+│       ├── logo.svg
+│       └── screenshot.png
+└── getting-started/
+    └── introduction.mdx
+```
+
+Reference in MDX:
+
+```markdown
+![Screenshot](/docs/assets/images/screenshot.png)
+```
+
+> The `docs/assets/` directory is excluded from route scanning — files inside it won't appear in the sidebar.
+
+## Architecture
+
+- **Bun** — runtime, bundler, file watcher
+- **React + React DOM** — rendering (SSR + client hydration)
+- **@docubook/core** — MDX compilation, rehype/remark plugins
+- **@docubook/mdx-content** — pre-built MDX components
+- **Tailwind CSS + daisyUI** — styling
+
+## Comparison
+
+|      Framework      | Runtime |    UI     |          Approach           |
+| ------------------- | ------- | --------- | --------------------------- |
+| Docusaurus          | Node.js | React     | Full-featured, plugin-heavy |
+| VitePress           | Node.js | Vue       | Lightweight, Vue-only       |
+| Nextra              | Node.js | React     | Next.js-based               |
+| **@docubook/flame** | **Bun** | **React** | **Minimal, Bun-native SSR** |
+
 ## Deployment
 
 ### GitHub Pages
@@ -80,26 +163,49 @@ docs/
 bun run deploy
 ```
 
-This will run a production build, add `.nojekyll`, and generate `.github/workflows/deploy.yml`.
+This will:
+
+1. Run production build → output to `.docu/dist/`
+2. Add `.nojekyll` file
+3. Generate `.github/workflows/deploy.yml` (first run only)
 
 Then push to GitHub and enable Pages: **Settings → Pages → Source: GitHub Actions**
 
-### Other Hosts
+### Manual / Other Hosts
 
 ```bash
 bun run build
 ```
 
-Upload `.docu/dist/` to any static hosting (Netlify, Cloudflare Pages, Vercel, S3, etc).
+Upload the contents of `.docu/dist/` to any static hosting (Netlify, Cloudflare Pages, Vercel, S3, etc).
 
 ## Environment Variables
 
-Copy `.env.example` to `.env`:
+Copy `.env.example` to `.env` to customize:
+
+```
+# Server port (default: 3000)
+PORT=3000
+
+# Error Monitoring (optional)
+SENTRY_DSN=https://your-dsn@sentry.io/project-id
+```
+
+## Error Monitoring (Optional)
+
+Flame has built-in [Sentry](https://sentry.io) support for error tracking. To enable:
 
 ```bash
-PORT=3000
-# SENTRY_DSN=https://your-dsn@sentry.io/project-id
+bun add @sentry/bun
 ```
+
+Then set environment variables:
+
+```
+SENTRY_DSN=https://your-dsn@sentry.io/project-id
+```
+
+Errors during dev server and build will be automatically captured. No configuration needed beyond the DSN.
 
 ## Requirements
 

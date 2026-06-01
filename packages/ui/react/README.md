@@ -45,6 +45,37 @@ import { Modal, Collapse, Input, Navbar } from "@docubook/ui-react";
 | `Toggle`, `ToggleGroup`                    | `@docubook/ui-react/toggle`   | Toggle switch with label/description           |
 | `Dropdown`, `DropdownItem`, `DropdownLink` | `@docubook/ui-react/dropdown` | Details-based dropdown menu                    |
 
+#### FnKey with Lucide Icons
+
+`FnKey` renders HTML entities by default. Call `FnKey.configure()` once at your app entry point to use Lucide icons instead:
+
+```tsx
+// app/layout.tsx or main.tsx
+import {
+  Command, Option, ChevronUp, ArrowBigUp,
+  CircleArrowOutUpLeft, Space, Delete, ArrowRightToLine,
+  ChevronDown, ChevronLeft, ChevronRight,
+} from "lucide-react";
+import { FnKey } from "@docubook/ui-react/kbd";
+
+FnKey.configure({
+  Command, Option, ChevronUp, ArrowBigUp,
+  CircleArrowOutUpLeft, Space, Delete, ArrowRightToLine,
+  ChevronDown, ChevronLeft, ChevronRight,
+});
+```
+
+Then use `FnKey` anywhere — icons are applied globally:
+
+```tsx
+import { Kbd, FnKey } from "@docubook/ui-react/kbd";
+
+<Kbd><FnKey.Cmd /></Kbd>   // → Command icon
+<Kbd><FnKey.Shift /></Kbd> // → ArrowBigUp icon
+```
+
+Without `configure()`, all keys fall back to HTML entities automatically.
+
 #### PaginationDocs with Custom Icons
 
 ```tsx

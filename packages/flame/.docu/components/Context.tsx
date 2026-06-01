@@ -4,8 +4,8 @@ import { useState } from "react";
 import { cn } from "../node/utils";
 import { Dropdown, DropdownItem } from "@docubook/ui-react/dropdown";
 import { routes } from "../node/client-routes";
-import { ChevronsUpDown, Check, type LucideIcon } from "lucide-react";
-import * as LucideIcons from "lucide-react";
+import { ChevronsUpDown, Check } from "lucide-react";
+import { renderLucideIcon } from "./Lucide";
 
 interface ContextProps {
   className?: string;
@@ -22,11 +22,6 @@ function getFirstItemHref(route: { href: string; items?: { href: string }[] }): 
 function getActiveContextRoute(path: string) {
   const docPath = path.replace(/^\/docs/, "");
   return getContextRoutes().find((route) => docPath.startsWith(route.href));
-}
-
-function getIcon(name: string): LucideIcon {
-  const Icon = LucideIcons[name as keyof typeof LucideIcons] as LucideIcon | undefined;
-  return Icon || LucideIcons.FileQuestion;
 }
 
 export function Context({ className }: ContextProps) {
@@ -57,10 +52,7 @@ export function Context({ className }: ContextProps) {
           <div className="flex min-w-0 items-center gap-2">
             {displayRoute?.context?.icon && (
               <span className="text-primary bg-primary/10 border-primary flex-shrink-0 rounded border p-0.5">
-                {(() => {
-                  const Icon = getIcon(displayRoute.context.icon);
-                  return <Icon className="h-4 w-4" />;
-                })()}
+                {renderLucideIcon(displayRoute.context.icon, "h-4 w-4")}
               </span>
             )}
             <span className="truncate">{displayRoute?.context?.title || displayRoute?.title}</span>
@@ -93,10 +85,7 @@ export function Context({ className }: ContextProps) {
                   isActive ? "text-primary" : "text-base-content/60"
                 )}
               >
-                {(() => {
-                  const Icon = getIcon(route.context.icon);
-                  return <Icon className="h-4 w-4" />;
-                })()}
+                {renderLucideIcon(route.context.icon)}
               </span>
             )}
             <div className="min-w-0 flex-1">

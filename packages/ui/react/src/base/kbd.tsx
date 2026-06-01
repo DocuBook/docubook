@@ -21,19 +21,45 @@ Kbd.displayName = "Kbd";
 
 export type { KbdProps, KbdSize };
 
+type IconComponent = React.ComponentType<{ size?: number }>;
+
+export interface FnKeyIcons {
+  Command?: IconComponent;
+  Option?: IconComponent;
+  ArrowBigUp?: IconComponent;
+  CircleArrowOutUpLeft?: IconComponent;
+  Space?: IconComponent;
+  Delete?: IconComponent;
+  ArrowRightToLine?: IconComponent;
+  ChevronUp?: IconComponent;
+  ChevronDown?: IconComponent;
+  ChevronLeft?: IconComponent;
+  ChevronRight?: IconComponent;
+}
+
+let _icons: FnKeyIcons = {};
+
 const iconSize = 12;
 
+function Key({ icon: Icon, entity }: { icon?: IconComponent; entity: string }): React.ReactElement {
+  if (Icon) return <Icon size={iconSize} />;
+  return <span style={{ fontSize: iconSize }}>{entity}</span>;
+}
+
 export const FnKey = {
-  Cmd: () => <span style={{ fontSize: iconSize }}>⌘</span>,
-  Option: () => <span style={{ fontSize: iconSize }}>⌥</span>,
-  Ctrl: () => <span style={{ fontSize: iconSize }}>⌃</span>,
-  Shift: () => <span style={{ fontSize: iconSize }}>⇧</span>,
-  Esc: () => <span style={{ fontSize: iconSize }}>⎋</span>,
-  Space: () => <span style={{ fontSize: iconSize }}>␣</span>,
-  Delete: () => <span style={{ fontSize: iconSize }}>⌫</span>,
-  Tab: () => <span style={{ fontSize: iconSize }}>⇥</span>,
-  Up: () => <span style={{ fontSize: iconSize }}>↑</span>,
-  Down: () => <span style={{ fontSize: iconSize }}>↓</span>,
-  Left: () => <span style={{ fontSize: iconSize }}>←</span>,
-  Right: () => <span style={{ fontSize: iconSize }}>→</span>,
+  configure(icons: FnKeyIcons): void {
+    _icons = icons;
+  },
+  Cmd: () => <Key icon={_icons.Command} entity="⌘" />,
+  Option: () => <Key icon={_icons.Option} entity="⌥" />,
+  Ctrl: () => <Key icon={_icons.ChevronUp} entity="⌃" />,
+  Shift: () => <Key icon={_icons.ArrowBigUp} entity="⇧" />,
+  Esc: () => <Key icon={_icons.CircleArrowOutUpLeft} entity="⎋" />,
+  Space: () => <Key icon={_icons.Space} entity="␣" />,
+  Delete: () => <Key icon={_icons.Delete} entity="⌫" />,
+  Tab: () => <Key icon={_icons.ArrowRightToLine} entity="⇥" />,
+  Up: () => <Key icon={_icons.ChevronUp} entity="↑" />,
+  Down: () => <Key icon={_icons.ChevronDown} entity="↓" />,
+  Left: () => <Key icon={_icons.ChevronLeft} entity="←" />,
+  Right: () => <Key icon={_icons.ChevronRight} entity="→" />,
 };
