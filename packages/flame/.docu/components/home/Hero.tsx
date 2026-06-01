@@ -51,7 +51,7 @@ function ActionButton({ action }: ActionButtonProps) {
         themeClasses[action.theme || "primary"]
       )}
     >
-      {renderActionButtonIcon(action.icon, "h-4 w-4 text-muted-foreground")}
+      {renderActionButtonIcon(action.icon, "h-4 w-4")}
       {action.text}
     </a>
   );

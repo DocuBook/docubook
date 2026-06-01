@@ -19,7 +19,7 @@ const mockIcons: FnKeyIcons = {
 };
 
 describe("FnKey — default (no icons configured)", () => {
-  it("renders HTML entities without configure()", () => {
+  it("renders HTML entities with empty configure()", () => {
     FnKey.configure({});
     render(
       <>
