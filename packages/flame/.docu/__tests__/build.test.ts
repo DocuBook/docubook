@@ -54,17 +54,17 @@ describe("build pipeline", () => {
     });
 
     it("returns true when file is newer than cache", () => {
-      const cache = { "docs/intro": { builtAt: 1000 } };
+      const cache = { "docs/intro": { hash: "abc123", mtime: 500, builtAt: 1000 } };
       expect(shouldRebuild("docs/intro", 2000, cache)).toBe(true);
     });
 
     it("returns false when file is older than cache", () => {
-      const cache = { "docs/intro": { builtAt: 2000 } };
+      const cache = { "docs/intro": { hash: "abc123", mtime: 500, builtAt: 2000 } };
       expect(shouldRebuild("docs/intro", 1000, cache)).toBe(false);
     });
 
     it("returns false when mtime equals builtAt", () => {
-      const cache = { "docs/intro": { builtAt: 1000 } };
+      const cache = { "docs/intro": { hash: "abc123", mtime: 1000, builtAt: 1000 } };
       expect(shouldRebuild("docs/intro", 1000, cache)).toBe(false);
     });
   });

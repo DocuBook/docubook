@@ -1,13 +1,12 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { getGitLastModifiedBatch } from "../node/utils";
 
 describe("getGitLastModifiedBatch", () => {
   afterEach(() => {
-    vi.mocked(Bun.spawn).mockReset();
+    vi.resetAllMocks();
   });
 
   function mockSpawnOutput(stdout: string) {
-    vi.mocked(Bun.spawn).mockReturnValue({
+    vi.spyOn(globalThis.Bun, "spawn").mockReturnValue({
       stdout: new Response(stdout).body!,
     } as ReturnType<typeof Bun.spawn>);
   }
@@ -37,11 +36,15 @@ describe("getGitLastModifiedBatch", () => {
   });
 
   it("returns empty map when spawn throws", async () => {
-    vi.mocked(Bun.spawn).mockImplementation(() => {
+    vi.spyOn(globalThis.Bun, "spawn").mockImplementation(() => {
       throw new Error("git not found");
     });
+    vi.spyOn(console, "error").mockImplementation(() => {});
 
     const result = await getGitLastModifiedBatch(["docs/intro.mdx"]);
     expect(result).toEqual(new Map());
   });
 });
+
+// Import setelah mock setup
+import { getGitLastModifiedBatch } from "../node/utils";

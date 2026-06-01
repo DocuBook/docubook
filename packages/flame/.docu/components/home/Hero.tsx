@@ -1,8 +1,8 @@
 "use client";
 
-import * as icons from "lucide-react";
 import type { Hero as HeroType, HeroAction } from "../../node/types";
 import { cn } from "../../node/utils";
+import { renderLucideIcon } from "../Lucide";
 import { getSocialIcon } from "../Social";
 
 interface HeroProps {
@@ -10,29 +10,33 @@ interface HeroProps {
   className?: string;
 }
 
-function getIconComponent(iconName: string) {
-  // First try lucide icons
-  const lucideIcon = (icons as unknown as Record<string, icons.LucideIcon>)[iconName];
-  if (lucideIcon) return lucideIcon;
-
-  // Then try social icons
-  const socialIcon = getSocialIcon(iconName);
-  if (socialIcon) return socialIcon;
-
-  return null;
+interface ActionButtonProps {
+  action: HeroAction;
 }
 
 function isExternalLink(link: string): boolean {
   return /^https?:\/\//.test(link);
 }
 
-function ActionButton({ action }: { action: HeroAction }) {
-  const Icon = action.icon ? getIconComponent(action.icon) : null;
+function renderActionButtonIcon(iconName: string | undefined, className?: string) {
+  if (!iconName) return null;
 
+  // Try Lucide icon first
+  const lucideIcon = renderLucideIcon(iconName, className);
+  if (lucideIcon) return lucideIcon;
+
+  // Fallback to social icon
+  const SocialIcon = getSocialIcon(iconName);
+  if (SocialIcon) return <SocialIcon className={className} />;
+
+  return null;
+}
+
+function ActionButton({ action }: ActionButtonProps) {
   const themeClasses = {
     primary: "bg-primary text-primary-content hover:bg-primary/90",
     secondary: "bg-secondary text-secondary-content hover:bg-secondary/90",
-    ghost: "bg-transparent border border-base-300 hover:bg-base-200",
+    ghost: "bg-transparent text-muted-foreground border border-base-300 hover:bg-base-200",
   };
 
   const isExternal = isExternalLink(action.link);
@@ -47,7 +51,7 @@ function ActionButton({ action }: { action: HeroAction }) {
         themeClasses[action.theme || "primary"]
       )}
     >
-      {Icon && <Icon className="h-4 w-4" />}
+      {renderActionButtonIcon(action.icon, "h-4 w-4 text-muted-foreground")}
       {action.text}
     </a>
   );
