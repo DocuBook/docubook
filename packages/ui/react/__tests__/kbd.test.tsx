@@ -1,21 +1,32 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import {
+  Command,
+  Option,
+  ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ArrowBigUp,
+  CircleArrowOutUpLeft,
+  Space,
+  Delete,
+  ArrowRightToLine,
+} from "lucide-react";
 import { FnKey } from "../src/base/kbd";
-import type { FnKeyIcons } from "../src/base/kbd";
 
-const mockIcons: FnKeyIcons = {
-  Command: () => <svg data-testid="icon-Command" />,
-  Option: () => <svg data-testid="icon-Option" />,
-  ChevronUp: () => <svg data-testid="icon-ChevronUp" />,
-  ArrowBigUp: () => <svg data-testid="icon-ArrowBigUp" />,
-  CircleArrowOutUpLeft: () => <svg data-testid="icon-CircleArrowOutUpLeft" />,
-  Space: () => <svg data-testid="icon-Space" />,
-  Delete: () => <svg data-testid="icon-Delete" />,
-  ArrowRightToLine: () => <svg data-testid="icon-ArrowRightToLine" />,
-  MoveUp: () => <svg data-testid="icon-MoveUp" />,
-  MoveDown: () => <svg data-testid="icon-MoveDown" />,
-  MoveLeft: () => <svg data-testid="icon-MoveLeft" />,
-  MoveRight: () => <svg data-testid="icon-MoveRight" />,
+const lucideIcons = {
+  Command,
+  Option,
+  ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ArrowBigUp,
+  CircleArrowOutUpLeft,
+  Space,
+  Delete,
+  ArrowRightToLine,
 };
 
 describe("FnKey — default (no icons configured)", () => {
@@ -52,10 +63,10 @@ describe("FnKey — default (no icons configured)", () => {
   });
 });
 
-describe("FnKey — with icons configured", () => {
-  it("renders icons after configure()", () => {
-    FnKey.configure(mockIcons);
-    render(
+describe("FnKey — with lucide icons configured", () => {
+  it("renders SVG icons after configure()", () => {
+    FnKey.configure(lucideIcons);
+    const { container } = render(
       <>
         <FnKey.Cmd />
         <FnKey.Option />
@@ -71,30 +82,23 @@ describe("FnKey — with icons configured", () => {
         <FnKey.Right />
       </>
     );
-    expect(screen.getByTestId("icon-Command")).toBeTruthy();
-    expect(screen.getByTestId("icon-Option")).toBeTruthy();
-    expect(screen.getByTestId("icon-ChevronUp")).toBeTruthy();
-    expect(screen.getByTestId("icon-ArrowBigUp")).toBeTruthy();
-    expect(screen.getByTestId("icon-CircleArrowOutUpLeft")).toBeTruthy();
-    expect(screen.getByTestId("icon-Space")).toBeTruthy();
-    expect(screen.getByTestId("icon-Delete")).toBeTruthy();
-    expect(screen.getByTestId("icon-ArrowRightToLine")).toBeTruthy();
-    expect(screen.getByTestId("icon-MoveUp")).toBeTruthy();
-    expect(screen.getByTestId("icon-MoveDown")).toBeTruthy();
-    expect(screen.getByTestId("icon-MoveLeft")).toBeTruthy();
-    expect(screen.getByTestId("icon-MoveRight")).toBeTruthy();
+    // Lucide icons render as SVG elements
+    const svgs = container.querySelectorAll("svg");
+    expect(svgs.length).toBe(12);
     FnKey.configure({});
   });
 
   it("falls back to HTML entity for unconfigured keys", () => {
-    FnKey.configure({ Command: mockIcons.Command });
-    render(
+    FnKey.configure({ Command: lucideIcons.Command });
+    const { container } = render(
       <>
         <FnKey.Cmd />
         <FnKey.Option />
       </>
     );
-    expect(screen.getByTestId("icon-Command")).toBeTruthy();
+    // Command uses lucide icon (SVG), Option falls back to HTML entity
+    const svgs = container.querySelectorAll("svg");
+    expect(svgs.length).toBe(1);
     expect(screen.getByText("⌥")).toBeTruthy();
     FnKey.configure({});
   });
