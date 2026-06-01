@@ -45,21 +45,12 @@ export interface HeroAction {
   link: string;
   theme?: "primary" | "secondary" | "ghost";
   icon?: string;
-  target?: string;
-}
-
-export interface HeroImage {
-  src: string;
-  alt?: string;
-  light?: string;
-  dark?: string;
 }
 
 export interface Hero {
   tagline?: string;
   headline: string;
   description?: string;
-  image?: HeroImage;
   actions?: HeroAction[];
 }
 

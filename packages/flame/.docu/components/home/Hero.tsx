@@ -23,7 +23,7 @@ function getIconComponent(iconName: string) {
 }
 
 function isExternalLink(link: string): boolean {
-  return /^(https?:\/\/|http:\/\/)/.test(link);
+  return /^https?:\/\//.test(link);
 }
 
 function ActionButton({ action }: { action: HeroAction }) {
@@ -35,12 +35,13 @@ function ActionButton({ action }: { action: HeroAction }) {
     ghost: "bg-transparent border border-base-300 hover:bg-base-200",
   };
 
-  const target = isExternalLink(action.link) ? "_blank" : undefined;
+  const isExternal = isExternalLink(action.link);
 
   return (
     <a
       href={action.link}
-      target={target}
+      target={isExternal ? "_blank" : undefined}
+      rel={isExternal ? "noopener noreferrer" : undefined}
       className={cn(
         "inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-medium transition-colors",
         themeClasses[action.theme || "primary"]
