@@ -4,7 +4,7 @@ export { cn } from "./utils/cn";
 export { Input, InputGroup } from "./base/input";
 export type { InputProps, InputGroupProps, InputColor, InputSize } from "./base/input";
 export { Kbd, FnKey } from "./base/kbd";
-export type { KbdProps, KbdSize } from "./base/kbd";
+export type { KbdProps, KbdSize, FnKeyIcons } from "./base/kbd";
 export { Toggle, ToggleGroup } from "./base/toggle";
 export type {
   ToggleProps,
