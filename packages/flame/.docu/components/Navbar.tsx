@@ -8,9 +8,9 @@ import {
   NavMenu as BaseNavMenu,
   NavMenuLink as BaseNavMenuLink,
   type NavMenuItem as BaseNavMenuItem,
-} from "./base/navbar";
+} from "@docubook/ui-react/navbar";
 
-export type { NavMenuItem } from "./base/navbar";
+export type { NavMenuItem } from "@docubook/ui-react/navbar";
 
 interface AppNavMenuItem {
   title: string;

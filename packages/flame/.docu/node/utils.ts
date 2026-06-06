@@ -7,7 +7,8 @@ export function isExternalUrl(url: string): boolean {
 export function getPath(url: string): string {
   try {
     return new URL(url).pathname;
-  } catch {
+  } catch (err) {
+    console.error("Failed to parse URL", url, err);
     return url;
   }
 }
@@ -28,7 +29,8 @@ export async function getGitLastModified(filePath: string): Promise<string | nul
     const text = await new Response(proc.stdout).text();
     const date = text.trim();
     return date || null;
-  } catch {
+  } catch (err) {
+    console.error("Failed to get git last modified for", filePath, err);
     return null;
   }
 }
@@ -55,8 +57,8 @@ export async function getGitLastModifiedBatch(filePaths: string[]): Promise<Map<
         result.set(trimmed, currentDate);
       }
     }
-  } catch {
-    // fallback: return empty map, callers use frontmatter date
+  } catch (err) {
+    console.error("Failed to get git last modified batch for", filePaths, err);
   }
 
   return result;

@@ -16,12 +16,12 @@
 
 ```bash
 mkdir my-docs && cd my-docs
-bun add @docubook/flame@beta
+bun add @docubook/flame
 bunx flame init
 bun run dev
 ```
 
-> 📦 **Lightweight** — ~57 kB packed, ~207 kB unpacked. No bloat, just fire.
+> **Lightweight** — 📦 ~57 kB packed, ~207 kB unpacked. No bloat, just fire.
 
 ## Features
 
@@ -65,24 +65,64 @@ bun run deploy    # Build + prepare for GitHub Pages
 
 ## Configuration
 
-`docu.json` controls your site:
+`docu.json` controls your site. Full example:
 
 ```json
 {
+  "$schema": "https://cdn.jsdelivr.net/npm/@docubook/flame/docu.schema.json",
   "meta": {
     "title": "My Docs",
-    "description": "Documentation powered by DocuBook Flame"
+    "description": "Documentation powered by DocuBook Flame",
+    "baseURL": "https://example.com",
+    "favicon": "/docs/assets/images/favicon.ico"
+  },
+  "home": {
+    "hero": {
+      "tagline": "#MyDocs",
+      "headline": "Documentation",
+      "description": "Welcome to your documentation site.",
+      "actions": [
+        { "text": "Get Started", "link": "/docs", "theme": "primary" },
+        { "text": "GitHub", "link": "https://github.com", "theme": "ghost", "icon": "github" }
+      ]
+    },
+    "features": [
+      { "icon": "Zap", "title": "Fast", "description": "Instant builds.", "link": "/docs" }
+    ]
   },
   "navbar": {
+    "logo": { "src": "/docs/assets/logo.svg", "alt": "Logo" },
     "logoText": "My Docs",
     "menu": [
       { "title": "Home", "href": "/" },
       { "title": "Docs", "href": "/docs" }
     ]
   },
+  "footer": {
+    "social": [
+      { "name": "github", "url": "https://github.com/you" }
+    ]
+  },
+  "repo": {
+    "url": "https://github.com/you/repo",
+    "path": "blob/main/{filePath}",
+    "edit": true
+  },
   "routes": []
 }
 ```
+
+### Home Page
+
+The `home` section configures your landing page with a hero section and feature cards:
+
+|      Property      |                             Description                             |
+| ------------------ | ------------------------------------------------------------------- |
+| `hero.tagline`     | Small text above the headline (e.g., product name)                  |
+| `hero.headline`    | **Required.** Main heading text                                     |
+| `hero.description` | Description below the headline                                      |
+| `hero.actions`     | Array of CTA buttons with `text`, `link`, `theme`, `icon` |
+| `features`         | Array of feature cards with `icon`, `title`, `description`, `link`  |
 
 ### Routes
 
@@ -166,11 +206,11 @@ Reference in MDX:
 
 ## Comparison
 
-| Framework | Runtime | UI | Approach |
-|---|---|---|---|
-| Docusaurus | Node.js | React | Full-featured, plugin-heavy |
-| VitePress | Node.js | Vue | Lightweight, Vue-only |
-| Nextra | Node.js | React | Next.js-based |
+|      Framework      | Runtime |    UI     |          Approach           |
+| ------------------- | ------- | --------- | --------------------------- |
+| Docusaurus          | Node.js | React     | Full-featured, plugin-heavy |
+| VitePress           | Node.js | Vue       | Lightweight, Vue-only       |
+| Nextra              | Node.js | React     | Next.js-based               |
 | **@docubook/flame** | **Bun** | **React** | **Minimal, Bun-native SSR** |
 
 ---

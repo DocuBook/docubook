@@ -1,20 +1,23 @@
 "use client";
 
 import { type HTMLAttributes, type ReactNode, forwardRef, useRef, useEffect } from "react";
-import { cn } from "../../node/utils";
+import { cn } from "../utils/cn";
 
 export interface DropdownProps extends HTMLAttributes<HTMLDetailsElement> {
   align?: "start" | "end";
   disabled?: boolean;
   trigger?: ReactNode;
   children?: ReactNode;
+  menuClassName?: string;
 }
 
 export const Dropdown = forwardRef<HTMLDetailsElement, DropdownProps>(
-  ({ className, align = "start", disabled = false, trigger, children, ...props }, ref) => {
+  (
+    { className, align = "start", disabled = false, trigger, children, menuClassName, ...props },
+    ref
+  ) => {
     const detailsRef = useRef<HTMLDetailsElement>(null);
 
-    // Close on click outside
     useEffect(() => {
       const handler = (e: MouseEvent) => {
         if (detailsRef.current && !detailsRef.current.contains(e.target as Node)) {
@@ -35,13 +38,14 @@ export const Dropdown = forwardRef<HTMLDetailsElement, DropdownProps>(
         className={cn("relative", disabled && "pointer-events-none opacity-50", className)}
         {...props}
       >
-        <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+        <summary className="cursor-pointer" style={{ listStyle: "none" }}>
           {trigger}
         </summary>
         <ul
           className={cn(
-            "bg-base-100 rounded-box border-base-300 absolute z-50 mt-1 w-full min-w-[200px] space-y-1 border p-2 shadow-lg",
-            align === "end" ? "right-0" : "left-0"
+            "bg-base-100 rounded-box border-base-300 absolute z-50 mt-1 min-w-[240px] space-y-1 border p-2 shadow-lg",
+            align === "end" ? "right-0" : "left-0",
+            menuClassName
           )}
         >
           {children}
@@ -58,7 +62,15 @@ export interface DropdownItemProps extends HTMLAttributes<HTMLLIElement> {
 
 export const DropdownItem = forwardRef<HTMLLIElement, DropdownItemProps>(
   ({ className, children, ...props }, ref) => (
-    <li ref={ref} className={cn(className)} role="menuitem" {...props}>
+    <li
+      ref={ref}
+      className={cn(
+        "hover:bg-base-200 text-base-content/80 hover:text-base-content relative flex cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm outline-none transition-colors",
+        className
+      )}
+      role="menuitem"
+      {...props}
+    >
       {children}
     </li>
   )
@@ -69,26 +81,13 @@ export const DropdownLink = forwardRef<
   HTMLAnchorElement,
   HTMLAttributes<HTMLAnchorElement> & { href?: string }
 >(({ className, children, href, ...props }, ref) => (
-  <li role="menuitem">
-    <a ref={ref} href={href} className={cn(className)} {...props}>
+  <li
+    role="menuitem"
+    className="hover:bg-base-200 text-base-content/80 hover:text-base-content relative flex cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm outline-none transition-colors"
+  >
+    <a ref={ref} href={href} className={cn("text-inherit no-underline", className)} {...props}>
       {children}
     </a>
   </li>
 ));
 DropdownLink.displayName = "DropdownLink";
-
-export const DropdownLabel = forwardRef<HTMLLIElement, HTMLAttributes<HTMLLIElement>>(
-  ({ className, children, ...props }, ref) => (
-    <li ref={ref} className={cn("menu-title", className)} {...props}>
-      {children}
-    </li>
-  )
-);
-DropdownLabel.displayName = "DropdownLabel";
-
-export const DropdownDivider = forwardRef<HTMLLIElement, HTMLAttributes<HTMLLIElement>>(
-  ({ className, ...props }, ref) => (
-    <li ref={ref} className={cn("border-base-200 my-1 border-t", className)} {...props} />
-  )
-);
-DropdownDivider.displayName = "DropdownDivider";

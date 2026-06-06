@@ -1,16 +1,14 @@
 "use client";
 
-import { cn } from "../../node/utils";
-import { X } from "lucide-react";
+import { cn } from "../utils/cn";
 import { useState, type ReactNode } from "react";
-
-type DrawerSide = "left" | "right";
+import type { Side } from "../utils/types";
 
 interface DrawerProps {
   id: string;
   children: ReactNode;
   defaultOpen?: boolean;
-  side?: DrawerSide;
+  side?: Side;
   breakpoint?: string;
   withOverlay?: boolean;
   overlayClassName?: string;
@@ -19,7 +17,7 @@ interface DrawerProps {
   className?: string;
 }
 
-export default function Drawer({
+export function Drawer({
   id,
   children,
   defaultOpen = false,
@@ -32,18 +30,12 @@ export default function Drawer({
   className,
 }: DrawerProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-
-  const toggleDrawer = () => setIsOpen(!isOpen);
-  const closeDrawer = () => setIsOpen(false);
-
-  const sidePositionClass = side === "right" ? "drawer-end" : "";
-
   return (
     <div
       className={cn(
         "drawer",
-        breakpoint ? `${breakpoint}:drawer-open` : "",
-        sidePositionClass,
+        breakpoint && `${breakpoint}:drawer-open`,
+        side === "right" && "drawer-end",
         className
       )}
     >
@@ -52,44 +44,19 @@ export default function Drawer({
         type="checkbox"
         className="drawer-toggle"
         checked={isOpen}
-        onChange={toggleDrawer}
+        onChange={() => setIsOpen(!isOpen)}
         aria-label="Toggle drawer"
       />
-
-      <div className={cn("drawer-content flex flex-col", contentClassName)}>
-        {typeof children === "function"
-          ? (
-              children as (props: {
-                open: boolean;
-                toggle: () => void;
-                close: () => void;
-              }) => ReactNode
-            )({ open: isOpen, toggle: toggleDrawer, close: closeDrawer })
-          : children}
-      </div>
-
+      <div className={cn("drawer-content flex flex-col", contentClassName)}>{children}</div>
       <div className={cn("drawer-side", sideClassName)}>
         {withOverlay && (
           <label
             htmlFor={id}
             aria-label="Close sidebar"
             className={cn("drawer-overlay", overlayClassName)}
-            onClick={closeDrawer}
+            onClick={() => setIsOpen(false)}
           />
         )}
-
-        <div className="bg-base-200 min-h-full w-80 p-4">
-          <div className="mb-4 flex items-center justify-between">
-            <span className="text-lg font-semibold">Menu</span>
-            <button
-              onClick={closeDrawer}
-              className="btn btn-ghost btn-sm btn-circle"
-              aria-label="Close drawer"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -97,7 +64,6 @@ export default function Drawer({
 
 export function useDrawerState(initialState = false) {
   const [isOpen, setIsOpen] = useState(initialState);
-
   return {
     isOpen,
     open: () => setIsOpen(true),
@@ -120,19 +86,10 @@ export function DrawerTrigger({ drawerId, children, className }: DrawerTriggerPr
   );
 }
 
-interface DrawerContentProps {
-  children: ReactNode;
-  className?: string;
-}
-
-export function DrawerContent({ children, className }: DrawerContentProps) {
-  return <div className={cn("drawer-content", className)}>{children}</div>;
-}
-
 interface DrawerSidePanelProps {
   id: string;
   children: ReactNode;
-  side?: DrawerSide;
+  side?: Side;
   withOverlay?: boolean;
   overlayClassName?: string;
   className?: string;
@@ -147,7 +104,7 @@ export function DrawerSidePanel({
   className,
 }: DrawerSidePanelProps) {
   return (
-    <div className={cn("drawer-side", side === "right" ? "drawer-end" : "", className)}>
+    <div className={cn("drawer-side", side === "right" && "drawer-end", className)}>
       {withOverlay && (
         <label
           htmlFor={id}
@@ -160,5 +117,14 @@ export function DrawerSidePanel({
   );
 }
 
-export { Drawer };
-export type { DrawerProps, DrawerSide };
+export function DrawerContent({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={cn("drawer-content", className)}>{children}</div>;
+}
+
+export type { DrawerProps, DrawerTriggerProps, DrawerSidePanelProps };

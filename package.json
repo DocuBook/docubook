@@ -33,7 +33,8 @@
   },
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "packages/ui/*"
   ],
   "engines": {
     "node": ">=20.0.0"

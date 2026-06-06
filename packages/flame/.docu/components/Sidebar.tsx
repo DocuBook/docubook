@@ -9,8 +9,9 @@ import {
   PanelRightClose,
   FileText,
 } from "lucide-react";
-import { Dropdown, DropdownLink } from "./base/dropdown";
+import { Dropdown } from "@docubook/ui-react/dropdown";
 import { cn } from "../node/utils";
+import Anchor from "./Anchor";
 import { Context } from "./Context";
 import Menu from "./Menu";
 import { ThemeToggle } from "./Theme";
@@ -132,6 +133,7 @@ export function MobileBar({
         <div className="flex items-center gap-1 p-2">
           <Dropdown
             align="start"
+            menuClassName="w-52 min-w-0"
             trigger={
               <span className="btn btn-ghost btn-sm btn-square">
                 <EllipsisVertical className="text-base-content/60 h-5 w-5" />
@@ -139,9 +141,22 @@ export function MobileBar({
             }
           >
             {(docuConfig.navbar?.menu || []).map((item) => (
-              <DropdownLink key={item.href} href={item.href}>
-                {item.title}
-              </DropdownLink>
+              <li
+                key={item.href}
+                role="menuitem"
+                className="text-base-content/80 hover:text-base-content hover:bg-base-200 cursor-pointer"
+              >
+                <Anchor
+                  href={item.href}
+                  activeWhen={(path: string) =>
+                    path === item.href || path.startsWith(item.href + "/")
+                  }
+                  activeClassName="text-primary font-semibold"
+                  className="block rounded px-2 py-2 text-sm"
+                >
+                  {item.title}
+                </Anchor>
+              </li>
             ))}
           </Dropdown>
 

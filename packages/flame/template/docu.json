@@ -6,6 +6,46 @@
     "baseURL": "http://localhost:3000",
     "favicon": "/docs/assets/images/favicon.ico"
   },
+  "home": {
+    "hero": {
+      "tagline": "#MyDocs",
+      "headline": "Documentation",
+      "description": "Welcome to your documentation site powered by DocuBook Flame.",
+      "actions": [
+        {
+          "text": "Get Started",
+          "link": "/docs/getting-started/introduction",
+          "theme": "primary"
+        },
+        {
+          "text": "GitHub",
+          "link": "https://github.com/gitfromwildan",
+          "theme": "ghost",
+          "icon": "github"
+        }
+      ]
+    },
+    "features": [
+      {
+        "icon": "Zap",
+        "title": "Lightning Fast",
+        "description": "Powered by Bun for instant builds and hot module replacement.",
+        "link": "/docs"
+      },
+      {
+        "icon": "Paintbrush",
+        "title": "Themeable",
+        "description": "Customize with Tailwind CSS and DaisyUI for beautiful documentation.",
+        "link": "#"
+      },
+      {
+        "icon": "Search",
+        "title": "Full-Text Search",
+        "description": "Built-in search for easy content discovery.",
+        "link": "#"
+      }
+    ]
+  },
   "navbar": {
     "logo": {
       "src": "/docs/assets/images/docu.svg",

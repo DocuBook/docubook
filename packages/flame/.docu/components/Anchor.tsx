@@ -34,7 +34,7 @@ export default function Anchor({
 
   const activeClass = isActive ? activeClassName : "";
   const baseClasses = cn(
-    "text-blue-600 hover:text-blue-800 hover:underline transition-colors",
+    "hover:underline transition-colors",
     className,
     activeClass,
     disabled && "cursor-not-allowed opacity-50"
