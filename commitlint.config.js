@@ -21,6 +21,8 @@ const config = {
     ],
     "subject-case": [2, "never", ["sentence-case", "start-case", "pascal-case", "upper-case"]],
     "header-max-length": [2, "always", 100],
+    "body-max-line-length": [0],
+    "body-max-length": [0],
   },
   prompt: {
     alias: {
