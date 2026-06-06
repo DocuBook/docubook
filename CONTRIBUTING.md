@@ -108,24 +108,81 @@ pnpm typecheck
 
 # Clean turbo outputs
 pnpm clean
+
+# Version all packages (consumes changesets, bumps versions, updates CHANGELOGs)
+pnpm version-packages
 ```
 
-### Git Hooks (Husky)
+### 🔒 Strict Commit Hooks (Husky + Commitlint)
 
-Git hooks are automatically set up via Husky during `pnpm install` (via the `prepare` script). These
-hooks enforce code quality standards on every commit.
+> **⚠️ Important**: Commit hooks in this repository are **strictly enforced** and **cannot be skipped**
+> with `--no-verify`. All hooks must pass before a commit is accepted.
 
-#### Pre-commit Hook
+Git hooks are automatically installed via Husky during `pnpm install` (via the `prepare` script).
 
-Runs lint-staged to validate and format staged files:
+#### What Runs on Every Commit
 
-- **JavaScript/TypeScript/JSX/TSX/MDX**: ESLint + Prettier
-- **JSON/MD/MDX**: Prettier check
+| Hook | Runs | Scope |
+|------|------|-------|
+| `pre-commit` | `pnpm lint-staged` (ESLint + Prettier) | Staged files only ✅ |
+| `commit-msg` | `czg --hook` (commitlint) | Current commit message ✅ |
 
-#### Commit-msg Hook
+```bash
+# Pre-commit: lint-staged
+#    ESLint on staged JS/TS/JSX/TSX/MDX files
+#    Prettier formatting check on staged JSON/MD/MDX files
+#    If any check fails, the commit is blocked
 
-Validates commit messages using **Commitlint** with
-[Conventional Commits](https://www.conventionalcommits.org/) format.
+# Commit-msg: czg (commitlint)
+#    Validates commit message follows Conventional Commits format
+#    Format: <type>(<scope>): <subject>
+#    Example: feat(cli): add new template command
+#    If invalid, the commit is rejected with a clear error
+```
+
+#### What Runs on Every Push (`pre-push`)
+
+> ⚠️ **Pre-push is significantly stricter than pre-commit.** A commit can pass pre-commit
+> (which only checks staged files) but still be rejected on push.
+
+|    Hook    |                                 Runs                                 |                         Scope                          |
+| ---------- | -------------------------------------------------------------------- | ------------------------------------------------------ |
+| `pre-push` | `pnpm turbo lint` → `pnpm turbo build` → `commitlint --from @{push}` | **Entire workspace** + **all commits** since last push |
+
+```bash
+# 1. Lint all workspaces (not just staged files)
+#    - Runs full turbo lint across every package
+#    - Prevents pushing broken code that only worked on staged files
+
+# 2. Build all workspaces
+#    - Ensures every package compiles successfully
+#    - Catches tree-wide regressions missed by pre-commit
+
+# 3. Validate ALL commit messages since last push (or origin/main)
+#    - Rules enforced:
+#      - type must be one of: feat \| fix \| docs \| style \| refactor \| perf \| test \| build \| ci \| chore \| revert
+#      - scope is optional (docs, app, packages, cli, core, mdx-content, flame, template)
+#      - subject must be lowercase (no Sentence-case, UPPER-CASE, etc.)
+#      - header max 100 characters
+#    - Every commit in the push must pass — rebase to fix older messages
+```
+
+#### Why So Strict?
+
+- Ensures consistent, readable git history across all contributors
+- Catches formatting and lint issues **before** they reach CI
+- Guarantees every commit message is release-ready for changelog generation
+- Reduces friction in code review by enforcing quality at the earliest stage
+
+#### Recommended Workflow
+
+Use the interactive commit tool for a guided experience:
+
+```bash
+pnpm commit
+```
+
+This walks you through type, scope, and subject selection, producing a valid commit message every time.
 
 ## Project Structure (High Level)
 
@@ -286,7 +343,7 @@ pnpm changeset
 
 ### Version Bump Guide
 
-> **Note**: The `pnpm package` command runs `changeset version` under the hood — it consumes
+> **Note**: The `pnpm version-packages` command runs `changeset version` under the hood — it consumes
 > pending changesets, bumps package versions, and updates CHANGELOGs accordingly.
 
 Choose the bump type based on the nature of the change:
@@ -311,7 +368,7 @@ git add .changeset/
 git commit -m "chore: add changeset for patch fix"
 
 # 3. Apply version bumps and generate CHANGELOG
-pnpm package
+pnpm version-packages
 
 # 4. Commit the version bump
 git add .
@@ -337,7 +394,7 @@ git add .changeset/
 git commit -m "chore: add changeset for new feature"
 
 # 3. Apply version bumps and generate CHANGELOG
-pnpm package
+pnpm version-packages
 
 # 4. Commit the version bump
 git add .
@@ -363,7 +420,7 @@ git add .changeset/
 git commit -m "chore: add changeset for breaking change"
 
 # 3. Apply version bumps and generate CHANGELOG
-pnpm package
+pnpm version-packages
 
 # 4. Commit the version bump
 git add .
