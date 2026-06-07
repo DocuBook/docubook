@@ -174,38 +174,6 @@ Git hooks are automatically installed via Husky during `pnpm install` (via the `
 - Guarantees every commit message is release-ready for changelog generation
 - Reduces friction in code review by enforcing quality at the earliest stage
 
-#### Recommended Workflow
-
-Use the interactive commit tool for a guided experience:
-
-```bash
-pnpm commit
-```
-
-This walks you through type, scope, and subject selection, producing a valid commit message every time.
-
-## Architecture Documentation
-
-Before contributing code or making architectural changes, please review the system architecture
-and decision records in [`architecture/`](./architecture/):
-
-| Document | Description |
-|----------|-------------|
-| [`ARCHITECTURE.md`](./architecture/ARCHITECTURE.md) | Full system architecture overview — purpose, component inventory, data flow, deployment topology, trade-offs |
-| [`component-diagram.md`](./architecture/component-diagram.md) | Block diagram, component responsibilities, dependency graph, flame internal architecture |
-| [`data-flow.md`](./architecture/data-flow.md) | Content pipeline, search indexing, configuration flow, build pipeline, theme data flow |
-| [`scalability-reliability.md`](./architecture/scalability-reliability.md) | Growth handling, failure modes, caching strategy, build-time scalability |
-| [`security.md`](./architecture/security.md) | Trust boundaries, HTTP security headers, supply chain security, secrets management |
-| [`adrs/`](./architecture/adrs/) | Architecture Decision Records — 9 documents covering monorepo, MDX pipeline, UI libraries, config, theme, hydration, build cache, CSS pipeline, and plugin system decisions |
-
-Key decisions that affect contributors:
-- **Monorepo with pnpm** — always use `pnpm install` (not npm/yarn)
-- **Shared MDX pipeline** — all MDX compilation changes go in `@docubook/core`
-- **Island hydration (flame)** — `createRoot` for sidebar and MDX content, `hydrateRoot` for TOC and theme
-- **docu.json** — all framework configuration in a single universal JSON file with `hero` and `plugins` sections (planned)
-- **Build cache** — flame uses `build-cache.json` for incremental builds; use `--force` for full rebuild
-- **Plugin system (planned)** — flame will support hook-based plugins via `docu.json.plugins`; plugin interface at `packages/flame/PLUGIN_DESIGN.md`
-
 ## Project Structure (High Level)
 
 > **Note**: This monorepo uses **pnpm** for workspace management, dependency resolution, and
