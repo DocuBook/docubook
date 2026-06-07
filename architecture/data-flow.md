@@ -44,7 +44,7 @@ Raw MDX → remark-gfm (tables, strikethrough, task lists)
 |-----------|-----------------|-------------------|
 | **flame** | `docu.json` → `fs-scanner` → route map (prev/next, sidebar, breadcrumb) | Static HTML via `renderToString` + `htmlShell` → CDN |
 | **Next.js** | `docu.json` → `generateStaticParams` | ISR/SSG via App Router → Vercel Edge |
-| **rerouter** | `docu.json` → `routes.ts` → SSR loader | Server-rendered per request → Node.js |
+| **react-router** | `docu.json` → `routes.ts` → SSR loader | Server-rendered per request → Node.js |
 
 ### Stage 3: Client Hydration
 
@@ -52,7 +52,7 @@ Raw MDX → remark-gfm (tables, strikethrough, task lists)
 |-----------|----------|
 | **flame** | Island architecture — mixed strategy: `createRoot` for sidebar + mobile-bar + MDX content; `hydrateRoot` for TOC + theme toggle |
 | **Next.js** | Full React hydration via App Router |
-| **rerouter** | React Router v7 hydration (no RSC, no `"use client"`) |
+| **react-router** | React Router v6 hydration (no RSC, no `"use client"`) |
 
 ## Search Data Flow
 
@@ -140,7 +140,7 @@ docu.json
 @docubook/mdx-content   (depends on core as peerDependency)
         │
         ▼
-flame │ apps/web │ templates │ rerouter  (depend on core + mdx-content)
+flame │ apps/web │ templates │ react-router  (depend on core + mdx-content)
 ```
 
 ### Flame Incremental Build (build.ts)
@@ -301,7 +301,7 @@ User runs: npx @docubook/cli@latest (or: npx @docubook/flame init)
 | ------------ | -------------------------------- | ------------------- | ---------------------------------------------------------------------------- |
 | **flame**    | `localStorage`                   | N/A (static)        | Blocking `<script>` in `<head>` reads localStorage, sets class before render |
 | **Next.js**  | `localStorage` via `next-themes` | N/A                 | `next-themes` class strategy + system preference detection                   |
-| **rerouter** | Cookie                           | Available in loader | Cookie read during SSR — renders correct theme immediately                   |
+| **react-router** | Cookie                           | Available in loader | Cookie read during SSR — renders correct theme immediately                   |
 
 ## Git Date Integration
 

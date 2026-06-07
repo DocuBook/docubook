@@ -11,7 +11,7 @@
 │  • @docubook/core (MDX compilation)                             │
 │  • fs-scanner (file system traversal)                           │
 │  • search-indexer (content indexing)                            │
-│  • *.server.ts files (rerouter)                                 │
+│  • *.server.ts files (react-router)                                 │
 │  • docu.json reading & route resolution                         │
 │  • Environment variables (SENTRY_DSN, GITHUB_TOKEN)             │
 │                                                                 │
@@ -50,7 +50,7 @@ Applied to all HTML responses across all frameworks:
 | **Next.js** | `async headers()` in `next.config.mjs` |
 | **flame** (Bun) | `SECURITY_HEADERS` constant + per-request `generateNonce()` → `cspHeader(nonce)` → `htmlResponse(html, nonce, status)` |
 | **Vercel** | `"headers"` array in `vercel.json` |
-| **rerouter** | Middleware in server entry (planned) |
+| **react-router** | Middleware in server entry (planned) |
 
 ### Flame CSP Detail
 
@@ -105,7 +105,7 @@ Content-Security-Policy:
 **Rules:**
 - `.env.example` documents required variables without values
 - `.env` files are gitignored
-- No secrets in client-side code — verified by build-time tree-shaking (`.server.ts` suffix for rerouter)
+- No secrets in client-side code — verified by build-time tree-shaking (`.server.ts` suffix for react-router)
 
 ## Supply Chain Security
 
@@ -185,7 +185,7 @@ DocuBook is a **public documentation site** — no user authentication is requir
 |-------|----------|
 | **flame build** | MDX compilation errors show file path and error message in console; other pages still build; whole build exits with code 1 |
 | **flame server** | 500 errors render styled HTML error page with sanitized message + stack trace; Sentry capture if enabled |
-| **flame 404** | Pages not found render styled 404 page; throw Response in rerouter |
+| **flame 404** | Pages not found render styled 404 page; throw Response in react-router |
 | **Client bundle** | Errors caught in try/catch around React rendering; console.error with limited info |
 | **CSP violation** | Browser reports (no `report-uri` currently — future enhancement) |
 

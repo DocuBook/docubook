@@ -77,8 +77,8 @@ Build Pipeline                          Dev Server
 ] }
 ```
 
-1. String → `require(name).default` (no options)
-2. `[string, object]` → `require(name).default(options)` (factory)
+1. String → `import(name).default` (no options)
+2. `[string, object]` → `import(name).default(options)` (factory)
 3. Relative path `./...` → resolve from project root
 4. Missing export or missing `name` property → throw
 
@@ -110,11 +110,11 @@ Build Pipeline                          Dev Server
 - Plugin loading adds a synchronous startup cost (negligible — `import()` is fast for small plugins)
 - Plugin hook execution adds per-page overhead (one extra loop iteration per hook, <1ms)
 - Plugin errors are fatal during build (acceptable — plugins are trusted code)
-- Plugin system is optional — projects that don't use it pay zero cost at import time (lazy `require`)
+- Plugin system is optional — projects that don't use it pay zero cost at import time (lazy `import`)
 - Future phases: extract built-in search as `@docubook/plugin-search`, add `transformRawContent` hook for reading-time
 
 ## References
 
-- Design doc: `packages/flame/PLUGIN_DESIGN.md` (400 lines, 5 open questions, 3 example plugins)
+- Design doc: `packages/flame/PLUGIN_DESIGN.md` (399 lines, 5 open questions, 3 example plugins)
 - Example plugins: sitemap, analytics, reading-time
 - Open questions answered in design doc: Q1→A (pass raw content), Q2→B (no cache access), Q3→B (no enforce), Q4→B (first-wins), Q5→B (runtime only)

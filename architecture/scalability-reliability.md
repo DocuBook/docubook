@@ -10,7 +10,7 @@
 |-----------|-------------|-----------------|------------|
 | **flame** | Static HTML on CDN | Infinite horizontal — CDN edge caching | Build time (content volume) — mitigated by incremental builds + concurrency |
 | **Next.js/Vercel** | Edge + ISR | On-demand regeneration, edge functions | Cold starts on new pages |
-| **rerouter** | Stateless Node.js | Horizontal pod scaling | In-memory search index rebuild |
+| **react-router** | Stateless Node.js | Horizontal pod scaling | In-memory search index rebuild |
 
 ### Build-Time Scalability (flame)
 
@@ -35,7 +35,7 @@
 **Mitigation for large sites:**
 - flame: `BUILD_CONCURRENCY=N` for parallel MDX compilation; incremental builds skip unchanged files
 - Next.js: ISR avoids full rebuild — only changed pages regenerate
-- rerouter: Search index loaded once at startup, rebuilt on deploy
+- react-router: Search index loaded once at startup, rebuilt on deploy
 
 ## Reliability
 
@@ -45,7 +45,7 @@
 |---------|--------|----------|
 | CDN edge down (flame) | Regional outage | CDN failover to next-nearest PoP |
 | Vercel function timeout | Single page 504 | ISR serves stale, regenerates in background |
-| Node.js crash (rerouter) | Full site down | Process manager restart (PM2/systemd) |
+| Node.js crash (react-router) | Full site down | Process manager restart (PM2/systemd) |
 | MDX compilation error | Build fails on that page | Error reported with file path + message; other pages still build; CI blocks deploy |
 | Search index corruption | Search returns no results | Rebuild on next deploy |
 | Sentry SDK failure | No error reporting | Opt-in, graceful degradation (site still works) |
@@ -91,7 +91,7 @@ CI Matrix Strategy:
 |-----------|--------|-----------|
 | Static sites (flame) | 99.99% | CDN-backed, no server logic |
 | Production site (Vercel) | 99.95% | Vercel SLA + ISR fallback |
-| Self-hosted (rerouter/Docker) | 99.9% | Depends on operator infrastructure |
+| Self-hosted (react-router/Docker) | 99.9% | Depends on operator infrastructure |
 
 ### Graceful Degradation
 

@@ -14,11 +14,12 @@
 |------|------|-----------|---------|-------------|
 | `@docubook/core` | MDX compilation pipeline — remark/rehype plugins, frontmatter, TOC, code blocks, content service | TypeScript, unified, remark-gfm, rehype-prism-plus | 1.7.0 | Consumed by all frameworks at build time |
 | `@docubook/mdx-content` | Portable React MDX components (Tabs, Accordion, CodeBlock, Note, FileTree, Table, Stepper, Youtube, Tooltip, Release, Kbd, Card, Link, Image) + framework adapters | React 19, TypeScript | 3.2.1 | Imported by frameworks; adapters for Next.js (`./next`), generic client (`./client`), generic server (`./server`) |
-| `@docubook/flame` | Bun-powered SSG framework — fs-scanner, incremental build (content hashing, build cache, concurrency), island hydration (mixed createRoot/hydrateRoot), HMR via SSE, hierarchy-based search index, Sentry error tracking (optional) | Bun 1.1+, React 19, DaisyUI 5, Tailwind CSS 4, Lucide React | 1.0.0-rc.1 | Reads `docu.json`, imports core + mdx-content, outputs static HTML + client bundle |
+| `@docubook/flame` | Bun-powered SSG framework — fs-scanner, incremental build (content hashing, build cache, concurrency), island hydration (mixed createRoot/hydrateRoot), HMR via SSE, hierarchy-based search index, Sentry error tracking (optional) | Bun 1.1+, React 19, DaisyUI 5, Tailwind CSS 4, Lucide React | 1.1.0 | Reads `docu.json`, imports core + mdx-content + ui-react, outputs static HTML + client bundle |
 | `apps/web` | Production docs site (docubook.pro) — Next.js App Router, Algolia DocSearch, Radix UI + shadcn/ui | Next.js 16, React 19.2, Geist font, Sonner | 1.0.0 | Deployed on Vercel; imports core + mdx-content |
 | `packages/template/nextjs` | Starter template for Vercel deployment | Next.js 16, App Router, Tailwind CSS 4, Radix UI, framer-motion | 1.0.0 | Distributed via CLI; imports core + mdx-content |
 | `packages/template/nextjs-docker` | Starter template for self-hosted Docker deployment | Next.js 16, Docker multi-stage Alpine | — | Dockerfile + template config for containerized deployment |
-| `packages/template/react-router` | React Router v7 SSR framework (planned — detailed plan at `packages/template/react-router/plan.md`) | Vite, React Router v7, DaisyUI 5, Tailwind CSS 4, Node.js | — | Planned: SSR with loaders, cookie-based theme, server-side search resource routes |
+| `@docubook/ui-react` | Reusable DaisyUI 5 + Tailwind CSS 4 React component library — Collapse, Modal, Dropdown, Drawer, Input, Kbd, Navbar, Pagination, Toggle, ThemeController, Breadcrumbs | React 19, DaisyUI 5, Tailwind CSS 4, Lucide React | 0.1.3 | Consumed by flame app components and registry |
+| `packages/template/react-router` | React Router v6 SSR framework (planned — detailed plan at `packages/template/react-router/plan.md`) | Vite, React Router v6, DaisyUI 5, Tailwind CSS 4, Node.js | — | Planned: SSR with loaders, cookie-based theme, server-side search resource routes |
 | `@docubook/cli` | Scaffolding tool — template selection (via prompts), project init, dependency install | Node.js ≥18, Commander 12, prompts, tar, boxen, chalk, ora | 0.6.1 | Downloads templates from GitHub release artifacts; detects package manager |
 | Turborepo | Build orchestration — content-hash caching, parallel task execution, DAG scheduling | Turborepo 2.9 | — | Orchestrates `build`, `lint`, `typecheck`, `test` across workspace |
 | Changesets | Package versioning and changelog generation | @changesets/cli | — | Independent version bumps per package with conventional commits |
@@ -64,7 +65,7 @@ Steps 1–3 identical. Step 4 uses `generateStaticParams` from docu.json routes.
 **Trade-off:** All contributors must use pnpm (enforced via `packageManager` field). Alternatives considered: polyrepo (rejected — cross-package changes require multiple PRs), yarn workspaces (rejected — no strict dependency isolation).
 
 **Decision 2: Shared MDX pipeline as `@docubook/core`**
-**Context:** 15+ remark/rehype plugins must be configured identically across 4 frameworks.
+**Context:** remark/rehype plugins must be configured identically across 4 frameworks.
 **Rationale:** Single source of truth; bug fixes propagate via version bump; testable in isolation without framework overhead.
 **Trade-off:** Frameworks cannot customize plugin chain without extending core. Alternatives considered: per-framework config (rejected — drift), shared config file (rejected — no testability).
 
@@ -98,15 +99,17 @@ Steps 1–3 identical. Step 4 uses `generateStaticParams` from docu.json routes.
 **Rationale:** Hook-based interface at 9 integration points in build + dev server covers 90%+ of extension needs. Zero-config — no plugins = no behavior change. See [ADR-009](./adrs/009-flame-plugin-system.md) and [PLUGIN_DESIGN.md](../packages/flame/PLUGIN_DESIGN.md).
 **Trade-off:** Plugin hooks add complexity to the build and server code paths; execution order is always sequential (no parallel hooks). Alternatives considered: (a) middleware pattern (rejected — over-engineered for <5 plugins), (b) forking (rejected — maintenance burden), (c) no extension system (rejected — users would fork anyway).
 
-**Decision 9: Homepage as composable section components**
+**Decision 9: Homepage as composable section components with `Lucide.tsx`**
 **Context:** flame's landing page (`index.tsx`) was a monolithic component. Main branch introduced structured homepage sections (Hero, Features) with configurable icons and grid patterns.
 **Rationale:** Separating Hero, Features, and Lucide into their own files makes the homepage composable, testable, and configurable via `docu.json`.
 **Trade-off:** More files to maintain; homepage customization requires component changes for now.
 
-**Decision 10: Centralized Lucide icon with FnKey.configure()**
-**Context:** Multiple components were importing Lucide icons directly, making icon changes spread across the codebase.
-**Rationale:** `FnKey.configure()` centralizes icon configuration — single import point, optional Lucide support, consistent naming across Navbar, Sidebar, Search, Context, Sublink, Social, and home components.
-**Trade-off:** Adds abstraction layer for icon resolution; Lucide remains optional (graceful fallback when not configured).
+**Decision 10: Centralized icon system — FnKey for keyboard shortcuts, Lucide.tsx for application icons**
+**Context:** Multiple components were importing Lucide icons directly, and keyboard shortcut labels (Cmd, Option, Shift) also needed consistent rendering.
+**Rationale:** Two separate systems serve different purposes:
+- `FnKey.configure()` — keyboard shortcut icons (Cmd, Option, Shift, Ctrl, Enter, etc.) used in Kbd component and shortcut hints
+- `Lucide.tsx` / `getLucideIcon()` — general application icons (BookOpen, Layers, Search, Zap, Paintbrush, etc.) used across Navbar, Sidebar, Search, Context, Sublink, Social, Features, and Hero
+**Trade-off:** Two icon systems instead of one; `FnKey.configure()` is not for general icons.
 
 ## Deployment Topology
 
@@ -114,9 +117,9 @@ Steps 1–3 identical. Step 4 uses `generateStaticParams` from docu.json routes.
 
 | Environment | Purpose | Infrastructure |
 |-------------|---------|---------------|
-| **Development** | Local authoring + hot reload | `bun run dev` (flame: Bun HTTP + HMR SSE), `next dev` (Next.js), `vite dev` (rerouter) |
+| **Development** | Local authoring + hot reload | `bun run dev` (flame: Bun HTTP + HMR SSE), `next dev` (Next.js), `vite dev` (react-router) |
 | **CI** | Lint + Type-check → Test → Build (parallel matrix) | GitHub Actions, `pnpm --frozen-lockfile`, `pnpm turbo`, Bun for flame builds |
-| **Production** | Live documentation sites | CDN (flame), Vercel Edge (Next.js), Docker/Node.js (rerouter) |
+| **Production** | Live documentation sites | CDN (flame), Vercel Edge (Next.js), Docker/Node.js (react-router) |
 
 ### Packaging
 
@@ -125,7 +128,7 @@ Steps 1–3 identical. Step 4 uses `generateStaticParams` from docu.json routes.
 | flame | `dist/` — static HTML, CSS, JS (content-hashed), search JSON | None (CDN upload) — `flame deploy` generates GitHub Pages workflow |
 | Next.js (Vercel) | `.next/` — serverless functions + static assets | Vercel managed |
 | Next.js (Docker) | `.next/standalone/` — self-contained Node.js server | Alpine multi-stage Docker image |
-| rerouter | `build/server/` + `build/client/` — Vite bundles | Node.js process (PM2/systemd), Vercel, Railway |
+| react-router | `build/server/` + `build/client/` — Vite bundles | Node.js process (PM2/systemd), Vercel, Railway |
 
 ### Network Boundaries
 
@@ -145,7 +148,7 @@ Steps 1–3 identical. Step 4 uses `generateStaticParams` from docu.json routes.
                              │ (SSR only)
                              ▼
 ┌─────────────────────────────────────────────────────────┐
-│  Origin Server (rerouter/Docker only)                   │
+│  Origin Server (react-router/Docker only)               │
 │  • Node.js process (PM2/systemd)                        │
 │  • In-memory search index (built at startup)            │
 │  • Cookie-based theme (SSR-safe, no FOUC)               │
@@ -174,7 +177,7 @@ Flame's landing page is now composed from modular sections:
 | `home/Features.tsx` | `.docu/components/home/Features.tsx` | Feature showcase cards with grid pattern background |
 | `Lucide.tsx` | `.docu/components/Lucide.tsx` | Centralized Lucide icon wrapper with `FnKey.configure()` |
 
-Homepage data is driven by `docu.json.hero` and route contexts — no hardcoded content.
+Homepage data is driven by `docu.json.home.hero` and route contexts — no hardcoded content.
 
 ### Scaling
 
@@ -182,7 +185,7 @@ Homepage data is driven by `docu.json.hero` and route contexts — no hardcoded 
 |--------|----------|-------|
 | flame (CDN) | Infinite horizontal — edge PoPs worldwide | Build time only (mitigated by incremental builds + concurrency) |
 | Vercel | Auto-scaling serverless + ISR stale-while-revalidate | Vercel plan limits |
-| rerouter (Docker) | Horizontal pod scaling (stateless) | Search index memory per instance |
+| react-router (Docker) | Horizontal pod scaling (stateless) | Search index memory per instance |
 
 ### Security Note
 
@@ -193,8 +196,8 @@ No sensitive user data is stored or processed. All content is public. Secrets (`
 | Limitation | Impact | Mitigation |
 |-----------|--------|------------|
 | **No dynamic content** — all pages are MDX files, no database/CMS | Cannot support user-generated content or real-time updates | Acceptable for documentation use case; ISR provides near-real-time for Next.js |
-| **Framework-specific UI** — DaisyUI (flame/rerouter) vs Radix (Next.js/template) | Components not directly portable between frameworks; maintenance cost × 2 | `@docubook/mdx-content` stays framework-agnostic; only layout/chrome differs |
-| **In-memory search (rerouter)** — index rebuilt on startup | Memory usage grows linearly with content; cold start delay | Acceptable for <5000 pages; large sites should use Algolia |
+| **Framework-specific UI** — DaisyUI (flame/react-router) vs Radix (Next.js/template) | Components not directly portable between frameworks; maintenance cost × 2 | `@docubook/mdx-content` stays framework-agnostic; only layout/chrome differs |
+| **In-memory search (react-router)** — index rebuilt on startup | Memory usage grows linearly with content; cold start delay | Acceptable for <5000 pages; large sites should use Algolia |
 | **`unsafe-eval` in CSP (flame dev/preview)** — required for MDX runtime eval | Weakens CSP protection against XSS | Only in preview/dev mode; production static build does not require eval |
 | **Single `docu.json` config** — no dynamic route generation | Cannot pull routes from external APIs or databases | Covers 99% of documentation use cases; escape hatch via custom route resolver |
 | **Bun dependency (flame)** — not all hosting providers support Bun | Limits deployment options for flame framework | Build output is standard static HTML — only build step needs Bun |

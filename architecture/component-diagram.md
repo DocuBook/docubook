@@ -27,7 +27,7 @@
 │  │  └──────────────────────────┘                                                  │
 │  │                                                                                │
 │  │  ┌──────────────────────────────────────────────────────────────────────────┐  │
-│  │  │                   @docubook/ui-react (v1.x)                              │  │
+│  │  │                   @docubook/ui-react (v0.x)                              │  │
 │  │  │                                                                          │  │
 │  │  │  Reusable DaisyUI 5 + Tailwind CSS 4 React component library             │  │
 │  │  │  • Collapse / Accordion       • Drawer                                   │  │
@@ -56,7 +56,7 @@
 │  │                                                                                │
 │  │  ┌───────────────────────────────────────────────────────────────────────────┐ │
 │  │  │  packages/template/react-router (PLANNED)                                 │ │
-│  │  │  Vite + React Router v7 · SSR · DaisyUI 5 · Node.js server                │ │
+│  │  │  Vite + React Router v6 · SSR · DaisyUI 5 · Node.js server                │ │
 │  │  │  • Server-side search via resource routes (/api/search)                   │ │
 │  │  │  • Cookie-based theme (SSR-safe, no FOUC)                                 │ │
 │  │  │  • SPA navigation (Link/useNavigate, no full reload)                      │ │
@@ -91,7 +91,7 @@
 |-----------|---------------|-----------|
 | `@docubook/core` | MDX compilation pipeline — remark/rehype plugins, frontmatter extraction, TOC generation, code block processing, content service (`createMdxContentService`) | All frameworks |
 | `@docubook/mdx-content` | Portable MDX React components (Accordion, Tabs, CodeBlock, Note, Card, FileTree, Image, Link, Table, Stepper, Youtube, Tooltip, Button, Release, Kbd) with framework-specific adapters | All frameworks |
-| `@docubook/ui-react` | Reusable DaisyUI 5 + Tailwind CSS 4 React component library — Collapse, Modal, Dropdown, Drawer, Input, Kbd, Navbar, Pagination, Toggle, ThemeController, Breadcrumbs. Consumed by flame app components and registry. | All DaisyUI-based frameworks (flame, rerouter) |
+| `@docubook/ui-react` | Reusable DaisyUI 5 + Tailwind CSS 4 React component library — Collapse, Modal, Dropdown, Drawer, Input, Kbd, Navbar, Pagination, Toggle, ThemeController, Breadcrumbs. Consumed by flame app components and registry. | All DaisyUI-based frameworks (flame, react-router) |
 
 ### Consumer Frameworks
 
@@ -101,7 +101,7 @@
 | `apps/web` | Production documentation site (docubook.pro) — Next.js App Router 16, Algolia DocSearch, Radix UI, Geist font | Vercel |
 | `packages/template/nextjs` | Starter template for Vercel deployment — Next.js 16, Radix UI, framer-motion | Vercel |
 | `packages/template/nextjs-docker` | Starter template for self-hosted Docker deployment | Docker/any host |
-| `packages/template/react-router` | React Router v7 framework mode (planned) — SSR, server-side search, cookie-based theme | Node.js server (Vercel, Railway, VPS) |
+| `packages/template/react-router` | React Router v6 framework mode (planned) — SSR, server-side search, cookie-based theme | Node.js server (Vercel, Railway, VPS) |
 
 ### Tooling
 
@@ -190,7 +190,7 @@
 │   ├── server.test.ts                    # Dev server tests
 │   └── utils.test.ts                     # Utility function tests
 │
-├── .docu/build-cache.json                # Incremental build cache
+├── .docu/build-cache.json                # Incremental build cache (generated)
 ├── PLUGIN_DESIGN.md                      # Plugin system architecture design (see below)
 ├── docs/                                 # MDX content directory
 ├── docu.json                             # Site configuration
@@ -309,19 +309,27 @@ docu.json
 
 This enables framework-agnostic route resolution, sidebar generation, pagination, breadcrumb rendering, landing page showcase cards, and extensible plugin loading.
 
-### `docu.json` `hero` Section (Homepage)
+### `docu.json` `home.hero` Section (Homepage)
 
-In addition to the universal config, `docu.json` now supports a `hero` block for homepage customization:
+Homepage hero is configured under `docu.json.home.hero`:
 
 ```
 docu.json
-├── hero:
-│   ├── title: Hero headline
-│   ├── description: Hero subtitle
-│   ├── actions: CTA buttons with Lucide/social icons
-│   │   ├── type: "primary" | "secondary" | "social"
-│   │   ├── label: Button text
-│   │   ├── href: Target URL
-│   │   └── icon: Lucide icon name (optional, via FnKey.configure())
-│   └── trust: Trust indicators (logo, stats)
+├── home:
+│   ├── hero:
+│   │   ├── tagline: Tagline text (optional)
+│   │   ├── headline: Hero headline
+│   │   ├── description: Hero description (optional)
+│   │   └── actions: CTA buttons (optional)
+│   │       ├── text: Button text
+│   │       ├── link: Target URL
+│   │       ├── theme: "primary" | "secondary" | "ghost"
+│   │       └── icon: Lucide or social icon name (optional)
+│   └── features: Feature showcase cards (optional)
+│       ├── icon: Lucide icon name
+│       ├── title: Feature title
+│       ├── description: Feature description
+│       └── link: Target URL (optional)
 ```
+
+> **Actual types** (from `packages/flame/.docu/node/types.ts`): `Hero { tagline?, headline, description?, actions? }` with `HeroAction { text, link, theme?, icon? }`. Theme values are `"primary"` | `"secondary"` | `"ghost"` (not `"social"`). There is no `trust` section.

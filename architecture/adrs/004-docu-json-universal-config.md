@@ -18,7 +18,7 @@ Use `docu.json` as the single configuration file consumed by all frameworks.
 
 ## Rationale
 
-- **Framework-agnostic** — same config works across flame, Next.js, and rerouter
+- **Framework-agnostic** — same config works across flame, Next.js, and react-router
 - **Statically analyzable** — tools can parse routes without executing code
 - **Declarative routing** — explicit route tree enables sidebar, pagination, breadcrumb generation
 - **CLI compatibility** — `@docubook/cli` can validate and scaffold from docu.json schema

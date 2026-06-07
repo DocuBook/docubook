@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-Each framework (flame, Next.js, rerouter) needs to compile MDX files with the same plugin chain: remark-gfm, rehype-prism-plus, rehype-code-titles, custom code-expandable, frontmatter extraction, and TOC generation. Duplicating 15+ plugin configurations across frameworks creates drift and maintenance burden.
+Each framework (flame, Next.js, react-router) needs to compile MDX files with the same plugin chain: remark-gfm, rehype-prism-plus, rehype-code-titles, custom code-expandable, frontmatter extraction, and TOC generation. Duplicating plugin configurations across frameworks creates drift and maintenance burden.
 
 ## Decision
 

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (Updated 2025-06-06)
+Accepted (Updated 2026-06-06)
 
 ## Context
 
@@ -11,7 +11,7 @@ Dark/light theme must persist across page loads without Flash of Unstyled Conten
 DocuBook supports three rendering strategies:
 - **flame (SSG)** — Static HTML, no server at runtime
 - **Next.js (ISR/SSG)** — React Server Components, client hydration
-- **rerouter (SSR)** — Node.js server, full request/response cycle
+- **react-router (SSR)** — Node.js server, full request/response cycle
 
 ## Decision
 
@@ -21,7 +21,7 @@ Use a different persistence mechanism per framework, optimized for its rendering
 |-----------|---------|-----------|------------|-----------------|
 | **flame** (SSG) | `localStorage` | Blocking `<script>` in `<head>` + `prefers-color-scheme` CSS fallback | N/A — no server | Script runs before first paint, sets `dark` class on `<html>` |
 | **Next.js** | `localStorage` | `next-themes` library + Tailwind `dark:` variant | N/A | `next-themes` handles class strategy + system preference + hydration guard |
-| **rerouter** (SSR) | Cookie | Read cookie in SSR loader → set `data-theme` attribute on `<html>` | Available in every request | Cookie read during SSR — correct theme rendered immediately, no flash |
+| **react-router** (SSR) | Cookie | Read cookie in SSR loader → set `data-theme` attribute on `<html>` | Available in every request | Cookie read during SSR — correct theme rendered immediately, no flash |
 
 ### Flame Implementation Detail
 
@@ -53,13 +53,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 ## Rationale
 
 - **SSG (flame)**: No server request, so cookies are useless. A blocking script is the only way to prevent FOUC without a server round-trip.
-- **SSR (rerouter)**: Cookies are sent with every request, so the server can render the correct theme immediately. No client-side flash. This is the most elegant solution but requires a running server.
+- **SSR (react-router)**: Cookies are sent with every request, so the server can render the correct theme immediately. No client-side flash. This is the most elegant solution but requires a running server.
 - **Next.js**: `next-themes` is the ecosystem standard. It handles edge cases (system preference, hydration mismatch, SSR guard) that would be costly to re-implement.
 
 ## Consequences
 
 - flame requires `unsafe-inline` in CSP for the blocking theme script (mitigated by nonce-based CSP per ADR-006)
-- rerouter theme toggle uses `useFetcher()` to set cookie without full page reload
+- react-router theme toggle uses `useFetcher()` to set cookie without full page reload
 - Theme values must be consistent across frameworks (`"light"`, `"dark"`, with possible `"system"` support)
 - flame supports system preference via CSS media query (no JS needed)
 - If user has no stored preference, flame falls back to system default (no flash)
