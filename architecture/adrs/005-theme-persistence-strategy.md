@@ -37,7 +37,7 @@ Use a different persistence mechanism per framework, optimized for its rendering
 - System preference handled via `prefers-color-scheme` CSS media query as fallback
 - No cookie needed since there's no server to read it
 
-### Rerouter Implementation (Planned)
+### React-Router Implementation (Planned)
 
 ```typescript
 // Loader reads cookie, passes theme to root component

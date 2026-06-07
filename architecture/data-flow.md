@@ -97,7 +97,7 @@ Raw MDX → remark-gfm (tables, strikethrough, task lists)
 | Runtime  | Client queries Algolia DocSearch API via `@docsearch/react` widget |
 | Fallback | Built-in client search as degraded fallback                        |
 
-### Rerouter — Server-Side Search (Planned)
+### React-Router — Server-Side Search (Planned)
 
 |   Step   |                           Description                            |
 | -------- | ---------------------------------------------------------------- |
