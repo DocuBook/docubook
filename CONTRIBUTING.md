@@ -174,16 +174,6 @@ Git hooks are automatically installed via Husky during `pnpm install` (via the `
 - Guarantees every commit message is release-ready for changelog generation
 - Reduces friction in code review by enforcing quality at the earliest stage
 
-#### Recommended Workflow
-
-Use the interactive commit tool for a guided experience:
-
-```bash
-pnpm commit
-```
-
-This walks you through type, scope, and subject selection, producing a valid commit message every time.
-
 ## Project Structure (High Level)
 
 > **Note**: This monorepo uses **pnpm** for workspace management, dependency resolution, and
