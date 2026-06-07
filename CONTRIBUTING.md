@@ -161,7 +161,7 @@ Git hooks are automatically installed via Husky during `pnpm install` (via the `
 # 3. Validate ALL commit messages since last push (or origin/main)
 #    - Rules enforced:
 #      - type must be one of: feat \| fix \| docs \| style \| refactor \| perf \| test \| build \| ci \| chore \| revert
-#      - scope is optional (docs, app, packages, cli, core, mdx-content, flame, template)
+#      - scope is optional (app, packages, cli, core, flame, mdx-content, docs, configs, template)
 #      - subject must be lowercase (no Sentence-case, UPPER-CASE, etc.)
 #      - header max 100 characters
 #    - Every commit in the push must pass — rebase to fix older messages
@@ -232,6 +232,7 @@ The `scope` is optional but recommended. Common scopes:
 | `packages`    | Package changes (general) |
 | `cli`         | CLI package               |
 | `core`        | Core package              |
+| `flame`       | Bun-powered docs framework |
 | `mdx-content` | MDX content package       |
 | `docs`        | Documentation             |
 | `configs`     | Configuration files       |
@@ -246,6 +247,16 @@ docs: update API documentation
 refactor(app): simplify navigation logic
 chore: update dependencies
 ```
+
+### Commit Message Rules (Enforced by Pre-push)
+
+In addition to the format above, pre-push hooks enforce these rules:
+
+- **Subject must be lowercase** — no Sentence-case, UPPER-CASE, or Title Case
+  - ✅ `feat(cli): add new template command`
+  - ❌ `feat(cli): Add new template command`
+- **Header max 100 characters** — keep it concise
+- **All commits since last push are validated** — rebase to fix older messages
 
 ### Interactive Commit (czg)
 
@@ -264,31 +275,34 @@ This provides a guided interface for writing properly formatted commit messages.
 1. **Read the issues list**: Only open a PR if there is an existing issue describing your change. If
    not, create a new issue first and wait for confirmation or discussion.
 2. **Create a branch**: Name your branch according to the issue and guidelines below.
-3. **Keep your branch up to date**: Always merge the latest `main` branch into your feature branch
+3. **Keep your branch up to date**: Always rebase your feature branch on the latest `main`
    before opening a PR.
 
-#### How to Merge with `main`
+#### How to Rebase with `main`
 
-For this repository, **always use merge** to update your branch with the latest `main` before
-opening a pull request. This keeps the commit history transparent and avoids rewriting history,
-which is safer for open source collaboration.
+Before opening a pull request, **rebase** your feature branch on the latest `main` to keep a
+clean, linear history. Since pre-push hooks strictly validate every commit message (including
+merge commits), rebasing avoids creating merge commits that would fail those checks.
 
-- **Merge** keeps the full history and creates a new commit that combines changes from both
-  branches. The commit graph will show a branch and merge point.
+- **Rebase** replays your commits on top of `main`, producing a clean linear history
+  without extra merge commits — and keeps the `commitlint` hook happy.
 
-To merge the latest `main` into your branch:
+To rebase on the latest `main`:
 
 ```bash
 git fetch origin
 git checkout your-branch
-git merge origin/main
+git rebase origin/main
 ```
 
-Resolve any conflicts if prompted, then push your branch to your own feature branch (not to `main`):
+Resolve any conflicts if prompted, then force-push your branch (history has been rewritten):
 
 ```bash
-git push origin your-branch
+git push --force-with-lease origin your-branch
 ```
+
+> **Note**: `--force-with-lease` is safer than `--force` — it prevents accidentally
+> overwriting others' work on shared branches.
 
 ### PR Title
 
