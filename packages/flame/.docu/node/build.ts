@@ -16,7 +16,7 @@ import {
 } from "./paths";
 import { htmlShell as createHtmlShell } from "./html";
 import { generateSearchIndex } from "./search-indexer";
-import { buildClientBundle } from "./hydrate";
+import { buildClientBundle, computeInlineThemeCss } from "./hydrate";
 import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
 import type { BuildCache, CliArgs } from "./types";
@@ -95,6 +95,8 @@ export function shouldRebuild(path: string, mtime: number, cache: BuildCache): b
 
 let assetManifest = { js: "client.js", css: "client.css" };
 
+let inlineThemeCss: string | undefined;
+
 function htmlShell(title: string, description: string, body: string): string {
   const favicon = docuConfig.meta?.favicon || "/favicon.ico";
   return createHtmlShell({
@@ -104,6 +106,7 @@ function htmlShell(title: string, description: string, body: string): string {
     favicon,
     css: assetManifest.css,
     js: assetManifest.js,
+    themeCss: inlineThemeCss,
   });
 }
 
@@ -188,6 +191,8 @@ async function build() {
   let t = performance.now();
   assetManifest = await buildClientBundle();
   logger.bundleDone(Math.round(performance.now() - t));
+
+  inlineThemeCss = computeInlineThemeCss();
 
   const lastManifest = cache["__assets__"];
   const assetsChanged =

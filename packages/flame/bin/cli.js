@@ -16,6 +16,12 @@ const COMMAND_MAP = {
 
 const command = process.argv[2];
 
+// Parse --theme flag: set env before importing build script
+const themeIndex = process.argv.indexOf("--theme");
+if (themeIndex !== -1 && themeIndex + 1 < process.argv.length) {
+  process.env.FLAME_THEME = process.argv[themeIndex + 1];
+}
+
 if (!command || command === "--help" || command === "-h") {
   console.log(`
   @docubook/flame — A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.
@@ -31,7 +37,8 @@ if (!command || command === "--help" || command === "-h") {
     init      Scaffold a new project in current directory
 
   Options:
-    --help    Show this help message
+    --help        Show this help message
+    --theme <name>  Override theme preset (e.g. freshlime, coffee). Works with dev, build, preview.
 `);
   process.exit(0);
 }

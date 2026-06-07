@@ -11,7 +11,7 @@ import DocsPage from "../pages/docs/[[...slug]]";
 import NotFoundPage from "../pages/404";
 import IndexPage from "../pages/index";
 import { DocsLayout } from "../components/DocsLayout";
-import { buildClientBundle } from "./hydrate";
+import { buildClientBundle, computeInlineThemeCss } from "./hydrate";
 import { generateSearchIndex } from "./search-indexer";
 import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
@@ -30,6 +30,8 @@ logger.bundleStart();
 let t = performance.now();
 const assetManifest = await buildClientBundle();
 logger.bundleDone(Math.round(performance.now() - t));
+
+const inlineThemeCss = computeInlineThemeCss();
 
 logger.indexStart();
 t = performance.now();
@@ -91,6 +93,7 @@ function createHtmlResponse(
     js: assetManifest.js,
     nonce,
     extraScripts: hmrScript(nonce),
+    themeCss: inlineThemeCss,
   });
   return htmlResponse(html, nonce, status);
 }

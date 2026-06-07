@@ -117,6 +117,35 @@
       "type": "array",
       "description": "Documentation navigation routes. Leave empty for auto-detection from docs/ folder.",
       "items": { "$ref": "#/$defs/route" }
+    },
+    "themes": {
+      "type": "object",
+      "description": "Color themes configuration. Use preset name or custom hex values.",
+      "additionalProperties": false,
+      "properties": {
+        "colors": {
+          "description": "Theme colors — preset name (e.g. \"default\", \"freshlime\", \"coffee\") or custom hex object",
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["default", "freshlime", "coffee"]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "primary": {
+                  "type": "string",
+                  "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+                  "description": "Primary brand color in hex format"
+                }
+              },
+              "required": ["primary"]
+            }
+          ]
+        }
+      },
+      "required": ["colors"]
     }
   },
   "$defs": {

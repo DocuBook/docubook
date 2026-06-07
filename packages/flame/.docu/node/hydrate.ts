@@ -1,8 +1,12 @@
 import { join } from "node:path";
 import { mkdir, readdir, unlink } from "node:fs/promises";
+import { resolveTheme, generateThemeCss, presetRegistry } from "@docubook/themes-colors";
 import { ASSETS_DIR, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
 import { resolveRoutes } from "./fs-scanner";
 import type { DocuRoute } from "./types";
+import type { ThemeConfig } from "@docubook/themes-colors";
+
+const themeRegistry = presetRegistry;
 
 async function cleanOldBundles() {
   try {
@@ -17,6 +21,53 @@ async function cleanOldBundles() {
       console.error("Failed to clean old bundles:", (err as Error).message);
     }
   }
+}
+
+/**
+ * Read the effective theme config with this priority:
+ * 1. FLAME_THEME env var (CLI --theme flag)
+ * 2. docu.json theme.colors field
+ */
+export function getThemeConfig(): ThemeConfig | undefined {
+  if (process.env.FLAME_THEME) {
+    return process.env.FLAME_THEME;
+  }
+  const config = loadDocuConfig();
+  return config.themes?.colors;
+}
+
+/**
+ * Append theme CSS to compiled Tailwind output based on theme config.
+ */
+export function buildThemeCss(baseCss: string, themeConfig: unknown): string {
+  try {
+    const resolved = resolveTheme(themeConfig as ThemeConfig | undefined | null, themeRegistry);
+    return baseCss + "\n" + generateThemeCss(resolved);
+  } catch (err) {
+    console.warn(
+      `[flame] Failed to resolve theme CSS: ${err instanceof Error ? err.message : String(err)}`
+    );
+    return baseCss;
+  }
+}
+
+/**
+ * Compute inline theme CSS for FOUC prevention.
+ * Returns undefined if no theme is configured or on error.
+ */
+export function computeInlineThemeCss(): string | undefined {
+  try {
+    const themeColors = getThemeConfig();
+    if (themeColors) {
+      const resolved = resolveTheme(themeColors, themeRegistry);
+      return generateThemeCss(resolved);
+    }
+  } catch (err) {
+    console.warn(
+      `[flame] Failed to compute inline theme CSS: ${err instanceof Error ? err.message : String(err)}`
+    );
+  }
+  return undefined;
 }
 
 export async function buildClientBundle(): Promise<{ js: string; css: string }> {
@@ -93,7 +144,20 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
     const err = await new Response(proc.stderr).text();
     throw new Error(`Tailwind CSS build failed:\n${err}`);
   }
-  const cssContent = await Bun.file(tmpCss).arrayBuffer();
+
+  let cssContent = await Bun.file(tmpCss).text();
+
+  try {
+    const themeColors = getThemeConfig();
+    if (themeColors) {
+      cssContent = buildThemeCss(cssContent, themeColors);
+    }
+  } catch (err) {
+    console.warn(
+      `[flame] Failed to resolve theme config, falling back to globals.css only: ${err instanceof Error ? err.message : String(err)}`
+    );
+  }
+
   const cssHash = new Bun.CryptoHasher("md5").update(cssContent).digest("hex").slice(0, 8);
   const cssFile = `client-${cssHash}.css`;
   await Bun.write(join(ASSETS_DIR, cssFile), cssContent);

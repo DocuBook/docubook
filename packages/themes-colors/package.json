@@ -1,0 +1,61 @@
+{
+  "name": "@docubook/themes-colors",
+  "version": "0.9.0",
+  "description": "Theme color presets and color utilities for DocuBook — hex-to-HSL, CSS variable generation, and 3 built-in themes (Default/Blue, Fresh Lime, Coffee).",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./themes/*": {
+      "default": "./themes/*"
+    },
+    "./syntax/*": {
+      "default": "./syntax/*"
+    }
+  },
+  "files": [
+    "dist",
+    "themes",
+    "syntax",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm run clean && pnpm run test && pnpm run build"
+  },
+  "keywords": [
+    "docubook",
+    "flame",
+    "theme",
+    "colors",
+    "css-variables",
+    "hex-to-hsl"
+  ],
+  "homepage": "https://docubook.pro/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DocuBook/docubook.git",
+    "directory": "packages/themes-colors"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "author": "wildan.nrs",
+  "author-url": "https://wildan.dev",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^25.9.2",
+    "@vitest/coverage-v8": "^4.1.7",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.7"
+  }
+}
