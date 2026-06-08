@@ -9,7 +9,7 @@
     "typecheck": "turbo typecheck",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "publish-packages": "pnpm publish -r --no-git-checks",
+    "publish-packages": "changeset publish",
     "prepare": "husky",
     "commit": "czg"
   },
