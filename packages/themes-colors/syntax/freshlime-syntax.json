@@ -1,0 +1,30 @@
+{
+  "light": {
+    "keyword": "hsl(85 70% 30%)",
+    "function": "hsl(85 65% 35%)",
+    "punctuation": "hsl(85 15% 50%)",
+    "comment": "hsl(85 15% 50%)",
+    "string": "hsl(85 50% 35%)",
+    "constant": "hsl(85 50% 35%)",
+    "annotation": "hsl(85 50% 35%)",
+    "boolean": "hsl(85 50% 35%)",
+    "number": "hsl(85 50% 35%)",
+    "tag": "hsl(85 70% 25%)",
+    "attrName": "hsl(85 60% 35%)",
+    "attrValue": "hsl(85 70% 30%)"
+  },
+  "dark": {
+    "keyword": "hsl(85 75% 65%)",
+    "function": "hsl(85 75% 60%)",
+    "punctuation": "hsl(85 20% 70%)",
+    "comment": "hsl(85 15% 60%)",
+    "string": "hsl(85 60% 70%)",
+    "constant": "hsl(85 60% 70%)",
+    "annotation": "hsl(85 60% 70%)",
+    "boolean": "hsl(85 60% 70%)",
+    "number": "hsl(85 60% 70%)",
+    "tag": "hsl(85 70% 70%)",
+    "attrName": "hsl(85 65% 70%)",
+    "attrValue": "hsl(85 75% 65%)"
+  }
+}

@@ -66,6 +66,8 @@ export interface HomeConfig {
   features?: HomeFeature[];
 }
 
+import type { ThemeConfig } from "@docubook/themes-colors";
+
 export interface DocuConfig {
   meta: DocuMeta;
   home?: HomeConfig;
@@ -73,6 +75,9 @@ export interface DocuConfig {
   footer: DocuFooter;
   repo: RepoConfig;
   routes: DocuRoute[];
+  themes?: {
+    colors: ThemeConfig;
+  };
 }
 
 export interface BuildCache {

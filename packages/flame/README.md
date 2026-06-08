@@ -124,6 +124,94 @@ The `home` section configures your landing page with a hero section and feature 
 | `hero.actions`     | Array of CTA buttons with `text`, `link`, `theme`, `icon` |
 | `features`         | Array of feature cards with `icon`, `title`, `description`, `link`  |
 
+### Theme Colors
+
+Flame uses `@docubook/themes-colors` for its config-driven color system. Configure via `docu.json`:
+
+```json
+{
+  "themes": {
+    "colors": "default"
+  }
+}
+```
+
+#### Preset Themes
+
+Use a preset name as a string. Three built-in presets are available:
+
+|     Name      |    Description    |  Hue   |
+| ------------- | ----------------- | ------ |
+| `"default"`   | Modern Blue theme | ~210   |
+| `"freshlime"` | Fresh Lime theme  | ~85    |
+| `"coffee"`    | Rich Coffee theme | ~25–35 |
+
+```json
+{
+  "themes": {
+    "colors": "freshlime"
+  }
+}
+```
+
+#### Custom Hex Colors
+
+Define a custom primary color as a hex value. The full 24-variable palette is auto-generated from it:
+
+```json
+{
+  "themes": {
+    "colors": {
+      "primary": "#FF5733"
+    }
+  }
+}
+```
+
+| Property  |      Type      | Required |                            Description                            |
+| --------- | -------------- | -------- | ----------------------------------------------------------------- |
+| `primary` | `string` (hex) | ✅ Yes    | Primary brand color. A full light + dark scale is auto-generated. |
+
+##### What gets auto-generated from `primary`
+
+A single hex color generates **24 CSS variables × 2 modes** (light `:root` + dark `.dark`) plus **12 syntax highlighting tokens × 2 modes** — all derived from the primary color.
+
+|                    Token                     |        Description         |
+| -------------------------------------------- | -------------------------- |
+| `--background` / `--foreground`              | Page background & text     |
+| `--card` / `--card-foreground`               | Card surface & text        |
+| `--popover` / `--popover-foreground`         | Popover surface & text     |
+| `--primary` / `--primary-foreground`         | Primary brand color & text |
+| `--secondary` / `--secondary-foreground`     | Secondary color & text     |
+| `--muted` / `--muted-foreground`             | Muted surface & text       |
+| `--accent` / `--accent-foreground`           | Accent color & text        |
+| `--destructive` / `--destructive-foreground` | Destructive action & text  |
+| `--border`                                   | Border color               |
+| `--input`                                    | Input field border         |
+| `--ring`                                     | Focus ring color           |
+| `--radius`                                   | Border radius value        |
+| `--base-100` / `--base-200` / `--base-300`   | DaisyUI surface layers     |
+| `--base-content`                             | DaisyUI content color      |
+
+#### CLI Override
+
+Override any theme without editing `docu.json`:
+
+```bash
+flame dev --theme freshlime
+flame build --theme coffee
+flame preview --theme default
+```
+
+#### Priority
+
+Theme resolution follows this order (first match wins):
+1. `--theme` CLI flag (e.g., `flame dev --theme coffee`)
+2. `docu.json` → `themes.colors`
+3. Falls back to `default` preset
+
+---
+
 ### Routes
 
 When `routes` is an empty array `[]`, Flame automatically scans your `docs/` folder at build-time and generates the sidebar navigation from the directory structure. Folders become collapsible sections, and `.mdx`/`.md` files become links — sorted alphabetically.
@@ -248,6 +336,11 @@ Copy `.env.example` to `.env` to customize:
 ```env
 # Server port (default: 3000)
 PORT=3000
+
+# Theme preset (optional — overrides docu.json themes.colors)
+# FLAME_THEME=default
+# FLAME_THEME=freshlime
+# FLAME_THEME=coffee
 
 # Error Monitoring (optional)
 SENTRY_DSN=https://your-dsn@sentry.io/project-id

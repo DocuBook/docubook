@@ -6,6 +6,9 @@
     "baseURL": "https://docubook.pro",
     "favicon": "/docs/assets/images/favicon.ico"
   },
+  "themes": {
+    "colors": "default"
+  },
   "home": {
     "hero": {
       "tagline": "#DocuBook",

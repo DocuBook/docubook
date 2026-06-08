@@ -1,0 +1,30 @@
+{
+  "light": {
+    "keyword": "#1d4ed8",
+    "function": "#0369a1",
+    "punctuation": "#4b5563",
+    "comment": "#6b7280",
+    "string": "#0d9488",
+    "constant": "#0d9488",
+    "annotation": "#0d9488",
+    "boolean": "#0d9488",
+    "number": "#0d9488",
+    "tag": "#1d4ed8",
+    "attrName": "#0284c7",
+    "attrValue": "#2563eb"
+  },
+  "dark": {
+    "keyword": "#60a5fa",
+    "function": "#38bdf8",
+    "punctuation": "#9ca3af",
+    "comment": "#9ca3af",
+    "string": "#2dd4bf",
+    "constant": "#2dd4bf",
+    "annotation": "#2dd4bf",
+    "boolean": "#2dd4bf",
+    "number": "#2dd4bf",
+    "tag": "#60a5fa",
+    "attrName": "#7dd3fc",
+    "attrValue": "#3b82f6"
+  }
+}

@@ -7,11 +7,13 @@ export interface HtmlShellOptions {
   js: string;
   nonce?: string;
   extraScripts?: string;
+  themeCss?: string;
 }
 
 export function htmlShell(opts: HtmlShellOptions): string {
-  const { title, description, body, favicon, css, js, nonce, extraScripts } = opts;
+  const { title, description, body, favicon, css, js, nonce, extraScripts, themeCss } = opts;
   const nonceAttr = nonce ? ` nonce="${Bun.escapeHTML(nonce)}"` : "";
+  const themeStyle = themeCss ? `\n  <style${nonceAttr}>${Bun.escapeHTML(themeCss)}</style>` : "";
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,7 +21,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${Bun.escapeHTML(title)}</title>
   <meta name="description" content="${Bun.escapeHTML(description)}">
-  <link rel="icon" type="image/x-icon" href="${Bun.escapeHTML(favicon)}">
+  <link rel="icon" type="image/x-icon" href="${Bun.escapeHTML(favicon)}">${themeStyle}
   <link rel="stylesheet" href="/assets/${Bun.escapeHTML(css)}">
   <script${nonceAttr}>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>
 </head>
