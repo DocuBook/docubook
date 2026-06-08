@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { resolve } from "node:path";
-import { SECURITY_HEADERS, generateNonce, cspHeader, htmlResponse } from "../node/security";
+import {
+  SECURITY_HEADERS,
+  generateNonce,
+  cspHeader,
+  htmlResponse,
+  isPathSafe,
+  isSlugSafe,
+} from "../node/security";
 import { getContentType } from "../node/utils";
 import { hmrScript } from "../node/html";
 
@@ -35,6 +41,16 @@ describe("server: security", () => {
       expect(csp).toContain(`'nonce-${nonce}'`);
     });
 
+    it("excludes unsafe-eval by default", () => {
+      const csp = cspHeader("n");
+      expect(csp).not.toContain("unsafe-eval");
+    });
+
+    it("includes unsafe-eval when allowEval is true", () => {
+      const csp = cspHeader("n", true);
+      expect(csp).toContain("unsafe-eval");
+    });
+
     it("includes required directives", () => {
       const csp = cspHeader("n");
       expect(csp).toContain("default-src 'self'");
@@ -50,6 +66,18 @@ describe("server: security", () => {
       expect(res.headers.get("Content-Type")).toBe("text/html");
       expect(res.headers.get("X-Frame-Options")).toBe("DENY");
       expect(res.headers.get("Content-Security-Policy")).toContain("nonce-1");
+    });
+
+    it("excludes unsafe-eval from CSP by default", () => {
+      const res = htmlResponse("<html></html>", "n", 200);
+      const csp = res.headers.get("Content-Security-Policy")!;
+      expect(csp).not.toContain("unsafe-eval");
+    });
+
+    it("includes unsafe-eval in CSP when allowEval is true", () => {
+      const res = htmlResponse("<html></html>", "n", 200, true);
+      const csp = res.headers.get("Content-Security-Policy")!;
+      expect(csp).toContain("unsafe-eval");
     });
 
     it("supports custom status codes", () => {
@@ -78,15 +106,8 @@ describe("server: static file serving", () => {
   });
 
   describe("path traversal protection", () => {
-    it("serveStatic rejects paths outside DIST_DIR", () => {
-      // The server uses resolve() + startsWith() check
+    it("isPathSafe rejects paths outside baseDir", () => {
       const DIST_DIR = "/project/dist";
-
-      function isPathSafe(pathname: string, baseDir: string): boolean {
-        const decoded = decodeURIComponent(pathname);
-        const assetPath = resolve(baseDir, decoded.slice(1));
-        return assetPath.startsWith(baseDir);
-      }
 
       expect(isPathSafe("/assets/style.css", DIST_DIR)).toBe(true);
       expect(isPathSafe("/../etc/passwd", DIST_DIR)).toBe(false);
@@ -128,19 +149,14 @@ describe("server: route matching", () => {
     });
   });
 
-  describe("getDocsForSlug path resolution", () => {
+  describe("isSlugSafe path resolution", () => {
     it("rejects path traversal attempts", () => {
       const DOCS_DIR = "/project/docs";
 
-      function isSlugSafe(slug: string): boolean {
-        const resolved = resolve(DOCS_DIR, slug);
-        return resolved.startsWith(DOCS_DIR);
-      }
-
-      expect(isSlugSafe("getting-started")).toBe(true);
-      expect(isSlugSafe("guides/install")).toBe(true);
-      expect(isSlugSafe("../etc/passwd")).toBe(false);
-      expect(isSlugSafe("../../secret")).toBe(false);
+      expect(isSlugSafe("getting-started", DOCS_DIR)).toBe(true);
+      expect(isSlugSafe("guides/install", DOCS_DIR)).toBe(true);
+      expect(isSlugSafe("../etc/passwd", DOCS_DIR)).toBe(false);
+      expect(isSlugSafe("../../secret", DOCS_DIR)).toBe(false);
     });
   });
 });
