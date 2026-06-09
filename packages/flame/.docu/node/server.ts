@@ -233,7 +233,9 @@ function serveStatic(pathname: string): Response | null {
 
   if (decoded.startsWith("/docs/assets/")) {
     const docsAsset = resolve(DOCS_DIR, "assets", decoded.replace("/docs/assets/", ""));
-    if (!docsAsset.startsWith(resolve(DOCS_DIR, "assets"))) return null;
+    const docsAssetsDir = resolve(DOCS_DIR, "assets");
+    const docsAssetsDirSlash = docsAssetsDir.endsWith("/") ? docsAssetsDir : docsAssetsDir + "/";
+    if (docsAsset !== docsAssetsDir && !docsAsset.startsWith(docsAssetsDirSlash)) return null;
     try {
       const s = statSync(docsAsset);
       if (s.isFile()) {
