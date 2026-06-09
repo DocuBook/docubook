@@ -68,6 +68,7 @@ Use a custom primary color:
     }
   }
 }
+```
 
 > **Note:** Custom hex themes also get **auto-generated syntax highlighting** (12 tokens × 2 modes) derived from the primary color — matching keywords, strings, comments, and other code tokens to your theme.
 
