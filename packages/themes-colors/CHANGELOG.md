@@ -1,5 +1,11 @@
 # @docubook/themes-colors
 
+## 0.10.1
+
+### Patch Changes
+
+- [#216](https://github.com/DocuBook/docubook/pull/216) [`91099c1`](https://github.com/DocuBook/docubook/commit/91099c1be5f17063d151a1a5f1e0dce58b872a5a) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - fix readme for fenced code json content
+
 ## 0.10.0
 
 ### Minor Changes

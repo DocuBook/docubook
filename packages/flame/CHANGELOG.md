@@ -1,5 +1,20 @@
 # @docubook/flame
 
+## 1.2.1
+
+### Patch Changes
+
+- [#216](https://github.com/DocuBook/docubook/pull/216) [`f0e67f3`](https://github.com/DocuBook/docubook/commit/f0e67f3a4a1b27d6702701f1663bc3da35d20d18) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - security(flame): conditional CSP with nonce injection for static preview
+  - `cspHeader(nonce, allowEval)` — `unsafe-eval` only in dev mode, excluded in preview/production
+  - `htmlResponse(html, nonce, status, allowEval)` — passthrough for allowEval
+  - Dev server passes `allowEval=true` for HMR + MDX runtime eval
+  - Preview server injects random nonces into static HTML inline scripts via `Bun.file().text()` before serving; CSP uses nonce + `unsafe-eval` for `next-mdx-remote`
+  - Extract `isPathSafe(pathname, baseDir)` and `isSlugSafe(slug, docsDir)` as exported utilities from `security.ts`; `server.ts` uses them instead of inline checks
+  - Update `architecture/security.md` Input Validation table and CSP detail sections to match actual implementation
+
+- Updated dependencies [[`91099c1`](https://github.com/DocuBook/docubook/commit/91099c1be5f17063d151a1a5f1e0dce58b872a5a)]:
+  - @docubook/themes-colors@0.10.1
+
 ## 1.2.0
 
 ### Minor Changes
