@@ -54,12 +54,12 @@ Applied to all HTML responses across all frameworks:
 
 ### Flame CSP Detail
 
-Flame generates a unique cryptographic nonce (`crypto.randomUUID()`) per response:
+Flame generates a unique cryptographic nonce (`crypto.randomUUID()`) per response via `cspHeader(nonce, allowEval)`:
 
 ```
 Content-Security-Policy:
   default-src 'self';
-  script-src 'self' 'nonce-{random}' 'unsafe-eval';
+  script-src 'self' 'nonce-{random}';
   style-src 'self' 'unsafe-inline';
   img-src 'self' https: data:;
   font-src 'self' data:;
@@ -69,7 +69,9 @@ Content-Security-Policy:
 ```
 
 - **Nonce** is injected into the blocking theme script, client bundle script, and HMR script
-- **`unsafe-eval`** required for MDX runtime evaluation (preview/dev mode only)
+- **`unsafe-eval`** is **conditional** — included only when `allowEval=true`, excluded in production builds
+- Dev server passes `cspHeader(nonce, NODE_ENV !== 'production')` which enables `unsafe-eval` for HMR + MDX runtime eval
+- Preview server passes `cspHeader(nonce, true)` — compiled MDX output (`next-mdx-remote`) requires runtime eval
 - **`frame-src youtube-nocookie.com`** allows embedded YouTube videos
 - **`connect-src https:`** allows HMR EventSource in development
 
@@ -78,7 +80,7 @@ Content-Security-Policy:
 | Exception | Reason | Framework | Scope |
 |-----------|--------|-----------|-------|
 | `unsafe-inline` (script) | Theme detection blocking `<script>` in `<head>` | flame | Production |
-| `unsafe-eval` | MDX runtime evaluation (`next-mdx-remote`) | flame | Preview/dev only — not required in static build |
+| `unsafe-eval` | MDX runtime evaluation (`next-mdx-remote`) | flame | Dev & preview — excluded in production builds only |
 | `connect-src https:` | HMR EventSource in development | flame | Dev only |
 | `frame-src youtube-nocookie.com` | Embedded YouTube videos | All | Production |
 
@@ -87,8 +89,8 @@ Content-Security-Policy:
 | Surface | Validation | Implementation |
 |---------|-----------|---------------|
 | MDX content | Compiled at build time — no runtime eval of user input | Build-time only |
-| URL slugs (flame) | `isSlugSafe()` — alphanumeric + hyphens only | Server route handler |
-| File paths (flame) | `isPathSafe()` — guard against traversal (`..`), check `resolvedP.startsWith(resolvedRoot)` | `readMdxFileBySlug()` + server static file serving |
+| URL slugs (flame) | `isSlugSafe(slug, docsDir)` — resolves slug safely within docs directory | `security.ts` — imported by `getDocsForSlug()` in `server.ts` |
+| File paths (flame) | `isPathSafe(pathname, baseDir)` — guard against traversal (`..`) and URL-encoded traversal | `security.ts` — imported by `serveStatic()` in `server.ts` |
 | Search queries | Client-side sanitization, server-side length limits | Search modal UI |
 | docu.json | JSON Schema validation at build time | `docu.schema.json` |
 | Git commands | Path sanitization — reject non-alphanumeric paths with `..` traversal | `getGitLastModified()` |
@@ -193,7 +195,7 @@ DocuBook is a **public documentation site** — no user authentication is requir
 
 | Defense | When | Implementation |
 |---------|------|---------------|
-| Path traversal guard | Every file read | `resolvedP.startsWith(resolvedRoot + path.sep)` in `readMdxFileBySlug()` and static file serving |
-| File access boundary | Static file serving | `assetPath.startsWith(DIST_DIR)` and `docsAsset.startsWith(resolve(DOCS_DIR, "assets"))` |
+| Path traversal guard | Every file read | `isPathSafe()` + `isSlugSafe()` from `security.ts` — used in `getDocsForSlug()` and `serveStatic()` in `server.ts` |
+| File access boundary | Static file serving | `isPathSafe()` checks against `DIST_DIR` and `resolve(DOCS_DIR, "assets")` |
 | Git command injection | Git date queries | `cleanPath` regex check: `^[a-zA-Z0-9\-_/.\s]+$` and no `..` path components |
 | URL path traversal | Server routing | `pathname.startsWith()` checks before passing to file system |

@@ -25,4 +25,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Lint commits
-        run: pnpm exec commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+        run: |
+          OUTPUT=$(pnpm exec commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose 2>&1)
+          echo "$OUTPUT"
+          PROBLEMS=$(echo "$OUTPUT" | grep -oP 'found \K[1-9]\d*' | head -1 || echo "0")
+          if [ "$PROBLEMS" -gt 0 ] 2>/dev/null; then
+            echo "::error::commitlint found $PROBLEMS problem(s)"
+            exit 1
+          fi
+          echo "::notice::commitlint passed — 0 problems found"

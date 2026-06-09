@@ -17,6 +17,7 @@ const config = {
         "ci",
         "chore",
         "revert",
+        "review",
       ],
     ],
     "subject-case": [2, "never", ["sentence-case", "start-case", "pascal-case", "upper-case"]],

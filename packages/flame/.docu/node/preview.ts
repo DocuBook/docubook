@@ -3,18 +3,9 @@ import { resolve } from "node:path";
 import { logger } from "./logger";
 import { DIST_DIR } from "./paths";
 import { getContentType } from "./utils";
+import { SECURITY_HEADERS, generateNonce, cspHeader, injectNonce } from "./security";
 
 const PORT = process.env.PORT || "4173";
-
-const SECURITY_HEADERS: Record<string, string> = {
-  "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
-  "X-Frame-Options": "DENY",
-  "X-Content-Type-Options": "nosniff",
-  "Referrer-Policy": "strict-origin-when-cross-origin",
-  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-  "Content-Security-Policy":
-    "default-src 'self'; script-src 'self' 'sha256-4XrQ+xtH2goQdpEv7dRmUWACF3uhF9KRPpgayFex7QU=' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'",
-};
 
 logger.buildStart();
 
@@ -50,22 +41,42 @@ const notFoundPath = resolve(DIST_DIR, "404.html");
 const server = Bun.serve({
   port: PORT,
 
-  fetch(req) {
+  async fetch(req) {
     const url = new URL(req.url);
     const pathname = decodeURIComponent(url.pathname);
 
     const filePath = resolveFile(pathname);
+
     if (filePath) {
       const contentType = getContentType(filePath);
-      const headers: Record<string, string> = { "Content-Type": contentType };
-      if (contentType === "text/html") Object.assign(headers, SECURITY_HEADERS);
-      return new Response(Bun.file(filePath), { headers });
+      if (contentType === "text/html") {
+        const nonce = generateNonce();
+        const html = await Bun.file(filePath).text();
+        const modified = injectNonce(html, nonce);
+        return new Response(modified, {
+          headers: {
+            "Content-Type": "text/html",
+            ...SECURITY_HEADERS,
+            "Content-Security-Policy": cspHeader(nonce, true),
+          },
+        });
+      }
+      return new Response(Bun.file(filePath), {
+        headers: { "Content-Type": contentType },
+      });
     }
 
     if (existsSync(notFoundPath)) {
-      return new Response(Bun.file(notFoundPath), {
+      const nonce = generateNonce();
+      const html = await Bun.file(notFoundPath).text();
+      const modified = injectNonce(html, nonce);
+      return new Response(modified, {
         status: 404,
-        headers: { "Content-Type": "text/html", ...SECURITY_HEADERS },
+        headers: {
+          "Content-Type": "text/html",
+          ...SECURITY_HEADERS,
+          "Content-Security-Policy": cspHeader(nonce, true),
+        },
       });
     }
 

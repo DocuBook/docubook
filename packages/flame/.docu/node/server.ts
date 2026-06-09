@@ -15,7 +15,7 @@ import { buildClientBundle, computeInlineThemeCss } from "./hydrate";
 import { generateSearchIndex } from "./search-indexer";
 import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
-import { SECURITY_HEADERS, generateNonce, htmlResponse } from "./security";
+import { SECURITY_HEADERS, generateNonce, isPathSafe, isSlugSafe, htmlResponse } from "./security";
 import { htmlShell as createHtmlShell, hmrScript } from "./html";
 
 const docuConfig = loadDocuConfig();
@@ -95,12 +95,11 @@ function createHtmlResponse(
     extraScripts: hmrScript(nonce),
     themeCss: inlineThemeCss,
   });
-  return htmlResponse(html, nonce, status);
+  return htmlResponse(html, nonce, status, process.env.NODE_ENV !== "production");
 }
 
 async function getDocsForSlug(slug: string) {
-  const resolved = resolve(DOCS_DIR, slug);
-  if (!resolved.startsWith(DOCS_DIR)) return null;
+  if (!isSlugSafe(slug, DOCS_DIR)) return null;
 
   const paths = [
     join(DOCS_DIR, slug, "index.mdx"),
@@ -218,9 +217,9 @@ function handleIndex(): Response {
 }
 
 function serveStatic(pathname: string): Response | null {
+  if (!isPathSafe(pathname, DIST_DIR)) return null;
   const decoded = decodeURIComponent(pathname);
   const assetPath = resolve(DIST_DIR, decoded.slice(1));
-  if (!assetPath.startsWith(DIST_DIR)) return null;
   try {
     const s = statSync(assetPath);
     if (s.isFile()) {
@@ -234,7 +233,9 @@ function serveStatic(pathname: string): Response | null {
 
   if (decoded.startsWith("/docs/assets/")) {
     const docsAsset = resolve(DOCS_DIR, "assets", decoded.replace("/docs/assets/", ""));
-    if (!docsAsset.startsWith(resolve(DOCS_DIR, "assets"))) return null;
+    const docsAssetsDir = resolve(DOCS_DIR, "assets");
+    const docsAssetsDirSlash = docsAssetsDir.endsWith("/") ? docsAssetsDir : docsAssetsDir + "/";
+    if (docsAsset !== docsAssetsDir && !docsAsset.startsWith(docsAssetsDirSlash)) return null;
     try {
       const s = statSync(docsAsset);
       if (s.isFile()) {
