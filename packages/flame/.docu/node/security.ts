@@ -28,22 +28,24 @@ export function cspHeader(nonce: string, allowEval = false): string {
   ].join("; ");
 }
 
-/**
- * Check if a URL pathname resolves safely within a base directory.
- * Guards against path traversal attacks including URL-encoded variants.
- */
 export function isPathSafe(pathname: string, baseDir: string): boolean {
   const decoded = decodeURIComponent(pathname);
   const resolved = resolve(baseDir, decoded.slice(1));
-  return resolved.startsWith(baseDir);
+  const baseDirSlash = baseDir.endsWith("/") ? baseDir : baseDir + "/";
+  return resolved === baseDir || resolved.startsWith(baseDirSlash);
 }
 
-/**
- * Check if a slug resolves safely within a docs directory.
- */
 export function isSlugSafe(slug: string, docsDir: string): boolean {
   const resolved = resolve(docsDir, slug);
-  return resolved.startsWith(docsDir);
+  const docsDirSlash = docsDir.endsWith("/") ? docsDir : docsDir + "/";
+  return resolved === docsDir || resolved.startsWith(docsDirSlash);
+}
+
+export function injectNonce(html: string, nonce: string): string {
+  return html.replace(/<script\b(?![^>]*\bsrc\s*=)([^>]*)>/gi, (match) => {
+    if (/nonce\s*=/i.test(match)) return match;
+    return match.replace(/>$/, ` nonce="${nonce}">`);
+  });
 }
 
 export function htmlResponse(

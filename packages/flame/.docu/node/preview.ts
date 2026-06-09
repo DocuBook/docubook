@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { logger } from "./logger";
 import { DIST_DIR } from "./paths";
 import { getContentType } from "./utils";
-import { SECURITY_HEADERS, generateNonce } from "./security";
+import { SECURITY_HEADERS, generateNonce, cspHeader, injectNonce } from "./security";
 
 const PORT = process.env.PORT || "4173";
 
@@ -13,17 +13,6 @@ if (!existsSync(DIST_DIR)) {
   logger.spinner.start("Checking build output...");
   logger.spinner.info("dist not found. Run \x1b[1mbun run build\x1b[0m first.");
   process.exit(0);
-}
-
-/**
- * Inject a nonce into all inline <script> tags (scripts without src attribute).
- * External scripts (with src) are handled by CSP 'self'.
- */
-function injectNonce(html: string, nonce: string): string {
-  return html.replace(/<script\b(?![^>]*\bsrc\s*=)([^>]*)>/gi, (match) => {
-    if (/nonce\s*=/i.test(match)) return match;
-    return match.replace(/>$/, ` nonce="${nonce}">`);
-  });
 }
 
 function resolveFile(pathname: string): string | null {
@@ -61,16 +50,14 @@ const server = Bun.serve({
     if (filePath) {
       const contentType = getContentType(filePath);
       if (contentType === "text/html") {
-        // Read HTML, inject nonce into inline scripts, serve with matching CSP
         const nonce = generateNonce();
         const html = await Bun.file(filePath).text();
         const modified = injectNonce(html, nonce);
-        const csp = `default-src 'self'; script-src 'self' 'nonce-${nonce}' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'`;
         return new Response(modified, {
           headers: {
             "Content-Type": "text/html",
             ...SECURITY_HEADERS,
-            "Content-Security-Policy": csp,
+            "Content-Security-Policy": cspHeader(nonce, true),
           },
         });
       }
@@ -83,13 +70,12 @@ const server = Bun.serve({
       const nonce = generateNonce();
       const html = await Bun.file(notFoundPath).text();
       const modified = injectNonce(html, nonce);
-      const csp = `default-src 'self'; script-src 'self' 'nonce-${nonce}' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'`;
       return new Response(modified, {
         status: 404,
         headers: {
           "Content-Type": "text/html",
           ...SECURITY_HEADERS,
-          "Content-Security-Policy": csp,
+          "Content-Security-Policy": cspHeader(nonce, true),
         },
       });
     }

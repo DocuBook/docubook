@@ -6,6 +6,7 @@ import {
   htmlResponse,
   isPathSafe,
   isSlugSafe,
+  injectNonce,
 } from "../node/security";
 import { getContentType } from "../node/utils";
 import { hmrScript } from "../node/html";
@@ -114,6 +115,14 @@ describe("server: static file serving", () => {
       expect(isPathSafe("/..%2F..%2Fetc/passwd", DIST_DIR)).toBe(false);
       expect(isPathSafe("/docs/assets/../../../etc/passwd", DIST_DIR)).toBe(false);
     });
+
+    it("isPathSafe rejects prefix-match bypass", () => {
+      const DIST_DIR = "/project/dist";
+
+      expect(isPathSafe("/../dist-extra/file", DIST_DIR)).toBe(false);
+      expect(isPathSafe("/../dist_other", DIST_DIR)).toBe(false);
+      expect(isPathSafe("/../dist2/config", DIST_DIR)).toBe(false);
+    });
   });
 });
 
@@ -158,6 +167,47 @@ describe("server: route matching", () => {
       expect(isSlugSafe("../etc/passwd", DOCS_DIR)).toBe(false);
       expect(isSlugSafe("../../secret", DOCS_DIR)).toBe(false);
     });
+
+    it("isSlugSafe rejects prefix-match bypass", () => {
+      const DOCS_DIR = "/project/docs";
+
+      expect(isSlugSafe("../docs-extra/file", DOCS_DIR)).toBe(false);
+      expect(isSlugSafe("../docs_backup", DOCS_DIR)).toBe(false);
+      expect(isSlugSafe("../docsv2/config", DOCS_DIR)).toBe(false);
+    });
+  });
+});
+
+describe("injectNonce", () => {
+  it("injects nonce into inline script tags", () => {
+    const html = '<script>alert(1)</script><script src="ext.js"></script>';
+    const result = injectNonce(html, "abc-123");
+    expect(result).toContain('nonce="abc-123"');
+    expect(result).toContain('<script src="ext.js"></script>');
+  });
+
+  it("does not double-inject nonce", () => {
+    const html = '<script nonce="existing">alert(1)</script>';
+    const result = injectNonce(html, "new-nonce");
+    expect(result).toContain('nonce="existing"');
+    expect(result).not.toContain('nonce="new-nonce"');
+  });
+
+  it("handles script tags with extra attributes", () => {
+    const html = "<script defer async>init()</script>";
+    const result = injectNonce(html, "n1");
+    expect(result).toMatch(/<script\s+defer\s+async\s+nonce="n1">/);
+  });
+
+  it("handles uppercase SCRIPT tags", () => {
+    const html = "<SCRIPT>alert(1)</SCRIPT>";
+    const result = injectNonce(html, "u");
+    expect(result).toContain('nonce="u"');
+  });
+
+  it("returns html unchanged when there are no script tags", () => {
+    const html = "<div>hello</div>";
+    expect(injectNonce(html, "n")).toBe(html);
   });
 });
 

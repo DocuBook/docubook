@@ -69,9 +69,9 @@ Content-Security-Policy:
 ```
 
 - **Nonce** is injected into the blocking theme script, client bundle script, and HMR script
-- **`unsafe-eval`** is **conditional** — included only in dev mode (`allowEval=true`), excluded in preview and production builds
+- **`unsafe-eval`** is **conditional** — included only when `allowEval=true`, excluded in production builds
 - Dev server passes `cspHeader(nonce, NODE_ENV !== 'production')` which enables `unsafe-eval` for HMR + MDX runtime eval
-- Preview server passes `cspHeader(nonce, false)` — no runtime eval needed for static builds
+- Preview server passes `cspHeader(nonce, true)` — compiled MDX output (`next-mdx-remote`) requires runtime eval
 - **`frame-src youtube-nocookie.com`** allows embedded YouTube videos
 - **`connect-src https:`** allows HMR EventSource in development
 
@@ -80,7 +80,7 @@ Content-Security-Policy:
 | Exception | Reason | Framework | Scope |
 |-----------|--------|-----------|-------|
 | `unsafe-inline` (script) | Theme detection blocking `<script>` in `<head>` | flame | Production |
-| `unsafe-eval` | MDX runtime evaluation (`next-mdx-remote`) | flame | Dev only — excluded in preview & production |
+| `unsafe-eval` | MDX runtime evaluation (`next-mdx-remote`) | flame | Dev & preview — excluded in production builds only |
 | `connect-src https:` | HMR EventSource in development | flame | Dev only |
 | `frame-src youtube-nocookie.com` | Embedded YouTube videos | All | Production |
 
