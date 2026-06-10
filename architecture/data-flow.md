@@ -218,7 +218,7 @@ Trigger: NODE_ENV=production bun .docu/node/build.ts
     └─────────────────────────────┘
 ```
 
-**Plugin lifecycle in build:** 9 integration points. Zero-config — no plugins = no behavior change. See [PLUGIN_DESIGN.md](../packages/flame/PLUGIN_DESIGN.md).
+**Plugin lifecycle in build:** 9 integration points. Zero-config — no plugins = no behavior change. See the [plugin implementation](../packages/flame/.docu/node/plugin.ts).
 
 ### Flame Dev Server (server.ts)
 

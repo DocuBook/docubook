@@ -115,6 +115,6 @@ Build Pipeline                          Dev Server
 
 ## References
 
-- Design doc: `packages/flame/PLUGIN_DESIGN.md` (399 lines, 5 open questions, 3 example plugins)
+- Implementation: `.docu/node/plugin.ts` (interfaces) and `.docu/node/plugin-builder.ts` (runner)
 - Example plugins: sitemap, analytics, reading-time
 - Open questions answered in design doc: Q1→A (pass raw content), Q2→B (no cache access), Q3→B (no enforce), Q4→B (first-wins), Q5→B (runtime only)

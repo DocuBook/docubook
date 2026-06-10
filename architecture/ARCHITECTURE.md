@@ -96,7 +96,7 @@ Steps 1–3 identical. Step 4 uses `generateStaticParams` from docu.json routes.
 
 **Decision 8: Plugin system — hook-based with zero-config default**
 **Context:** Users need to extend flame (sitemaps, analytics, search, custom transforms) without forking or patching internals.
-**Rationale:** Hook-based interface at 9 integration points in build + dev server covers 90%+ of extension needs. Zero-config — no plugins = no behavior change. See [ADR-009](./adrs/009-flame-plugin-system.md) and [PLUGIN_DESIGN.md](../packages/flame/PLUGIN_DESIGN.md).
+**Rationale:** Hook-based interface at 9 integration points in build + dev server covers 90%+ of extension needs. Zero-config — no plugins = no behavior change. See [ADR-009](./adrs/009-flame-plugin-system.md) and the [plugin implementation](../packages/flame/.docu/node/plugin.ts).
 **Trade-off:** Plugin hooks add complexity to the build and server code paths; execution order is always sequential (no parallel hooks). Alternatives considered: (a) middleware pattern (rejected — over-engineered for <5 plugins), (b) forking (rejected — maintenance burden), (c) no extension system (rejected — users would fork anyway).
 
 **Decision 9: Homepage as composable section components with `Lucide.tsx`**
@@ -164,7 +164,7 @@ Flame's plugin system provides hook-based extensibility at 9 integration points:
 
 Plugin resolution: `docu.json` → `["@docubook/plugin-sitemap"]` or `["name", {options}]` → `import()` → factory/object.
 
-Architecture: `PluginRunner` class orchestrates sequential waterfall execution. Fail-fast on errors. See [PLUGIN_DESIGN.md](../packages/flame/PLUGIN_DESIGN.md).
+Architecture: `BuildPluginBuilder` class orchestrates sequential waterfall execution. Fail-fast on errors. See the [plugin implementation](../packages/flame/.docu/node/plugin.ts).
 
 ### Homepage Components
 

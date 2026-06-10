@@ -191,7 +191,6 @@
 │   └── utils.test.ts                     # Utility function tests
 │
 ├── .docu/build-cache.json                # Incremental build cache (generated)
-├── PLUGIN_DESIGN.md                      # Plugin system architecture design (see below)
 ├── docs/                                 # MDX content directory
 ├── docu.json                             # Site configuration
 ├── docu.schema.json                      # JSON Schema for docu.json validation
@@ -208,7 +207,7 @@
 
 ## Flame Plugin System (Planned)
 
-Plugin system design documented at `packages/flame/PLUGIN_DESIGN.md`. Provides a hook-based extensibility interface for the flame build pipeline and dev server.
+Plugin system implemented at `.docu/node/plugin.ts` (interface) and `.docu/node/plugin-builder.ts` (runner). Provides a hook-based extensibility interface for the flame build pipeline and dev server.
 
 ### Plugin Interface
 
@@ -248,7 +247,7 @@ build()                              server.fetch(req)
 | `.docu/node/plugin-runner.ts` | Hook execution engine |
 | `.docu/__tests__/plugin.test.ts` | Unit tests |
 
-See [PLUGIN_DESIGN.md](../packages/flame/PLUGIN_DESIGN.md) for full details, open questions, example plugins (sitemap, analytics, reading-time), and migration path.
+See [plugin implementation](../packages/flame/.docu/node/plugin.ts) for the full interface and hooks.
 
 ## Dependency Graph
 
