@@ -1,14 +1,16 @@
 # DocuBook Plugin System — Design Document
 
+> **Design alignment:** This plugin system follows Bun's universal plugin API conventions —`setup(build)` pattern, lifecycle hooks (`onStart`, `onEnd`, `onLoad`), `filter`/`namespace` matching, and `build.config` access. Domain-specific hooks (`transformFrontmatter`, `injectHead`, etc.) are registered via the same `PluginBuilder` pattern.
+
 ## 1. Design Goals
 
-|          Goal           |                    Rationale                     |
-| ----------------------- | ------------------------------------------------ |
-| **Zero-config default** | Tanpa plugin, behavior identik dengan sekarang   |
-| **Composable**          | Plugin bisa stack tanpa conflict                 |
-| **Type-safe**           | Full TypeScript interface, autocomplete di IDE   |
-| **Bun-native**          | Tidak perlu bundler compat layer (webpack/vite)  |
-| **Minimal surface**     | Hooks hanya di titik yang benar-benar dibutuhkan |
+|          Goal           |                     Rationale                     |
+| ----------------------- | ------------------------------------------------- |
+| **Zero-config default** | Without plugins, behavior is identical to current |
+| **Composable**          | Plugins can stack without conflict                |
+| **Type-safe**           | Full TypeScript interface, IDE autocomplete       |
+| **Bun-native**          | Adopts `setup(build)` pattern from Bun API        |
+| **Minimal surface**     | Hooks only at genuinely needed points             |
 
 ## 2. Plugin Interface
 
@@ -16,6 +18,7 @@
 // packages/flame/.docu/node/plugin.ts
 
 import type { Pluggable } from "unified";
+import type { BuildConfig } from "bun";
 
 export interface PageContext {
   /** Relative path: "getting-started/introduction" */
@@ -40,45 +43,99 @@ export interface DevServerContext {
   hostname: string;
 }
 
-export interface DocuBookPlugin {
-  name: string;
+/**
+ * PluginBuilder — analogous to Bun's PluginBuilder.
+ * Plugins register hooks through these methods inside `setup()`.
+ */
+export interface PluginBuilder {
+  /** Build config (set by framework before setup is called). */
+  config: DocuConfig;
 
   // ─── Build Lifecycle ───────────────────────────────────
   /** Called once before build starts. Setup resources, validate config. */
-  buildStart?(config: DocuConfig): void | Promise<void>;
+  onStart(callback: (config: DocuConfig) => void | Promise<void>): void;
 
   /** Called once after all pages are built. Generate sitemaps, manifests, etc. */
-  buildEnd?(config: DocuConfig, pages: PageMeta[]): void | Promise<void>;
+  onEnd(callback: (config: DocuConfig, pages: PageMeta[]) => void | Promise<void>): void;
 
   // ─── Content Transform ─────────────────────────────────
+  /**
+   * Transform file contents before MDX compilation.
+   * Similar to Bun's `onLoad` — filter by file pattern.
+   */
+  onLoad(
+    args: { filter: RegExp; namespace?: string },
+    callback: (args: { path: string; content: string }) => {
+      contents?: string;
+      loader?: "js" | "ts" | "mdx";
+    } | void,
+  ): void;
+
   /** Mutate frontmatter before MDX compilation. */
-  transformFrontmatter?(
-    frontmatter: Record<string, unknown>,
-    context: Pick<PageContext, "slug" | "filePath">
-  ): Record<string, unknown> | void;
+  transformFrontmatter(
+    callback: (
+      frontmatter: Record<string, unknown>,
+      context: Pick<PageContext, "slug" | "filePath" | "content">,
+    ) => Record<string, unknown> | void,
+  ): void;
 
   /** Transform final HTML string per page. Last chance to inject/modify. */
-  transformHtml?(html: string, context: PageContext): string | Promise<string>;
+  transformHtml(
+    callback: (html: string, context: PageContext) => string | Promise<string>,
+  ): void;
 
   // ─── Head & Script Injection ───────────────────────────
   /** Return HTML strings to inject inside <head>. */
-  injectHead?(context: PageContext): string | string[];
+  injectHead(callback: (context: PageContext) => string | string[]): void;
 
   /** Return HTML strings to inject before </body>. */
-  injectBody?(context: PageContext): string | string[];
+  injectBody(callback: (context: PageContext) => string | string[]): void;
 
   // ─── MDX Pipeline Extension ────────────────────────────
   /** Additional remark plugins to append to the pipeline. */
-  remarkPlugins?(): Pluggable[];
+  remarkPlugins(callback: () => Pluggable[]): void;
 
   /** Additional rehype plugins to append to the pipeline. */
-  rehypePlugins?(): Pluggable[];
+  rehypePlugins(callback: () => Pluggable[]): void;
 
   // ─── Dev Server ────────────────────────────────────────
   /** Hook into dev server request handling. Return Response to short-circuit. */
-  handleRequest?(req: Request, context: DevServerContext): Response | void | Promise<Response | void>;
+  handleRequest(
+    callback: (
+      req: Request,
+      context: DevServerContext,
+    ) => Response | void | Promise<Response | void>,
+  ): void;
+}
+
+/**
+ * DocuBookPlugin — follows BunPlugin conventions:
+ * - `name`: unique identifier
+ * - `setup(build)`: where hooks are registered via PluginBuilder
+ */
+export interface DocuBookPlugin {
+  name: string;
+  setup(build: PluginBuilder): void | Promise<void>;
 }
 ```
+
+### Key Design Decisions
+
+| Bun Plugin API                    | DocuBook Plugin API                   | Notes                                    |
+| --------------------------------- | ------------------------------------- | ---------------------------------------- |
+| `name + setup(build)`             | `name + setup(build)`                 | Identical convention                    |
+| `build.onStart(fn)`               | `build.onStart(fn)`                   | Identical                                |
+| `build.onEnd(fn)`                 | `build.onEnd(fn)`                     | Identical                                |
+| `build.onLoad({filter}, cb)`      | `build.onLoad({filter}, cb)`          | Same pattern, different context (file vs import) |
+| `build.onResolve({filter}, cb)`   | *(none — irrelevant for SSG)*          | DocuBook does not resolve module imports |
+| `build.config`                    | `build.config`                        | Identical                                |
+| *(none)*                          | `build.transformFrontmatter(cb)`      | Domain-specific: frontmatter             |
+| *(none)*                          | `build.transformHtml(cb)`             | Domain-specific: HTML final              |
+| *(none)*                          | `build.injectHead(cb)`                | Domain-specific: head injection          |
+| *(none)*                          | `build.injectBody(cb)`                | Domain-specific: body injection          |
+| *(none)*                          | `build.remarkPlugins(cb)`             | Domain-specific: MDX pipeline            |
+| *(none)*                          | `build.rehypePlugins(cb)`             | Domain-specific: MDX pipeline            |
+| *(none)*                          | `build.handleRequest(cb)`             | Domain-specific: dev server              |
 
 ## 3. Config Extension
 
@@ -100,17 +157,27 @@ export interface DocuBookPlugin {
 3. Relative path `"./plugins/my-plugin"` → resolve from project root
 
 **Plugin export convention:**
+
 ```ts
-// Factory pattern (with options)
+// Factory pattern (with options) — return a DocuBookPlugin
 export default function pluginSitemap(options?: SitemapOptions): DocuBookPlugin {
   return {
     name: "sitemap",
-    buildEnd(config, pages) { /* generate sitemap.xml */ },
+    setup(build) {
+      build.onEnd((config, pages) => {
+        /* generate sitemap.xml */
+      });
+    },
   };
 }
 
 // Simple pattern (no options)
-export default { name: "my-plugin", buildStart() { } } satisfies DocuBookPlugin;
+export default {
+  name: "my-plugin",
+  setup(build) {
+    build.onStart(() => console.log("build started"));
+  },
+} satisfies DocuBookPlugin;
 ```
 
 ## 4. Integration Points (Build Pipeline)
@@ -118,21 +185,28 @@ export default { name: "my-plugin", buildStart() { } } satisfies DocuBookPlugin;
 ```
 build()
 │
-├─ [1] loadPlugins(config.plugins)
-├─ [2] plugin.buildStart(config)          ← NEW
+├─ [1] loadPlugins(config.plugins)         → DocuBookPlugin[]
+│
+├─ [2] create PluginBuilder(config)
+├─ [3] for each plugin: plugin.setup(build) ← SETUP PHASE (registers all hooks)
+│
+├─ [4] build.onStart(config)               ← all registered onStart callbacks
 │
 ├─ findMdxFiles()
 ├─ buildClientBundle()
 │
 ├─ for each MDX file:
-│   ├─ [3] plugin.transformFrontmatter()  ← NEW
-│   ├─ compileMdx() with merged remark/rehype plugins  ← [4] plugin.remarkPlugins() / rehypePlugins()
+│   ├─ [5] build.onLoad({filter})          ← transform raw file content
+│   ├─ [6] build.transformFrontmatter()    ← mutate frontmatter
+│   ├─ compileMdx() with merged remark/rehype plugins
+│         ← [7] build.remarkPlugins() / build.rehypePlugins()
 │   ├─ renderToString()
-│   ├─ htmlShell() with injected head/body  ← [5] plugin.injectHead() / injectBody()
-│   └─ [6] plugin.transformHtml()         ← NEW
+│   ├─ htmlShell() with injected head/body
+│         ← [8] build.injectHead() / build.injectBody()
+│   └─ [9] build.transformHtml()           ← final HTML transform
 │
 ├─ generateSearchIndex()
-├─ [7] plugin.buildEnd(config, pages)     ← NEW
+├─ [10] build.onEnd(config, pages)         ← all registered onEnd callbacks
 └─ writeCache()
 ```
 
@@ -141,9 +215,9 @@ build()
 ```
 server.fetch(req)
 │
-├─ [1] plugin.handleRequest(req)  ← NEW (early return short-circuits)
+├─ [1] build.handleRequest(req)            ← early return short-circuits
 ├─ HMR / static / router (existing logic)
-├─ renderDocsPage() → same hooks [3-6] as build
+├─ renderDocsPage() → same hooks [5-9] as build
 └─ response
 ```
 
@@ -180,67 +254,73 @@ export async function loadPlugins(entries: PluginEntry[] = []): Promise<DocuBook
 }
 ```
 
-## 7. Hook Runner
+## 7. PluginBuilder Implementation
 
 ```ts
-// packages/flame/.docu/node/plugin-runner.ts
+// packages/flame/.docu/node/plugin-builder.ts
 
-export class PluginRunner {
-  constructor(private plugins: DocuBookPlugin[]) {}
+type Awaitable<T> = T | Promise<T>;
 
-  async buildStart(config: DocuConfig) {
-    for (const p of this.plugins) await p.buildStart?.(config);
+export class BuildPluginBuilder implements PluginBuilder {
+  config: DocuConfig;
+
+  private _onStart: Array<(config: DocuConfig) => Awaitable<void>> = [];
+  private _onEnd: Array<(config: DocuConfig, pages: PageMeta[]) => Awaitable<void>> = [];
+  private _onLoad: Array<{
+    filter: RegExp;
+    namespace?: string;
+    fn: (args: { path: string; content: string }) => Awaitable<{ contents?: string; loader?: string } | void>;
+  }> = [];
+  private _transformFrontmatter: Array<(...) => ...> = [];
+  private _transformHtml: Array<(html: string, ctx: PageContext) => Awaitable<string>> = [];
+  private _injectHead: Array<(ctx: PageContext) => string | string[]> = [];
+  private _injectBody: Array<(ctx: PageContext) => string | string[]> = [];
+  private _remarkPlugins: Array<() => Pluggable[]> = [];
+  private _rehypePlugins: Array<() => Pluggable[]> = [];
+  private _handleRequest: Array<(req: Request, ctx: DevServerContext) => Awaitable<Response | void>> = [];
+
+  constructor(config: DocuConfig) {
+    this.config = config;
   }
 
-  async buildEnd(config: DocuConfig, pages: PageMeta[]) {
-    for (const p of this.plugins) await p.buildEnd?.(config, pages);
+  // ─── Registration ──────────────────────────────────────
+  onStart(cb: (config: DocuConfig) => Awaitable<void>) { this._onStart.push(cb); }
+  onEnd(cb: (config: DocuConfig, pages: PageMeta[]) => Awaitable<void>) { this._onEnd.push(cb); }
+  onLoad(args: { filter: RegExp; namespace?: string }, cb: ...) { this._onLoad.push({ ...args, fn: cb }); }
+  transformFrontmatter(cb: ...) { this._transformFrontmatter.push(cb); }
+  transformHtml(cb: ...) { this._transformHtml.push(cb); }
+  injectHead(cb: ...) { this._injectHead.push(cb); }
+  injectBody(cb: ...) { this._injectBody.push(cb); }
+  remarkPlugins(cb: ...) { this._remarkPlugins.push(cb); }
+  rehypePlugins(cb: ...) { this._rehypePlugins.push(cb); }
+  handleRequest(cb: ...) { this._handleRequest.push(cb); }
+
+  // ─── Execution ─────────────────────────────────────────
+  async runOnStart() {
+    for (const cb of this._onStart) await cb(this.config);
   }
 
-  transformFrontmatter(fm: Record<string, unknown>, ctx: Pick<PageContext, "slug" | "filePath">) {
-    let result = fm;
-    for (const p of this.plugins) {
-      result = p.transformFrontmatter?.(result, ctx) ?? result;
-    }
-    return result;
+  async runOnEnd(pages: PageMeta[]) {
+    for (const cb of this._onEnd) await cb(this.config, pages);
   }
 
-  async transformHtml(html: string, ctx: PageContext) {
-    let result = html;
-    for (const p of this.plugins) {
-      result = (await p.transformHtml?.(result, ctx)) ?? result;
-    }
-    return result;
-  }
-
-  collectHead(ctx: PageContext): string[] {
-    return this.plugins.flatMap((p) => {
-      const r = p.injectHead?.(ctx);
-      return r ? (Array.isArray(r) ? r : [r]) : [];
-    });
-  }
-
-  collectBody(ctx: PageContext): string[] {
-    return this.plugins.flatMap((p) => {
-      const r = p.injectBody?.(ctx);
-      return r ? (Array.isArray(r) ? r : [r]) : [];
-    });
-  }
-
-  collectRemarkPlugins(): Pluggable[] {
-    return this.plugins.flatMap((p) => p.remarkPlugins?.() ?? []);
-  }
-
-  collectRehypePlugins(): Pluggable[] {
-    return this.plugins.flatMap((p) => p.rehypePlugins?.() ?? []);
-  }
-
-  async handleRequest(req: Request, ctx: DevServerContext): Promise<Response | null> {
-    for (const p of this.plugins) {
-      const res = await p.handleRequest?.(req, ctx);
-      if (res) return res;
+  async runOnLoad(path: string, content: string): Promise<{ contents?: string } | null> {
+    for (const h of this._onLoad) {
+      if (h.filter.test(path)) {
+        const result = await h.fn({ path, content });
+        if (result) return result;
+      }
     }
     return null;
   }
+
+  transformFrontmatterChain(fm: ..., ctx: ...) { ... }
+  async transformHtmlChain(html: string, ctx: PageContext) { ... }
+  collectHead(ctx: PageContext): string[] { ... }
+  collectBody(ctx: PageContext): string[] { ... }
+  collectRemarkPlugins(): Pluggable[] { ... }
+  collectRehypePlugins(): Pluggable[] { ... }
+  async runHandleRequest(req: Request, ctx: DevServerContext): Promise<Response | null> { ... }
 }
 ```
 
@@ -271,27 +351,27 @@ export class PluginRunner {
 
 ## 9. `htmlShell` Modification
 
-Current `htmlShell` hanya terima fixed options. Perlu extend untuk injection:
+Current `htmlShell` only accepts fixed options. Needs extension for injection:
 
 ```ts
 export interface HtmlShellOptions {
   // ... existing
-  headExtra?: string[];   // ← plugin.injectHead() results
-  bodyExtra?: string[];   // ← plugin.injectBody() results
+  headExtra?: string[];   // ← from injectHead callbacks
+  bodyExtra?: string[];   // ← from injectBody callbacks
 }
 ```
 
 Injection placement:
-- `headExtra` → sebelum `</head>`
-- `bodyExtra` → sebelum `</body>`, setelah main script
+- `headExtra` → before `</head>`
+- `bodyExtra` → before `</body>`, after the main script
 
 ## 10. Execution Order & Conflict Resolution
 
 |        Concern        |                        Strategy                         |
 | --------------------- | ------------------------------------------------------- |
-| **Plugin order**      | Array order di `docu.json` = execution order            |
-| **Hook chaining**     | Sequential (waterfall) untuk transform hooks            |
-| **Hook parallel**     | Tidak ada — semua sequential untuk predictability       |
+| **Plugin order**      | Array order in `docu.json` = `setup()` execution order  |
+| **Hook chaining**     | Sequential (waterfall) for transform hooks              |
+| **Hook parallel**     | None — all sequential for predictability                |
 | **Error handling**    | Plugin error = build error (fail fast, log plugin name) |
 | **Duplicate plugins** | Allowed (user responsibility)                           |
 
@@ -299,14 +379,18 @@ Injection placement:
 
 ### `@docubook/plugin-sitemap`
 ```ts
+import type { DocuBookPlugin } from "@docubook/flame";
+
 export default function pluginSitemap(opts?: { hostname?: string }): DocuBookPlugin {
   return {
     name: "sitemap",
-    async buildEnd(config, pages) {
-      const host = opts?.hostname || config.meta.baseURL;
-      const urls = pages.map((p) => `<url><loc>${host}/docs/${p.slug}</loc></url>`);
-      const xml = `<?xml version="1.0"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
-      await Bun.write(join(DIST_DIR, "sitemap.xml"), xml);
+    setup(build) {
+      build.onEnd((config, pages) => {
+        const host = opts?.hostname || config.meta.baseURL;
+        const urls = pages.map((p) => `<url><loc>${host}/docs/${p.slug}</loc></url>`);
+        const xml = `<?xml version="1.0"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
+        await Bun.write(join(DIST_DIR, "sitemap.xml"), xml);
+      });
     },
   };
 }
@@ -317,11 +401,13 @@ export default function pluginSitemap(opts?: { hostname?: string }): DocuBookPlu
 export default function pluginAnalytics(opts: { id: string }): DocuBookPlugin {
   return {
     name: "analytics",
-    injectHead() {
-      return `<script async src="https://www.googletagmanager.com/gtag/js?id=${opts.id}"></script>`;
-    },
-    injectBody() {
-      return `<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${opts.id}');</script>`;
+    setup(build) {
+      build.injectHead(() => {
+        return `<script async src="https://www.googletagmanager.com/gtag/js?id=${opts.id}"></script>`;
+      });
+      build.injectBody(() => {
+        return `<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${opts.id}');</script>`;
+      });
     },
   };
 }
@@ -329,36 +415,42 @@ export default function pluginAnalytics(opts: { id: string }): DocuBookPlugin {
 
 ### `@docubook/plugin-reading-time`
 ```ts
-export default { 
+export default {
   name: "reading-time",
-  transformFrontmatter(fm, ctx) {
-    // Inject reading time into frontmatter
-    // (would need raw content access — see Open Questions)
-    return { ...fm, readingTime: "3 min read" };
+  setup(build) {
+    build.transformFrontmatter((fm, ctx) => {
+      const wordCount = ctx.content.split(/\s+/).length;
+      const minutes = Math.max(1, Math.ceil(wordCount / 200));
+      return { ...fm, readingTime: `${minutes} min read` };
+    });
   },
 } satisfies DocuBookPlugin;
 ```
 
-## 12. Migration Path
+## 12. Lifecycle Hook Summary
 
-|    Phase    |                              Scope                               |  Breaking?  |
-| ----------- | ---------------------------------------------------------------- | ----------- |
-| **Phase 1** | Add `plugins` field to config + loader + runner (no-op if empty) | ❌           |
-| **Phase 2** | Wire hooks into build pipeline                                   | ❌           |
-| **Phase 3** | Wire hooks into dev server                                       | ❌           |
-| **Phase 4** | Extract built-in search as `@docubook/plugin-search`             | ⚠️ Optional |
+|       Hook        |              Trigger              |       Callback Signature        |                     Use Case                      |
+| ----------------- | --------------------------------- | ------------------------------- | ------------------------------------------------- |
+| `onStart`         | Before build begins               | `(config) => void`              | Validate config, initialize resources             |
+| `onLoad`          | Before file is read/compiled      | `({path, content}) => contents` | Transform raw MDX/MD before compilation           |
+| `transformFrontmatter` | After frontmatter parsed     | `(fm, ctx) => fm`               | Inject reading time, validate fields              |
+| `remarkPlugins`   | MDX compilation pipeline          | `() => Pluggable[]`             | Custom remark transforms                          |
+| `rehypePlugins`   | MDX compilation pipeline          | `() => Pluggable[]`             | Custom rehype transforms                          |
+| `injectHead`      | HTML shell generation             | `(ctx) => string`               | Analytics, meta tags, stylesheets                 |
+| `injectBody`      | HTML shell generation             | `(ctx) => string`               | Scripts, widgets                                  |
+| `transformHtml`   | Final HTML output                 | `(html, ctx) => html`           | Post-processing, minification, link rewriting     |
+| `handleRequest`   | Dev server request handler        | `(req, ctx) => Response`        | Custom API routes, mock data, redirects           |
+| `onEnd`           | After all pages built             | `(config, pages) => void`       | Sitemap, search index, RSS, manifests             |
 
 ## 13. Open Questions
 
 |  #  |                            Question                             |                                Options                                 |                                                    |
 | --- | --------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------- |
-| 1   | Should `transformFrontmatter` receive raw MDX content?          | A) Yes (enables reading-time). B) No (keep it pure metadata transform) |                                                    |
-| 2   | Should plugins access the build cache?                          | A) Yes (for incremental plugin builds). B) No (plugins are stateless)  |                                                    |
-| 3   | Plugin ordering: explicit `enforce: 'pre'                       | 'post'`?                                                               | A) Yes (like Vite). B) No (KISS, array order only) |
-| 4   | Should `handleRequest` support middleware chaining (next())?    | A) Yes (Express-style). B) No (first-response-wins)                    |                                                    |
-| 5   | Config validation: should plugins declare their options schema? | A) Yes (JSON Schema). B) No (runtime validation only)                  |                                                    |
-
----
+| 1   | Should `transformFrontmatter` receive raw MDX content?          | **A) Yes** (enables reading-time). B) No (keep it pure metadata)       |                                                    |
+| 2   | Should plugins access the build cache?                          | **B) No** — plugins stateless (manage own state via files)             |                                                    |
+| 3   | Plugin ordering: explicit `enforce: 'pre'                       | 'post'`?                                                               | **B) No** — KISS, array order only (like Bun)     |
+| 4   | Should `handleRequest` support middleware chaining (next())?    | **B) No** — first-response-wins (return `void` to pass to the next plugin) |                              |
+| 5   | Config validation: should plugins declare their options schema? | **B) No** — runtime validation only (plugin author's responsibility)   |                                                    |
 
 ## 14. Files to Create/Modify
 
@@ -366,7 +458,7 @@ export default {
 | -------------------------------- | ------ | ----------------------------- |
 | `.docu/node/plugin.ts`           | Create | Plugin interface + types      |
 | `.docu/node/plugin-loader.ts`    | Create | Config → plugin instances     |
-| `.docu/node/plugin-runner.ts`    | Create | Hook execution engine         |
+| `.docu/node/plugin-builder.ts`   | Create | PluginBuilder implementation  |
 | `.docu/node/types.ts`            | Modify | Add `plugins` to `DocuConfig` |
 | `.docu/node/build.ts`            | Modify | Wire hooks into build         |
 | `.docu/node/server.ts`           | Modify | Wire `handleRequest` hook     |
@@ -374,27 +466,3 @@ export default {
 | `.docu/node/mdx.ts`              | Modify | Merge plugin remark/rehype    |
 | `docu.schema.json`               | Modify | Add `plugins` schema          |
 | `.docu/__tests__/plugin.test.ts` | Create | Unit tests                    |
-
----
-
-Oke, saya lihat referensi skill-nya. Untuk fase desain plugin system ini, skill yang paling relevan adalah `architecture-design` dan `brainstorm-feature`. Tapi sebelum lanjut ke implementasi nanti, kita perlu jawab dulu **5 open questions** di design doc supaya tidak salah langkah.
-
-Berdasarkan arsitektur DocuBook yang sudah saya pelajari, ini rekomendasi saya:
-
-## Open Questions — Rekomendasi
-
-|  #  |                Question                |                       Rekomendasi                        |                                             Alasan                                             |                                                                                         |
-| --- | -------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| 1   | `transformFrontmatter` terima raw MDX? | **A) Yes** — pass raw content sebagai parameter tambahan | Enables reading-time, word-count, custom excerpt. Tanpa ini plugin terlalu terbatas.           |                                                                                         |
-| 2   | Plugin access build cache?             | **B) No** — plugins stateless                            | Plugin yang butuh state bisa manage sendiri (tulis file). Expose cache = coupling ke internal. |                                                                                         |
-| 3   | `enforce: 'pre'                        | 'post'`?                                                 | **B) No** — array order only                                                                   | KISS. DocuBook bukan Vite — plugin count akan kecil (3-5 max). Explicit ordering cukup. |
-| 4   | `handleRequest` middleware chaining?   | **B) First-response-wins**                               | Simpler mental model. Kalau plugin return Response, done. Kalau return void, next plugin.      |                                                                                         |
-| 5   | Plugin options schema validation?      | **B) No** — runtime only                                 | Over-engineering untuk v1. Plugin author validate sendiri di factory function.                 |                                                                                         |
-
----
-
-Mau kamu confirm/override keputusan di atas? Setelah itu saya bisa:
-
-1. Finalize design doc dengan keputusan final
-2. Store sebagai `decision` di memory
-3. Lanjut ke implementasi Phase 1 (interface + loader + runner + tests) menggunakan skill `implement-feature`

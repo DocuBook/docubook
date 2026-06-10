@@ -118,6 +118,34 @@
       "description": "Documentation navigation routes. Leave empty for auto-detection from docs/ folder.",
       "items": { "$ref": "#/$defs/route" }
     },
+    "plugins": {
+      "type": "array",
+      "description": "List of DocuBook plugins to load",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Plugin package name or relative path (e.g. @docubook/plugin-sitemap)"
+          },
+          {
+            "type": "array",
+            "description": "Plugin package name with factory options",
+            "items": [
+              {
+                "type": "string",
+                "description": "Plugin package name"
+              },
+              {
+                "type": "object",
+                "description": "Plugin factory options"
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        ]
+      }
+    },
     "themes": {
       "type": "object",
       "description": "Color themes configuration. Use preset name or custom hex values.",

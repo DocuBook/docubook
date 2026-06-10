@@ -19,7 +19,10 @@ import { generateSearchIndex } from "./search-indexer";
 import { buildClientBundle, computeInlineThemeCss } from "./hydrate";
 import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
+import { loadPlugins } from "./plugin-loader";
+import { BuildPluginBuilder } from "./plugin-builder";
 import type { BuildCache, CliArgs } from "./types";
+import type { PageMeta, PageContext } from "./plugin";
 import DocsPage from "../pages/docs/[[...slug]]";
 import IndexPage from "../pages/index";
 import NotFoundPage from "../pages/404";
@@ -97,7 +100,13 @@ let assetManifest = { js: "client.js", css: "client.css" };
 
 let inlineThemeCss: string | undefined;
 
-function htmlShell(title: string, description: string, body: string): string {
+function htmlShell(
+  title: string,
+  description: string,
+  body: string,
+  headExtra?: string[],
+  bodyExtra?: string[]
+): string {
   const favicon = docuConfig.meta?.favicon || "/favicon.ico";
   return createHtmlShell({
     title,
@@ -107,6 +116,8 @@ function htmlShell(title: string, description: string, body: string): string {
     css: assetManifest.css,
     js: assetManifest.js,
     themeCss: inlineThemeCss,
+    headExtra,
+    bodyExtra,
   });
 }
 
@@ -114,18 +125,41 @@ async function renderDocsPage(
   slug: string,
   rawMdx: string,
   filePath: string,
-  gitDates?: Map<string, string>
+  gitDates?: Map<string, string>,
+  builder?: BuildPluginBuilder
 ): Promise<string> {
+  // [5] build.onLoad({filter}) — transform raw content before compilation
+  let content = rawMdx;
+  if (builder) {
+    const transformed = await builder.runOnLoad(filePath, content);
+    if (transformed?.contents) {
+      content = transformed.contents;
+    }
+  }
+
   let result;
   try {
-    result = await compileMdx(rawMdx, filePath, gitDates);
+    // [7] Collect remark/rehype plugins from plugins and pass to compileMdx
+    const remarkPlugins = builder?.collectRemarkPlugins();
+    const rehypePlugins = builder?.collectRehypePlugins();
+    result = await compileMdx(content, filePath, gitDates, remarkPlugins, rehypePlugins);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown MDX error";
     throw new Error(`MDX Error in: docs/${slug}.mdx\n${msg}`, { cause: err });
   }
 
-  const title = result.frontmatter.title || slug || "Docs";
-  const description = result.frontmatter.description || "";
+  // [6] build.transformFrontmatter() — mutate frontmatter
+  let frontmatter = result.frontmatter as Record<string, unknown>;
+  if (builder) {
+    frontmatter = await builder.runTransformFrontmatterChain(frontmatter, {
+      slug,
+      filePath,
+      content,
+    });
+  }
+
+  const title = (frontmatter.title as string) || slug || "Docs";
+  const description = (frontmatter.description as string) || "";
   const slugParts = slug ? slug.split("/") : [];
 
   const page = React.createElement(
@@ -135,7 +169,7 @@ async function renderDocsPage(
       slug: slugParts,
       title,
       description,
-      date: result.frontmatter.date || undefined,
+      date: (frontmatter.date as string) || undefined,
       content: result.content,
       tocs: result.tocs,
       filePath,
@@ -145,7 +179,20 @@ async function renderDocsPage(
   );
 
   const body = renderToString(page);
-  return htmlShell(title, description, body);
+
+  // [8] build.injectHead() / injectBody() — collect injection strings
+  const ctx: PageContext = { slug, filePath, frontmatter, content, config: docuConfig };
+  const headExtra = builder?.collectHead(ctx);
+  const bodyExtra = builder?.collectBody(ctx);
+
+  let html = htmlShell(title, description, body, headExtra, bodyExtra);
+
+  // [9] build.transformHtml() — final HTML transform
+  if (builder) {
+    html = await builder.runTransformHtmlChain(html, ctx);
+  }
+
+  return html;
 }
 
 async function copyDirectoryRecursive(src: string, dest: string): Promise<void> {
@@ -205,6 +252,18 @@ async function build() {
     };
   }
 
+  // [1-3] Plugin setup phase
+  const hasPlugins = !!docuConfig.plugins?.length;
+  const builder = hasPlugins ? new BuildPluginBuilder(docuConfig) : null;
+  if (hasPlugins && builder) {
+    const plugins = await loadPlugins(docuConfig.plugins!);
+    for (const plugin of plugins) {
+      await plugin.setup(builder);
+    }
+    // [4] build.onStart(config)
+    await builder.runOnStart();
+  }
+
   logger.spinner.start("Building pages...");
   t = performance.now();
 
@@ -259,7 +318,13 @@ async function build() {
 
     buildTasks.push(async () => {
       try {
-        const html = await renderDocsPage(capturedFile.path, capturedRawMdx, relPath, gitDates);
+        const html = await renderDocsPage(
+          capturedFile.path,
+          capturedRawMdx,
+          relPath,
+          gitDates,
+          builder
+        );
         const outputPath = join(DIST_DIR, "docs", `${capturedFile.path}.html`);
         await mkdir(dirname(outputPath), { recursive: true });
         await writeFile(outputPath, html);
@@ -285,7 +350,7 @@ async function build() {
     const indexMdxPath = join(DOCS_DIR, "index.mdx");
     const indexRaw = await readFile(indexMdxPath, "utf-8");
     const indexRelPath = indexMdxPath.replace(PROJECT_ROOT + "/", "");
-    const indexHtml = await renderDocsPage("", indexRaw, indexRelPath, gitDates);
+    const indexHtml = await renderDocsPage("", indexRaw, indexRelPath, gitDates, builder);
     await mkdir(join(DIST_DIR, "docs"), { recursive: true });
     await writeFile(join(DIST_DIR, "docs", "index.html"), indexHtml);
   } catch (err) {
@@ -313,6 +378,17 @@ async function build() {
   logger.spinner.stop(
     `Built ${built} pages (${skipped} cached) \x1b[90m(${Math.round(performance.now() - t)}ms)\x1b[0m`
   );
+
+  // [10] build.onEnd(config, pages)
+  if (builder) {
+    const pages: PageMeta[] = mdxFiles.map((f) => ({
+      slug: f.path,
+      title: f.path.split("/").pop() || f.path,
+      filePath: join(DOCS_DIR, f.path),
+      outputPath: join(DIST_DIR, "docs", `${f.path}.html`),
+    }));
+    await builder.runOnEnd(pages);
+  }
 
   logger.indexStart();
   t = performance.now();

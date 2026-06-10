@@ -7,6 +7,8 @@ import { renderToString } from "react-dom/server";
 import { getContentType } from "./utils";
 import { compileMdx } from "./mdx";
 import { DOCS_DIR, DIST_DIR, PAGES_DIR, PROJECT_ROOT, loadDocuConfig } from "./paths";
+import { loadPlugins } from "./plugin-loader";
+import { BuildPluginBuilder } from "./plugin-builder";
 import DocsPage from "../pages/docs/[[...slug]]";
 import NotFoundPage from "../pages/404";
 import IndexPage from "../pages/index";
@@ -39,6 +41,16 @@ const records = await generateSearchIndex();
 logger.indexDone(records, Math.round(performance.now() - t));
 
 logger.routes();
+
+// Plugin setup (dev server — only handleRequest is used; content hooks reused via build pipeline)
+const hasPlugins = !!docuConfig.plugins?.length;
+const builder = hasPlugins ? new BuildPluginBuilder(docuConfig) : null;
+if (hasPlugins && builder) {
+  const plugins = await loadPlugins(docuConfig.plugins!);
+  for (const plugin of plugins) {
+    await plugin.setup(builder);
+  }
+}
 
 let router: InstanceType<typeof Bun.FileSystemRouter> | null = null;
 try {
@@ -259,6 +271,23 @@ const server = Bun.serve({
     const url = new URL(req.url);
     const pathname = url.pathname;
     const startTime = performance.now();
+
+    // [1] Plugin handleRequest — short-circuit on first Response
+    if (builder) {
+      const pluginResponse = await builder.runHandleRequest(req, {
+        port: server.port,
+        hostname: server.hostname,
+      });
+      if (pluginResponse) {
+        logger.request(
+          req.method,
+          pathname,
+          pluginResponse.status,
+          Math.round(performance.now() - startTime)
+        );
+        return pluginResponse;
+      }
+    }
 
     try {
       if (pathname === "/__hmr") {

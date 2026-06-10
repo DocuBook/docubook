@@ -1,4 +1,5 @@
 import React from "react";
+import type { Pluggable } from "unified";
 import {
   serialize,
   extractTocsFromRawMdx,
@@ -19,10 +20,21 @@ export interface MdxResult {
   tocs: ReturnType<typeof extractTocsFromRawMdx>;
 }
 
+/**
+ * Compile MDX/MD content into a React element and compiled source.
+ *
+ * @param rawMdx - Raw MDX/MD file content
+ * @param filePath - Relative file path for git date lookup
+ * @param gitDates - Optional pre-fetched git last-modified map
+ * @param remarkPlugins - Additional remark plugins (merged after defaults, optional)
+ * @param rehypePlugins - Additional rehype plugins (merged after defaults, optional)
+ */
 export async function compileMdx(
   rawMdx: string,
   filePath: string,
-  gitDates?: Map<string, string>
+  gitDates?: Map<string, string>,
+  remarkPlugins?: Pluggable[],
+  rehypePlugins?: Pluggable[]
 ): Promise<MdxResult> {
   const tocs = extractTocsFromRawMdx(rawMdx);
   const { frontmatter, strippedContent } = extractFrontmatterWithContent<{
@@ -31,10 +43,16 @@ export async function compileMdx(
     date?: string;
   }>(rawMdx);
 
+  const defaultRemark = createDefaultRemarkPlugins();
+  const defaultRehype = createDefaultRehypePlugins();
+
+  const finalRemark = remarkPlugins?.length ? [...defaultRemark, ...remarkPlugins] : defaultRemark;
+  const finalRehype = rehypePlugins?.length ? [...defaultRehype, ...rehypePlugins] : defaultRehype;
+
   const serialized = await serialize(strippedContent, {
     mdxOptions: {
-      rehypePlugins: createDefaultRehypePlugins(),
-      remarkPlugins: createDefaultRemarkPlugins(),
+      rehypePlugins: finalRehype,
+      remarkPlugins: finalRemark,
     },
   });
 
