@@ -9,6 +9,7 @@ import { compileMdx } from "./mdx";
 import { DOCS_DIR, DIST_DIR, PAGES_DIR, PROJECT_ROOT, loadDocuConfig } from "./paths";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
+import type { PageContext } from "./plugin";
 import DocsPage from "../pages/docs/[[...slug]]";
 import NotFoundPage from "../pages/404";
 import IndexPage from "../pages/index";
@@ -42,7 +43,7 @@ logger.indexDone(records, Math.round(performance.now() - t));
 
 logger.routes();
 
-// Plugin setup (dev server — only handleRequest is used; content hooks reused via build pipeline)
+// Plugin setup — all hooks active (onLoad, remark/rehype, frontmatter, head/body, html transform, handleRequest)
 const hasPlugins = !!docuConfig.plugins?.length;
 const builder = hasPlugins ? new BuildPluginBuilder(docuConfig) : null;
 if (hasPlugins && builder) {
@@ -135,71 +136,107 @@ async function getDocsForSlug(slug: string) {
   if (!filePath || !raw) return null;
 
   const relPath = filePath.replace(PROJECT_ROOT + "/", "");
-  const result = await compileMdx(raw, relPath);
+
+  let content = raw;
+  if (builder) {
+    const transformed = await builder.runOnLoad(relPath, content);
+    if (transformed?.contents) {
+      content = transformed.contents;
+    }
+  }
+
+  const remarkPlugins = builder?.collectRemarkPlugins();
+  const rehypePlugins = builder?.collectRehypePlugins();
+  const result = await compileMdx(content, relPath, undefined, remarkPlugins, rehypePlugins);
+
+  let frontmatter = result.frontmatter as Record<string, unknown>;
+  if (builder) {
+    frontmatter = await builder.runTransformFrontmatterChain(frontmatter, {
+      slug: slug || "/",
+      filePath: relPath,
+      content,
+    });
+  }
 
   return {
     content: result.content,
     compiledSource: result.compiledSource,
-    frontmatter: result.frontmatter,
+    frontmatter,
     tocs: result.tocs,
     filePath: relPath,
+    rawContent: content,
   };
+}
+
+async function renderDocsServerPage(
+  doc: NonNullable<Awaited<ReturnType<typeof getDocsForSlug>>>,
+  slug: string[],
+  pathname: string
+): Promise<Response> {
+  const title = (doc.frontmatter.title as string) || slug.join("/") || "Docs";
+  const description = (doc.frontmatter.description as string) || "";
+
+  const page = React.createElement(
+    DocsLayout,
+    { repoUrl: docuConfig.repo?.url, pathname },
+    React.createElement(DocsPage, {
+      slug,
+      title,
+      description,
+      date: doc.frontmatter.date as string | undefined,
+      content: doc.content,
+      tocs: doc.tocs,
+      filePath: doc.filePath,
+      repoUrl: docuConfig.repo?.url,
+      compiledSource: doc.compiledSource,
+    })
+  );
+
+  const body = renderToString(page);
+
+  if (builder) {
+    const ctx: PageContext = {
+      slug: slug.join("/") || "/",
+      filePath: doc.filePath,
+      frontmatter: doc.frontmatter,
+      content: doc.rawContent,
+      config: docuConfig,
+    };
+    const headExtra = builder.collectHead(ctx);
+    const bodyExtra = builder.collectBody(ctx);
+    const nonce = generateNonce();
+    const favicon = docuConfig.meta?.favicon || "/favicon.ico";
+    let html = createHtmlShell({
+      title,
+      description,
+      body,
+      favicon,
+      css: assetManifest.css,
+      js: assetManifest.js,
+      nonce,
+      extraScripts: hmrScript(nonce),
+      themeCss: inlineThemeCss,
+      headExtra,
+      bodyExtra,
+    });
+    html = await builder.runTransformHtmlChain(html, ctx);
+    return htmlResponse(html, nonce, 200, process.env.NODE_ENV !== "production");
+  }
+
+  return createHtmlResponse(title, description, body);
 }
 
 async function handleDocsIndex(): Promise<Response> {
   const doc = await getDocsForSlug("");
   if (!doc) return renderPage(NotFoundPage, "404 - Not Found", "", 404);
-
-  const title = doc.frontmatter.title || "Docs";
-  const description = doc.frontmatter.description || "";
-
-  const page = React.createElement(
-    DocsLayout,
-    { repoUrl: docuConfig.repo?.url, pathname: "/docs" },
-    React.createElement(DocsPage, {
-      slug: [],
-      title,
-      description,
-      date: doc.frontmatter.date,
-      content: doc.content,
-      tocs: doc.tocs,
-      filePath: doc.filePath,
-      repoUrl: docuConfig.repo?.url,
-      compiledSource: doc.compiledSource,
-    })
-  );
-
-  const body = renderToString(page);
-  return createHtmlResponse(title, description, body);
+  return renderDocsServerPage(doc, [], "/docs");
 }
 
 async function handleDocsRoute(slug: string[]): Promise<Response> {
   const path = slug.join("/");
-
   const doc = await getDocsForSlug(path);
   if (!doc) return renderPage(NotFoundPage, "404 - Not Found", "", 404);
-
-  const title = doc.frontmatter.title || path;
-  const description = doc.frontmatter.description || "";
-
-  const page = React.createElement(
-    DocsLayout,
-    { repoUrl: docuConfig.repo?.url, pathname: `/docs/${path}` },
-    React.createElement(DocsPage, {
-      slug,
-      title,
-      description,
-      date: doc.frontmatter.date,
-      content: doc.content,
-      tocs: doc.tocs,
-      filePath: doc.filePath,
-      repoUrl: docuConfig.repo?.url,
-      compiledSource: doc.compiledSource,
-    })
-  );
-
-  const body = renderToString(page);
-  return createHtmlResponse(title, description, body);
+  return renderDocsServerPage(doc, slug, `/docs/${path}`);
 }
 
 function renderPage(
@@ -272,7 +309,6 @@ const server = Bun.serve({
     const pathname = url.pathname;
     const startTime = performance.now();
 
-    // [1] Plugin handleRequest — short-circuit on first Response
     if (builder) {
       const pluginResponse = await builder.runHandleRequest(req, {
         port: server.port,
