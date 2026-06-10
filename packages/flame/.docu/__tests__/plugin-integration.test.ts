@@ -178,10 +178,16 @@ describe("Plugin integration — multiple plugins", () => {
 // ─── Error isolation ─────────────────────────────────────
 
 describe("Plugin integration — error isolation", () => {
-  it("onStart fail-fast propagates error", async () => {
-    const builder = createBuilder(["faulty"]);
+  it("onStart error does not block remaining callbacks", async () => {
+    const builder = createBuilder(["faulty", "working"]);
+    const working = createMockPlugin("working");
     await createFaultyPlugin("onStart").setup(builder);
-    await expect(builder.runOnStart()).rejects.toThrow("onStart failure");
+    await working.setup(builder);
+
+    // Should not reject — error is caught and logged
+    await expect(builder.runOnStart()).resolves.toBeUndefined();
+    // The working plugin's onStart should still have been called
+    expect(working.logs.some((l) => l.hook === "onStart")).toBe(true);
   });
 
   it("handleRequest isolates errors", async () => {
@@ -203,5 +209,129 @@ describe("Plugin integration — error isolation", () => {
     const builder = createBuilder(["faulty"]);
     await createFaultyPlugin("injectHead").setup(builder);
     expect(() => builder.collectHead({} as any)).toThrow("injectHead failure");
+  });
+
+  it("onEnd error does not block remaining callbacks", async () => {
+    const builder = createBuilder(["faulty", "working"]);
+    const working = createMockPlugin("working");
+    await createFaultyPlugin("onStart").setup(builder);
+    await working.setup(builder);
+
+    // Re-register faulty handler via setup
+    const faultyPlugin = createFaultyPlugin("onStart");
+    await faultyPlugin.setup(builder);
+
+    // Manually add an onEnd that bombs
+    // (createFaultyPlugin only supports onStart/handleRequest/injectHead,
+    // so we add a throwing onEnd directly via builder)
+    const arbitraryError = new Error("onEnd fail");
+    (builder as any)._onEnd = [
+      async () => {
+        throw arbitraryError;
+      },
+      async () => {
+        // This should still run after the error
+      },
+    ];
+
+    await expect(builder.runOnEnd([])).resolves.toBeUndefined();
+  });
+
+  it("runOnLoad error continues to next matching handler", async () => {
+    const builder = createBuilder();
+    const order: string[] = [];
+
+    builder.onLoad({ filter: /.*/ }, async () => {
+      order.push("first");
+      throw new Error("first fails");
+    });
+    builder.onLoad({ filter: /.*/ }, async () => {
+      order.push("second");
+      return { contents: "second-wins" };
+    });
+
+    const result = await builder.runOnLoad("test.mdx", "original");
+    expect(order).toEqual(["first", "second"]);
+    expect(result).toEqual({ contents: "second-wins" });
+  });
+
+  it("runTransformFrontmatterChain passes through unchanged on error", async () => {
+    const builder = createBuilder();
+    builder.transformFrontmatter(() => {
+      throw new Error("fm error");
+    });
+
+    const result = await builder.runTransformFrontmatterChain(
+      { title: "Original" },
+      { slug: "test", filePath: "test.mdx", content: "" }
+    );
+    // Should pass through unchanged, not throw
+    expect(result).toEqual({ title: "Original" });
+  });
+
+  it("runTransformHtmlChain passes through unchanged on error", async () => {
+    const builder = createBuilder();
+    builder.transformHtml(() => {
+      throw new Error("html error");
+    });
+
+    const result = await builder.runTransformHtmlChain("<p>original</p>", null as any);
+    // Should pass through unchanged, not throw
+    expect(result).toBe("<p>original</p>");
+  });
+
+  it("multiple hooks: one error does not affect others in same chain", async () => {
+    const builder = createBuilder();
+
+    builder.transformFrontmatter((fm) => ({ ...fm, first: "ok" }));
+    builder.transformFrontmatter(() => {
+      throw new Error("second fails");
+    });
+    builder.transformFrontmatter((fm) => ({ ...fm, third: "ok" }));
+
+    const result = await builder.runTransformFrontmatterChain(
+      { base: true },
+      { slug: "test", filePath: "test.mdx", content: "" }
+    );
+
+    expect(result).toEqual({ base: true, first: "ok", third: "ok" });
+  });
+
+  it("multiple onStarts: error does not block subsequent callbacks", async () => {
+    const builder = createBuilder();
+    const order: number[] = [];
+
+    builder.onStart(() => {
+      order.push(1);
+    });
+    builder.onStart(() => {
+      order.push(2);
+      throw new Error("mid fails");
+    });
+    builder.onStart(() => {
+      order.push(3);
+    });
+
+    await builder.runOnStart();
+    expect(order).toEqual([1, 2, 3]);
+  });
+
+  it("multiple onEnds: error does not block subsequent callbacks", async () => {
+    const builder = createBuilder();
+    const order: number[] = [];
+
+    builder.onEnd(() => {
+      order.push(1);
+    });
+    builder.onEnd(() => {
+      order.push(2);
+      throw new Error("mid fails");
+    });
+    builder.onEnd(() => {
+      order.push(3);
+    });
+
+    await builder.runOnEnd([{ slug: "a", title: "A", filePath: "a.mdx", outputPath: "a.html" }]);
+    expect(order).toEqual([1, 2, 3]);
   });
 });

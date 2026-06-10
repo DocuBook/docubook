@@ -3,7 +3,7 @@ title: Plugins
 description: Extend DocuBook with hooks for sitemaps, analytics, custom transforms, and more
 ---
 
-DocuBook's plugin system extends the build pipeline and dev server without forking internals. Plugins are **optional** — zero plugins = zero behavior change.
+DocuBook's plugin system extends the build pipeline and dev server without forking internals. Plugins are **optional** - zero plugins = zero behavior change.
 
 ## Configuration
 
@@ -26,35 +26,312 @@ Add a `plugins` array to `docu.json`:
 
 Resolution: relative path (starts with `.`) → project root, absolute → as-is, else → npm package.
 
-## Writing a Plugin
+## Creating a Plugin
 
-A plugin is an object with `name` and `setup(build)`:
+<Steps>
+  <Step title="Step 1: Project Setup">
 
-- **Simple object** — no factory options needed
-- **Factory function** — accepts options from `docu.json` tuple
+Create a plugin file in your project directory, for example `plugins/reading-time.ts`:
+
+```
+project-root/
+├── docs/
+├── docu.json
+├── plugins/
+│   ├── reading-time.ts
+│   └── sitemap.ts
+└── package.json
+```
+
+A plugin can be stored as a **local file** in your `plugins/` folder, or published as a **separate package** on npm under `@docubook/plugin-*` or `docubook-plugin-*`.
+
+  </Step>
+  <Step title="Step 2: Basic Plugin Structure">
+
+Every plugin must have a unique `name` and a `setup(build)` function:
 
 ```typescript
+// plugins/reading-time.ts
 import type { DocuBookPlugin } from "@docubook/flame";
 
-// Simple object
-export default {
-  name: "hello",
+const plugin: DocuBookPlugin = {
+  name: "reading-time",
   setup(build) {
-    build.onStart(() => console.log("Build started!"));
+    // Register hooks here
+    build.onStart((config) => {
+      console.log(`[${plugin.name}] Build started`);
+    });
   },
-} satisfies DocuBookPlugin;
+};
 
-// Factory function (receives options from docu.json ["name", opts])
-export default function pluginAnalytics(opts?: { id: string }): DocuBookPlugin {
+export default plugin;
+```
+
+  </Step>
+<Step title="Step 4: Using Factory Options">
+
+If your plugin needs configuration via `docu.json`, use a factory function:
+
+```typescript
+// plugins/analytics.ts
+import type { DocuBookPlugin } from "@docubook/flame";
+
+interface AnalyticsOptions {
+  id: string;
+  domain?: string;
+}
+
+export default function pluginAnalytics(
+  opts?: AnalyticsOptions
+): DocuBookPlugin {
+  // Throw early if required option is missing
+  if (!opts?.id) {
+    throw new Error(
+      "[plugin:analytics] `id` is required. " +
+      'Example: ["@docubook/plugin-analytics", { id: "G-XXXXXXX" }]'
+    );
+  }
+
   return {
     name: "analytics",
     setup(build) {
-      build.injectHead(() =>
-        `<script async src="https://www.googletagmanager.com/gtag/js?id=${opts?.id}"></script>`
-      );
+      build.injectHead(() => {
+        return `
+<script async src="https://www.googletagmanager.com/gtag/js?id=${opts.id}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', '${opts.id}');
+</script>`;
+      });
     },
   };
 }
+```
+
+Then register it in `docu.json`:
+
+```json
+{
+  "plugins": [
+    ["./plugins/analytics", { "id": "G-12345678" }]
+  ]
+}
+```
+
+  </Step>
+  <Step title="Step 5: Managing Plugin State">
+
+Plugins can maintain internal state using the `setup()` closure:
+
+```typescript
+export default function pluginCounter(): DocuBookPlugin {
+  // Internal state - persists across build/dev session
+  let pageCount = 0;
+  const startTime = Date.now();
+
+  return {
+    name: "counter",
+    setup(build) {
+      build.onEnd((_config, pages) => {
+        pageCount = pages.length;
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        console.log(`[counter] Built ${pageCount} pages in ${elapsed}s`);
+      });
+
+      build.onStart(() => {
+        pageCount = 0;
+      });
+    },
+  };
+}
+```
+
+  </Step>
+  <Step title="Step 6: Error Handling">
+
+Don't throw raw errors - use clear messages with a `[plugin:name]` prefix:
+
+```typescript
+export default function pluginValidator(): DocuBookPlugin {
+  return {
+    name: "validator",
+    setup(build) {
+      build.onStart((config) => {
+        if (!config.meta?.baseURL) {
+          throw new Error(
+            "[plugin:validator] `meta.baseURL` is required in docu.json"
+          );
+        }
+        // Validate URL
+        try {
+          new URL(config.meta.baseURL);
+        } catch {
+          throw new Error(
+            "[plugin:validator] `meta.baseURL` is not a valid URL: " +
+            config.meta.baseURL
+          );
+        }
+      });
+
+      build.onLoad({ filter: /\.mdx$/ }, ({ path, content }) => {
+        if (!content.trim()) {
+          // Just a warning, don't throw
+          console.warn(`[plugin:validator] Empty file: ${path}`);
+        }
+      });
+    },
+  };
+}
+```
+
+See [Error Isolation](#error-isolation) for how errors behave in each hook.
+
+  </Step>
+  <Step title="Step 7: Testing Plugins">
+
+Use the available test helpers:
+
+```typescript
+// plugins/__tests__/reading-time.test.ts
+import { describe, it, expect, beforeEach } from "vitest";
+import { BuildPluginBuilder } from "@docubook/flame/.docu/node/plugin-builder";
+import readingTimePlugin from "../reading-time";
+
+// Create a minimal config for testing
+function createTestConfig() {
+  return {
+    meta: { title: "Test", description: "", baseURL: "https://test.dev" },
+    navbar: { logoText: "Test", menu: [] },
+    footer: { social: [] },
+    repo: { url: "", path: "", edit: false },
+    routes: [],
+  };
+}
+
+describe("reading-time plugin", () => {
+  let builder: BuildPluginBuilder;
+
+  beforeEach(() => {
+    builder = new BuildPluginBuilder(createTestConfig() as any);
+    readingTimePlugin.setup(builder);
+  });
+
+  it("adds readingTime to frontmatter", async () => {
+    const result = await builder.runTransformFrontmatterChain(
+      {},
+      { slug: "test", filePath: "test.mdx", content: "a ".repeat(400) }
+    );
+    expect(result).toHaveProperty("readingTime");
+    expect(result.readingTime).toMatch(/\d+ min read/);
+  });
+
+  it("does not modify title when content is empty", async () => {
+    const result = await builder.runTransformFrontmatterChain(
+      { title: "Test" },
+      { slug: "test", filePath: "test.mdx", content: "" }
+    );
+    expect(result).toHaveProperty("title", "Test");
+    expect(result).toHaveProperty("readingTime");
+  });
+});
+```
+
+Run the tests:
+
+```bash
+npx vitest run plugins/__tests__/
+```
+
+  </Step>
+  <Step title="Step 8: Using Multiple Hooks">
+
+A single plugin can register multiple hooks at once:
+
+```typescript
+export default function pluginComplete(): DocuBookPlugin {
+  return {
+    name: "complete",
+    setup(build) {
+      build.onStart((config) => {
+        console.log(`Building for ${config.meta.title}`);
+      });
+
+      build.onLoad({ filter: /\.md$/ }, ({ content }) => {
+        // Convert .md to custom MDX format
+        const enhanced = `import { CustomComponent } from "./components";\n\n${content}`;
+        return { contents: enhanced, loader: "mdx" };
+      });
+
+      build.transformFrontmatter((fm) => ({
+        ...fm,
+        processed: true,
+        generatedAt: new Date().toISOString(),
+      }));
+
+      build.remarkPlugins(() => [remarkCustomId]);
+
+      build.injectHead(() => `<meta name="generator" content="docubook-flame">`);
+
+      build.transformHtml((html) => html.replace(/\bTODO\b/g, ""));
+
+      build.onEnd((_config, pages) => {
+        console.log(`Done: ${pages.length} pages`);
+      });
+    },
+  };
+}
+```
+
+  </Step>
+  <Step title="Step 9: Publishing a Plugin">
+
+To publish a plugin to npm, choose a **namespace** — `@docubook/plugin-*` for official plugins or `docubook-plugin-*` for community ones. The **entry point** must export a default `DocuBookPlugin` or factory function. Add `@docubook/flame` as a **peer dependency** and include a **README** with a `docu.json` configuration example.
+
+```json
+// package.json for npm plugin
+{
+  "name": "@docubook/plugin-sitemap",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "peerDependencies": {
+    "@docubook/flame": "^1.0.0"
+  },
+  "files": ["dist"]
+}
+```
+
+For the full implementation example, see the [sitemap example](#example-plugins) below.
+
+  </Step>
+  </Steps>
+
+## Error Isolation
+
+DocuBook Flame applies **catch & log + continue** across all execution hooks to prevent a single plugin error from stopping the build:
+
+| Hook                  | Error Behavior                       |
+| --------------------- | ------------------------------------ |
+| `onStart`             | Log + continue to next callback      |
+| `onEnd`               | Log + continue to next callback      |
+| `onLoad`              | Log + try next matching handler      |
+| `transformFrontmatter`| Log + frontmatter unchanged          |
+| `transformHtml`       | Log + HTML unchanged                 |
+| `handleRequest`       | Log + continue to next handler       |
+| `injectHead` / `injectBody` / remark / rehype | **Throw** - developer error |
+
+In other words: **your plugin can error without stopping anyone else's build.**
+Errors are still visible in the console - so developers can debug without losing build output.
+
+```typescript
+// Example: a failing plugin - error is logged, build continues
+build.onLoad({ filter: /\.mdx$/ }, () => {
+  throw new Error("Something went wrong");
+});
+// Subsequent plugins still run, build does not crash
 ```
 
 ## Hook Reference
@@ -132,7 +409,7 @@ build.injectBody(() =>
 
 ### transformHtml(html, ctx)
 
-Transform the final HTML string per page — the last hook before writing to disk.
+Transform the final HTML string per page - the last hook before writing to disk.
 
 ```typescript
 build.transformHtml((html, ctx) =>
@@ -233,7 +510,7 @@ export default function pluginAnalytics(opts: { id: string }): DocuBookPlugin {
 
 ## Security & Trust Model
 
-Plugin hooks run with **full system privileges** — same as the user running `bun dev`.
+Plugin hooks run with **full system privileges** - same as the user running `bun dev`.
 
 |         Plugin Source         | Risk Level |                               Notes                                |
 | ----------------------------- | ---------- | ------------------------------------------------------------------ |
@@ -255,11 +532,11 @@ Absolute paths and `..` traversal are blocked at load time.
 
 ### Best Practices
 
-- **Pin plugin versions** in `package.json` — never use ranges for plugins
+- **Pin plugin versions** in `package.json` - never use ranges for plugins
 - **Review plugin source** before adding to `docu.json`
-- **Official plugins** use the `@docubook/plugin-*` namespace — verify the package owner on npm
-- **Run `bun dev` with least privilege** — avoid running as root
-- **CI/CD** — validate `docu.json` against unexpected plugin entries
+- **Official plugins** use the `@docubook/plugin-*` namespace - verify the package owner on npm
+- **Run `bun dev` with least privilege** - avoid running as root
+- **CI/CD** - validate `docu.json` against unexpected plugin entries
 
 > Plugins have the same trust model as `devDependencies`. Only install plugins
 > from sources you trust, same as you would with any npm package.

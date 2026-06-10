@@ -1,7 +1,11 @@
 ---
 title: Search
-description: Several types of search components based on props
+description: Built-in full-text search indexing and components.
 ---
 
-DocuBook provides flexibility for your documentation's search engine by simply changing the component props. For example, you can easily switch to Algolia search.
+Flame includes a **built-in full-text search** engine that indexes all documentation pages at build time. No external service required.
+
+The search index is generated during `bun run build` and stored as a JSON file in the build output. The frontend search component performs client-side lookups against this index.
+
+For Algolia DocSearch integration, see the [Algolia guide](/docs/getting-started/search/algolia).
 

@@ -282,6 +282,54 @@ Reference in MDX:
 
 ---
 
+## Plugins
+
+Flame supports a plugin system to extend the build pipeline and dev server. Plugins can inject head/body HTML, transform content, add remark/rehype plugins, intercept API requests, and more.
+
+### Usage in `docu.json`
+
+```json
+{
+  "plugins": [
+    "@docubook/plugin-sitemap",
+    ["./plugins/analytics", { "id": "G-XXXXXXX" }]
+  ]
+}
+```
+
+String = npm package or relative path. Tuple `["name", opts]` = factory with options.
+
+### Available Hooks
+
+|               Hook                |                      Purpose                      |
+| --------------------------------- | ------------------------------------------------- |
+| `onStart`                         | Validate config before build                      |
+| `onEnd`                           | Generate files after build (sitemap, RSS)         |
+| `onLoad`                          | Transform raw file content before MDX compilation |
+| `transformFrontmatter`            | Mutate frontmatter (reading time, SEO)            |
+| `transformHtml`                   | Modify final HTML before writing to disk          |
+| `injectHead` / `injectBody`       | Inject HTML into `<head>` or before `</body>`     |
+| `remarkPlugins` / `rehypePlugins` | Add remark/rehype plugins to the MDX pipeline     |
+| `handleRequest`                   | Intercept dev server requests (custom API)        |
+
+### Quick Example
+
+```typescript
+import type { DocuBookPlugin } from "@docubook/flame";
+
+export default {
+  name: "reading-time",
+  setup(build) {
+    build.transformFrontmatter((fm, ctx) => ({
+      ...fm,
+      readingTime: `${Math.ceil((ctx.content ?? "").split(/\s+/).length / 200)} min read`,
+    }));
+  },
+} satisfies DocuBookPlugin;
+```
+
+See the [full plugin guide](docs/getting-started/plugins.mdx) for step-by-step instructions.
+
 ## Architecture
 
 - **Bun** — runtime, bundler, file watcher
