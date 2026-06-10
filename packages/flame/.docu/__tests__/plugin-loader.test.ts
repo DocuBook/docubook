@@ -4,7 +4,7 @@ import { loadPlugins, resolveSpecifier } from "../node/plugin-loader";
 
 // ─── Fixtures path helper ────────────────────────────────
 
-const FIXTURES = "./.docu/__tests__/fixtures";
+const FIXTURES = "./packages/flame/.docu/__tests__/fixtures";
 
 function fixture(file: string) {
   return `${FIXTURES}/${file}.ts`;
