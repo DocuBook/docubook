@@ -36,6 +36,7 @@ export default tseslint.config(
       "react-hooks/gating": "off",
       "react-hooks/unsupported-syntax": "off",
       "react-hooks/incompatible-library": "off",
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       "perfectionist/sort-classes": ["error", { type: "natural", order: "asc" }],
     },
     settings: {
@@ -47,6 +48,13 @@ export default tseslint.config(
     files: [".docu/**/*.tsx"],
     rules: {
       "react/jsx-no-target-blank": "error",
+    },
+  },
+
+  {
+    files: [".docu/__tests__/**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
 

@@ -46,5 +46,5 @@ describe("getGitLastModifiedBatch", () => {
   });
 });
 
-// Import setelah mock setup
+// Import after mock setup
 import { getGitLastModifiedBatch } from "../node/utils";

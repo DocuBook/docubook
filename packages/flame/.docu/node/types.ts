@@ -67,6 +67,7 @@ export interface HomeConfig {
 }
 
 import type { ThemeConfig } from "@docubook/themes-colors";
+import type { PluginEntry } from "./plugin";
 
 export interface DocuConfig {
   meta: DocuMeta;
@@ -78,6 +79,8 @@ export interface DocuConfig {
   themes?: {
     colors: ThemeConfig;
   };
+  /** List of DocuBook plugins to load. Empty by default — no-op when absent. */
+  plugins?: PluginEntry[];
 }
 
 export interface BuildCache {
