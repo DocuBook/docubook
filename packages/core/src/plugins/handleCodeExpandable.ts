@@ -15,9 +15,26 @@ import type { ElementNode } from "../utils";
  *   as HAST properties (data-language, data-title) are HTML-safe at render time.
  */
 function escapeMeta(s: string): string {
-  return s
-    .replace(/<\//g, "\\u003C/") // HTML spec: prevent </script> in script/JSON context
-    .replace(/[`${}"\\]/g, "\\$&"); // JS string: escape template literal & string special chars
+  let out = "";
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+
+    // HTML spec: prevent </script> in script/JSON context
+    if (ch === "<" && s[i + 1] === "/") {
+      out += "\\u003C/";
+      i++;
+      continue;
+    }
+
+    // JS string: escape template literal & string special chars
+    if (ch === "`" || ch === "$" || ch === "{" || ch === "}" || ch === "\"" || ch === "\\") {
+      out += `\\${ch}`;
+      continue;
+    }
+
+    out += ch;
+  }
+  return out;
 }
 
 interface CodeNode extends Node {
