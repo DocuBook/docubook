@@ -139,6 +139,10 @@
           "href": "/themes"
         },
         {
+          "title": "Plugins",
+          "href": "/plugins"
+        },
+        {
           "title": "Search",
           "href": "/search",
           "noLink": true,

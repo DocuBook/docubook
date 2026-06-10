@@ -50,6 +50,29 @@ export function htmlShell(opts: HtmlShellOptions): string {
 </html>`;
 }
 
+export function errorHtml(message: string, stack?: string): string {
+  const msg = Bun.escapeHTML(message || "Unknown error");
+  const st = Bun.escapeHTML(stack || "");
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Server Error</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{padding:2rem;font-family:ui-monospace,monospace;background:#1a1a2e;color:#e0e0e0}
+    h1{color:#ff6b6b;font-size:1.5rem;margin-bottom:1rem}
+    pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;padding:1.5rem;overflow-x:auto;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+    .msg{color:#ff6b6b;font-weight:bold}
+  </style>
+</head>
+  <body>
+  <h1>🔥 Server Error</h1>
+    <pre><span class="msg">${msg}</span>${st ? `\n\n${st}` : ""}</pre>
+  </body>
+</html>`;
+}
+
 export function hmrScript(nonce: string): string {
   return `<script nonce="${Bun.escapeHTML(nonce)}">
 (function(){

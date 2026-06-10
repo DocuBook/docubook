@@ -1,0 +1,279 @@
+---
+title: Plugins
+description: Extend DocuBook with hooks for sitemaps, analytics, custom transforms, and more
+---
+
+DocuBook's plugin system extends the build pipeline and dev server without forking internals. Plugins are **optional** — zero plugins = zero behavior change.
+
+## Configuration
+
+Add a `plugins` array to `docu.json`:
+
+```json
+{
+  "plugins": [
+    "@docubook/plugin-sitemap",
+    ["@docubook/plugin-analytics", { "id": "G-XXXXXXX" }],
+    "./plugins/reading-time"
+  ]
+}
+```
+
+|        Format         |                Description                 |
+| --------------------- | ------------------------------------------ |
+| `"string"`            | Plugin name, npm package, or relative path |
+| `["string", { ... }]` | Plugin name + factory options              |
+
+Resolution: relative path (starts with `.`) → project root, absolute → as-is, else → npm package.
+
+## Writing a Plugin
+
+A plugin is an object with `name` and `setup(build)`:
+
+- **Simple object** — no factory options needed
+- **Factory function** — accepts options from `docu.json` tuple
+
+```typescript
+import type { DocuBookPlugin } from "@docubook/flame";
+
+// Simple object
+export default {
+  name: "hello",
+  setup(build) {
+    build.onStart(() => console.log("Build started!"));
+  },
+} satisfies DocuBookPlugin;
+
+// Factory function (receives options from docu.json ["name", opts])
+export default function pluginAnalytics(opts?: { id: string }): DocuBookPlugin {
+  return {
+    name: "analytics",
+    setup(build) {
+      build.injectHead(() =>
+        `<script async src="https://www.googletagmanager.com/gtag/js?id=${opts?.id}"></script>`
+      );
+    },
+  };
+}
+```
+
+## Hook Reference
+
+### onStart(config)
+
+Called once before the build. Use for config validation or resource initialization.
+
+```typescript
+build.onStart((config) => {
+  if (!config.meta.baseURL) throw new Error("baseURL is required");
+});
+```
+
+### onEnd(config, pages)
+
+Called after all pages are built. Generate sitemaps, RSS feeds, or manifests.
+
+```typescript
+build.onEnd((config, pages) => {
+  // pages: { slug, title, filePath, outputPath }[]
+  console.log(`Built ${pages.length} pages`);
+});
+```
+
+### onLoad({ filter }, callback)
+
+Transform raw file content before MDX compilation. Bun's `build.onLoad()` convention.
+
+```typescript
+build.onLoad({ filter: /\.md$/ }, ({ path, content }) => {
+  return { contents: `<!-- auto-generated -->\n\n${content}` };
+});
+```
+
+### transformFrontmatter(fm, ctx)
+
+Mutate frontmatter before MDX compilation. Return a new object or `void`.
+
+```typescript
+build.transformFrontmatter((fm, ctx) => {
+  const minutes = Math.max(1, Math.ceil((ctx.content ?? "").split(/\s+/).length / 200));
+  return { ...fm, readingTime: `${minutes} min read` };
+});
+```
+
+### remarkPlugins() / rehypePlugins()
+
+Add remark or rehype plugins to the MDX pipeline. Merged after the default set.
+
+```typescript
+build.remarkPlugins(() => [require("remark-custom-heading-id")]);
+build.rehypePlugins(() => [require("rehype-autolink-headings")]);
+```
+
+### injectHead(ctx)
+
+Return HTML strings to inject inside `<head>`. Results from all plugins are merged and deduplicated.
+
+```typescript
+build.injectHead(() =>
+  `<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXX"></script>`
+);
+```
+
+### injectBody(ctx)
+
+Return HTML strings to inject before `</body>`.
+
+```typescript
+build.injectBody(() =>
+  `<script>console.log("DocuBook loaded");</script>`
+);
+```
+
+### transformHtml(html, ctx)
+
+Transform the final HTML string per page — the last hook before writing to disk.
+
+```typescript
+build.transformHtml((html, ctx) =>
+  html.replace(/https?:\/\/old-domain\.com\//g, "/")
+);
+```
+
+### handleRequest(req, ctx)
+
+Intercept incoming dev server requests. First plugin to return a `Response` short-circuits.
+
+```typescript
+build.handleRequest((req, ctx) => {
+  const url = new URL(req.url);
+  if (url.pathname === "/api/status") {
+    return new Response(JSON.stringify({ ok: true }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+});
+```
+
+## Lifecycle
+
+```
+build()
+├─ loadPlugins → plugin.setup(build)        ← hooks registered
+├─ onStart(config)                          ← validate
+├─ for each MDX file:
+│   ├── onLoad({filter})                    ← transform raw content
+│   ├── transformFrontmatter()              ← mutate frontmatter
+│   ├── compileMdx() ← remark / rehype      ← MDX pipeline
+│   ├── injectHead() / injectBody()         ← inject HTML
+│   └── transformHtml()                     ← final transform
+├─ onEnd(config, pages)                     ← sitemap, RSS, etc.
+└─ write output
+```
+
+Execution is **sequential** (waterfall). Plugins run in `docu.json` order. `handleRequest` is **first-wins**. Errors fail-fast with the plugin name.
+
+## Example Plugins
+
+```typescript
+// plugins/reading-time.ts
+import type { DocuBookPlugin } from "@docubook/flame";
+
+export default {
+  name: "reading-time",
+  setup(build) {
+    build.transformFrontmatter((fm, ctx) => {
+      const minutes = Math.ceil((ctx.content ?? "").split(/\s+/).length / 200);
+      return { ...fm, readingTime: `${minutes} min read` };
+    });
+  },
+} satisfies DocuBookPlugin;
+```
+
+```typescript
+// plugins/sitemap.ts
+import { join } from "node:path";
+import type { DocuBookPlugin } from "@docubook/flame";
+
+export default function pluginSitemap(opts?: { hostname?: string }): DocuBookPlugin {
+  return {
+    name: "sitemap",
+    setup(build) {
+      build.onEnd(async (config, pages) => {
+        const host = opts?.hostname || config.meta.baseURL;
+        const urls = pages.map(
+          (p) => `<url><loc>${host}/docs/${p.slug}</loc></url>`
+        );
+        const xml = `<?xml version="1.0"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
+        await Bun.write(join(".docu/dist", "sitemap.xml"), xml);
+      });
+    },
+  };
+}
+```
+
+```typescript
+// plugins/analytics.ts
+import type { DocuBookPlugin } from "@docubook/flame";
+
+export default function pluginAnalytics(opts: { id: string }): DocuBookPlugin {
+  return {
+    name: "analytics",
+    setup(build) {
+      build.injectHead(() =>
+        `<script async src="https://www.googletagmanager.com/gtag/js?id=${opts.id}"></script>`
+      );
+      build.injectBody(() =>
+        `<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${opts.id}');</script>`
+      );
+    },
+  };
+}
+```
+
+## Security & Trust Model
+
+Plugin hooks run with **full system privileges** — same as the user running `bun dev`.
+
+|         Plugin Source         | Risk Level |                               Notes                                |
+| ----------------------------- | ---------- | ------------------------------------------------------------------ |
+| Official `@docubook/plugin-*` | Low        | Published and maintained by DocuBook team                          |
+| Third-party npm package       | **High**   | Arbitrary code execution at build/dev time. Vet before installing. |
+| Local path (`./plugins/...`)  | **Medium** | Requires write access to project; review code in PR                |
+
+### Path Resolution Security
+
+```
+./plugins/my-plugin.ts     ✅ Allowed (within project root)
+../malicious.js            ❌ Blocked (path traversal guard)
+/usr/lib/evil.mjs          ❌ Blocked (outside project root)
+@docubook/plugin-sitemap   ✅ Allowed (npm package, bypasses guard)
+```
+
+The plugin loader rejects any specifier that resolves outside the project root.
+Absolute paths and `..` traversal are blocked at load time.
+
+### Best Practices
+
+- **Pin plugin versions** in `package.json` — never use ranges for plugins
+- **Review plugin source** before adding to `docu.json`
+- **Official plugins** use the `@docubook/plugin-*` namespace — verify the package owner on npm
+- **Run `bun dev` with least privilege** — avoid running as root
+- **CI/CD** — validate `docu.json` against unexpected plugin entries
+
+> Plugins have the same trust model as `devDependencies`. Only install plugins
+> from sources you trust, same as you would with any npm package.
+
+## TypeScript Types
+
+```typescript
+import type {
+  DocuBookPlugin,
+  PluginBuilder,
+  PageContext,
+  PageMeta,
+  PluginEntry,
+} from "@docubook/flame";
+```
+
+All types are exported from the `@docubook/flame` package entry point.

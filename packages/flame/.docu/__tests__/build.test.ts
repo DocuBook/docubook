@@ -17,9 +17,9 @@ describe("build pipeline", () => {
       }
     });
 
-    it("defaults to 10 when env is unset", () => {
+    it("defaults to 4 when env is unset", () => {
       delete process.env.BUILD_CONCURRENCY;
-      expect(parseConcurrency()).toBe(10);
+      expect(parseConcurrency()).toBe(4);
     });
 
     it("parses valid numeric string", () => {
@@ -27,19 +27,19 @@ describe("build pipeline", () => {
       expect(parseConcurrency()).toBe(5);
     });
 
-    it("falls back to 10 for non-numeric string", () => {
+    it("falls back to 4 for non-numeric string", () => {
       process.env.BUILD_CONCURRENCY = "abc";
-      expect(parseConcurrency()).toBe(10);
+      expect(parseConcurrency()).toBe(4);
     });
 
-    it("falls back to 10 for empty string", () => {
+    it("falls back to 4 for empty string", () => {
       process.env.BUILD_CONCURRENCY = "";
-      expect(parseConcurrency()).toBe(10);
+      expect(parseConcurrency()).toBe(4);
     });
 
-    it("falls back to 10 for zero (falsy)", () => {
+    it("falls back to 4 for zero (falsy)", () => {
       process.env.BUILD_CONCURRENCY = "0";
-      expect(parseConcurrency()).toBe(10);
+      expect(parseConcurrency()).toBe(4);
     });
 
     it("clamps to minimum 1 for negative values", () => {

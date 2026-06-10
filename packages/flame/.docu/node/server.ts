@@ -18,7 +18,7 @@ import { generateSearchIndex } from "./search-indexer";
 import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
 import { SECURITY_HEADERS, generateNonce, isPathSafe, isSlugSafe, htmlResponse } from "./security";
-import { htmlShell as createHtmlShell, hmrScript } from "./html";
+import { htmlShell as createHtmlShell, hmrScript, errorHtml } from "./html";
 
 const docuConfig = loadDocuConfig();
 
@@ -349,16 +349,10 @@ const server = Bun.serve({
       return response;
     } catch (err) {
       captureException(err, { method: req.method, pathname });
-      const message = err instanceof Error ? err.message : String(err);
-      const stack = err instanceof Error ? err.stack || "" : "";
       logger.request(req.method, pathname, 500, Math.round(performance.now() - startTime));
-      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Error</title>
-<style>body{margin:0;padding:2rem;font-family:ui-monospace,monospace;background:#1a1a2e;color:#e0e0e0}
-h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;padding:1.5rem;overflow-x:auto;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.msg{color:#ff6b6b;font-weight:bold}</style></head><body>
-<h1>🔥 Server Error</h1>
-<pre><span class="msg">${Bun.escapeHTML(message)}</span>\n\n${Bun.escapeHTML(stack)}</pre></body></html>`;
-      return new Response(html, {
+      const msg = err instanceof Error ? err.message : String(err);
+      const st = err instanceof Error ? err.stack : undefined;
+      return new Response(errorHtml(msg, st), {
         status: 500,
         headers: {
           "Content-Type": "text/html",
@@ -372,15 +366,9 @@ h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;
   error(error) {
     console.error(error);
     captureException(error);
-    const msg = Bun.escapeHTML(error?.message || "Unknown error");
-    const stack = Bun.escapeHTML(error?.stack || "");
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Error</title>
-<style>body{margin:0;padding:2rem;font-family:ui-monospace,monospace;background:#1a1a2e;color:#e0e0e0}
-h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;padding:1.5rem;overflow-x:auto;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.msg{color:#ff6b6b;font-weight:bold}</style></head><body>
-<h1>🔥 Server Error</h1>
-<pre><span class="msg">${msg}</span>\n\n${stack}</pre></body></html>`;
-    return new Response(html, {
+    const msg = error?.message ?? "Unknown error";
+    const st = error?.stack;
+    return new Response(errorHtml(msg, st), {
       status: 500,
       headers: {
         "Content-Type": "text/html",

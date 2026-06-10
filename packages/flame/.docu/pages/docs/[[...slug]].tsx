@@ -62,7 +62,9 @@ export default function DocsPage({
               <script
                 id="mdx-compiled-source"
                 type="application/json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(compiledSource) }}
+                dangerouslySetInnerHTML={{
+                  __html: JSON.stringify(compiledSource).replace(/<\//g, "\\u003C/"),
+                }}
               />
             )}
             <div className="border-base-300 my-8 flex items-center border-b-2 border-dashed">
