@@ -44,7 +44,7 @@
     "react",
     "react-dom"
   ],
-  "homepage": "https://docubook.pro/",
+  "homepage": "https://github.com/DocuBook/docubook/tree/main/packages/flame",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DocuBook/docubook.git",
