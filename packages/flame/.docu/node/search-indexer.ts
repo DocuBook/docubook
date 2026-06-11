@@ -11,10 +11,11 @@
  *   content = first paragraph/list items after each heading
  */
 
-import { readFile, writeFile, readdir, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { extractFrontmatterWithContent } from "@docubook/core";
 import { DOCS_DIR, ASSETS_DIR, loadDocuConfig } from "./paths";
+import { scanMdxFiles } from "./utils";
 
 const docuConfig = loadDocuConfig();
 
@@ -181,29 +182,6 @@ export function extractRecords(filePath: string, raw: string): SearchRecord[] {
 
   flushParagraph();
   return records;
-}
-
-async function scanMdxFiles(dir: string, base = ""): Promise<{ path: string; absPath: string }[]> {
-  const files: { path: string; absPath: string }[] = [];
-  const entries = await readdir(dir, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const fullPath = join(dir, entry.name);
-    const relPath = base ? `${base}/${entry.name}` : entry.name;
-
-    if (entry.isDirectory()) {
-      if (entry.name === "assets" || entry.name.startsWith(".")) continue;
-      files.push(...(await scanMdxFiles(fullPath, relPath)));
-    } else if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
-      if (entry.name === "index.mdx" && !base) continue;
-      let path = relPath.replace(/\.(mdx|md)$/, "");
-      if (/\/index$/.test(path)) {
-        path = path.replace(/\/index$/, "");
-      }
-      files.push({ path, absPath: fullPath });
-    }
-  }
-  return files;
 }
 
 export async function generateSearchIndex(docsDir?: string, outputDir?: string): Promise<number> {

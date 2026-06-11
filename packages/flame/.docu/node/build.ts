@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir, readdir, copyFile, stat } from "node:fs/promises";
+import { readFile, writeFile, mkdir, readdir, copyFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join, dirname } from "node:path";
@@ -21,6 +21,7 @@ import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
+import { scanMdxFiles } from "./utils";
 import type { BuildCache, CliArgs } from "./types";
 import type { PageMeta, PageContext } from "./plugin";
 import DocsPage from "../pages/docs/[[...slug]]";
@@ -56,40 +57,6 @@ async function readCache(): Promise<BuildCache> {
 
 async function writeCache(cache: BuildCache): Promise<void> {
   await writeFile(CACHE_FILE, JSON.stringify(cache, null, 2));
-}
-
-interface MdxFileEntry {
-  path: string;
-  absPath: string;
-  mtime: number;
-}
-
-async function findMdxFiles(dir: string, baseDir = ""): Promise<MdxFileEntry[]> {
-  const files: MdxFileEntry[] = [];
-  try {
-    const entries = await readdir(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = join(dir, entry.name);
-      const relativePath = baseDir ? `${baseDir}/${entry.name}` : entry.name;
-
-      if (entry.isDirectory()) {
-        if (entry.name === "assets" || entry.name.startsWith(".")) continue;
-        files.push(...(await findMdxFiles(fullPath, relativePath)));
-      } else if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
-        if (entry.name === "index.mdx" && !baseDir) continue;
-        const stats = await stat(fullPath);
-        let path = relativePath.replace(/\.(mdx|md)$/, "");
-
-        if (/\/index$/.test(path)) {
-          path = path.replace(/\/index$/, "");
-        }
-        files.push({ path, absPath: fullPath, mtime: stats.mtimeMs });
-      }
-    }
-  } catch (err) {
-    console.error("Failed to scan docs directory:", (err as Error).message);
-  }
-  return files;
 }
 
 export function parseConcurrency(): number {
@@ -223,7 +190,7 @@ async function build() {
 
   await copyDirectoryRecursive(DOCS_ASSETS_DIR, join(DIST_DIR, "docs", "assets"));
 
-  const mdxFiles = await findMdxFiles(DOCS_DIR);
+  const mdxFiles = await scanMdxFiles(DOCS_DIR);
   const cache = args.force ? {} : await readCache();
   let built = 0;
   let skipped = 0;
@@ -407,10 +374,12 @@ async function build() {
   }
 }
 
-initSentry()
-  .then(() => build())
-  .catch((err) => {
-    captureException(err);
-    console.error("Build failed:", err);
-    process.exit(1);
-  });
+if (!process.env.VITEST) {
+  initSentry()
+    .then(() => build())
+    .catch((err) => {
+      captureException(err);
+      console.error("Build failed:", err);
+      process.exit(1);
+    });
+}

@@ -1,5 +1,45 @@
 export { cn, parseDate, formatDate, formatDate2 } from "@docubook/core";
 
+import { readdir, stat } from "node:fs/promises";
+import { join } from "node:path";
+
+export interface ScannedMdxFile {
+  path: string;
+  absPath: string;
+  mtime: number;
+}
+
+/**
+ * Scan a directory recursively for MDX/MD files.
+ * Skips "assets" directories, hidden directories (dot-prefixed), and root-level index.mdx.
+ * Shared between build.ts and search-indexer.ts.
+ */
+export async function scanMdxFiles(dir: string, baseDir = ""): Promise<ScannedMdxFile[]> {
+  const files: ScannedMdxFile[] = [];
+  const entries = await readdir(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = join(dir, entry.name);
+    const relativePath = baseDir ? `${baseDir}/${entry.name}` : entry.name;
+
+    if (entry.isDirectory()) {
+      if (entry.name === "assets" || entry.name.startsWith(".")) continue;
+      files.push(...(await scanMdxFiles(fullPath, relativePath)));
+    } else if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
+      if (entry.name === "index.mdx" && !baseDir) continue;
+      const stats = await stat(fullPath);
+      let path = relativePath.replace(/\.(mdx|md)$/, "");
+
+      if (/\/index$/.test(path)) {
+        path = path.replace(/\/index$/, "");
+      }
+      files.push({ path, absPath: fullPath, mtime: stats.mtimeMs });
+    }
+  }
+
+  return files;
+}
+
 export function isExternalUrl(url: string): boolean {
   return /^(https?:\/\/|\/\/)/.test(url);
 }
