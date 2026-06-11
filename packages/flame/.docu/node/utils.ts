@@ -40,9 +40,26 @@ export async function getGitLastModifiedBatch(filePaths: string[]): Promise<Map<
   const result = new Map<string, string>();
   if (filePaths.length === 0) return result;
 
+  // Filter and validate paths — same guard as getGitLastModified
+  const safePaths: string[] = [];
+  for (const fp of filePaths) {
+    const cleanPath = fp.replace(/^\//, "");
+    if (
+      !cleanPath ||
+      !/^[a-zA-Z0-9\-_/.\s]+$/.test(cleanPath) ||
+      /(^|\/)\.\.($|\/)/.test(cleanPath)
+    ) {
+      console.warn(`[utils] getGitLastModifiedBatch: skipping invalid path "${fp}"`);
+      continue;
+    }
+    safePaths.push(cleanPath);
+  }
+
+  if (safePaths.length === 0) return result;
+
   try {
     const proc = Bun.spawn(
-      ["git", "log", "--format=%cI", "--name-only", "--diff-filter=ACMR", ...filePaths],
+      ["git", "log", "--format=%cI", "--name-only", "--diff-filter=ACMR", ...safePaths],
       { stderr: "ignore" }
     );
     const text = await new Response(proc.stdout).text();
