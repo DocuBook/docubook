@@ -58,8 +58,14 @@ async function writeCache(cache: BuildCache): Promise<void> {
   await writeFile(CACHE_FILE, JSON.stringify(cache, null, 2));
 }
 
-async function findMdxFiles(dir: string, baseDir = ""): Promise<{ path: string; mtime: number }[]> {
-  const files: { path: string; mtime: number }[] = [];
+interface MdxFileEntry {
+  path: string;
+  absPath: string;
+  mtime: number;
+}
+
+async function findMdxFiles(dir: string, baseDir = ""): Promise<MdxFileEntry[]> {
+  const files: MdxFileEntry[] = [];
   try {
     const entries = await readdir(dir, { withFileTypes: true });
     for (const entry of entries) {
@@ -77,7 +83,7 @@ async function findMdxFiles(dir: string, baseDir = ""): Promise<{ path: string; 
         if (/\/index$/.test(path)) {
           path = path.replace(/\/index$/, "");
         }
-        files.push({ path, mtime: stats.mtimeMs });
+        files.push({ path, absPath: fullPath, mtime: stats.mtimeMs });
       }
     }
   } catch (err) {
@@ -90,10 +96,13 @@ export function parseConcurrency(): number {
   return Math.max(1, parseInt(process.env.BUILD_CONCURRENCY || "4", 10) || 4);
 }
 
-export function shouldRebuild(path: string, mtime: number, cache: BuildCache): boolean {
+type RebuildDecision = "yes" | "hash_check" | "no";
+
+export function shouldRebuild(path: string, mtime: number, cache: BuildCache): RebuildDecision {
   const cached = cache[path];
-  if (!cached) return true;
-  return mtime > cached.builtAt;
+  if (!cached) return "yes";
+  if (mtime > cached.builtAt) return "hash_check";
+  return "no";
 }
 
 let assetManifest = { js: "client.js", css: "client.css" };
@@ -250,17 +259,7 @@ async function build() {
   logger.spinner.start("Building pages...");
   t = performance.now();
 
-  const allRelPaths = mdxFiles
-    .map((f) => {
-      const mdxPath1 = join(DOCS_DIR, f.path, "index.mdx");
-      const mdxPath2 = join(DOCS_DIR, `${f.path}.mdx`);
-      const mdxPath3 = join(DOCS_DIR, `${f.path}.md`);
-      for (const p of [mdxPath1, mdxPath2, mdxPath3]) {
-        if (existsSync(p)) return p.replace(PROJECT_ROOT + "/", "");
-      }
-      return null;
-    })
-    .filter((p): p is string => p !== null);
+  const allRelPaths = mdxFiles.map((f) => f.absPath.replace(PROJECT_ROOT + "/", ""));
 
   const indexMdxFull = join(DOCS_DIR, "index.mdx");
   if (existsSync(indexMdxFull)) {
@@ -273,34 +272,35 @@ async function build() {
   const errors: string[] = [];
 
   for (const file of mdxFiles) {
-    const mdxPath1 = join(DOCS_DIR, file.path, "index.mdx");
-    const mdxPath2 = join(DOCS_DIR, `${file.path}.mdx`);
-    const mdxPath3 = join(DOCS_DIR, `${file.path}.md`);
+    const rebuildDecision = shouldRebuild(file.path, file.mtime, cache);
 
-    let rawMdx: string | null = null;
-    let absPath = "";
-    for (const p of [mdxPath1, mdxPath2, mdxPath3]) {
-      try {
-        rawMdx = await readFile(p, "utf-8");
-        absPath = p;
-        break;
-      } catch (err) {
-        if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+    if (rebuildDecision === "no") {
+      const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
+      if (existsSync(outputPath)) {
+        skipped++;
+        continue;
       }
     }
-    if (!rawMdx) continue;
 
-    let needRebuild = assetsChanged || shouldRebuild(file.path, file.mtime, cache);
-    if (!needRebuild) {
-      const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
-      if (!existsSync(outputPath)) needRebuild = true;
-    }
-    if (!needRebuild) {
-      skipped++;
+    let rawMdx: string;
+    try {
+      rawMdx = await readFile(file.absPath, "utf-8");
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
       continue;
     }
 
-    const relPath = absPath.replace(PROJECT_ROOT + "/", "");
+    if (rebuildDecision === "hash_check") {
+      const contentHash = hashContent(rawMdx);
+      const cached = cache[file.path];
+      if (cached && cached.hash === contentHash) {
+        cache[file.path] = { ...cached, mtime: file.mtime, builtAt: Date.now() };
+        skipped++;
+        continue;
+      }
+    }
+
+    const relPath = file.absPath.replace(PROJECT_ROOT + "/", "");
     const capturedRawMdx = rawMdx;
     const capturedFile = file;
 

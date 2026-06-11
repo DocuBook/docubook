@@ -49,23 +49,23 @@ describe("build pipeline", () => {
   });
 
   describe("shouldRebuild logic", () => {
-    it("returns true when path is not in cache", () => {
-      expect(shouldRebuild("docs/intro", 1000, {})).toBe(true);
+    it("returns 'yes' when path is not in cache", () => {
+      expect(shouldRebuild("docs/intro", 1000, {})).toBe("yes");
     });
 
-    it("returns true when file is newer than cache", () => {
+    it("returns 'hash_check' when file is newer than cache (mtime changed)", () => {
       const cache = { "docs/intro": { hash: "abc123", mtime: 500, builtAt: 1000 } };
-      expect(shouldRebuild("docs/intro", 2000, cache)).toBe(true);
+      expect(shouldRebuild("docs/intro", 2000, cache)).toBe("hash_check");
     });
 
-    it("returns false when file is older than cache", () => {
+    it("returns 'no' when file is older than cache", () => {
       const cache = { "docs/intro": { hash: "abc123", mtime: 500, builtAt: 2000 } };
-      expect(shouldRebuild("docs/intro", 1000, cache)).toBe(false);
+      expect(shouldRebuild("docs/intro", 1000, cache)).toBe("no");
     });
 
-    it("returns false when mtime equals builtAt", () => {
+    it("returns 'no' when mtime equals builtAt", () => {
       const cache = { "docs/intro": { hash: "abc123", mtime: 1000, builtAt: 1000 } };
-      expect(shouldRebuild("docs/intro", 1000, cache)).toBe(false);
+      expect(shouldRebuild("docs/intro", 1000, cache)).toBe("no");
     });
   });
 });
