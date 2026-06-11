@@ -6,6 +6,12 @@ export interface HtmlShellOptions {
   css: string;
   js: string;
   nonce?: string;
+  /**
+   * Content-Security-Policy value (from `cspHeader()` in security.ts).
+   * When provided, injects `<meta http-equiv="Content-Security-Policy">` in `<head>`.
+   * Essential for static deployment where HTTP headers cannot be set.
+   */
+  csp?: string;
   extraScripts?: string;
   themeCss?: string;
   /** HTML strings to inject before `</head>` (from plugin `injectHead` hooks). */
@@ -23,6 +29,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
     css,
     js,
     nonce,
+    csp,
     extraScripts,
     themeCss,
     headExtra,
@@ -41,6 +48,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
   <meta name="description" content="${Bun.escapeHTML(description)}">
   <link rel="icon" type="image/x-icon" href="${Bun.escapeHTML(favicon)}">${themeStyle}
   <link rel="stylesheet" href="/assets/${Bun.escapeHTML(css)}">
+  ${csp ? `<meta http-equiv="Content-Security-Policy" content="${Bun.escapeHTML(csp)}">` : ""}
   <script${nonceAttr}>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>${headInjection}
 </head>
 <body>

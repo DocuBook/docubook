@@ -82,7 +82,9 @@ export function isSlugSafe(slug: string, docsDir: string): boolean {
 
 export function injectNonce(html: string, nonce: string): string {
   return html.replace(/<script\b(?![^>]*\bsrc\s*=)([^>]*)>/gi, (match) => {
-    if (/nonce\s*=/i.test(match)) return match;
+    if (/nonce\s*=/i.test(match)) {
+      return match.replace(/nonce="[^"]*"/i, `nonce="${nonce}"`);
+    }
     return match.replace(/>$/, ` nonce="${nonce}">`);
   });
 }

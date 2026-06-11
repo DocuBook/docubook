@@ -23,6 +23,7 @@ import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
 import { scanMdxFiles } from "./utils";
 import type { BuildCache, CliArgs } from "./types";
+import { generateNonce } from "./security";
 import type { PageMeta, PageContext } from "./plugin";
 import DocsPage from "../pages/docs/[[...slug]]";
 import IndexPage from "../pages/index";
@@ -81,7 +82,8 @@ async function renderDocsPage(
   rawMdx: string,
   filePath: string,
   gitDates?: Map<string, string>,
-  builder?: BuildPluginBuilder
+  builder?: BuildPluginBuilder,
+  nonce?: string
 ): Promise<string> {
   let content = rawMdx;
   if (builder) {
@@ -144,6 +146,7 @@ async function renderDocsPage(
     favicon,
     css: assetManifest.css,
     js: assetManifest.js,
+    nonce,
     themeCss: inlineThemeCss,
     headExtra,
     bodyExtra,
@@ -214,7 +217,7 @@ async function build() {
   }
 
   const hasPlugins = !!docuConfig.plugins?.length;
-  const builder = hasPlugins ? new BuildPluginBuilder(docuConfig) : null;
+  const builder = hasPlugins ? new BuildPluginBuilder(docuConfig) : undefined;
   if (hasPlugins && builder) {
     const plugins = await loadPlugins(docuConfig.plugins!);
     for (const plugin of plugins) {
@@ -273,12 +276,14 @@ async function build() {
 
     buildTasks.push(async () => {
       try {
+        const pageNonce = generateNonce();
         const html = await renderDocsPage(
           capturedFile.path,
           capturedRawMdx,
           relPath,
           gitDates,
-          builder
+          builder,
+          pageNonce
         );
         const outputPath = join(DIST_DIR, "docs", `${capturedFile.path}.html`);
         await mkdir(dirname(outputPath), { recursive: true });
@@ -305,7 +310,14 @@ async function build() {
     const indexMdxPath = join(DOCS_DIR, "index.mdx");
     const indexRaw = await readFile(indexMdxPath, "utf-8");
     const indexRelPath = indexMdxPath.replace(PROJECT_ROOT + "/", "");
-    const indexHtml = await renderDocsPage("", indexRaw, indexRelPath, gitDates, builder);
+    const indexHtml = await renderDocsPage(
+      "",
+      indexRaw,
+      indexRelPath,
+      gitDates,
+      builder,
+      generateNonce()
+    );
     await mkdir(join(DIST_DIR, "docs"), { recursive: true });
     await writeFile(join(DIST_DIR, "docs", "index.html"), indexHtml);
   } catch (err) {
@@ -323,6 +335,7 @@ async function build() {
     favicon: landingFavicon,
     css: assetManifest.css,
     js: assetManifest.js,
+    nonce: generateNonce(),
     themeCss: inlineThemeCss,
   });
   await writeFile(join(DIST_DIR, "index.html"), landingHtml);
@@ -340,6 +353,7 @@ async function build() {
     favicon: notFoundFavicon,
     css: assetManifest.css,
     js: assetManifest.js,
+    nonce: generateNonce(),
     themeCss: inlineThemeCss,
   });
   await writeFile(join(DIST_DIR, "404.html"), notFoundHtml);
