@@ -164,7 +164,7 @@ async function getDocsForSlug(slug: string) {
     frontmatter,
     tocs: result.tocs,
     filePath: relPath,
-    rawContent: content,
+    resolvedContent: content,
   };
 }
 
@@ -199,7 +199,7 @@ async function renderDocsServerPage(
       slug: slug.join("/") || "/",
       filePath: doc.filePath,
       frontmatter: doc.frontmatter,
-      content: doc.rawContent,
+      content: doc.resolvedContent,
       config: docuConfig,
     };
     const headExtra = builder.collectHead(ctx);
