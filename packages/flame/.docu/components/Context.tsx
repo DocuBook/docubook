@@ -16,7 +16,8 @@ function getContextRoutes() {
 }
 
 function getFirstItemHref(route: { href: string; items?: { href: string }[] }): string {
-  return route.items?.[0]?.href ? `${route.href}${route.items[0].href}` : route.href;
+  if (!route.items?.length) return route.href;
+  return `${route.href}${getFirstItemHref(route.items[0])}`;
 }
 
 function getActiveContextRoute(path: string) {

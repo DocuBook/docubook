@@ -6,16 +6,38 @@ import type { DocuBookPlugin, PluginEntry } from "./plugin";
  * Resolve a plugin specifier to an absolute path or npm package name.
  *
  * Resolution rules:
- * 1. Relative path (starts with `.`) → resolve from project root
- * 2. Absolute path (starts with `/`) → use as-is
+ * 1. Relative path (starts with `.`) → resolve from project root, guard traversal
+ * 2. Absolute path (starts with `/`) → guard traversal
  * 3. Anything else → treat as npm package name (handled by Bun's import)
+ *
+ * Path traversal protection:
+ * - All file-system paths (relative & absolute) must resolve within PROJECT_ROOT.
+ * - This prevents `../../sensitive-file` or `/etc/passwd` from being imported.
  */
 /** @internal Exported for testing only. */
 export function resolveSpecifier(specifier: string): string {
+  let resolved: string;
+
   if (specifier.startsWith(".")) {
-    return resolve(PROJECT_ROOT, specifier);
+    // Relative path → resolve from project root
+    resolved = resolve(PROJECT_ROOT, specifier);
+  } else if (specifier.startsWith("/")) {
+    // Absolute path → use as-is
+    resolved = specifier;
+  } else {
+    // npm package name → handled by Bun's import
+    return specifier;
   }
-  return specifier; // npm package or absolute path
+
+  // Path traversal guard: resolved path must stay within PROJECT_ROOT
+  const root = PROJECT_ROOT.endsWith("/") ? PROJECT_ROOT : PROJECT_ROOT + "/";
+  if (!resolved.startsWith(root)) {
+    throw new Error(
+      `[plugin-loader] Path traversal blocked: "${specifier}" resolves outside project root`
+    );
+  }
+
+  return resolved;
 }
 
 /**

@@ -1,86 +1,68 @@
 ---
 title: Installation
-description: Installation guide for our application.
+description: Install @docubook/flame and scaffold your first documentation site.
 ---
 
-Setting up DocuBook is straightforward, with options to clone the repository or use the convenient `npx` command. DocuBook Flame requires [Bun](https://bun.sh/) version 1.0 or higher. For other templates, [Node.js](https://nodejs.org/) version 18 or higher is supported.
+DocuBook Flame requires [Bun](https://bun.sh/) **>= 1.1.0**. It is a Bun-native framework and does not support Node.js.
 
-## Quick Setup with CLI
+## Quick Setup
 
-For a faster setup, use the `cli` command to create a new DocuBook project in one step:
-
-<Tabs className="pt-5 pb-1">
-  <Tab title="npm">
-    ```shell:npx
-    npx @docubook/cli@latest
-    ```
-  </Tab>
-  <Tab title="pnpm">
-    ```shell:pnpm
-    pnpm dlx @docubook/cli@latest
-    ```
-  </Tab>
-  <Tab title="yarn">
-    ```shell:yarn
-    yarn dlx @docubook/cli@latest
-    ```
-  </Tab>
-  <Tab title="bun">
-  ```shell:bun
-  bunx @docubook/cli@latest
-  ```
-  </Tab>
-</Tabs>
-
-## Installing the CLI Globally
-
-If you prefer installing the CLI globally so the `docubook` command is available system-wide, use one of the following:
-
-<Tabs className="pt-5 pb-1">
-  <Tab title="npm">
-    ```shell:npx
-    npm install -g @docubook/cli@latest
-    ```
-  </Tab>
-  <Tab title="pnpm">
-    ```shell:pnpm
-    pnpm add -g @docubook/cli@latest
-    ```
-  </Tab>
-  <Tab title="yarn">
-  ```shell:yarn
-  yarn global add @docubook/cli@latest
-  ```
-  </Tab>
-  <Tab title="bun">
+<Steps>
+  <Step title="Install dependency">
     ```shell:bun
-    bun add -g @docubook/cli@latest
+    mkdir my-docs && cd my-docs
+    bun add @docubook/flame
     ```
-  </Tab>
-</Tabs>
+  </Step>
+  <Step title="Scaffold project structure">
+    Creates `docs/`, `docu.json`, `package.json`.
 
-After a global install, verify the installation and check the CLI version:
+    ```shell:bun
+    bunx flame init
+    ```
+  </Step>
+  <Step title="Start dev server">
+    Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+    ```shell:bun
+    bun run dev
+    ```
+  </Step>
+</Steps>
+
+## CLI Reference
 
 ```shell:bash
-# init
-docubook
-
-# with argumen [projectname]
-docubook my-project
-
-# show version
-docubook version
-
-# update
-docubook update
+flame dev        # Start development server with HMR
+flame build      # Build for production
+flame preview    # Preview production build
+flame deploy     # Build + prepare for GitHub Pages
+flame init       # Scaffold a new project
+flame clean      # Clean build artifacts
+flame --help     # Show all commands
 ```
 
-If you used `npx`, `pnpm dlx`, `bunx` or `yarn dlx` you can still run the CLI directly without installing. Example:
+Scaffolded projects have these scripts in `package.json`:
 
-```shell:npx
-npx @docubook/cli@latest --version
+```json
+{
+  "scripts": {
+    "dev": "flame dev",
+    "build": "flame build",
+    "preview": "flame preview",
+    "deploy": "flame deploy"
+  }
+}
 ```
 
-These commands install the `docubook` binary (package "bin"), so the `docubook` command should be available in your PATH after installation.
+## Global Installation
 
-With this setup, you’ll have a ready-to-use DocuBook instance to start building your documentation.
+```shell:bun
+bun add -g @docubook/flame
+flame init
+flame dev
+```
+
+## Requirements
+
+- [Bun](https://bun.sh/) >= 1.1.0

@@ -9,6 +9,7 @@ import { compileMdx } from "./mdx";
 import { DOCS_DIR, DIST_DIR, PAGES_DIR, PROJECT_ROOT, loadDocuConfig } from "./paths";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
+import type { PageContext } from "./plugin";
 import DocsPage from "../pages/docs/[[...slug]]";
 import NotFoundPage from "../pages/404";
 import IndexPage from "../pages/index";
@@ -18,7 +19,7 @@ import { generateSearchIndex } from "./search-indexer";
 import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
 import { SECURITY_HEADERS, generateNonce, isPathSafe, isSlugSafe, htmlResponse } from "./security";
-import { htmlShell as createHtmlShell, hmrScript } from "./html";
+import { htmlShell as createHtmlShell, hmrScript, errorHtml } from "./html";
 
 const docuConfig = loadDocuConfig();
 
@@ -42,7 +43,7 @@ logger.indexDone(records, Math.round(performance.now() - t));
 
 logger.routes();
 
-// Plugin setup (dev server — only handleRequest is used; content hooks reused via build pipeline)
+// Plugin setup — all hooks active (onLoad, remark/rehype, frontmatter, head/body, html transform, handleRequest)
 const hasPlugins = !!docuConfig.plugins?.length;
 const builder = hasPlugins ? new BuildPluginBuilder(docuConfig) : null;
 if (hasPlugins && builder) {
@@ -135,71 +136,107 @@ async function getDocsForSlug(slug: string) {
   if (!filePath || !raw) return null;
 
   const relPath = filePath.replace(PROJECT_ROOT + "/", "");
-  const result = await compileMdx(raw, relPath);
+
+  let content = raw;
+  if (builder) {
+    const transformed = await builder.runOnLoad(relPath, content);
+    if (transformed?.contents) {
+      content = transformed.contents;
+    }
+  }
+
+  const remarkPlugins = builder?.collectRemarkPlugins();
+  const rehypePlugins = builder?.collectRehypePlugins();
+  const result = await compileMdx(content, relPath, undefined, remarkPlugins, rehypePlugins);
+
+  let frontmatter = result.frontmatter as Record<string, unknown>;
+  if (builder) {
+    frontmatter = await builder.runTransformFrontmatterChain(frontmatter, {
+      slug: slug || "/",
+      filePath: relPath,
+      content,
+    });
+  }
 
   return {
     content: result.content,
     compiledSource: result.compiledSource,
-    frontmatter: result.frontmatter,
+    frontmatter,
     tocs: result.tocs,
     filePath: relPath,
+    rawContent: content,
   };
+}
+
+async function renderDocsServerPage(
+  doc: NonNullable<Awaited<ReturnType<typeof getDocsForSlug>>>,
+  slug: string[],
+  pathname: string
+): Promise<Response> {
+  const title = (doc.frontmatter.title as string) || slug.join("/") || "Docs";
+  const description = (doc.frontmatter.description as string) || "";
+
+  const page = React.createElement(
+    DocsLayout,
+    { repoUrl: docuConfig.repo?.url, pathname },
+    React.createElement(DocsPage, {
+      slug,
+      title,
+      description,
+      date: doc.frontmatter.date as string | undefined,
+      content: doc.content,
+      tocs: doc.tocs,
+      filePath: doc.filePath,
+      repoUrl: docuConfig.repo?.url,
+      compiledSource: doc.compiledSource,
+    })
+  );
+
+  const body = renderToString(page);
+
+  if (builder) {
+    const ctx: PageContext = {
+      slug: slug.join("/") || "/",
+      filePath: doc.filePath,
+      frontmatter: doc.frontmatter,
+      content: doc.rawContent,
+      config: docuConfig,
+    };
+    const headExtra = builder.collectHead(ctx);
+    const bodyExtra = builder.collectBody(ctx);
+    const nonce = generateNonce();
+    const favicon = docuConfig.meta?.favicon || "/favicon.ico";
+    let html = createHtmlShell({
+      title,
+      description,
+      body,
+      favicon,
+      css: assetManifest.css,
+      js: assetManifest.js,
+      nonce,
+      extraScripts: hmrScript(nonce),
+      themeCss: inlineThemeCss,
+      headExtra,
+      bodyExtra,
+    });
+    html = await builder.runTransformHtmlChain(html, ctx);
+    return htmlResponse(html, nonce, 200, process.env.NODE_ENV !== "production");
+  }
+
+  return createHtmlResponse(title, description, body);
 }
 
 async function handleDocsIndex(): Promise<Response> {
   const doc = await getDocsForSlug("");
   if (!doc) return renderPage(NotFoundPage, "404 - Not Found", "", 404);
-
-  const title = doc.frontmatter.title || "Docs";
-  const description = doc.frontmatter.description || "";
-
-  const page = React.createElement(
-    DocsLayout,
-    { repoUrl: docuConfig.repo?.url, pathname: "/docs" },
-    React.createElement(DocsPage, {
-      slug: [],
-      title,
-      description,
-      date: doc.frontmatter.date,
-      content: doc.content,
-      tocs: doc.tocs,
-      filePath: doc.filePath,
-      repoUrl: docuConfig.repo?.url,
-      compiledSource: doc.compiledSource,
-    })
-  );
-
-  const body = renderToString(page);
-  return createHtmlResponse(title, description, body);
+  return renderDocsServerPage(doc, [], "/docs");
 }
 
 async function handleDocsRoute(slug: string[]): Promise<Response> {
   const path = slug.join("/");
-
   const doc = await getDocsForSlug(path);
   if (!doc) return renderPage(NotFoundPage, "404 - Not Found", "", 404);
-
-  const title = doc.frontmatter.title || path;
-  const description = doc.frontmatter.description || "";
-
-  const page = React.createElement(
-    DocsLayout,
-    { repoUrl: docuConfig.repo?.url, pathname: `/docs/${path}` },
-    React.createElement(DocsPage, {
-      slug,
-      title,
-      description,
-      date: doc.frontmatter.date,
-      content: doc.content,
-      tocs: doc.tocs,
-      filePath: doc.filePath,
-      repoUrl: docuConfig.repo?.url,
-      compiledSource: doc.compiledSource,
-    })
-  );
-
-  const body = renderToString(page);
-  return createHtmlResponse(title, description, body);
+  return renderDocsServerPage(doc, slug, `/docs/${path}`);
 }
 
 function renderPage(
@@ -272,7 +309,6 @@ const server = Bun.serve({
     const pathname = url.pathname;
     const startTime = performance.now();
 
-    // [1] Plugin handleRequest — short-circuit on first Response
     if (builder) {
       const pluginResponse = await builder.runHandleRequest(req, {
         port: server.port,
@@ -349,16 +385,10 @@ const server = Bun.serve({
       return response;
     } catch (err) {
       captureException(err, { method: req.method, pathname });
-      const message = err instanceof Error ? err.message : String(err);
-      const stack = err instanceof Error ? err.stack || "" : "";
       logger.request(req.method, pathname, 500, Math.round(performance.now() - startTime));
-      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Error</title>
-<style>body{margin:0;padding:2rem;font-family:ui-monospace,monospace;background:#1a1a2e;color:#e0e0e0}
-h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;padding:1.5rem;overflow-x:auto;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.msg{color:#ff6b6b;font-weight:bold}</style></head><body>
-<h1>🔥 Server Error</h1>
-<pre><span class="msg">${Bun.escapeHTML(message)}</span>\n\n${Bun.escapeHTML(stack)}</pre></body></html>`;
-      return new Response(html, {
+      const msg = err instanceof Error ? err.message : String(err);
+      const st = err instanceof Error ? err.stack : undefined;
+      return new Response(errorHtml(msg, st), {
         status: 500,
         headers: {
           "Content-Type": "text/html",
@@ -372,15 +402,9 @@ h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;
   error(error) {
     console.error(error);
     captureException(error);
-    const msg = Bun.escapeHTML(error?.message || "Unknown error");
-    const stack = Bun.escapeHTML(error?.stack || "");
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Error</title>
-<style>body{margin:0;padding:2rem;font-family:ui-monospace,monospace;background:#1a1a2e;color:#e0e0e0}
-h1{color:#ff6b6b}pre{background:#0d0d1a;border:1px solid #333;border-radius:8px;padding:1.5rem;overflow-x:auto;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.msg{color:#ff6b6b;font-weight:bold}</style></head><body>
-<h1>🔥 Server Error</h1>
-<pre><span class="msg">${msg}</span>\n\n${stack}</pre></body></html>`;
-    return new Response(html, {
+    const msg = error?.message ?? "Unknown error";
+    const st = error?.stack;
+    return new Response(errorHtml(msg, st), {
       status: 500,
       headers: {
         "Content-Type": "text/html",

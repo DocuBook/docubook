@@ -1,4 +1,5 @@
 import { resolve } from "node:path";
+import { realpathSync } from "node:fs";
 
 export const SECURITY_HEADERS: Record<string, string> = {
   "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
@@ -32,13 +33,51 @@ export function isPathSafe(pathname: string, baseDir: string): boolean {
   const decoded = decodeURIComponent(pathname);
   const resolved = resolve(baseDir, decoded.slice(1));
   const baseDirSlash = baseDir.endsWith("/") ? baseDir : baseDir + "/";
-  return resolved === baseDir || resolved.startsWith(baseDirSlash);
+  if (!(resolved === baseDir || resolved.startsWith(baseDirSlash))) {
+    return false;
+  }
+
+  if (resolved === baseDir) return true;
+  try {
+    const real = realpathSync(resolved);
+    const realBase = realpathSync(baseDir);
+    const realBaseDirSlash = realBase.endsWith("/") ? realBase : realBase + "/";
+    return real.startsWith(realBaseDirSlash);
+  } catch (err) {
+    const nodeErr = err as NodeJS.ErrnoException;
+    if (nodeErr.code === "ENOENT") {
+      return true;
+    }
+    console.error(
+      `[security] isPathSafe error for pathname="${pathname}": ${nodeErr.message} (code=${nodeErr.code})`
+    );
+    return false;
+  }
 }
 
 export function isSlugSafe(slug: string, docsDir: string): boolean {
   const resolved = resolve(docsDir, slug);
   const docsDirSlash = docsDir.endsWith("/") ? docsDir : docsDir + "/";
-  return resolved === docsDir || resolved.startsWith(docsDirSlash);
+  if (!(resolved === docsDir || resolved.startsWith(docsDirSlash))) {
+    return false;
+  }
+
+  if (resolved === docsDir) return true;
+  try {
+    const real = realpathSync(resolved);
+    const realDocsDir = realpathSync(docsDir);
+    const realDocsDirSlash = realDocsDir.endsWith("/") ? realDocsDir : realDocsDir + "/";
+    return real.startsWith(realDocsDirSlash);
+  } catch (err) {
+    const nodeErr = err as NodeJS.ErrnoException;
+    if (nodeErr.code === "ENOENT") {
+      return true;
+    }
+    console.error(
+      `[security] isSlugSafe error for slug="${slug}": ${nodeErr.message} (code=${nodeErr.code})`
+    );
+    return false;
+  }
 }
 
 export function injectNonce(html: string, nonce: string): string {

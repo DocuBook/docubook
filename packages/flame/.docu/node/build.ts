@@ -14,7 +14,7 @@ import {
   PROJECT_ROOT,
   loadDocuConfig,
 } from "./paths";
-import { htmlShell as createHtmlShell } from "./html";
+import { htmlShell } from "./html";
 import { generateSearchIndex } from "./search-indexer";
 import { buildClientBundle, computeInlineThemeCss } from "./hydrate";
 import { logger } from "./logger";
@@ -87,7 +87,7 @@ async function findMdxFiles(dir: string, baseDir = ""): Promise<{ path: string; 
 }
 
 export function parseConcurrency(): number {
-  return Math.max(1, parseInt(process.env.BUILD_CONCURRENCY || "10", 10) || 10);
+  return Math.max(1, parseInt(process.env.BUILD_CONCURRENCY || "4", 10) || 4);
 }
 
 export function shouldRebuild(path: string, mtime: number, cache: BuildCache): boolean {
@@ -100,27 +100,6 @@ let assetManifest = { js: "client.js", css: "client.css" };
 
 let inlineThemeCss: string | undefined;
 
-function htmlShell(
-  title: string,
-  description: string,
-  body: string,
-  headExtra?: string[],
-  bodyExtra?: string[]
-): string {
-  const favicon = docuConfig.meta?.favicon || "/favicon.ico";
-  return createHtmlShell({
-    title,
-    description,
-    body,
-    favicon,
-    css: assetManifest.css,
-    js: assetManifest.js,
-    themeCss: inlineThemeCss,
-    headExtra,
-    bodyExtra,
-  });
-}
-
 async function renderDocsPage(
   slug: string,
   rawMdx: string,
@@ -128,7 +107,6 @@ async function renderDocsPage(
   gitDates?: Map<string, string>,
   builder?: BuildPluginBuilder
 ): Promise<string> {
-  // [5] build.onLoad({filter}) — transform raw content before compilation
   let content = rawMdx;
   if (builder) {
     const transformed = await builder.runOnLoad(filePath, content);
@@ -139,7 +117,6 @@ async function renderDocsPage(
 
   let result;
   try {
-    // [7] Collect remark/rehype plugins from plugins and pass to compileMdx
     const remarkPlugins = builder?.collectRemarkPlugins();
     const rehypePlugins = builder?.collectRehypePlugins();
     result = await compileMdx(content, filePath, gitDates, remarkPlugins, rehypePlugins);
@@ -148,7 +125,6 @@ async function renderDocsPage(
     throw new Error(`MDX Error in: docs/${slug}.mdx\n${msg}`, { cause: err });
   }
 
-  // [6] build.transformFrontmatter() — mutate frontmatter
   let frontmatter = result.frontmatter as Record<string, unknown>;
   if (builder) {
     frontmatter = await builder.runTransformFrontmatterChain(frontmatter, {
@@ -180,14 +156,23 @@ async function renderDocsPage(
 
   const body = renderToString(page);
 
-  // [8] build.injectHead() / injectBody() — collect injection strings
   const ctx: PageContext = { slug, filePath, frontmatter, content, config: docuConfig };
   const headExtra = builder?.collectHead(ctx);
   const bodyExtra = builder?.collectBody(ctx);
 
-  let html = htmlShell(title, description, body, headExtra, bodyExtra);
+  const favicon = docuConfig.meta?.favicon || "/favicon.ico";
+  let html = htmlShell({
+    title,
+    description,
+    body,
+    favicon,
+    css: assetManifest.css,
+    js: assetManifest.js,
+    themeCss: inlineThemeCss,
+    headExtra,
+    bodyExtra,
+  });
 
-  // [9] build.transformHtml() — final HTML transform
   if (builder) {
     html = await builder.runTransformHtmlChain(html, ctx);
   }
@@ -252,7 +237,6 @@ async function build() {
     };
   }
 
-  // [1-3] Plugin setup phase
   const hasPlugins = !!docuConfig.plugins?.length;
   const builder = hasPlugins ? new BuildPluginBuilder(docuConfig) : null;
   if (hasPlugins && builder) {
@@ -260,7 +244,6 @@ async function build() {
     for (const plugin of plugins) {
       await plugin.setup(builder);
     }
-    // [4] build.onStart(config)
     await builder.runOnStart();
   }
 
@@ -278,6 +261,11 @@ async function build() {
       return null;
     })
     .filter((p): p is string => p !== null);
+
+  const indexMdxFull = join(DOCS_DIR, "index.mdx");
+  if (existsSync(indexMdxFull)) {
+    allRelPaths.push(indexMdxFull.replace(PROJECT_ROOT + "/", ""));
+  }
   const gitDates = await getGitLastModifiedBatch(allRelPaths);
 
   const CONCURRENCY = parseConcurrency();
@@ -360,11 +348,16 @@ async function build() {
   }
 
   const landingPage = React.createElement(IndexPage);
-  const landingHtml = htmlShell(
-    docuConfig.meta?.title || "DocuBook",
-    docuConfig.meta?.description || "",
-    renderToString(landingPage)
-  );
+  const landingFavicon = docuConfig.meta?.favicon || "/favicon.ico";
+  const landingHtml = htmlShell({
+    title: docuConfig.meta?.title || "DocuBook",
+    description: docuConfig.meta?.description || "",
+    body: renderToString(landingPage),
+    favicon: landingFavicon,
+    css: assetManifest.css,
+    js: assetManifest.js,
+    themeCss: inlineThemeCss,
+  });
   await writeFile(join(DIST_DIR, "index.html"), landingHtml);
 
   const notFoundPage = React.createElement(
@@ -372,14 +365,22 @@ async function build() {
     { repoUrl: docuConfig.repo?.url },
     React.createElement(NotFoundPage)
   );
-  const notFoundHtml = htmlShell("404 - Not Found", "", renderToString(notFoundPage));
+  const notFoundFavicon = docuConfig.meta?.favicon || "/favicon.ico";
+  const notFoundHtml = htmlShell({
+    title: "404 - Not Found",
+    description: "",
+    body: renderToString(notFoundPage),
+    favicon: notFoundFavicon,
+    css: assetManifest.css,
+    js: assetManifest.js,
+    themeCss: inlineThemeCss,
+  });
   await writeFile(join(DIST_DIR, "404.html"), notFoundHtml);
 
   logger.spinner.stop(
     `Built ${built} pages (${skipped} cached) \x1b[90m(${Math.round(performance.now() - t)}ms)\x1b[0m`
   );
 
-  // [10] build.onEnd(config, pages)
   if (builder) {
     const pages: PageMeta[] = mdxFiles.map((f) => ({
       slug: f.path,

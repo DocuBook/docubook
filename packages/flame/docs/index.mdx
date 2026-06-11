@@ -1,21 +1,34 @@
 ---
-title: 🎉 Welcome
-description: Start your DocuBook journey with key features like CLI tooling, prebuilt navigation trees, performance caching, and rich Markdown components.
+title: Welcome
+description: Documentation for @docubook/flame - a Bun-native React + MDX framework for modern documentation sites.
 ---
 
-Welcome to **DocuBook**! This site is built to help you create beautiful, fast, and maintainable documentation with minimal setup.
+**@docubook/flame** is the core framework of the DocuBook ecosystem. It is a lightweight, Bun-native runtime for building documentation websites using React 19, MDX, and filesystem-based routing.
 
-<Cards cols={2}>
-  <Card title="CLI Tooling" icon="Terminal">
-    Scaffold pages, generate navigation trees, and manage your docs with a simple command line interface.
+|         Feature          |                    Description                     |
+| ------------------------ | -------------------------------------------------- |
+| **Bun-native**           | Instant startup, native TypeScript, fast builds    |
+| **React 19 SSR**         | Server-side rendering with client hydration        |
+| **Filesystem routing**   | Auto-discover pages from `docs/` folder            |
+| **Plugin system**        | Extend the build pipeline and dev server via hooks |
+| **Built-in search**      | Full-text search index generated at build time     |
+| **Config-driven themes** | Switch presets or use custom colors                |
+| **Static build**         | Pre-render all pages to static HTML for deployment |
+
+<Cards>
+  <Card title="@docubook/core" icon="Cpu">
+    Shared MDX compile pipeline and markdown utilities. Handles compilation, rehype/remark plugin orchestration, and frontmatter parsing used by all DocuBook packages.
   </Card>
-  <Card title="Prebuilt Navigation" icon="FolderTree">
-    Automatically build a navigation tree during builds for reliable sidebars and fast page loads.
+  <Card title="@docubook/ui-react" icon="Component">
+    Reusable React UI components for documentation sites — sidebar, table of contents, navbar, footer, search modal, and MDX content renderers.
   </Card>
-  <Card title="High Performance" icon="Zap">
-    MDX compilation cache + Static Site Generation to reduce repeated work and speed up build times.
+  <Card title="@docubook/mdx-content" icon="Package">
+    Portable MDX components and framework adapters. Pre-built components like cards, tabs, accordions, steps, notes, and code blocks for rich documentation.
   </Card>
-  <Card title="Markdown Components" icon="Layers">
-    Use ready-made MDX components like cards, tabs, accordions, and more to enrich your docs.
+  <Card title="@docubook/themes-colors" icon="Palette">
+    Theme color presets and color utilities — hex-to-HSL conversion, CSS variable generation, and 3 built-in presets (Default Blue, Fresh Lime, Coffee).
+  </Card>
+  <Card title="@docubook/cli" icon="Terminal">
+    CLI tool for initializing, scaffolding, and deploying DocuBook projects. One command to create a new documentation site.
   </Card>
 </Cards>

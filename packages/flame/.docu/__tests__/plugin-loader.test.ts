@@ -27,17 +27,19 @@ describe("resolveSpecifier", () => {
     );
   });
 
-  it("keeps absolute paths unchanged", () => {
-    expect(resolveSpecifier("/usr/lib/plugin.mjs")).toBe("/usr/lib/plugin.mjs");
+  it("blocks absolute paths outside project root", () => {
+    expect(() => resolveSpecifier("/usr/lib/plugin.mjs")).toThrow(
+      "[plugin-loader] Path traversal blocked"
+    );
   });
 
   it("keeps npm package names unchanged", () => {
     expect(resolveSpecifier("@docubook/plugin-sitemap")).toBe("@docubook/plugin-sitemap");
   });
 
-  it("resolves parent-relative paths", () => {
-    expect(resolveSpecifier("../other-pkg/plugin.mjs")).toBe(
-      resolve(ROOT, "../other-pkg/plugin.mjs")
+  it("blocks parent-relative paths escaping project root", () => {
+    expect(() => resolveSpecifier("../other-pkg/plugin.mjs")).toThrow(
+      "[plugin-loader] Path traversal blocked"
     );
   });
 });
@@ -111,6 +113,38 @@ describe("loadPlugins — factory function pattern", () => {
     expect(plugins).toHaveLength(2);
     expect(plugins[0].name).toBe("fixture-simple");
     expect(plugins[1].name).toBe("factory-instance");
+  });
+});
+
+// ─── loadPlugins — path traversal protection ────────────
+
+describe("loadPlugins — path traversal protection", () => {
+  it("blocks relative path escaping project root", async () => {
+    await expect(loadPlugins(["../../../etc/passwd"])).rejects.toThrow(
+      "[plugin-loader] Path traversal blocked"
+    );
+  });
+
+  it("blocks absolute path outside project root", async () => {
+    await expect(loadPlugins(["/usr/lib/evil.mjs"])).rejects.toThrow(
+      "[plugin-loader] Path traversal blocked"
+    );
+  });
+
+  it("allows relative path within project root", async () => {
+    await expect(loadPlugins([SIMPLE])).resolves.toHaveLength(1);
+  });
+
+  it("allows absolute path within project root", async () => {
+    const abs = resolve(process.cwd(), SIMPLE);
+    await expect(loadPlugins([abs])).resolves.toHaveLength(1);
+  });
+
+  it("allows npm package name (bypasses guard)", async () => {
+    // Uses a loosely-matching error because the package won't exist
+    await expect(loadPlugins(["@docubook/plugin-sitemap"])).rejects.not.toThrow(
+      "[plugin-loader] Path traversal blocked"
+    );
   });
 });
 
