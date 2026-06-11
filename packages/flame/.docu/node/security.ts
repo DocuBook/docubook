@@ -40,14 +40,17 @@ export function isPathSafe(pathname: string, baseDir: string): boolean {
   if (resolved === baseDir) return true;
   try {
     const real = realpathSync(resolved);
-    const realBaseDirSlash = realpathSync(baseDir).endsWith("/")
-      ? realpathSync(baseDir)
-      : realpathSync(baseDir) + "/";
+    const realBase = realpathSync(baseDir);
+    const realBaseDirSlash = realBase.endsWith("/") ? realBase : realBase + "/";
     return real.startsWith(realBaseDirSlash);
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+    const nodeErr = err as NodeJS.ErrnoException;
+    if (nodeErr.code === "ENOENT") {
       return true;
     }
+    console.error(
+      `[security] isPathSafe error for pathname="${pathname}": ${nodeErr.message} (code=${nodeErr.code})`
+    );
     return false;
   }
 }
@@ -62,14 +65,17 @@ export function isSlugSafe(slug: string, docsDir: string): boolean {
   if (resolved === docsDir) return true;
   try {
     const real = realpathSync(resolved);
-    const realDocsDirSlash = realpathSync(docsDir).endsWith("/")
-      ? realpathSync(docsDir)
-      : realpathSync(docsDir) + "/";
+    const realDocsDir = realpathSync(docsDir);
+    const realDocsDirSlash = realDocsDir.endsWith("/") ? realDocsDir : realDocsDir + "/";
     return real.startsWith(realDocsDirSlash);
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+    const nodeErr = err as NodeJS.ErrnoException;
+    if (nodeErr.code === "ENOENT") {
       return true;
     }
+    console.error(
+      `[security] isSlugSafe error for slug="${slug}": ${nodeErr.message} (code=${nodeErr.code})`
+    );
     return false;
   }
 }

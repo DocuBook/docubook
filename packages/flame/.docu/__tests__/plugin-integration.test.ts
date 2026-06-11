@@ -221,18 +221,14 @@ describe("Plugin integration — error isolation", () => {
     const faultyPlugin = createFaultyPlugin("onStart");
     await faultyPlugin.setup(builder);
 
-    // Manually add an onEnd that bombs
-    // (createFaultyPlugin only supports onStart/handleRequest/injectHead,
-    // so we add a throwing onEnd directly via builder)
+    // Register an onEnd that bombs, and another that should still run after
     const arbitraryError = new Error("onEnd fail");
-    (builder as any)._onEnd = [
-      async () => {
-        throw arbitraryError;
-      },
-      async () => {
-        // This should still run after the error
-      },
-    ];
+    builder.onEnd(async () => {
+      throw arbitraryError;
+    });
+    builder.onEnd(async () => {
+      // This should still run after the error
+    });
 
     await expect(builder.runOnEnd([])).resolves.toBeUndefined();
   });
