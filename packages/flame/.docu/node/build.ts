@@ -246,7 +246,7 @@ async function build() {
 
     if (rebuildDecision === "no") {
       const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
-      if (existsSync(outputPath)) {
+      if (existsSync(outputPath) && !assetsChanged) {
         skipped++;
         continue;
       }
@@ -264,11 +264,13 @@ async function build() {
       const contentHash = hashContent(rawMdx);
       const cached = cache[file.path];
       if (cached && cached.hash === contentHash) {
-        const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
-        if (existsSync(outputPath)) {
-          cache[file.path] = { ...cached, mtime: file.mtime, builtAt: Date.now() };
-          skipped++;
-          continue;
+        if (!assetsChanged) {
+          const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
+          if (existsSync(outputPath)) {
+            cache[file.path] = { ...cached, mtime: file.mtime, builtAt: Date.now() };
+            skipped++;
+            continue;
+          }
         }
       }
     }
