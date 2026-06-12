@@ -1,4 +1,5 @@
 import type { Pluggable } from "unified";
+import type { DocuConfig } from "./types";
 
 // ─── Config Types ───────────────────────────────────────
 

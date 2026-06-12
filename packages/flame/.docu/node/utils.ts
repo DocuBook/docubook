@@ -1,5 +1,45 @@
 export { cn, parseDate, formatDate, formatDate2 } from "@docubook/core";
 
+import { readdir, stat } from "node:fs/promises";
+import { join } from "node:path";
+
+export interface ScannedMdxFile {
+  path: string;
+  absPath: string;
+  mtime: number;
+}
+
+/**
+ * Scan a directory recursively for MDX/MD files.
+ * Skips "assets" directories, hidden directories (dot-prefixed), and root-level index.mdx.
+ * Shared between build.ts and search-indexer.ts.
+ */
+export async function scanMdxFiles(dir: string, baseDir = ""): Promise<ScannedMdxFile[]> {
+  const files: ScannedMdxFile[] = [];
+  const entries = await readdir(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = join(dir, entry.name);
+    const relativePath = baseDir ? `${baseDir}/${entry.name}` : entry.name;
+
+    if (entry.isDirectory()) {
+      if (entry.name === "assets" || entry.name.startsWith(".")) continue;
+      files.push(...(await scanMdxFiles(fullPath, relativePath)));
+    } else if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
+      if (entry.name === "index.mdx" && !baseDir) continue;
+      const stats = await stat(fullPath);
+      let path = relativePath.replace(/\.(mdx|md)$/, "");
+
+      if (/\/index$/.test(path)) {
+        path = path.replace(/\/index$/, "");
+      }
+      files.push({ path, absPath: fullPath, mtime: stats.mtimeMs });
+    }
+  }
+
+  return files;
+}
+
 export function isExternalUrl(url: string): boolean {
   return /^(https?:\/\/|\/\/)/.test(url);
 }
@@ -40,9 +80,26 @@ export async function getGitLastModifiedBatch(filePaths: string[]): Promise<Map<
   const result = new Map<string, string>();
   if (filePaths.length === 0) return result;
 
+  // Filter and validate paths — same guard as getGitLastModified
+  const safePaths: string[] = [];
+  for (const fp of filePaths) {
+    const cleanPath = fp.replace(/^\//, "");
+    if (
+      !cleanPath ||
+      !/^[a-zA-Z0-9\-_/.\s]+$/.test(cleanPath) ||
+      /(^|\/)\.\.($|\/)/.test(cleanPath)
+    ) {
+      console.warn(`[utils] getGitLastModifiedBatch: skipping invalid path "${fp}"`);
+      continue;
+    }
+    safePaths.push(cleanPath);
+  }
+
+  if (safePaths.length === 0) return result;
+
   try {
     const proc = Bun.spawn(
-      ["git", "log", "--format=%cI", "--name-only", "--diff-filter=ACMR", ...filePaths],
+      ["git", "log", "--format=%cI", "--name-only", "--diff-filter=ACMR", ...safePaths],
       { stderr: "ignore" }
     );
     const text = await new Response(proc.stdout).text();

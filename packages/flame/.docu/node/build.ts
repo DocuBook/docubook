@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir, readdir, copyFile, stat } from "node:fs/promises";
+import { readFile, writeFile, mkdir, readdir, copyFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join, dirname } from "node:path";
@@ -21,7 +21,9 @@ import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
+import { scanMdxFiles } from "./utils";
 import type { BuildCache, CliArgs } from "./types";
+import { generateNonce } from "./security";
 import type { PageMeta, PageContext } from "./plugin";
 import DocsPage from "../pages/docs/[[...slug]]";
 import IndexPage from "../pages/index";
@@ -58,42 +60,17 @@ async function writeCache(cache: BuildCache): Promise<void> {
   await writeFile(CACHE_FILE, JSON.stringify(cache, null, 2));
 }
 
-async function findMdxFiles(dir: string, baseDir = ""): Promise<{ path: string; mtime: number }[]> {
-  const files: { path: string; mtime: number }[] = [];
-  try {
-    const entries = await readdir(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = join(dir, entry.name);
-      const relativePath = baseDir ? `${baseDir}/${entry.name}` : entry.name;
-
-      if (entry.isDirectory()) {
-        if (entry.name === "assets" || entry.name.startsWith(".")) continue;
-        files.push(...(await findMdxFiles(fullPath, relativePath)));
-      } else if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
-        if (entry.name === "index.mdx" && !baseDir) continue;
-        const stats = await stat(fullPath);
-        let path = relativePath.replace(/\.(mdx|md)$/, "");
-
-        if (/\/index$/.test(path)) {
-          path = path.replace(/\/index$/, "");
-        }
-        files.push({ path, mtime: stats.mtimeMs });
-      }
-    }
-  } catch (err) {
-    console.error("Failed to scan docs directory:", (err as Error).message);
-  }
-  return files;
-}
-
 export function parseConcurrency(): number {
   return Math.max(1, parseInt(process.env.BUILD_CONCURRENCY || "4", 10) || 4);
 }
 
-export function shouldRebuild(path: string, mtime: number, cache: BuildCache): boolean {
+type RebuildDecision = "yes" | "hash_check" | "no";
+
+export function shouldRebuild(path: string, mtime: number, cache: BuildCache): RebuildDecision {
   const cached = cache[path];
-  if (!cached) return true;
-  return mtime > cached.builtAt;
+  if (!cached) return "yes";
+  if (mtime > cached.builtAt) return "hash_check";
+  return "no";
 }
 
 let assetManifest = { js: "client.js", css: "client.css" };
@@ -105,7 +82,8 @@ async function renderDocsPage(
   rawMdx: string,
   filePath: string,
   gitDates?: Map<string, string>,
-  builder?: BuildPluginBuilder
+  builder?: BuildPluginBuilder,
+  nonce?: string
 ): Promise<string> {
   let content = rawMdx;
   if (builder) {
@@ -168,6 +146,7 @@ async function renderDocsPage(
     favicon,
     css: assetManifest.css,
     js: assetManifest.js,
+    nonce,
     themeCss: inlineThemeCss,
     headExtra,
     bodyExtra,
@@ -214,7 +193,7 @@ async function build() {
 
   await copyDirectoryRecursive(DOCS_ASSETS_DIR, join(DIST_DIR, "docs", "assets"));
 
-  const mdxFiles = await findMdxFiles(DOCS_DIR);
+  const mdxFiles = await scanMdxFiles(DOCS_DIR);
   const cache = args.force ? {} : await readCache();
   let built = 0;
   let skipped = 0;
@@ -250,17 +229,7 @@ async function build() {
   logger.spinner.start("Building pages...");
   t = performance.now();
 
-  const allRelPaths = mdxFiles
-    .map((f) => {
-      const mdxPath1 = join(DOCS_DIR, f.path, "index.mdx");
-      const mdxPath2 = join(DOCS_DIR, `${f.path}.mdx`);
-      const mdxPath3 = join(DOCS_DIR, `${f.path}.md`);
-      for (const p of [mdxPath1, mdxPath2, mdxPath3]) {
-        if (existsSync(p)) return p.replace(PROJECT_ROOT + "/", "");
-      }
-      return null;
-    })
-    .filter((p): p is string => p !== null);
+  const allRelPaths = mdxFiles.map((f) => f.absPath.replace(PROJECT_ROOT + "/", ""));
 
   const indexMdxFull = join(DOCS_DIR, "index.mdx");
   if (existsSync(indexMdxFull)) {
@@ -273,45 +242,53 @@ async function build() {
   const errors: string[] = [];
 
   for (const file of mdxFiles) {
-    const mdxPath1 = join(DOCS_DIR, file.path, "index.mdx");
-    const mdxPath2 = join(DOCS_DIR, `${file.path}.mdx`);
-    const mdxPath3 = join(DOCS_DIR, `${file.path}.md`);
+    const rebuildDecision = shouldRebuild(file.path, file.mtime, cache);
 
-    let rawMdx: string | null = null;
-    let absPath = "";
-    for (const p of [mdxPath1, mdxPath2, mdxPath3]) {
-      try {
-        rawMdx = await readFile(p, "utf-8");
-        absPath = p;
-        break;
-      } catch (err) {
-        if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+    if (rebuildDecision === "no") {
+      const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
+      if (existsSync(outputPath) && !assetsChanged) {
+        skipped++;
+        continue;
       }
     }
-    if (!rawMdx) continue;
 
-    let needRebuild = assetsChanged || shouldRebuild(file.path, file.mtime, cache);
-    if (!needRebuild) {
-      const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
-      if (!existsSync(outputPath)) needRebuild = true;
-    }
-    if (!needRebuild) {
-      skipped++;
+    let rawMdx: string;
+    try {
+      rawMdx = await readFile(file.absPath, "utf-8");
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
       continue;
     }
 
-    const relPath = absPath.replace(PROJECT_ROOT + "/", "");
+    if (rebuildDecision === "hash_check") {
+      const contentHash = hashContent(rawMdx);
+      const cached = cache[file.path];
+      if (cached && cached.hash === contentHash) {
+        if (!assetsChanged) {
+          const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
+          if (existsSync(outputPath)) {
+            cache[file.path] = { ...cached, mtime: file.mtime, builtAt: Date.now() };
+            skipped++;
+            continue;
+          }
+        }
+      }
+    }
+
+    const relPath = file.absPath.replace(PROJECT_ROOT + "/", "");
     const capturedRawMdx = rawMdx;
     const capturedFile = file;
 
     buildTasks.push(async () => {
       try {
+        const pageNonce = generateNonce();
         const html = await renderDocsPage(
           capturedFile.path,
           capturedRawMdx,
           relPath,
           gitDates,
-          builder
+          builder,
+          pageNonce
         );
         const outputPath = join(DIST_DIR, "docs", `${capturedFile.path}.html`);
         await mkdir(dirname(outputPath), { recursive: true });
@@ -338,7 +315,14 @@ async function build() {
     const indexMdxPath = join(DOCS_DIR, "index.mdx");
     const indexRaw = await readFile(indexMdxPath, "utf-8");
     const indexRelPath = indexMdxPath.replace(PROJECT_ROOT + "/", "");
-    const indexHtml = await renderDocsPage("", indexRaw, indexRelPath, gitDates, builder);
+    const indexHtml = await renderDocsPage(
+      "",
+      indexRaw,
+      indexRelPath,
+      gitDates,
+      builder,
+      generateNonce()
+    );
     await mkdir(join(DIST_DIR, "docs"), { recursive: true });
     await writeFile(join(DIST_DIR, "docs", "index.html"), indexHtml);
   } catch (err) {
@@ -356,6 +340,7 @@ async function build() {
     favicon: landingFavicon,
     css: assetManifest.css,
     js: assetManifest.js,
+    nonce: generateNonce(),
     themeCss: inlineThemeCss,
   });
   await writeFile(join(DIST_DIR, "index.html"), landingHtml);
@@ -373,6 +358,7 @@ async function build() {
     favicon: notFoundFavicon,
     css: assetManifest.css,
     js: assetManifest.js,
+    nonce: generateNonce(),
     themeCss: inlineThemeCss,
   });
   await writeFile(join(DIST_DIR, "404.html"), notFoundHtml);
@@ -407,10 +393,12 @@ async function build() {
   }
 }
 
-initSentry()
-  .then(() => build())
-  .catch((err) => {
-    captureException(err);
-    console.error("Build failed:", err);
-    process.exit(1);
-  });
+if (!process.env.VITEST) {
+  initSentry()
+    .then(() => build())
+    .catch((err) => {
+      captureException(err);
+      console.error("Build failed:", err);
+      process.exit(1);
+    });
+}

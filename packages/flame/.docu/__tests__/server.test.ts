@@ -186,11 +186,11 @@ describe("injectNonce", () => {
     expect(result).toContain('<script src="ext.js"></script>');
   });
 
-  it("does not double-inject nonce", () => {
+  it("replaces existing nonce with new nonce", () => {
     const html = '<script nonce="existing">alert(1)</script>';
     const result = injectNonce(html, "new-nonce");
-    expect(result).toContain('nonce="existing"');
-    expect(result).not.toContain('nonce="new-nonce"');
+    expect(result).toContain('nonce="new-nonce"');
+    expect(result).not.toContain('nonce="existing"');
   });
 
   it("handles script tags with extra attributes", () => {
