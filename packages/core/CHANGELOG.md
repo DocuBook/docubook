@@ -1,5 +1,13 @@
 # @docubook/core
 
+## 1.7.1
+
+### Patch Changes
+
+- [#222](https://github.com/DocuBook/docubook/pull/222) [`7e742c0`](https://github.com/DocuBook/docubook/commit/7e742c0cf845f0336170c25ca94bae815d9bf1c3) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Add `escapeMeta()` to `handleCodeExpandable` — prevent metadata injection in MDX-compiled JS.
+  - New `escapeMeta()` function escapes `</` as `\u003C/` (HTML spec script data state) and `` ` `${}` `"` `\` `` as JS backslash escapes.
+  - `normalizedLanguage` and `normalizedTitle` are now wrapped in `escapeMeta()` before being appended to `node.meta` as `dbLang()`/`dbTitle()`.
+
 ## 1.7.0
 
 ### Minor Changes

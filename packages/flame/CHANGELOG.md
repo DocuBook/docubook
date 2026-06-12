@@ -1,5 +1,21 @@
 # @docubook/flame
 
+## 1.3.0
+
+### Minor Changes
+
+- [#219](https://github.com/DocuBook/docubook/pull/219) [`c5bedc8`](https://github.com/DocuBook/docubook/commit/c5bedc8ee2b968d46b0b3e43fadad29a9c2dfe6f) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Plugin system — 10 hooks, Bun `setup(build)` convention.
+  - **New**: `plugin.ts` (types), `plugin-loader.ts` (resolve & load), `plugin-builder.ts` (10 registration + 10 execution methods)
+  - **Modified**: `build.ts` (pipeline wiring: onStart → onLoad → transformFrontmatter → injectHead/Body → transformHtml → onEnd), `server.ts` (handleRequest), `html.ts` (head/body injection), `mdx.ts` (remark/rehype merge), `types.ts`, `docu.schema.json`
+  - **75 tests**: unit (39), integration (8), loader (16), mdx (6), schema (6) — zero regression
+
+  No-op when `plugins` is empty. Errors: fail-fast for build hooks, error-isolated for dev server.
+
+### Patch Changes
+
+- Updated dependencies [[`7e742c0`](https://github.com/DocuBook/docubook/commit/7e742c0cf845f0336170c25ca94bae815d9bf1c3)]:
+  - @docubook/core@1.7.1
+
 ## 1.2.1
 
 ### Patch Changes
