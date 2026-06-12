@@ -217,7 +217,7 @@ async function build() {
   }
 
   const hasPlugins = !!docuConfig.plugins?.length;
-  const builder = hasPlugins ? new BuildPluginBuilder(docuConfig) : undefined;
+  const builder = hasPlugins ? new BuildPluginBuilder(docuConfig) : null;
   if (hasPlugins && builder) {
     const plugins = await loadPlugins(docuConfig.plugins!);
     for (const plugin of plugins) {
@@ -264,9 +264,12 @@ async function build() {
       const contentHash = hashContent(rawMdx);
       const cached = cache[file.path];
       if (cached && cached.hash === contentHash) {
-        cache[file.path] = { ...cached, mtime: file.mtime, builtAt: Date.now() };
-        skipped++;
-        continue;
+        const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
+        if (existsSync(outputPath)) {
+          cache[file.path] = { ...cached, mtime: file.mtime, builtAt: Date.now() };
+          skipped++;
+          continue;
+        }
       }
     }
 
