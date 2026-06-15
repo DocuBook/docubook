@@ -5,6 +5,7 @@ packages:
 overrides:
   flatted: ">=3.4.2"
   postcss: ">=8.5.10"
+  esbuild: ">=0.28.1"
 allowBuilds:
   "@parcel/watcher": true
   bun: true
