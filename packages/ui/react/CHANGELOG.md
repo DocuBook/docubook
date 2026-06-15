@@ -1,5 +1,16 @@
 # @docubook/ui-react
 
+## 0.1.4
+
+### Patch Changes
+
+- [#225](https://github.com/DocuBook/docubook/pull/225) [`f7997c4`](https://github.com/DocuBook/docubook/commit/f7997c43138abe36c7b4f5f5e2d8dea7a0cb5613) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - fix: bump vitest to 4.1.8 and add esbuild override for GHSA-gv7w-rqvm-qjhr
+
+  Update vitest and `@vitest/coverage-v8` to latest patch versions, and add
+  `esbuild` override via pnpm-workspace.yaml to resolve a high-severity
+  security advisory (GHSA-gv7w-rqvm-qjhr) — missing binary integrity
+  verification in the Deno module, patched in esbuild >=0.28.1.
+
 ## 0.1.3
 
 ### Minor Changes
