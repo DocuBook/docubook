@@ -8,7 +8,7 @@
     "clean": "turbo clean",
     "typecheck": "turbo typecheck",
     "changeset": "changeset",
-    "version-packages": "changeset version",
+    "version-packages": "changeset version && pnpm install --no-frozen-lockfile",
     "publish-packages": "pnpm build && changeset publish",
     "prepare": "husky",
     "commit": "czg"
