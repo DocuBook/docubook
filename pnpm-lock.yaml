@@ -350,8 +350,8 @@ importers:
   packages/mdx-content:
     dependencies:
       "@docubook/core":
-        specifier: ">=1.6.0"
-        version: 1.7.1(@types/react@19.2.17)(react@19.2.7)
+        specifier: workspace:^
+        version: link:../core
     devDependencies:
       "@testing-library/jest-dom":
         specifier: ^6.9.1
