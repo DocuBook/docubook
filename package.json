@@ -8,7 +8,7 @@
     "clean": "turbo clean",
     "typecheck": "turbo typecheck",
     "changeset": "changeset",
-    "version-packages": "changeset version && pnpm install",
+    "version-packages": "changeset version",
     "publish-packages": "pnpm build && changeset publish",
     "prepare": "husky",
     "commit": "czg"
