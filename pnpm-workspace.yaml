@@ -6,6 +6,10 @@ overrides:
   flatted: ">=3.4.2"
   postcss: ">=8.5.10"
   esbuild: ">=0.28.1"
+  react: "19.2.7"
+  react-dom: "19.2.7"
+  "@types/react": "19.2.17"
+  "@types/react-dom": "19.2.3"
 allowBuilds:
   "@parcel/watcher": true
   bun: true

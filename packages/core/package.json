@@ -53,14 +53,14 @@
     "rehype-prism-plus": "^2.0.2",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.1",
-    "tailwind-merge": "^2.6.1",
+    "tailwind-merge": "^3.6.0",
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.37",
-    "@types/react": "19.2.8",
+    "@types/react": "19.2.17",
     "@types/unist": "^3.0.3",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "unified": "^11.0.0"
   }
 }

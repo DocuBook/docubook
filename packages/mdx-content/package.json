@@ -37,7 +37,7 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "prepublishOnly": "pnpm run clean && pnpm run build"
+    "prepublishOnly": "pnpm run build"
   },
   "keywords": [
     "docubook",
@@ -72,13 +72,13 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
-    "@types/react": "19.2.8",
+    "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "jsdom": "^29.1.1",
     "lucide-react": "^1.7.0",
-    "react": ">=18",
-    "react-dom": ">=18",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "react-icons": "^5.0.0",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   }
 }
