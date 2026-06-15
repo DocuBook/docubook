@@ -1,5 +1,17 @@
 # @docubook/mdx-content
 
+## 3.2.2
+
+### Patch Changes
+
+- [#227](https://github.com/DocuBook/docubook/pull/227) [`38ccae0`](https://github.com/DocuBook/docubook/commit/38ccae04cf6fb76490ac66d1f7341615863bf82a) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - chore: bump dependencies and fix prepublishOnly
+
+  - **@docubook/core**: Upgrade TypeScript 5.9.3 → 6.0.3, tailwind-merge 2.6.1 → 3.6.0 (Tailwind v4 compatible, twMerge API unchanged), @types/react 19.2.8 → 19.2.17
+  - **@docubook/mdx-content**: Upgrade TypeScript 5.9.3 → 6.0.3, react 19.2.3 → 19.2.7, react-dom 19.2.3 → 19.2.7, @types/react 19.2.8 → 19.2.17; remove redundant `clean` step from prepublishOnly script
+
+- Updated dependencies [[`38ccae0`](https://github.com/DocuBook/docubook/commit/38ccae04cf6fb76490ac66d1f7341615863bf82a)]:
+  - @docubook/core@1.7.2
+
 ## 3.2.1
 
 ### Patch Changes
@@ -19,13 +31,13 @@
 ### Minor Changes
 
 - refactor: clean up exports and fix unsafe inline style casts ;
-  - remove type `note` because there is already type `info` 
-  - delete components.md standalone docs 
-  - remove legacy API from README and docs - fix re-exports missing server components 
-  - fix re-exports missing client components 
-  - delete re-exports shared utility from public API this internal usage API 
-  - Remove width: "max-content !important" and backgroundColor: "transparent !important" inline style assignments. 
-  - Use a CSS class (e.g., .mdx-expandable-code) with !important in a `<style>` tag or CSS file to handle these properties. 
+  - remove type `note` because there is already type `info`
+  - delete components.md standalone docs
+  - remove legacy API from README and docs - fix re-exports missing server components
+  - fix re-exports missing client components
+  - delete re-exports shared utility from public API this internal usage API
+  - Remove width: "max-content !important" and backgroundColor: "transparent !important" inline style assignments.
+  - Use a CSS class (e.g., .mdx-expandable-code) with !important in a `<style>` tag or CSS file to handle these properties.
   - remove props variation in `<Button>`
   - move duplicated inline style tags to global stylesheet
 
