@@ -1,5 +1,14 @@
 # @docubook/core
 
+## 1.7.2
+
+### Patch Changes
+
+- [#227](https://github.com/DocuBook/docubook/pull/227) [`38ccae0`](https://github.com/DocuBook/docubook/commit/38ccae04cf6fb76490ac66d1f7341615863bf82a) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - chore: bump dependencies and fix prepublishOnly
+
+  - **@docubook/core**: Upgrade TypeScript 5.9.3 → 6.0.3, tailwind-merge 2.6.1 → 3.6.0 (Tailwind v4 compatible, twMerge API unchanged), @types/react 19.2.8 → 19.2.17
+  - **@docubook/mdx-content**: Upgrade TypeScript 5.9.3 → 6.0.3, react 19.2.3 → 19.2.7, react-dom 19.2.3 → 19.2.7, @types/react 19.2.8 → 19.2.17; remove redundant `clean` step from prepublishOnly script
+
 ## 1.7.1
 
 ### Patch Changes

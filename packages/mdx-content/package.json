@@ -1,6 +1,6 @@
 {
   "name": "@docubook/mdx-content",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "Portable MDX components and framework adapters for DocuBook",
   "type": "module",
   "main": "./dist/index.js",
@@ -58,7 +58,7 @@
   "author-url": "https://wildan.dev",
   "license": "MIT",
   "peerDependencies": {
-    "@docubook/core": ">=1.6.0",
+    "@docubook/core": ">=1.7.2",
     "lucide-react": "^1.7.0",
     "react": ">=18",
     "react-dom": ">=18",
