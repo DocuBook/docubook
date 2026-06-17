@@ -1,5 +1,11 @@
 # @docubook/flame
 
+## 1.3.1
+
+### Patch Changes
+
+- [`470d311`](https://github.com/DocuBook/docubook/commit/470d3118dbd794d75d577acb3dcbae72feb37b9c) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - fix: upgrade @sentry/bun to v10 to resolve CVE-2026-53550 DoS vulnerability
+
 ## 1.3.0
 
 ### Minor Changes
