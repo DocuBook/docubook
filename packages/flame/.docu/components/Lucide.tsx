@@ -7,7 +7,7 @@ import type { LucideIcon } from "lucide-react";
  */
 export function getLucideIcon(name: string): LucideIcon | null {
   if (!name) return null;
-  const icon = (LucideIcons as Record<string, LucideIcon | undefined>)[name];
+  const icon = (LucideIcons as unknown as Record<string, LucideIcon | undefined>)[name];
   return icon || null;
 }
 

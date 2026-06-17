@@ -212,16 +212,16 @@ export default function Search({ className }: SearchProps) {
 
           <div className="border-base-300 hidden items-center gap-3 border-t px-4 py-2.5 md:flex">
             <div className="flex items-center gap-1">
-              <Kbd size="s">
+              <Kbd size="sm">
                 <FnKey.Down />
               </Kbd>
-              <Kbd size="s">
+              <Kbd size="sm">
                 <FnKey.Up />
               </Kbd>
               <span className="text-base-content/50 text-xs">navigate</span>
             </div>
             <div className="flex items-center gap-1">
-              <Kbd size="s">
+              <Kbd size="sm">
                 <CornerDownLeft className="h-3 w-3" />
               </Kbd>
               <span className="text-base-content/50 text-xs">select</span>

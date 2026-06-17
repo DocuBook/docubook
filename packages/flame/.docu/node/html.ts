@@ -14,6 +14,8 @@ export interface HtmlShellOptions {
   csp?: string;
   extraScripts?: string;
   themeCss?: string;
+  /** Depth from document root (0=root, 1=subdir, 2=sub/subdir). Used for relative asset paths. */
+  depth?: number;
   /** HTML strings to inject before `</head>` (from plugin `injectHead` hooks). */
   headExtra?: string[];
   /** HTML strings to inject before `</body>`, after the main script (from plugin `injectBody` hooks). */
@@ -32,6 +34,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
     csp,
     extraScripts,
     themeCss,
+    depth = 0,
     headExtra,
     bodyExtra,
   } = opts;
@@ -39,6 +42,9 @@ export function htmlShell(opts: HtmlShellOptions): string {
   const themeStyle = themeCss ? `\n  <style${nonceAttr}>${Bun.escapeHTML(themeCss)}</style>` : "";
   const headInjection = headExtra?.length ? `\n  ${headExtra.join("\n  ")}` : "";
   const bodyInjection = bodyExtra?.length ? `\n  ${bodyExtra.join("\n  ")}` : "";
+  const depthPrefix = depth === 0 ? "" : "../".repeat(depth);
+  const assetPrefix = depthPrefix + "assets/";
+  const resolvePath = (path: string) => (path.startsWith("/") ? depthPrefix + path.slice(1) : path);
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,14 +52,14 @@ export function htmlShell(opts: HtmlShellOptions): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${Bun.escapeHTML(title)}</title>
   <meta name="description" content="${Bun.escapeHTML(description)}">
-  <link rel="icon" type="image/x-icon" href="${Bun.escapeHTML(favicon)}">${themeStyle}
-  <link rel="stylesheet" href="/assets/${Bun.escapeHTML(css)}">
+  ${favicon ? `<link rel="icon" type="image/x-icon" href="${Bun.escapeHTML(resolvePath(favicon))}">` : ""}${themeStyle}
+  <link rel="stylesheet" href="${Bun.escapeHTML(assetPrefix + css)}">
   ${csp ? `<meta http-equiv="Content-Security-Policy" content="${Bun.escapeHTML(csp)}">` : ""}
   <script${nonceAttr}>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>${headInjection}
 </head>
 <body>
   <div id="root">${body}</div>
-  <script${nonceAttr} src="/assets/${Bun.escapeHTML(js)}"></script>${extraScripts ? `\n  ${extraScripts}` : ""}${bodyInjection}
+  <script${nonceAttr} src="${Bun.escapeHTML(assetPrefix + js)}"></script>${extraScripts ? `\n  ${extraScripts}` : ""}${bodyInjection}
 </body>
 </html>`;
 }

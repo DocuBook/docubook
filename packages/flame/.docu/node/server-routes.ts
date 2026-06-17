@@ -19,7 +19,7 @@ import { htmlShell as createHtmlShell, hmrScript, errorHtml } from "./html";
 export interface ServerState {
   docuConfig: DocuConfig;
   assetManifest: { css: string; js: string };
-  inlineThemeCss: string;
+  inlineThemeCss?: string;
   builder: BuildPluginBuilder | null;
 }
 
