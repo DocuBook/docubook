@@ -67,7 +67,7 @@
     "react-dom": "^19.0.0"
   },
   "peerDependencies": {
-    "@sentry/bun": "^9.0.0"
+    "@sentry/bun": "^10.0.0"
   },
   "peerDependenciesMeta": {
     "@sentry/bun": {

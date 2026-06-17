@@ -10,6 +10,7 @@ overrides:
   react-dom: "19.2.7"
   "@types/react": "19.2.17"
   "@types/react-dom": "19.2.3"
+  "@sentry/bun": ">=10.0.0"
 allowBuilds:
   "@parcel/watcher": true
   bun: true
