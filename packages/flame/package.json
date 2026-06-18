@@ -63,8 +63,9 @@
     "bun-plugin-tailwind": "^0.1.2",
     "daisyui": "^5.5.19",
     "lucide-react": "^1.14.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "unified": "^11.0.0"
   },
   "peerDependencies": {
     "@sentry/bun": "^10.0.0"

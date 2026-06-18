@@ -138,7 +138,8 @@ async function renderDocsPage(
   const headExtra = builder?.collectHead(ctx);
   const bodyExtra = builder?.collectBody(ctx);
 
-  const favicon = docuConfig.meta?.favicon || "/favicon.ico";
+  const depth = slug ? slug.split("/").length : 1;
+  const favicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
   let html = htmlShell({
     title,
     description,
@@ -148,6 +149,7 @@ async function renderDocsPage(
     js: assetManifest.js,
     nonce,
     themeCss: inlineThemeCss,
+    depth,
     headExtra,
     bodyExtra,
   });
@@ -332,7 +334,7 @@ async function build() {
   }
 
   const landingPage = React.createElement(IndexPage);
-  const landingFavicon = docuConfig.meta?.favicon || "/favicon.ico";
+  const landingFavicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
   const landingHtml = htmlShell({
     title: docuConfig.meta?.title || "DocuBook",
     description: docuConfig.meta?.description || "",
@@ -350,7 +352,7 @@ async function build() {
     { repoUrl: docuConfig.repo?.url },
     React.createElement(NotFoundPage)
   );
-  const notFoundFavicon = docuConfig.meta?.favicon || "/favicon.ico";
+  const notFoundFavicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
   const notFoundHtml = htmlShell({
     title: "404 - Not Found",
     description: "",

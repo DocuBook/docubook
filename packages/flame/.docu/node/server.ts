@@ -103,8 +103,8 @@ const server = Bun.serve({
 
     if (builder) {
       const pluginResponse = await builder.runHandleRequest(req, {
-        port: server.port,
-        hostname: server.hostname,
+        port: server.port!,
+        hostname: server.hostname!,
       });
       if (pluginResponse) {
         logger.request(

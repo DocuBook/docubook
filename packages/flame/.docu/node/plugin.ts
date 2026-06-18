@@ -55,6 +55,8 @@ export interface DevServerContext {
   hostname: string;
 }
 
+export type { DocuConfig };
+
 // ─── PluginBuilder Interface ────────────────────────────
 
 /**
