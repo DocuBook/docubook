@@ -28,7 +28,8 @@ function createHtmlResponse(
   description: string,
   body: string,
   status: number,
-  state: ServerState
+  state: ServerState,
+  depth = 0
 ): Response {
   const nonce = generateNonce();
   const favicon = state.docuConfig.meta?.favicon || "/favicon.ico";
@@ -42,6 +43,7 @@ function createHtmlResponse(
     nonce,
     extraScripts: hmrScript(nonce),
     themeCss: state.inlineThemeCss,
+    depth,
   });
   return htmlResponse(html, nonce, status, process.env.NODE_ENV !== "production");
 }
@@ -140,6 +142,9 @@ async function renderDocsServerPage(
 
   const body = renderToString(page);
 
+  // Match build.ts depth calculation: slug.split("/").length, fallback to 1 for empty
+  const depth = slug.length || 1;
+
   if (state.builder) {
     const ctx: PageContext = {
       slug: slug.join("/") || "/",
@@ -164,12 +169,13 @@ async function renderDocsServerPage(
       themeCss: state.inlineThemeCss,
       headExtra,
       bodyExtra,
+      depth,
     });
     html = await state.builder.runTransformHtmlChain(html, ctx);
     return htmlResponse(html, nonce, 200, process.env.NODE_ENV !== "production");
   }
 
-  return createHtmlResponse(title, description, body, 200, state);
+  return createHtmlResponse(title, description, body, 200, state, depth);
 }
 
 function renderPage(
@@ -178,7 +184,8 @@ function renderPage(
   description: string,
   status: number,
   state: ServerState,
-  props: Record<string, unknown> = {}
+  props: Record<string, unknown> = {},
+  depth = 0
 ): Response {
   const page = React.createElement(
     DocsLayout,
@@ -186,19 +193,20 @@ function renderPage(
     React.createElement(Component, props)
   );
   const body = renderToString(page);
-  return createHtmlResponse(title, description, body, status, state);
+  return createHtmlResponse(title, description, body, status, state, depth);
 }
 
 export async function handleDocsIndex(state: ServerState): Promise<Response> {
   const doc = await getDocsForSlug("", state);
-  if (!doc) return renderPage(NotFoundPage, "404 - Not Found", "", 404, state);
+  if (!doc) return renderPage(NotFoundPage, "404 - Not Found", "", 404, state, {}, 1);
   return renderDocsServerPage(doc, [], "/docs", state);
 }
 
 export async function handleDocsRoute(slug: string[], state: ServerState): Promise<Response> {
   const path = slug.join("/");
   const doc = await getDocsForSlug(path, state);
-  if (!doc) return renderPage(NotFoundPage, "404 - Not Found", "", 404, state);
+  if (!doc)
+    return renderPage(NotFoundPage, "404 - Not Found", "", 404, state, {}, slug.length || 1);
   return renderDocsServerPage(doc, slug, `/docs/${path}`, state);
 }
 
@@ -214,8 +222,8 @@ export function handleIndex(state: ServerState): Response {
   );
 }
 
-export function handleNotFound(state: ServerState): Response {
-  return renderPage(NotFoundPage, "404 - Not Found", "", 404, state);
+export function handleNotFound(state: ServerState, depth = 0): Response {
+  return renderPage(NotFoundPage, "404 - Not Found", "", 404, state, {}, depth);
 }
 
 export function serveStatic(pathname: string): Response | null {

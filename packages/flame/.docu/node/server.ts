@@ -15,6 +15,7 @@ import {
   serverErrorResponse,
   type ServerState,
 } from "./server-routes";
+import { SECURITY_HEADERS, cspHeader, generateNonce } from "./security";
 
 const docuConfig = loadDocuConfig();
 
@@ -107,13 +108,30 @@ const server = Bun.serve({
         hostname: server.hostname!,
       });
       if (pluginResponse) {
+        // Wrap plugin response with security headers.
+        // Plugin's own headers take precedence over defaults.
+        const securedHeaders = new Headers(pluginResponse.headers);
+        for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+          if (!securedHeaders.has(key)) {
+            securedHeaders.set(key, value);
+          }
+        }
+        const contentType = securedHeaders.get("Content-Type") || "";
+        if (contentType.includes("text/html") && !securedHeaders.has("Content-Security-Policy")) {
+          securedHeaders.set("Content-Security-Policy", cspHeader(generateNonce(), true));
+        }
+        const securedResponse = new Response(pluginResponse.body, {
+          status: pluginResponse.status,
+          statusText: pluginResponse.statusText,
+          headers: securedHeaders,
+        });
         logger.request(
           req.method,
           pathname,
-          pluginResponse.status,
+          securedResponse.status,
           Math.round(performance.now() - startTime)
         );
-        return pluginResponse;
+        return securedResponse;
       }
     }
 
