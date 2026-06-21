@@ -1,5 +1,19 @@
 # @docubook/flame
 
+## 1.3.3
+
+### Patch Changes
+
+- [#235](https://github.com/DocuBook/docubook/pull/235) [`1bfd09b`](https://github.com/DocuBook/docubook/commit/1bfd09bbcd080f3bace573519b58bbfed4e3f855) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - fix(flame): add security headers to plugin handleRequest + fix dev server asset depth
+
+  - Plugin `handleRequest` responses now auto-inject security headers
+    (`Strict-Transport-Security`, `X-Frame-Options`, `X-Content-Type-Options`,
+    `Referrer-Policy`, `Permissions-Policy`) and `Content-Security-Policy` for
+    HTML responses. Plugin's own headers take precedence over defaults.
+  - Dev server now passes correct `depth` to `htmlShell`, fixing broken
+    CSS/JS asset paths on nested docs pages (e.g. `/docs/getting-started/introduction`
+    was requesting `assets/client.css` → wrong path instead of `../../assets/client.css`).
+
 ## 1.3.2
 
 ### Patch Changes
