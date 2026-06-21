@@ -17,7 +17,7 @@
       "actions": [
         {
           "text": "Get Started",
-          "link": "/docs/getting-started/introduction",
+          "link": "/docs",
           "theme": "primary"
         },
         {

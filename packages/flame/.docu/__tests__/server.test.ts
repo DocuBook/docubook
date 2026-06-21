@@ -264,3 +264,214 @@ describe("server: error handling", () => {
     expect(res.headers.get("Content-Security-Policy")).toContain("default-src 'none'");
   });
 });
+
+// ─── Plugin Security Header Wrapping ────────────────────
+//
+// Tests the plugin handleRequest response wrapping logic from server.ts (lines ~113-127).
+// Because server.ts has module-level side effects (Bun.build, watcher, config loading),
+// we test the pure wrapper function in isolation.
+
+interface PluginResponse {
+  status: number;
+  statusText?: string;
+  headers: Headers;
+  body: BodyInit | null;
+}
+
+/**
+ * Simulates the plugin response security header wrapping from server.ts.
+ *
+ * Logic:
+ * 1. Start with plugin's original headers
+ * 2. Apply SECURITY_HEADERS defaults — but only where plugin hasn't set a value
+ * 3. For HTML responses, also add Content-Security-Policy (with nonce + unsafe-eval)
+ * 4. Preserve plugin body, status, and statusText unchanged
+ */
+function wrapPluginResponse(pluginResponse: PluginResponse): Response {
+  const securedHeaders = new Headers(pluginResponse.headers);
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    if (!securedHeaders.has(key)) {
+      securedHeaders.set(key, value);
+    }
+  }
+  const contentType = securedHeaders.get("Content-Type") || "";
+  if (contentType.includes("text/html") && !securedHeaders.has("Content-Security-Policy")) {
+    securedHeaders.set("Content-Security-Policy", cspHeader(generateNonce(), true));
+  }
+  return new Response(pluginResponse.body, {
+    status: pluginResponse.status,
+    statusText: pluginResponse.statusText,
+    headers: securedHeaders,
+  });
+}
+
+function createPluginResponse(overrides?: {
+  status?: number;
+  statusText?: string;
+  headers?: Record<string, string>;
+  body?: BodyInit | null;
+}): PluginResponse {
+  return {
+    status: 200,
+    statusText: "OK",
+    headers: new Headers({}),
+    body: "plugin body",
+    ...overrides,
+    headers: new Headers(overrides?.headers ?? {}),
+  };
+}
+
+describe("server: plugin security header wrapping", () => {
+  it("adds all SECURITY_HEADERS when plugin response has no headers", () => {
+    const res = wrapPluginResponse(createPluginResponse({ headers: {} }));
+
+    expect(res.headers.get("Strict-Transport-Security")).toBe(
+      "max-age=63072000; includeSubDomains; preload"
+    );
+    expect(res.headers.get("X-Frame-Options")).toBe("DENY");
+    expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
+    expect(res.headers.get("Referrer-Policy")).toBe("strict-origin-when-cross-origin");
+    expect(res.headers.get("Permissions-Policy")).toBe("camera=(), microphone=(), geolocation=()");
+  });
+
+  it("preserves plugin headers when they overlap with SECURITY_HEADERS (plugin wins)", () => {
+    const res = wrapPluginResponse(
+      createPluginResponse({
+        headers: {
+          "X-Frame-Options": "SAMEORIGIN",
+          "X-Content-Type-Options": "nosniff",
+          "Custom-Header": "custom-value",
+        },
+      })
+    );
+
+    // Plugin's X-Frame-Options takes precedence over SECURITY_HEADERS default of DENY
+    expect(res.headers.get("X-Frame-Options")).toBe("SAMEORIGIN");
+    // X-Content-Type-Options same value, but still from plugin
+    expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
+    // Custom plugin headers are preserved
+    expect(res.headers.get("Custom-Header")).toBe("custom-value");
+    // Non-overlapping SECURITY_HEADERS are still applied
+    expect(res.headers.get("Strict-Transport-Security")).toContain("max-age=");
+    expect(res.headers.get("Referrer-Policy")).toBe("strict-origin-when-cross-origin");
+    expect(res.headers.get("Permissions-Policy")).toContain("camera=()");
+  });
+
+  it("adds Content-Security-Policy for HTML plugin responses", () => {
+    const res = wrapPluginResponse(
+      createPluginResponse({
+        headers: { "Content-Type": "text/html" },
+        body: "<html><body>plugin page</body></html>",
+      })
+    );
+
+    const csp = res.headers.get("Content-Security-Policy");
+    expect(csp).toBeTruthy();
+    expect(csp).toContain("default-src 'self'");
+    expect(csp).toContain("frame-ancestors 'none'");
+    // unsafe-eval is included because server.ts passes allowEval=true for dev server
+    expect(csp).toContain("unsafe-eval");
+    // Nonce is present and valid UUID
+    const nonceMatch = csp!.match(/'nonce-([a-f0-9-]+)'/);
+    expect(nonceMatch).not.toBeNull();
+    expect(nonceMatch![1]).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+    );
+  });
+
+  it("does NOT add Content-Security-Policy for non-HTML plugin responses", () => {
+    const res = wrapPluginResponse(
+      createPluginResponse({
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ok: true }),
+      })
+    );
+
+    expect(res.headers.get("Content-Security-Policy")).toBeNull();
+  });
+
+  it("does NOT add Content-Security-Policy for text/plain responses", () => {
+    const res = wrapPluginResponse(
+      createPluginResponse({
+        headers: { "Content-Type": "text/plain" },
+        body: "plain text",
+      })
+    );
+
+    expect(res.headers.get("Content-Security-Policy")).toBeNull();
+  });
+
+  it("does NOT override plugin's existing Content-Security-Policy", () => {
+    const res = wrapPluginResponse(
+      createPluginResponse({
+        headers: {
+          "Content-Type": "text/html",
+          "Content-Security-Policy": "default-src 'none'",
+        },
+      })
+    );
+
+    // Plugin's CSP is preserved, not replaced with generated one
+    expect(res.headers.get("Content-Security-Policy")).toBe("default-src 'none'");
+  });
+
+  it("preserves plugin body, status, and statusText unchanged", () => {
+    const body = "<html><body>Custom plugin content</body></html>";
+    const res = wrapPluginResponse(
+      createPluginResponse({
+        status: 201,
+        statusText: "Created",
+        headers: { "Content-Type": "text/html" },
+        body,
+      })
+    );
+
+    expect(res.status).toBe(201);
+    expect(res.statusText).toBe("Created");
+    return res.text().then((text) => {
+      expect(text).toBe(body);
+    });
+  });
+
+  it("handles empty/null body plugin responses", () => {
+    const res = wrapPluginResponse(
+      createPluginResponse({
+        status: 204,
+        statusText: "No Content",
+        headers: {},
+        body: null,
+      })
+    );
+
+    expect(res.status).toBe(204);
+    expect(res.statusText).toBe("No Content");
+    // Should still have security headers
+    expect(res.headers.get("X-Frame-Options")).toBe("DENY");
+  });
+
+  it("adds CSP for HTML responses with charset in Content-Type", () => {
+    const res = wrapPluginResponse(
+      createPluginResponse({
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      })
+    );
+
+    expect(res.headers.get("Content-Security-Policy")).toContain("default-src 'self'");
+  });
+
+  it("preserves plugin headers case-insensitively (Headers API handles casing)", () => {
+    const res = wrapPluginResponse(
+      createPluginResponse({
+        headers: {
+          "x-frame-options": "SAMEORIGIN",
+          "CONTENT-TYPE": "text/html",
+        },
+      })
+    );
+
+    // Headers API normalizes casing — plugin's lowercase X-Frame-Options still wins
+    expect(res.headers.get("X-Frame-Options")).toBe("SAMEORIGIN");
+    // CSP should be added because our code checks !has() which is case-insensitive in Headers API
+    expect(res.headers.get("Content-Security-Policy")).toBeTruthy();
+  });
+});
