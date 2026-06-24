@@ -1,5 +1,16 @@
 # @docubook/flame
 
+## 1.3.4
+
+### Patch Changes
+
+- [#237](https://github.com/DocuBook/docubook/pull/237) [`0e46c0d`](https://github.com/DocuBook/docubook/commit/0e46c0da60dbc27c23f4b5defecc5eb4e6afb3c3) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Add sanitization warning and runtime type guard for injectHead/injectBody plugin hooks
+
+  - Add JSDoc `⚠️` sanitization warning on `injectHead` and `injectBody` methods
+    in PluginBuilder interface
+  - Add runtime type guard in `collectBody` and `collectHead` to validate return
+    values are `string | string[]`, rejecting non-strings with `console.warn`
+
 ## 1.3.3
 
 ### Patch Changes
