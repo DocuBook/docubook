@@ -52,11 +52,7 @@ export class BuildPluginBuilder implements PluginBuilder {
       try {
         const result = cb(context);
         if (result) {
-          if (Array.isArray(result)) {
-            items.push(...result);
-          } else {
-            items.push(result);
-          }
+          this.collectItems(items, result, "injectBody");
         }
       } catch (err) {
         throw new Error(
@@ -83,11 +79,7 @@ export class BuildPluginBuilder implements PluginBuilder {
       try {
         const result = cb(context);
         if (result) {
-          if (Array.isArray(result)) {
-            items.push(...result);
-          } else {
-            items.push(result);
-          }
+          this.collectItems(items, result, "injectHead");
         }
       } catch (err) {
         throw new Error(
@@ -461,5 +453,29 @@ export class BuildPluginBuilder implements PluginBuilder {
    */
   transformHtml(callback: (html: string, context: PageContext) => Awaitable<string>): void {
     this._transformHtml.push(callback);
+  }
+
+  /**
+   * Collect items from a callback result, filtering only valid strings.
+   * Non-string items and unexpected types are logged as warnings.
+   */
+  private collectItems(items: string[], result: string | string[], hookName: string): void {
+    if (Array.isArray(result)) {
+      for (const item of result) {
+        if (typeof item === "string") {
+          items.push(item);
+        } else {
+          console.warn(
+            `[plugin] ${hookName} callback returned non-string item (got ${typeof item}), skipping`
+          );
+        }
+      }
+    } else if (typeof result === "string") {
+      items.push(result);
+    } else {
+      console.warn(
+        `[plugin] ${hookName} callback returned unexpected type (got ${typeof result}), expected string or string[], skipping`
+      );
+    }
   }
 }

@@ -194,6 +194,41 @@ describe("BuildPluginBuilder — Execution", () => {
       builder.injectHead(() => ["<meta a>", "<meta b>"]);
       expect(builder.collectHead(noCtx)).toEqual(["<meta a>", "<meta b>"]);
     });
+
+    it("skips non-string items in array with warning", () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      builder.injectBody(() => ["<div>", 42, "</div>"] as any);
+      expect(builder.collectBody(noCtx)).toEqual(["<div>", "</div>"]);
+      expect(warn).toHaveBeenCalledWith(
+        "[plugin] injectBody callback returned non-string item (got number), skipping"
+      );
+      warn.mockRestore();
+    });
+
+    it("skips non-string non-array result with warning", () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      builder.injectHead(() => 42 as any);
+      expect(builder.collectHead(noCtx)).toEqual([]);
+      expect(warn).toHaveBeenCalledWith(
+        "[plugin] injectHead callback returned unexpected type (got number), expected string or string[], skipping"
+      );
+      warn.mockRestore();
+    });
+
+    it("skips object result with warning", () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      builder.injectBody(() => ({}) as any);
+      expect(builder.collectBody(noCtx)).toEqual([]);
+      expect(warn).toHaveBeenCalledWith(
+        "[plugin] injectBody callback returned unexpected type (got object), expected string or string[], skipping"
+      );
+      warn.mockRestore();
+    });
+
+    it("keeps strings in mixed array, skips non-strings", () => {
+      builder.injectHead(() => ["<meta a>", 1, "<meta b>", {}, null] as any);
+      expect(builder.collectHead(noCtx)).toEqual(["<meta a>", "<meta b>"]);
+    });
   });
 
   describe("collectRemarkPlugins / collectRehypePlugins", () => {
