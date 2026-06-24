@@ -53,9 +53,21 @@ export class BuildPluginBuilder implements PluginBuilder {
         const result = cb(context);
         if (result) {
           if (Array.isArray(result)) {
-            items.push(...result);
-          } else {
+            for (const item of result) {
+              if (typeof item === "string") {
+                items.push(item);
+              } else {
+                console.warn(
+                  `[plugin] injectBody callback returned non-string item (got ${typeof item}), skipping`
+                );
+              }
+            }
+          } else if (typeof result === "string") {
             items.push(result);
+          } else {
+            console.warn(
+              `[plugin] injectBody callback returned unexpected type (got ${typeof result}), expected string or string[], skipping`
+            );
           }
         }
       } catch (err) {
@@ -84,9 +96,21 @@ export class BuildPluginBuilder implements PluginBuilder {
         const result = cb(context);
         if (result) {
           if (Array.isArray(result)) {
-            items.push(...result);
-          } else {
+            for (const item of result) {
+              if (typeof item === "string") {
+                items.push(item);
+              } else {
+                console.warn(
+                  `[plugin] injectHead callback returned non-string item (got ${typeof item}), skipping`
+                );
+              }
+            }
+          } else if (typeof result === "string") {
             items.push(result);
+          } else {
+            console.warn(
+              `[plugin] injectHead callback returned unexpected type (got ${typeof result}), expected string or string[], skipping`
+            );
           }
         }
       } catch (err) {

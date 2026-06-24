@@ -167,6 +167,9 @@ export interface PluginBuilder {
    * Register a callback that returns HTML strings to inject inside `<head>`.
    * Results from all plugins are merged and deduplicated.
    *
+   * ⚠️ Sanitize any user-controlled or external data before injecting.
+   * Plugin-provided strings are injected raw into the final HTML.
+   *
    * Use for: analytics snippets, meta tags, stylesheet links.
    *
    * @param callback - Returns a single HTML string or an array. Called once per page.
@@ -181,6 +184,9 @@ export interface PluginBuilder {
   /**
    * Register a callback that returns HTML strings to inject before `</body>`.
    * Results from all plugins are merged and deduplicated.
+   *
+   * ⚠️ Sanitize any user-controlled or external data before injecting.
+   * Plugin-provided strings are injected raw into the final HTML.
    *
    * Use for: chat widgets, live-script loaders, deferred scripts.
    *
