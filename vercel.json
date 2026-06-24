@@ -1,4 +1,6 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "ignoreCommand": "if [ \"$VERCEL_ENV\" != \"production\" ]; then exit 0; else exit 1; fi",
   "buildCommand": "turbo build --filter=@docubook/web...",
   "outputDirectory": "apps/web/.next",
   "installCommand": "pnpm install --filter=@docubook/web...",
