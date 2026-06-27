@@ -25,7 +25,7 @@ You are working on the DocuBook monorepo. Follow these guidelines:
 - **No new dependencies** if stdlib or existing dep suffices. flame uses Bun stdlib (no Express/koa). CLI uses Commander 12.
 - **React 19.2** — all packages must stay compatible. Overrides in root `pnpm-workspace.yaml`.
 - **TypeScript** — strict mode. Tests use Vitest 4 + jsdom.
-- **Lint**: ESLint 9 flat config + perfectionist. Prettier 3 + Tailwind plugin. Husky 9 + commitlint enforces conventional commits.
+- **Lint**: ESLint 9 flat config + perfectionist. Prettier 3 + Tailwind plugin. Husky 9 + commitlint enforce conventional commits.
 - **CI**: GitHub Actions matrix (lint, typecheck, build, test). `pnpm --frozen-lockfile`. Bun for flame builds.
 
 ### Packages Detail
@@ -97,7 +97,7 @@ Build pipeline (flame):
 
 ### Build & CI
 
-- Root: `pnpm build` runs `turbo build` (cached, content-hash based).
+- Root: `pnpm build` runs `turbo build` (cached, content-hash-based).
 - flame builds need Bun: `cd packages/flame && NODE_ENV=production bun .docu/node/build.ts`
 - CI: GitHub Actions matrix — lint (all), typecheck (all), build (all), test (all).
 - All must pass before merge. Conventional commits enforced via commitlint.
@@ -124,7 +124,7 @@ You are reviewing a PR / code change in the DocuBook monorepo. Evaluate against 
    - Template/Adapters → respective template packages
 
 2. **Framework coupling**: flame code must NOT depend on Next.js or vice versa.
-   `@docubook/mdx-content` adapters (`./next`) are the only cross-framework bridge.
+   `@docubook/mdx-content` adapter (`./next`) is the only cross-framework bridge.
 
 3. **Shared MDX pipeline**: If adding remark/rehype plugins, add them to `@docubook/core`
    or via flame plugin system (`rehypePlugins`/`remarkPlugins` hooks), not per-framework.
