@@ -112,8 +112,9 @@ async function renderDocsPage(
     });
   }
 
-  const title = (frontmatter.title as string) || slug || "Docs";
-  const description = (frontmatter.description as string) || "";
+  const title = (typeof frontmatter.title === "string" ? frontmatter.title : "") || slug || "Docs";
+  const description =
+    (typeof frontmatter.description === "string" ? frontmatter.description : "") || "";
   const slugParts = slug ? slug.split("/") : [];
 
   const page = React.createElement(

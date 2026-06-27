@@ -365,6 +365,8 @@ export class BuildPluginBuilder implements PluginBuilder {
    * Each callback receives the **previous** callback's return value (or the
    * original frontmatter for the first). Callbacks that return `undefined` or
    * `null` pass the current value through unchanged.
+   * Callbacks that return a non-object (string, number, array) are skipped
+   * with a console warning — only plain objects are accepted.
    * Errors inside individual callbacks are caught and logged — the current
    * frontmatter passes through unchanged for that step.
    *
@@ -381,7 +383,13 @@ export class BuildPluginBuilder implements PluginBuilder {
       try {
         const next = await this._transformFrontmatter[i](result, context);
         if (next !== undefined && next !== null) {
-          result = next;
+          if (typeof next === "object" && !Array.isArray(next)) {
+            result = next;
+          } else {
+            console.warn(
+              `[plugin] transformFrontmatter callback #${i + 1} returned invalid type (expected a plain object), skipping`
+            );
+          }
         }
       } catch (err) {
         console.error(
@@ -421,6 +429,10 @@ export class BuildPluginBuilder implements PluginBuilder {
    * Register a callback to mutate frontmatter before MDX compilation.
    * Callbacks are chained in a waterfall: the return value of one is passed
    * as input to the next. Return `undefined` to pass through unchanged.
+   *
+   * **Note:** Only plain objects are accepted as return values. Returning
+   * a string, number, or array will be silently skipped with a warning.
+   * Plugin authors should validate their return values before returning.
    *
    * @param callback - Receives frontmatter object and page context.
    *

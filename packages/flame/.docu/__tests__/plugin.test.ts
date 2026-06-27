@@ -156,6 +156,33 @@ describe("BuildPluginBuilder — Execution", () => {
       );
       expect(result).toEqual({ original: true });
     });
+
+    it("skips array return with warning", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      builder.transformFrontmatter(() => [] as any);
+      const result = await builder.runTransformFrontmatterChain({ key: "val" }, pageCtxFor("test"));
+      expect(result).toEqual({ key: "val" });
+      expect(warn).toHaveBeenCalledWith(expect.stringMatching(/invalid type.*skipping/));
+      warn.mockRestore();
+    });
+
+    it("skips string return with warning", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      builder.transformFrontmatter(() => "oops" as any);
+      const result = await builder.runTransformFrontmatterChain({ key: "val" }, pageCtxFor("test"));
+      expect(result).toEqual({ key: "val" });
+      expect(warn).toHaveBeenCalledWith(expect.stringMatching(/invalid type.*skipping/));
+      warn.mockRestore();
+    });
+
+    it("skips numeric return with warning", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      builder.transformFrontmatter(() => 42 as any);
+      const result = await builder.runTransformFrontmatterChain({ key: "val" }, pageCtxFor("test"));
+      expect(result).toEqual({ key: "val" });
+      expect(warn).toHaveBeenCalledWith(expect.stringMatching(/invalid type.*skipping/));
+      warn.mockRestore();
+    });
   });
 
   describe("runTransformHtmlChain", () => {
