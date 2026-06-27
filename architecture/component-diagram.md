@@ -13,7 +13,7 @@
 │  │                                                                                │
 │  │  ┌──────────────────────────┐       ┌──────────────────────────────────────┐   │
 │  │  │     @docubook/core       │       │        @docubook/mdx-content         │   │
-│  │  │        (v1.7.0)          │       │           (v3.2.1)                   │   │
+│  │  │        (v1.7.2)          │       │           (v3.2.2)                   │   │
 │  │  │                          │       │                                      │   │
 │  │  │  • MDX compile pipeline  │       │  • 18+ Portable React components     │   │
 │  │  │  • serialize / MDXRemote │       │  • Framework adapters:               │   │
@@ -27,7 +27,7 @@
 │  │  └──────────────────────────┘                                                  │
 │  │                                                                                │
 │  │  ┌──────────────────────────────────────────────────────────────────────────┐  │
-│  │  │                   @docubook/ui-react (v0.x)                              │  │
+│  │  │                   @docubook/ui-react (v0.1.4)                            │  │
 │  │  │                                                                          │  │
 │  │  │  Reusable DaisyUI 5 + Tailwind CSS 4 React component library             │  │
 │  │  │  • Collapse / Accordion       • Drawer                                   │  │
@@ -38,20 +38,31 @@
 │  │  │  • Breadcrumb                 • ...                                      │  │
 │  │  └──────────────────────────────────────────────────────────────────────────┘  │
 │  │                                                                                │
+│  │  ┌──────────────────────────────────────────────────────────────────────────┐  │
+│  │  │              @docubook/themes-colors (v0.10.2)                           │  │
+│  │  │                                                                          │  │
+│  │  │  Theme color presets + color utilities                                   │  │
+│  │  │  • 3 presets: default, freshlime, coffee                                 │  │
+│  │  │  • 24 CSS variables per mode (light/dark)                                │  │
+│  │  │  • Syntax highlighting token colors                                      │  │
+│  │  │  • Config-driven via `docu.json → theme.colors`                          │  │
+│  │  └──────────────────────────────────────────────────────────────────────────┘  │
+│  │                                                                                │
 │  └────────────────────────────────────────────────────────────────────────────────┘
 │                                                                                   │
 │  ┌────────────────────── Consumer Frameworks ─────────────────────────────────────┐
 │  │                                                                                │
 │  │  ┌────────────────────┐  ┌────────────────────┐  ┌─────────────────────────┐   │
 │  │  │   @docubook/flame  │  │     apps/web       │  │  packages/template/     │   │
-│  │  │   (v1.1.0)         │  │     (v1.0.0)       │  │  nextjs (v1.0.0)        │   │
+│  │  │   (v1.3.5)         │  │     (v1.0.0)       │  │  nextjs (v1.0.0)        │   │
 │  │  │                    │  │                    │  │  nextjs-docker          │   │
 │  │  │  Bun SSG           │  │  Production site   │  │                         │   │
-│  │  │  DaisyUI 5         │  │  Next.js 16        │  │  Starter kits for       │   │
-│  │  │  CDN deploy        │  │  Radix UI/shadcn   │  │  end users              │   │
-│  │  │  Island hydration  │  │  Algolia DocSearch │  │  Vercel / Docker        │   │
-│  │  │  HMR via SSE       │  │  Geist font        │  │                         │   │
-│  │  │  Sentry (optional) │  │  Sonner toasts     │  │                         │   │
+│  │  │  Plugin system     │  │  Next.js 16        │  │  Starter kits for       │   │
+│  │  │  DaisyUI 5         │  │  Radix UI/shadcn   │  │  end users              │   │
+│  │  │  CDN deploy        │  │  Algolia DocSearch │  │  Vercel / Docker        │   │
+│  │  │  Island hydration  │  │  Geist font        │  │                         │   │
+│  │  │  HMR via SSE       │  │  Sonner toasts     │  │                         │   │
+│  │  │  Sentry (optional) │  │                    │  │                         │   │
 │  │  └────────────────────┘  └────────────────────┘  └─────────────────────────┘   │
 │  │                                                                                │
 │  │  ┌───────────────────────────────────────────────────────────────────────────┐ │
@@ -92,12 +103,13 @@
 | `@docubook/core` | MDX compilation pipeline — remark/rehype plugins, frontmatter extraction, TOC generation, code block processing, content service (`createMdxContentService`) | All frameworks |
 | `@docubook/mdx-content` | Portable MDX React components (Accordion, Tabs, CodeBlock, Note, Card, FileTree, Image, Link, Table, Stepper, Youtube, Tooltip, Button, Release, Kbd) with framework-specific adapters | All frameworks |
 | `@docubook/ui-react` | Reusable DaisyUI 5 + Tailwind CSS 4 React component library — Collapse, Modal, Dropdown, Drawer, Input, Kbd, Navbar, Pagination, Toggle, ThemeController, Breadcrumbs. Consumed by flame app components and registry. | All DaisyUI-based frameworks (flame, react-router) |
+| `@docubook/themes-colors` | Theme color presets (default, freshlime, coffee) + color utilities — 24 CSS variables per mode + syntax highlighting tokens | flame (config-driven via `docu.json → theme.colors`) |
 
 ### Consumer Frameworks
 
 | Component | Responsibility | Deployment |
 |-----------|---------------|------------|
-| `@docubook/flame` | Bun-powered SSG framework — fs-scanner, incremental build (content hashing + build cache + concurrency), static HTML generation, client-side hydration (createRoot + hydrateRoot), hierarchy-based search index, optional Sentry error tracking, homepage sections (Hero, Features), plugin system (planned) | CDN (any static host, GitHub Pages) |
+| `@docubook/flame` | Bun-powered SSG framework — fs-scanner, incremental build (content hashing + build cache + concurrency), plugin system (10 hooks), static HTML generation, client-side hydration (createRoot + hydrateRoot), hierarchy-based search index, optional Sentry error tracking, homepage sections (Hero, Features) | CDN (any static host, GitHub Pages) |
 | `apps/web` | Production documentation site (docubook.pro) — Next.js App Router 16, Algolia DocSearch, Radix UI, Geist font | Vercel |
 | `packages/template/nextjs` | Starter template for Vercel deployment — Next.js 16, Radix UI, framer-motion | Vercel |
 | `packages/template/nextjs-docker` | Starter template for self-hosted Docker deployment | Docker/any host |
@@ -205,49 +217,65 @@
         └── assets/images/
 ```
 
-## Flame Plugin System (Planned)
+## Flame Plugin System
 
-Plugin system implemented at `.docu/node/plugin.ts` (interface) and `.docu/node/plugin-builder.ts` (runner). Provides a hook-based extensibility interface for the flame build pipeline and dev server.
+Plugin system implemented at `.docu/node/plugin.ts` (interface), `.docu/node/plugin-loader.ts` (loader), and `.docu/node/plugin-builder.ts` (runner). Provides 10 hook-based integration points for the flame build pipeline and dev server.
 
-### Plugin Interface
+### Plugin Interface (`DocuBookPlugin`)
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `name` | `string` | Unique plugin identifier |
+| `setup(build: PluginBuilder)` | `void \| Promise<void>` | Register lifecycle hooks |
 
 | Hook | Phase | Purpose |
 |------|-------|---------|
-| `buildStart(config)` | Build start | Setup resources, validate config |
-| `buildEnd(config, pages)` | Build end | Generate sitemaps, manifests |
-| `transformFrontmatter(fm, ctx)` | Per page | Mutate frontmatter before MDX compilation |
-| `transformHtml(html, ctx)` | Per page | Transform final HTML string |
-| `injectHead(ctx)` | Per page | Inject HTML into `<head>` |
-| `injectBody(ctx)` | Per page | Inject HTML before `</body>` |
+| `onStart(config)` | Build start | Setup resources, validate config |
+| `onEnd(config, pages)` | Build end | Generate sitemaps, manifests |
+| `onLoad({filter, namespace?}, callback)` | Per file | Transform file before MDX compile (regex-filtered, first match wins) |
+| `transformFrontmatter(fm, ctx)` | Per page | Waterfall chain — mutate frontmatter before MDX compilation |
+| `transformHtml(html, ctx)` | Per page | Pipeline — transform final HTML string |
+| `injectHead(ctx)` | Per page | Inject HTML strings into `<head>` (collected, deduped) |
+| `injectBody(ctx)` | Per page | Inject HTML strings before `</body>` (collected, deduped) |
 | `remarkPlugins()` | Per page | Append remark plugins to MDX pipeline |
 | `rehypePlugins()` | Per page | Append rehype plugins to MDX pipeline |
-| `handleRequest(req, ctx)` | Dev server | Short-circuit request handling |
+| `handleRequest(req, ctx)` | Dev server | Short-circuit request handling (first Response wins) |
 
 ### Integration Points
 
 ```
 build()                              server.fetch(req)
-├─ plugin.buildStart(config)         ├─ plugin.handleRequest(req)
-├─ for each MDX:                     ├─ HMR / static / router
-│  ├─ plugin.transformFrontmatter()  ├─ renderDocsPage()
-│  ├─ plugin.remarkPlugins()        │  └─ same hooks as build
-│  ├─ plugin.rehypePlugins()        └─ response
-│  ├─ plugin.injectHead()
-│  ├─ plugin.injectBody()
-│  └─ plugin.transformHtml()
-└─ plugin.buildEnd(config, pages)
+├─ loadPlugins(config.plugins)       ├─ builder.runHandleRequest(req)
+├─ builder.runOnStart()              │  └─ wrap plugin Response with security headers
+├─ buildClientBundle()               ├─ HMR / static / router
+├─ for each MDX (CONCURRENCY=4):    ├─ getDocsForSlug()
+│  ├─ runOnLoad(path, content)     │  └─ onLoad → transformFrontmatter →
+│  ├─ builder.runTransformFm()      │     compileMdx → injectHead/Body →
+│  ├─ builder.remarkPlugins()       │     transformHtml + htmlResponse(nonce)
+│  ├─ builder.rehypePlugins()       └─ response
+│  ├─ builder.injectHead()
+│  ├─ builder.injectBody()
+│  ├─ builder.transformHtml()
+│  └─ builder.runOnEnd(pages)
+├─ generateSearchIndex()
+└─ writeCache()
 ```
 
-### Files to Create (Phase 1)
+### Plugin Resolution
+
+| Pattern | Example | Resolution |
+|---------|---------|------------|
+| npm package | `"@docubook/plugin-sitemap"` | `import()` |
+| Relative path | `"./plugins/local-reading-time"` | Resolve from project root (traversal guard) |
+| Factory | `["name", {options}]` | Exported function receives options, returns `DocuBookPlugin` |
+| Object | `{ name, setup }` default export | Duck-typed as `DocuBookPlugin` directly |
+
+### Test Coverage
 
 | File | Purpose |
 |------|---------|
-| `.docu/node/plugin.ts` | Plugin interface + types |
-| `.docu/node/plugin-loader.ts` | Config → plugin instances |
-| `.docu/node/plugin-runner.ts` | Hook execution engine |
-| `.docu/__tests__/plugin.test.ts` | Unit tests |
-
-See [plugin implementation](../packages/flame/.docu/node/plugin.ts) for the full interface and hooks.
+| `.docu/__tests__/plugin.test.ts` | Unit tests: lifecycle, error handling, dedup, type guard |
+| `.docu/__tests__/plugin-integration.test.ts` | Integration tests: loading, factory, invalid plugins, fixtures |
 
 ## Dependency Graph
 
@@ -278,11 +306,11 @@ See [plugin implementation](../packages/flame/.docu/node/plugin.ts) for the full
 └───────────────────────────────────────────────────────────────────┘
 
 ┌───────────────────────────────────────────────────────────────────┐
-│                     Flame Plugin System (Planned)                 │
+│                     Flame Plugin System (Implemented)             │
 │                                                                   │
 │  Third-party plugins loaded via docu.json "plugins" array         │
-│  Hooked into build pipeline at 9 integration points               │
-│  PluginRunner orchestrates sequential/waterfall execution         │
+│  Hooked into build pipeline at 10 integration points              │
+│  BuildPluginBuilder orchestrates sequential/waterfall execution   │
 │  Zero-config default — no plugins = no behavior change            │
 └───────────────────────────────────────────────────────────────────┘
 ```

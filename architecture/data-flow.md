@@ -166,8 +166,8 @@ Trigger: NODE_ENV=production bun .docu/node/build.ts
                 │
                 ▼
     ┌─────────────────────────────┐
-    │  [PLUGIN]                   │ ← plugin.buildStart(config)
-    │  setup resources, validate  │
+    │  [PLUGIN]                   │ ← builder.runOnStart()
+    │  validate, init resources   │
     └─────────────────────────────┘
                 │
                 ▼
@@ -183,21 +183,21 @@ Trigger: NODE_ENV=production bun .docu/node/build.ts
                 │
                 ▼
     ┌───────────────────────────────────────────────────┐
-    │  For each MDX file:                               │ ← CONCURRENCY parallel (default 10)
-    │   shouldRebuild?                                  │ ← check cache by path + mtime
-    │   [PLUGIN] plugin.transformFrontmatter()          │ ← mutate frontmatter
+    │  For each MDX file:                               │ ← CONCURRENCY parallel (default 4)
+    │   shouldRebuild(path, mtime, cache)?               │ ← check cache by path + mtime + content hash
+    │   [PLUGIN] builder.runOnLoad(filePath, content)      │ ← regex-filtered file transform
+    │   [PLUGIN] builder.transformFrontmatter()          │ ← waterfall chain
     │   compileMdx() with merged remark/rehype plugins  │ ← [PLUGIN] remarkPlugins() + rehypePlugins()
     │   renderToString()                                │ ← React SSR
-    │   htmlShell() with injected head/body             │ ← [PLUGIN] injectHead() + injectBody()
-    │   [PLUGIN] plugin.transformHtml()                 │ ← final HTML transform
-    │   writeFile()                                     │ ← write to dist/docs/...
-    │   update cache                                    │ ← update build-cache.json
+    │   [PLUGIN] builder.collectHead() + collectBody()   │ ← inject into htmlShell (deduped)
+    │   [PLUGIN] builder.transformHtml()                 │ ← final HTML pipeline
+    │   writeFile() with unique nonce per page           │ ← generateNonce() per page
+    │   update cache (SHA-256 hash)                      │ ← update build-cache.json
     └───────────────────────────────────────────────────┘
                 │
                 ▼
     ┌─────────────────────────────┐
-    │  Index page (/)             │ ← landing page from docu.json meta
-    │  404 page                   │
+    │  Index page (/) + 404 page  │ ← with unique nonce
     └─────────────────────────────┘
                 │
                 ▼
@@ -207,18 +207,18 @@ Trigger: NODE_ENV=production bun .docu/node/build.ts
                 │
                 ▼
     ┌─────────────────────────────┐
-    │  [PLUGIN]                   │ ← plugin.buildEnd(config, pages)
-    │  generate sitemaps, etc.    │
+    │  [PLUGIN]                   │ ← builder.runOnEnd(pages)
+    │  sitemaps, reports, etc.    │
     └─────────────────────────────┘
                 │
                 ▼
     ┌─────────────────────────────┐
     │  writeCache()               │ ← persist build-cache.json
-    │  Report errors              │ ← exit(1) if any page had errors
+    │  exit(1) if any errors      │ ← any page error = build failure
     └─────────────────────────────┘
 ```
 
-**Plugin lifecycle in build:** 9 integration points. Zero-config — no plugins = no behavior change. See the [plugin implementation](../packages/flame/.docu/node/plugin.ts).
+**Plugin lifecycle in build:** 10 integration points via `BuildPluginBuilder`. Zero-config — no plugins = no behavior change. See the [plugin implementation](../packages/flame/.docu/node/plugin.ts).
 
 ### Flame Dev Server (server.ts)
 
@@ -242,8 +242,8 @@ Trigger: bun .docu/node/server.ts
                │
         ┌──────┴──────────────────────────────┐
         ▼                                      ▼
-   [PLUGIN] plugin.handleRequest(req)    If Response → early return
-   (short-circuit opportunity)           (bypasses Flame's router)
+   [PLUGIN] builder.runHandleRequest(req)  If Response → wrap with security headers
+   (first Response wins)                  (plugin headers preserved + missing security headers added)
         │                                      │
         └──────────┬───────────────────────────┘
                    │
@@ -258,11 +258,11 @@ Trigger: bun .docu/node/server.ts
                     ▼
              ┌───────────┐
              │  Response │← htmlShell() with nonce-based CSP + HMR script
-             │           │  [PLUGIN] injectHead() + injectBody() also applied
+             │           │  [PLUGIN] collectHead() + collectBody() + transformHtml()
              └───────────┘
 ```
 
-**Plugin hooks in dev server:** Same content hooks as build (`transformFrontmatter`, `injectHead`, `injectBody`, `remarkPlugins`, `rehypePlugins`, `transformHtml`), plus `handleRequest` for custom routes/middleware.
+**Plugin hooks in dev server:** Same content hooks as build (`onLoad`, `transformFrontmatter`, `remarkPlugins`, `rehypePlugins`, `injectHead`, `injectBody`, `transformHtml`), plus `handleRequest` for custom routes/middleware. Routes extracted to `server-routes.ts`: `getDocsForSlug()` with slug safety checks, `renderDocsServerPage()` with full plugin injection, `serveStatic()` with path traversal guards against `DIST_DIR` and `DOCS_DIR/assets`.
 
 ## CLI Scaffolding Flow
 

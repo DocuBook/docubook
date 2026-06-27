@@ -122,7 +122,7 @@ Content-Security-Policy:
 | **Changeset review** | Package version bumps reviewed in PR process |
 | **Conventional commits** | Commit message format enforced by commitlint |
 
-## Plugin System Security (Planned)
+## Plugin System Security (Implemented)
 
 Flame's plugin system loads third-party code into the build pipeline and dev server via `import()`. This introduces new trust boundaries.
 
@@ -131,10 +131,10 @@ Flame's plugin system loads third-party code into the build pipeline and dev ser
 | Threat | Risk | Mitigation |
 |--------|------|------------|
 | Malicious plugin exfiltrates content | High — plugin sees all MDX content | Plugin author trust assumed (npm ecosystem); user configures plugins explicitly |
-| Malicious plugin injects malicious HTML | High — `transformHtml`, `injectHead`, `injectBody` write to output | CSP nonces mitigate XSS even with plugin injection; HTML is static and served over HTTPS |
+| Malicious plugin injects malicious HTML | High — `transformHtml`, `injectHead`, `injectBody` write to output | CSP nonces mitigate XSS even with plugin injection; runtime type guard + sanitization warning in `collectItems()` warns on non-string return values |
 | Plugin accesses file system | Medium — plugin runs with process permissions | Same trust model as any Node.js dependency; plugins are explicit in `docu.json` |
 | Plugin executes arbitrary code during build | Medium — build runs in CI environment | CI uses `--frozen-lockfile`; plugin versions pinned in `docu.json`; no dynamic plugin download |
-| Plugin `handleRequest` in dev server | Low — exposes local dev server to custom routes | Dev server is local-only by default; `handleRequest` output is served to developer only |
+| Plugin `handleRequest` in dev server | Low — exposes local dev server to custom routes | Dev server is local-only by default; `handleRequest` responses are wrapped with security headers (missing headers added, plugin headers preserved) |
 
 ### Security Boundaries
 
@@ -148,6 +148,8 @@ Flame's plugin system loads third-party code into the build pipeline and dev ser
 │  No sandbox, no isolation — plugins are trusted code       │
 │  Plugin name + source must be explicit in docu.json        │
 │  No remote plugin fetching — all plugins are local/NPM     │
+│  Path traversal guard: relative paths resolved from        │
+│  project root; `../` outside root is rejected              │
 └────────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────────┐
@@ -168,6 +170,8 @@ Flame's plugin system loads third-party code into the build pipeline and dev ser
 4. **Plugin execution is sequential** — no parallel execution that could cause race conditions
 5. **Plugin errors fail the build** — prevents silent failures from reaching production
 6. **CSP applies to plugin output** — `injectHead`/`injectBody` content passes through the same CSP nonce system as core HTML
+7. **`injectHead`/`injectBody` sanitization** — `collectItems()` logs warnings for non-string return values; `collectBody()`/`collectHead()` wrap errors with plugin name
+8. **`handleRequest` security headers** — plugin `Response` headers are preserved; missing `SECURITY_HEADERS` (HSTS, XFO, XCTO, Referrer-Policy, Permissions-Policy) are added automatically; HTML responses get CSP nonce if missing
 
 ## Authentication & Authorization
 
@@ -195,7 +199,7 @@ DocuBook is a **public documentation site** — no user authentication is requir
 
 | Defense | When | Implementation |
 |---------|------|---------------|
-| Path traversal guard | Every file read | `isPathSafe()` + `isSlugSafe()` from `security.ts` — used in `getDocsForSlug()` and `serveStatic()` in `server.ts` |
-| File access boundary | Static file serving | `isPathSafe()` checks against `DIST_DIR` and `resolve(DOCS_DIR, "assets")` |
+| Path traversal guard | Every file read | `isPathSafe()` + `isSlugSafe()` from `security.ts` — used in `getDocsForSlug()` and `serveStatic()` in `server-routes.ts`. Both use `realpathSync` for symlink resolution |
+| File access boundary | Static file serving | `isPathSafe()` checks against `DIST_DIR` and `resolve(DOCS_DIR, "assets")`; `isPathSafe()` error-handles `ENOENT` gracefully without throwing |
 | Git command injection | Git date queries | `cleanPath` regex check: `^[a-zA-Z0-9\-_/.\s]+$` and no `..` path components |
 | URL path traversal | Server routing | `pathname.startsWith()` checks before passing to file system |

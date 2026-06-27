@@ -38,7 +38,7 @@ interface BuildCache {
 - Content hash is deterministic — same content always produces same hash, regardless of filesystem state
 - mtime check is a quick first filter (avoids reading file when clearly unchanged)
 - Asset hash invalidation ensures visual consistency: if client bundle changed, every page gets the new bundle
-- Concurrency (`BUILD_CONCURRENCY`, default 10) runs page builds in parallel for maximum throughput
+- Concurrency (`BUILD_CONCURRENCY`, default 4) runs page builds in parallel for maximum throughput
 
 ## Consequences
 

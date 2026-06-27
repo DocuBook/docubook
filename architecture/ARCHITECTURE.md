@@ -12,16 +12,17 @@
 
 | Name | Role | Technology | Version | Interaction |
 |------|------|-----------|---------|-------------|
-| `@docubook/core` | MDX compilation pipeline — remark/rehype plugins, frontmatter, TOC, code blocks, content service | TypeScript, unified, remark-gfm, rehype-prism-plus | 1.7.0 | Consumed by all frameworks at build time |
-| `@docubook/mdx-content` | Portable React MDX components (Tabs, Accordion, CodeBlock, Note, FileTree, Table, Stepper, Youtube, Tooltip, Release, Kbd, Card, Link, Image) + framework adapters | React 19, TypeScript | 3.2.1 | Imported by frameworks; adapters for Next.js (`./next`), generic client (`./client`), generic server (`./server`) |
-| `@docubook/flame` | Bun-powered SSG framework — fs-scanner, incremental build (content hashing, build cache, concurrency), island hydration (mixed createRoot/hydrateRoot), HMR via SSE, hierarchy-based search index, Sentry error tracking (optional) | Bun 1.1+, React 19, DaisyUI 5, Tailwind CSS 4, Lucide React | 1.1.0 | Reads `docu.json`, imports core + mdx-content + ui-react, outputs static HTML + client bundle |
+| `@docubook/core` | MDX compilation pipeline — remark/rehype plugins, frontmatter, TOC, code blocks, content service | TypeScript, unified, remark-gfm, rehype-prism-plus | 1.7.2 | Consumed by all frameworks at build time |
+| `@docubook/mdx-content` | Portable React MDX components (Tabs, Accordion, CodeBlock, Note, FileTree, Table, Stepper, Youtube, Tooltip, Release, Kbd, Card, Link, Image) + framework adapters | React 19, TypeScript | 3.2.2 | Imported by frameworks; adapters for Next.js (`./next`), generic client (`./client`), generic server (`./server`) |
+| `@docubook/flame` | Bun-powered SSG framework — fs-scanner, incremental build (content hashing, build cache, concurrency), plugin system (10 hooks), island hydration (mixed createRoot/hydrateRoot), HMR via SSE, hierarchy-based search index, Sentry error tracking (optional) | Bun 1.1+, React 19, DaisyUI 5, Tailwind CSS 4, Lucide React | 1.3.5 | Reads `docu.json`, imports core + mdx-content + ui-react + themes-colors, outputs static HTML + client bundle |
 | `apps/web` | Production docs site (docubook.pro) — Next.js App Router, Algolia DocSearch, Radix UI + shadcn/ui | Next.js 16, React 19.2, Geist font, Sonner | 1.0.0 | Deployed on Vercel; imports core + mdx-content |
 | `packages/template/nextjs` | Starter template for Vercel deployment | Next.js 16, App Router, Tailwind CSS 4, Radix UI, framer-motion | 1.0.0 | Distributed via CLI; imports core + mdx-content |
 | `packages/template/nextjs-docker` | Starter template for self-hosted Docker deployment | Next.js 16, Docker multi-stage Alpine | — | Dockerfile + template config for containerized deployment |
-| `@docubook/ui-react` | Reusable DaisyUI 5 + Tailwind CSS 4 React component library — Collapse, Modal, Dropdown, Drawer, Input, Kbd, Navbar, Pagination, Toggle, ThemeController, Breadcrumbs | React 19, DaisyUI 5, Tailwind CSS 4, Lucide React | 0.1.3 | Consumed by flame app components and registry |
+| `@docubook/ui-react` | Reusable DaisyUI 5 + Tailwind CSS 4 React component library — Collapse, Modal, Dropdown, Drawer, Input, Kbd, Navbar, Pagination, Toggle, ThemeController, Breadcrumbs | React 19, DaisyUI 5, Tailwind CSS 4, Lucide React | 0.1.4 | Consumed by flame app components and registry |
 | `packages/template/react-router` | React Router v6 SSR framework (planned — detailed plan at `packages/template/react-router/plan.md`) | Vite, React Router v6, DaisyUI 5, Tailwind CSS 4, Node.js | — | Planned: SSR with loaders, cookie-based theme, server-side search resource routes |
 | `@docubook/cli` | Scaffolding tool — template selection (via prompts), project init, dependency install | Node.js ≥18, Commander 12, prompts, tar, boxen, chalk, ora | 0.6.1 | Downloads templates from GitHub release artifacts; detects package manager |
 | Turborepo | Build orchestration — content-hash caching, parallel task execution, DAG scheduling | Turborepo 2.9 | — | Orchestrates `build`, `lint`, `typecheck`, `test` across workspace |
+| `@docubook/themes-colors` | Theme color presets + color utilities — 3 presets (default, freshlime, coffee) with 24 CSS variables per mode + syntax highlighting tokens | TypeScript | 0.10.2 | Consumed by flame for config-driven theme via `docu.json → theme.colors` |
 | Changesets | Package versioning and changelog generation | @changesets/cli | — | Independent version bumps per package with conventional commits |
 | Vitest | Unit and integration testing | Vitest 4, jsdom | — | Tests core plugins, mdx-content components, flame server, CLI |
 | Husky + commitlint | Git hooks — conventional commit enforcement, pre-commit lint-staged, pre-push validation | husky 9, commitlint 21, czg | — | commit-msg, pre-commit, pre-push hooks |
@@ -39,8 +40,17 @@
 6. **HTML generation** — Page React element rendered via `renderToString()`, wrapped in `htmlShell()` (which includes blocking theme script, security nonce, HMR script in dev). Output written to `dist/`.
 7. **Search indexing** — `search-indexer` scans all MDX files, extracts hierarchy-based records (lvl0=section, lvl1=page title, lvl2-6=headings, content=paragraphs), writes `search-index.json` to `dist/assets/`.
 8. **Client bundle** — `buildClientBundle()` uses `Bun.build()` with custom plugins (docu-config resolver, mdx-jsx-runtime resolver) + `@tailwindcss/cli` for CSS. Output is content-hashed (`client-[hash].js`, `client-[hash].css`).
-9. **Build caching** — SHA-256 content hashing per file; `build-cache.json` skips unchanged files; `--force` / `--clean` flags for full rebuild. Concurrency controlled via `BUILD_CONCURRENCY` env (default 10).
-10. **CDN deployment** — `flame deploy` runs build, adds `.nojekyll`, generates GitHub Actions workflow. Static files uploaded to CDN edge.
+9. **Build caching** — SHA-256 content hashing per file; `build-cache.json` skips unchanged files; `--force` / `--clean` flags for full rebuild. Concurrency controlled via `BUILD_CONCURRENCY` env (default 4).
+10. **Plugin loading** — `loadPlugins()` reads `docu.json.plugins` array, resolves specifiers (npm package or relative path with traversal guard), imports default export (factory or object pattern), validates `name` + `setup()`. Plugins register lifecycle callbacks via `BuildPluginBuilder`.
+11. **Plugin hooks in build** — `onStart` (pre-build setup) → `onLoad` (file transform before MDX compile, filtered by regex) → `transformFrontmatter` (waterfall chain per page) → `remarkPlugins` + `rehypePlugins` (extend MDX pipeline) → `injectHead` + `injectBody` (collect, dedup) → `transformHtml` (final HTML pipeline) → `onEnd` (post-build sitemaps).
+12. **Security per-page** — Each page gets a unique `crypto.randomUUID()` nonce via `generateNonce()`, injected into blocking theme script, client bundle script, and CSP header.
+13. **CDN deployment** — `flame deploy` runs build, adds `.nojekyll`, generates GitHub Actions workflow. Static files uploaded to CDN edge.
+
+### Flame Dev Server
+
+14. **Server startup** — Bun HTTP on configurable port (default 3000), `FileSystemRouter` for catch-all routes, HMR via SSE on `/__hmr`, file watcher on `docs/` for `.mdx`/`.md` changes.
+15. **Plugin hooks in dev** — All content hooks active (same as build) plus `handleRequest` for custom route interception. First plugin returning `Response` short-circuits; response wrapped with security headers.
+16. **Route handling** — Extracted to `server-routes.ts`: `getDocsForSlug()` with slug safety checks, `renderDocsServerPage()` with full plugin injection, `serveStatic()` with path traversal guards against `DIST_DIR` and `DOCS_DIR/assets`.
 
 ### Flame Runtime (Browser)
 
@@ -86,7 +96,7 @@ Steps 1–3 identical. Step 4 uses `generateStaticParams` from docu.json routes.
 
 **Decision 6: Incremental build with content hashing**
 **Context:** flame builds can be slow for large sites — every deploy shouldn't rebuild every page.
-**Rationale:** SHA-256 content hashing + `build-cache.json` skips unchanged pages; asset hash triggers full rebuild only when JS/CSS changes; `BUILD_CONCURRENCY` parallelizes compilation.
+**Rationale:** SHA-256 content hashing + `build-cache.json` skips unchanged pages; asset hash triggers full rebuild only when JS/CSS changes; `BUILD_CONCURRENCY` parallelizes compilation (default 4).
 **Trade-off:** Cache file must be managed between environments; first build is always full. See [ADR-007](./adrs/007-incremental-build-cache.md).
 
 **Decision 7: Dual Tailwind pipeline**
@@ -96,8 +106,9 @@ Steps 1–3 identical. Step 4 uses `generateStaticParams` from docu.json routes.
 
 **Decision 8: Plugin system — hook-based with zero-config default**
 **Context:** Users need to extend flame (sitemaps, analytics, search, custom transforms) without forking or patching internals.
-**Rationale:** Hook-based interface at 9 integration points in build + dev server covers 90%+ of extension needs. Zero-config — no plugins = no behavior change. See [ADR-009](./adrs/009-flame-plugin-system.md) and the [plugin implementation](../packages/flame/.docu/node/plugin.ts).
+**Rationale:** Hook-based interface at 10 integration points in build + dev server covers 90%+ of extension needs. Zero-config — no plugins = no behavior change. See [ADR-009](./adrs/009-flame-plugin-system.md) and the [plugin implementation](../packages/flame/.docu/node/plugin.ts).
 **Trade-off:** Plugin hooks add complexity to the build and server code paths; execution order is always sequential (no parallel hooks). Alternatives considered: (a) middleware pattern (rejected — over-engineered for <5 plugins), (b) forking (rejected — maintenance burden), (c) no extension system (rejected — users would fork anyway).
+**Status:** Implemented. Plugin interface (`DocuBookPlugin`), loader (`loadPlugins()` with path traversal guard), and runner (`BuildPluginBuilder` with waterfall execution) are shipped and tested.
 
 **Decision 9: Homepage as composable section components with `Lucide.tsx`**
 **Context:** flame's landing page (`index.tsx`) was a monolithic component. Main branch introduced structured homepage sections (Hero, Features) with configurable icons and grid patterns.
@@ -155,12 +166,12 @@ Steps 1–3 identical. Step 4 uses `generateStaticParams` from docu.json routes.
 │  • Resource routes: /api/search, /api/theme             │
 └─────────────────────────────────────────────────────────┘
 
-### Plugin System (Planned)
+### Plugin System
 
-Flame's plugin system provides hook-based extensibility at 9 integration points:
+Flame's plugin system provides hook-based extensibility at 10 integration points:
 
-**Build hooks:** `buildStart`, `transformFrontmatter`, `remarkPlugins`, `rehypePlugins`, `injectHead`, `injectBody`, `transformHtml`, `buildEnd`
-**Dev server hooks:** `handleRequest` (short-circuit) + all content hooks from build
+**Build hooks:** `onStart`, `onLoad` (filtered by regex), `transformFrontmatter` (waterfall chain), `remarkPlugins`, `rehypePlugins`, `injectHead` / `injectBody` (collect + dedup), `transformHtml` (pipeline), `onEnd`
+**Dev server hooks:** `handleRequest` (short-circuit, first Response wins) + all content hooks from build
 
 Plugin resolution: `docu.json` → `["@docubook/plugin-sitemap"]` or `["name", {options}]` → `import()` → factory/object.
 

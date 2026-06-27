@@ -10,10 +10,10 @@
 
 | Document | Description | Key Updates |
 |----------|-------------|-------------|
-| [Component Diagram](./component-diagram.md) | Blocks, responsibilities, and dependency graph — including flame internal architecture | Added homepage components (Hero, Features), centralized Lucide icon system, plugin system architecture, updated flame file tree |
-| [Data Flow](./data-flow.md) | Information movement: content pipeline, search, config, build, theme, git integration | Added plugin hooks at 9 integration points in build and dev server pipelines |
-| [Scalability & Reliability](./scalability-reliability.md) | Growth handling, failure modes, caching | Added plugin system scalability table, plugin cache considerations |
-| [Security](./security.md) | Trust boundaries, HTTP hardening, supply chain | Added plugin system threat model, security boundaries, and 6 plugin security rules |
+| [Component Diagram](./component-diagram.md) | Blocks, responsibilities, and dependency graph — including flame internal architecture | Updated versions (flame 1.3.5, core 1.7.2, mdx-content 3.2.2, ui-react 0.1.4), added themes-colors package, plugin system implemented |
+| [Data Flow](./data-flow.md) | Information movement: content pipeline, search, config, build, theme, git integration | Updated plugin hooks to 10 (added onLoad), concurrency default 4, per-page nonce, routes extracted to server-routes.ts |
+| [Scalability & Reliability](./scalability-reliability.md) | Growth handling, failure modes, caching | Updated concurrency default from 10 to 4, plugin hooks from 9 to 10 |
+| [Security](./security.md) | Trust boundaries, HTTP hardening, supply chain | Plugin system implemented with 8 security rules, sanitization warnings, handleRequest header wrapping, realpathSync for symlink guards |
 
 ## Architecture Decision Records
 
@@ -27,7 +27,7 @@
 | [ADR-006](./adrs/006-flame-island-hydration.md) | Island hydration — mixed createRoot (sidebar, MDX) + hydrateRoot (TOC, theme) |
 | [ADR-007](./adrs/007-incremental-build-cache.md) | Incremental build with SHA-256 content hashing and build-cache.json |
 | [ADR-008](./adrs/008-dual-tailwind-pipeline.md) | Dual Tailwind CSS pipeline — CLI for flame, PostCSS for Next.js |
-| [ADR-009](./adrs/009-flame-plugin-system.md) | Flame plugin system — hook-based extensibility at 9 integration points |
+| [ADR-009](./adrs/009-flame-plugin-system.md) | Flame plugin system — hook-based extensibility at 10 integration points |
 
 ## Tech Stack
 
@@ -36,7 +36,7 @@
 | **Runtime** | Node.js, Bun (flame only) | ≥20.0.0, ≥1.1.0 |
 | **Language** | TypeScript, JavaScript (CLI) | TS 5.9 |
 | **Frameworks** | Next.js (apps/web + template), React Router v6 (react-router — planned), Bun HTTP (flame dev) | Next 16, RRv6 |
-| **UI** | React, Tailwind CSS, DaisyUI (flame/react-router), Radix UI (Next.js), framer-motion (template) | React 19, TW 4, DaisyUI 5 |
+| **UI** | React, Tailwind CSS, DaisyUI (flame/react-router), Radix UI (Next.js), framer-motion (template), Lucide React | React 19, TW 4, DaisyUI 5 |
 | **Build** | Turborepo, Vite (react-router), Bun.build (flame), tsc (core/mdx-content) | Turbo 2.9 |
 | **Testing** | Vitest, jsdom, @testing-library/react | Vitest 4 |
 | **Package Management** | pnpm workspaces | pnpm 11 |
