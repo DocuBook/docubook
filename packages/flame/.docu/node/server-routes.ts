@@ -121,8 +121,12 @@ async function renderDocsServerPage(
   pathname: string,
   state: ServerState
 ): Promise<Response> {
-  const title = (doc.frontmatter.title as string) || slug.join("/") || "Docs";
-  const description = (doc.frontmatter.description as string) || "";
+  const title =
+    (typeof doc.frontmatter.title === "string" ? doc.frontmatter.title : "") ||
+    slug.join("/") ||
+    "Docs";
+  const description =
+    typeof doc.frontmatter.description === "string" ? doc.frontmatter.description : "";
 
   const page = React.createElement(
     DocsLayout,
