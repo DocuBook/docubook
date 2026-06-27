@@ -51,7 +51,7 @@ interface PluginBuilder {
 | Concern | Decision | Rationale |
 |---------|----------|-----------|
 | **Execution order** | Sequential (waterfall) — registration order | Predictability; plugin count is expected <5 |
-| **Error handling** | Errors caught per-callback, logged with plugin name, execution continues | Prevents one broken plugin from blocking others |
+| **Error handling** | Mixed: lifecycle hooks (`onStart`/`onEnd`/`onLoad`/`handleRequest`/`transform*`) catch-and-continue; collection hooks (`injectHead`/`injectBody`/`remarkPlugins`/`rehypePlugins`) throw with `cause` wrapping | Lifecycle hooks fail gracefully so one broken plugin doesn't block the build; collection hooks throw because malformed inject/plugin arrays would produce broken output |
 | **Duplicate plugins** | Allowed (user responsibility) | Simpler than dedup logic |
 | **Plugin resolution** | `import()` — npm package, relative path (traversal-guarded), or absolute path | Bun-native, path traversal prevented |
 | **Options passing** | Factory pattern: `export default function(options?)` or object pattern: `export default { name, setup }` | Both supported for flexibility |
@@ -130,7 +130,7 @@ Build Pipeline                           Dev Server (server.ts)
 
 - Plugin loading adds a synchronous startup cost (negligible — `import()` is fast for small plugins)
 - Plugin hook execution adds per-page overhead (sequential loop over <5 plugins × 10 hooks = <1ms per page)
-- Plugin errors are caught per-callback and logged (non-fatal during dev; build exits with code 1 only if MDX compilation fails)
+- Plugin error behavior is mixed: lifecycle hooks (`onStart`, `onEnd`, `onLoad`, `handleRequest`, `transformFrontmatter`, `transformHtml`) catch errors per-callback, log with plugin name, and continue; collection hooks (`injectHead`, `injectBody`, `remarkPlugins`, `rehypePlugins`) throw with `cause` wrapping because malformed output would reach production
 - Plugin system is optional — projects that don't use it pay zero cost (`BuildPluginBuilder` only instantiated when `config.plugins` is non-empty)
 - Security headers automatically applied to `handleRequest` responses (missing HSTS/XFO/XCTO/RP/PP added; HTML gets CSP nonce)
 - Future phases: extract built-in search as `@docubook/plugin-search`, add `transformRawContent` hook for reading-time

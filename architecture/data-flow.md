@@ -166,8 +166,8 @@ Trigger: NODE_ENV=production bun .docu/node/build.ts
                 │
                 ▼
     ┌─────────────────────────────┐
-    │  [PLUGIN]                   │ ← plugin.buildStart(config)
-    │  setup resources, validate  │
+    │  [PLUGIN]                   │ ← builder.runOnStart()
+    │  validate, init resources   │
     └─────────────────────────────┘
                 │
                 ▼
@@ -185,7 +185,7 @@ Trigger: NODE_ENV=production bun .docu/node/build.ts
     ┌───────────────────────────────────────────────────┐
     │  For each MDX file:                               │ ← CONCURRENCY parallel (default 4)
     │   shouldRebuild(path, mtime, cache)?               │ ← check cache by path + mtime + content hash
-    │   [PLUGIN] builder.onLoad()                        │ ← regex-filtered file transform
+    │   [PLUGIN] builder.runOnLoad(filePath, content)      │ ← regex-filtered file transform
     │   [PLUGIN] builder.transformFrontmatter()          │ ← waterfall chain
     │   compileMdx() with merged remark/rehype plugins  │ ← [PLUGIN] remarkPlugins() + rehypePlugins()
     │   renderToString()                                │ ← React SSR
@@ -207,7 +207,7 @@ Trigger: NODE_ENV=production bun .docu/node/build.ts
                 │
                 ▼
     ┌─────────────────────────────┐
-    │  [PLUGIN]                   │ ← builder.onEnd(config, pages)
+    │  [PLUGIN]                   │ ← builder.runOnEnd(pages)
     │  sitemaps, reports, etc.    │
     └─────────────────────────────┘
                 │

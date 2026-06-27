@@ -42,7 +42,7 @@
 8. **Client bundle** — `buildClientBundle()` uses `Bun.build()` with custom plugins (docu-config resolver, mdx-jsx-runtime resolver) + `@tailwindcss/cli` for CSS. Output is content-hashed (`client-[hash].js`, `client-[hash].css`).
 9. **Build caching** — SHA-256 content hashing per file; `build-cache.json` skips unchanged files; `--force` / `--clean` flags for full rebuild. Concurrency controlled via `BUILD_CONCURRENCY` env (default 4).
 10. **Plugin loading** — `loadPlugins()` reads `docu.json.plugins` array, resolves specifiers (npm package or relative path with traversal guard), imports default export (factory or object pattern), validates `name` + `setup()`. Plugins register lifecycle callbacks via `BuildPluginBuilder`.
-11. **Plugin hooks in build** — `buildStart` (pre-build setup) → `onLoad` (file transform before MDX compile, filtered by regex) → `transformFrontmatter` (waterfall chain per page) → `remarkPlugins` + `rehypePlugins` (extend MDX pipeline) → `injectHead` + `injectBody` (collect, dedup) → `transformHtml` (final HTML pipeline) → `buildEnd` (post-build sitemaps).
+11. **Plugin hooks in build** — `onStart` (pre-build setup) → `onLoad` (file transform before MDX compile, filtered by regex) → `transformFrontmatter` (waterfall chain per page) → `remarkPlugins` + `rehypePlugins` (extend MDX pipeline) → `injectHead` + `injectBody` (collect, dedup) → `transformHtml` (final HTML pipeline) → `onEnd` (post-build sitemaps).
 12. **Security per-page** — Each page gets a unique `crypto.randomUUID()` nonce via `generateNonce()`, injected into blocking theme script, client bundle script, and CSP header.
 13. **CDN deployment** — `flame deploy` runs build, adds `.nojekyll`, generates GitHub Actions workflow. Static files uploaded to CDN edge.
 

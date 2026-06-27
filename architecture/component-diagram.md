@@ -246,17 +246,17 @@ Plugin system implemented at `.docu/node/plugin.ts` (interface), `.docu/node/plu
 ```
 build()                              server.fetch(req)
 ├─ loadPlugins(config.plugins)       ├─ builder.runHandleRequest(req)
-├─ builder.runOnStart(config)        │  └─ wrap plugin Response with security headers
+├─ builder.runOnStart()              │  └─ wrap plugin Response with security headers
 ├─ buildClientBundle()               ├─ HMR / static / router
 ├─ for each MDX (CONCURRENCY=4):    ├─ getDocsForSlug()
-│  ├─ builder.runOnLoad()           │  └─ onLoad → transformFrontmatter →
+│  ├─ runOnLoad(path, content)     │  └─ onLoad → transformFrontmatter →
 │  ├─ builder.runTransformFm()      │     compileMdx → injectHead/Body →
 │  ├─ builder.remarkPlugins()       │     transformHtml + htmlResponse(nonce)
 │  ├─ builder.rehypePlugins()       └─ response
 │  ├─ builder.injectHead()
 │  ├─ builder.injectBody()
 │  ├─ builder.transformHtml()
-│  └─ builder.runOnEnd(config, pages)
+│  └─ builder.runOnEnd(pages)
 ├─ generateSearchIndex()
 └─ writeCache()
 ```
@@ -309,8 +309,8 @@ build()                              server.fetch(req)
 │                     Flame Plugin System (Implemented)             │
 │                                                                   │
 │  Third-party plugins loaded via docu.json "plugins" array         │
-│  Hooked into build pipeline at 9 integration points               │
-│  PluginRunner orchestrates sequential/waterfall execution         │
+│  Hooked into build pipeline at 10 integration points              │
+│  BuildPluginBuilder orchestrates sequential/waterfall execution   │
 │  Zero-config default — no plugins = no behavior change            │
 └───────────────────────────────────────────────────────────────────┘
 ```
