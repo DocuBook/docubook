@@ -126,7 +126,7 @@ async function renderDocsServerPage(
     slug.join("/") ||
     "Docs";
   const description =
-    (typeof doc.frontmatter.description === "string" ? doc.frontmatter.description : "") || "";
+    typeof doc.frontmatter.description === "string" ? doc.frontmatter.description : "";
 
   const page = React.createElement(
     DocsLayout,
