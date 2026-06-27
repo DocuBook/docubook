@@ -1,5 +1,20 @@
 # @docubook/flame
 
+## 1.3.5
+
+### Patch Changes
+
+- [#239](https://github.com/DocuBook/docubook/pull/239) [`68c5da0`](https://github.com/DocuBook/docubook/commit/68c5da08344a0f098ce91158268a9d4761e6c8a8) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - feat(security): validate transformFrontmatter return values
+
+  Add runtime type guard in `runTransformFrontmatterChain` to reject non-plain-object
+  return values from plugin callbacks (array, string, number) with a console warning.
+  Previously only `undefined` and `null` were filtered — invalid types could produce
+  `[object Object]` in rendered HTML.
+
+  Add runtime type guard for frontmatter `title` and `description` in build and
+  server pipelines — values that aren't strings now fall back to slug or empty
+  string instead of producing `[object Object]` or unexpected type coercion.
+
 ## 1.3.4
 
 ### Patch Changes
