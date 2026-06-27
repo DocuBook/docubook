@@ -18,7 +18,7 @@
 |-----------|---------------|---------|
 | **Content hashing** | SHA-256 per MDX file, stored in `build-cache.json` | Skip recompilation for unchanged files |
 | **Build cache** | `{ path: { hash, mtime, builtAt } }` persisted between builds | Avoid full rebuild on every `bun run build` |
-| **Concurrency** | `BUILD_CONCURRENCY` env var (default 10) — `Promise.all` batched | Parallel MDX compilation + HTML generation |
+| **Concurrency** | `BUILD_CONCURRENCY` env var (default 4) — `Promise.all` batched | Parallel MDX compilation + HTML generation |
 | **Git dates** | Single `git log --format=%cI --name-only` spawn for all files | Avoid per-file git calls |
 | **Asset hash** | Client bundle hash compared (`__assets__` cache key); all pages rebuild only if assets changed | Skip rebuild when only content changes |
 | **Turborepo caching** | Content-hash based — skip unchanged package builds | Avoid rebuilding core/mdx-content when unrelated packages change |
@@ -56,7 +56,7 @@
 | Factor | Impact | Mitigation |
 |--------|--------|------------|
 | **Plugin load time** | `import()` per plugin at build start | Negligible — plugin packages are small (<10KB); 3-5 plugins add <50ms |
-| **Hook execution** | Per-page loop over plugin hooks | Sequential loop over <5 plugins + 9 hooks = negligible (<1ms per page) |
+| **Hook execution** | Per-page loop over plugin hooks | Sequential loop over <5 plugins + 10 hooks = negligible (<1ms per page) |
 | **Plugin memory** | Plugins hold references to config, pages | Plugins are stateless per design — no memory leak risk |
 | **Plugin errors** | Fail-fast per design | Build stops with plugin name + error message; CI blocks deploy |
 | **Plugin `handleRequest`** | Dev server request path | First-response-wins — plugins return `Response` or `void`; no middleware chain overhead |

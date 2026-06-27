@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-06)
+**Implemented (2026-06-18)** — see [`plugin.ts`](../../packages/flame/.docu/node/plugin.ts), [`plugin-builder.ts`](../../packages/flame/.docu/node/plugin-builder.ts), [`plugin-loader.ts`](../../packages/flame/.docu/node/plugin-loader.ts).
 
 ## Context
 
@@ -17,22 +17,32 @@ The plugin system must balance extensibility with minimal surface area — most 
 
 ## Decision
 
-Implement a **hook-based plugin system** with a `PluginRunner` class that integrates at 9 points in the build pipeline and dev server:
+Implement a **hook-based plugin system** with a `BuildPluginBuilder` class that integrates at **10 points** in the build pipeline and dev server. Uses the `PluginBuilder` pattern (mimicking Bun's `BunPlugin` convention):
 
 ### Plugin Interface
 
 ```typescript
 interface DocuBookPlugin {
   name: string;
-  buildStart?(config: DocuConfig): void | Promise<void>;
-  buildEnd?(config: DocuConfig, pages: PageMeta[]): void | Promise<void>;
-  transformFrontmatter?(fm: Record<string, unknown>, ctx: PageContext): Record<string, unknown> | void;
-  transformHtml?(html: string, ctx: PageContext): string | Promise<string>;
-  injectHead?(ctx: PageContext): string | string[];
-  injectBody?(ctx: PageContext): string | string[];
-  remarkPlugins?(): Pluggable[];
-  rehypePlugins?(): Pluggable[];
-  handleRequest?(req: Request, ctx: DevServerContext): Response | void | Promise<Response | void>;
+  setup(build: PluginBuilder): void | Promise<void>;
+}
+```
+
+Plugins don't implement hooks directly. Instead, `setup()` receives a `PluginBuilder` and registers callbacks through typed methods:
+
+```typescript
+interface PluginBuilder {
+  config: DocuConfig;
+  onStart(fn): void;             // pre-build
+  onEnd(fn): void;               // post-build
+  onLoad({filter, namespace?}, fn): void;  // file transform before MDX
+  transformFrontmatter(fn): void;           // frontmatter waterfall
+  transformHtml(fn): void;                  // HTML pipeline
+  injectHead(fn): void;                     // <head> injection
+  injectBody(fn): void;                     // </body> injection
+  remarkPlugins(fn): void;
+  rehypePlugins(fn): void;
+  handleRequest(fn): void;                  // dev server route intercept
 }
 ```
 
@@ -40,30 +50,37 @@ interface DocuBookPlugin {
 
 | Concern | Decision | Rationale |
 |---------|----------|-----------|
-| **Execution order** | Sequential (waterfall) — array order in `docu.json` | Predictability; plugin count is expected <5 |
-| **Error handling** | Fail-fast — plugin error = build error, logs plugin name | Prevents silent failures; plugins are trusted code |
+| **Execution order** | Sequential (waterfall) — registration order | Predictability; plugin count is expected <5 |
+| **Error handling** | Errors caught per-callback, logged with plugin name, execution continues | Prevents one broken plugin from blocking others |
 | **Duplicate plugins** | Allowed (user responsibility) | Simpler than dedup logic |
-| **Plugin resolution** | `import()` — npm package or relative path | Bun-native, no bundler compat needed |
-| **Options passing** | Factory pattern: `export default function(options?)` | Type-safe options at config time |
-| **`handleRequest` chaining** | First-response-wins (not middleware `next()`) | Simple mental model; return `Response` to short-circuit |
-| **`enforce: pre/post`** | Not implemented — array order only | KISS; Vite-level ordering is over-engineered for flame |
+| **Plugin resolution** | `import()` — npm package, relative path (traversal-guarded), or absolute path | Bun-native, path traversal prevented |
+| **Options passing** | Factory pattern: `export default function(options?)` or object pattern: `export default { name, setup }` | Both supported for flexibility |
+| **`handleRequest` chaining** | First-response-wins (not middleware `next()`) | Simple mental model; responses wrapped with missing security headers |
+| **`injectHead`/`injectBody` dedup** | `[...new Set(items)]` — deduplicates identical injected strings | Prevents duplicate analytics snippets from multiple plugins |
+| **`injectHead`/`injectBody` type guard** | `collectItems()` warns on non-string items; `collectBody()`/`collectHead()` wrap errors | XSS defense — plugin authors warned about invalid return types |
 | **Build cache access** | Not exposed — plugins are stateless | Avoids coupling to internal cache format |
 | **Config schema** | Runtime validation only — no JSON Schema per plugin | Over-engineered for v1; plugins validate their own options |
+| **`onLoad` hook** | First matching `filter` regex wins | Enables preprocessing specific files before MDX compilation |
 
 ### Integration Points
 
 ```
-Build Pipeline                          Dev Server
-├─ [1] loadPlugins(config.plugins)      ├─ [1] loadPlugins(config.plugins)
-├─ [2] buildStart(config)               ├─ [2] handleRequest(req, ctx)
-├─ for each MDX:                        ├─ HMR / static / router
-│  ├─ [3] transformFrontmatter()        ├─ renderDocsPage()
-│  ├─ [4] remarkPlugins()               │  └─ [3-8] same hooks as build
-│  ├─ [5] rehypePlugins()              └─ response
-│  ├─ [6] injectHead()
-│  ├─ [7] injectBody()
-│  └─ [8] transformHtml()
-└─ [9] buildEnd(config, pages)
+Build Pipeline                           Dev Server (server.ts)
+├─ [1] loadPlugins(config.plugins)       ├─ [1] loadPlugins(config.plugins)
+├─ [2] builder.runOnStart(config)        ├─ [2] builder.runHandleRequest(req)
+├─ buildClientBundle()                   │   └─ wrap response with SECURITY_HEADERS + CSP
+├─ for each MDX (CONCURRENCY=4):         ├─ HMR / static / router (server-routes.ts)
+│  ├─ [3] builder.runOnLoad()            ├─ getDocsForSlug() → renderDocsServerPage()
+│  ├─ [4] runTransformFrontmatterChain() │   └─ [3-10] same hooks as build
+│  ├─ [5] builder.remarkPlugins()        └─ response with nonce per page
+│  ├─ [6] builder.rehypePlugins()
+│  ├─ [7] builder.collectHead() + dedup
+│  ├─ [8] builder.collectBody() + dedup
+│  ├─ [9] builder.transformHtml()
+│  └─ writeFile with unique nonce
+├─ [10] builder.runOnEnd(config, pages)
+├─ generateSearchIndex()
+└─ writeCache()
 ```
 
 ### Resolution Rules
@@ -71,50 +88,54 @@ Build Pipeline                          Dev Server
 ```jsonc
 // docu.json
 { "plugins": [
-    "@docubook/plugin-sitemap",                    // string = no options
+    "@docubook/plugin-sitemap",                    // string → object pattern
     ["@docubook/plugin-analytics", { "id": "G-XXX" }],  // factory with options
-    "./plugins/my-plugin"                           // relative path
+    "./plugins/my-plugin"                           // relative path (resolved from project root)
 ] }
 ```
 
-1. String → `import(name).default` (no options)
-2. `[string, object]` → `import(name).default(options)` (factory)
-3. Relative path `./...` → resolve from project root
-4. Missing export or missing `name` property → throw
+1. **`string`** → `import(specifier).default` — duck-typed as `DocuBookPlugin`
+2. **`[string, object]`** → `import(specifier).default(options)` — factory pattern
+3. **Relative path (`./`)** → resolve from `PROJECT_ROOT`, guarded against traversal outside project
+4. **Absolute path (`/`)** → also guarded against traversal outside project
+5. **npm package** → passed directly to Bun's `import()`
+6. Missing `name` (not a string) → throw
+7. Missing `setup` (not a function) → throw
 
-### Wire Plan
+### Implemented Files
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `.docu/node/plugin.ts` | Create | Interface + types |
-| `.docu/node/plugin-loader.ts` | Create | Config → plugin instances |
-| `.docu/node/plugin-runner.ts` | Create | Hook execution engine |
-| `.docu/node/types.ts` | Modify | Add `plugins` field to `DocuConfig` |
-| `.docu/node/build.ts` | Modify | Wire hooks into build pipeline |
-| `.docu/node/server.ts` | Modify | Wire `handleRequest` hook |
-| `.docu/node/html.ts` | Modify | Add `headExtra`/`bodyExtra` to `HtmlShellOptions` |
-| `.docu/node/mdx.ts` | Modify | Merge plugin remark/rehype into pipeline |
-| `docu.schema.json` | Modify | Add `plugins` schema |
-| `.docu/__tests__/plugin.test.ts` | Create | Unit tests for loader + runner |
+| File | Purpose |
+|------|---------|
+| `.docu/node/plugin.ts` | `DocuBookPlugin` + `PluginBuilder` interfaces, types (`PluginEntry`, `PageContext`, `PageMeta`, `DevServerContext`) |
+| `.docu/node/plugin-loader.ts` | `loadPlugins()` with path traversal guard (`resolveSpecifier()`), factory/object pattern support |
+| `.docu/node/plugin-builder.ts` | `BuildPluginBuilder` class — 10 hook arrays, `run*()` executors, `collect*()` with dedup, error wrapping |
+| `.docu/node/build.ts` | Wired into build pipeline: plugin loading, `onStart`, `onLoad`, `transformFm`, `remark/rehype`, `injectHead/Body`, `transformHtml`, `onEnd` |
+| `.docu/node/server.ts` | Wired into dev server: `handleRequest` with security header wrapping |
+| `.docu/node/server-routes.ts` | Plugin hooks active in `getDocsForSlug()` and `renderDocsServerPage()` |
+| `.docu/node/html.ts` | `htmlShell()` accepts `headExtra`/`bodyExtra` arrays |
+| `.docu/__tests__/plugin.test.ts` | Unit tests: lifecycle, error wrapping, dedup, type guard, sanitization warnings |
+| `.docu/__tests__/plugin-integration.test.ts` | Integration tests: loading, factory, invalid plugins, fixtures (simple-plugin, missing-name, missing-setup, invalid-string) |
 
 ## Rationale
 
 - **Zero-config default** — no plugins, no behavior change (backward compatible)
+- **PluginBuilder pattern** — mirrors Bun's plugin convention, familiar to Bun users; methods are typed, offering IDE autocompletion
 - **Composable** — plugins stack sequentially without conflict
-- **Type-safe** — full TypeScript with `satisfies DocuBookPlugin` support
+- **Type-safe** — full TypeScript with generic `PluginBuilder` methods
 - **Bun-native** — `import()` works directly; no webpack/vite compat needed
-- **Minimal surface** — 9 hooks only where extension is genuinely needed
+- **Minimal surface** — 10 hooks only where extension is genuinely needed
+- **Security-first** — path traversal guard in loader, type guard + sanitization warnings in injectors, security headers automatically added to `handleRequest` responses
 
 ## Consequences
 
 - Plugin loading adds a synchronous startup cost (negligible — `import()` is fast for small plugins)
-- Plugin hook execution adds per-page overhead (one extra loop iteration per hook, <1ms)
-- Plugin errors are fatal during build (acceptable — plugins are trusted code)
-- Plugin system is optional — projects that don't use it pay zero cost at import time (lazy `import`)
+- Plugin hook execution adds per-page overhead (sequential loop over <5 plugins × 10 hooks = <1ms per page)
+- Plugin errors are caught per-callback and logged (non-fatal during dev; build exits with code 1 only if MDX compilation fails)
+- Plugin system is optional — projects that don't use it pay zero cost (`BuildPluginBuilder` only instantiated when `config.plugins` is non-empty)
+- Security headers automatically applied to `handleRequest` responses (missing HSTS/XFO/XCTO/RP/PP added; HTML gets CSP nonce)
 - Future phases: extract built-in search as `@docubook/plugin-search`, add `transformRawContent` hook for reading-time
 
 ## References
 
-- Implementation: `.docu/node/plugin.ts` (interfaces) and `.docu/node/plugin-builder.ts` (runner)
-- Example plugins: sitemap, analytics, reading-time
-- Open questions answered in design doc: Q1→A (pass raw content), Q2→B (no cache access), Q3→B (no enforce), Q4→B (first-wins), Q5→B (runtime only)
+- Implementation: [`plugin.ts`](../../packages/flame/.docu/node/plugin.ts), [`plugin-builder.ts`](../../packages/flame/.docu/node/plugin-builder.ts), [`plugin-loader.ts`](../../packages/flame/.docu/node/plugin-loader.ts)
+- Tests: [`plugin.test.ts`](../../packages/flame/.docu/__tests__/plugin.test.ts), [`plugin-integration.test.ts`](../../packages/flame/.docu/__tests__/plugin-integration.test.ts)
