@@ -42,6 +42,44 @@ describe("resolveSpecifier", () => {
       "[plugin-loader] Path traversal blocked"
     );
   });
+
+  it("rejects npm specifier with uppercase letters", () => {
+    expect(() => resolveSpecifier("@DocuBook/Plugin-Sitemap")).toThrow(
+      "[plugin-loader] Invalid plugin specifier"
+    );
+  });
+
+  it("rejects npm specifier with spaces", () => {
+    expect(() => resolveSpecifier("my plugin")).toThrow("[plugin-loader] Invalid plugin specifier");
+  });
+
+  it("rejects npm specifier with special characters", () => {
+    expect(() => resolveSpecifier("plugin<script>")).toThrow(
+      "[plugin-loader] Invalid plugin specifier"
+    );
+  });
+
+  it("rejects npm specifier starting with dot but missing path", () => {
+    // resolveSpecifier sees "." as relative → resolves, but file won't exist
+    // This is fine — the npm validation only runs for non-path specifiers
+    expect(() => resolveSpecifier(".")).not.toThrow("[plugin-loader] Invalid plugin specifier");
+  });
+
+  it("accepts valid scoped npm package", () => {
+    expect(resolveSpecifier("@docubook/plugin-sitemap")).toBe("@docubook/plugin-sitemap");
+  });
+
+  it("accepts valid unscoped npm package", () => {
+    expect(resolveSpecifier("docubook-plugin-reading-time")).toBe("docubook-plugin-reading-time");
+  });
+
+  it("accepts npm package with dots in name", () => {
+    expect(resolveSpecifier("@scope/plugin.v2")).toBe("@scope/plugin.v2");
+  });
+
+  it("accepts npm package with tildes in name", () => {
+    expect(resolveSpecifier("@scope/~plugin")).toBe("@scope/~plugin");
+  });
 });
 
 // ─── loadPlugins — edge cases ───────────────────────────

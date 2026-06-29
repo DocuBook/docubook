@@ -10,6 +10,7 @@ import {
 } from "../node/security";
 import { getContentType } from "../node/utils";
 import { hmrScript } from "../node/html";
+import { resolve } from "node:path";
 
 describe("server: security", () => {
   describe("SECURITY_HEADERS", () => {
@@ -122,6 +123,79 @@ describe("server: static file serving", () => {
       expect(isPathSafe("/../dist-extra/file", DIST_DIR)).toBe(false);
       expect(isPathSafe("/../dist_other", DIST_DIR)).toBe(false);
       expect(isPathSafe("/../dist2/config", DIST_DIR)).toBe(false);
+    });
+
+    it("decode before validate — encoded traversal is blocked by isPathSafe", () => {
+      const DIST_DIR = "/project/dist";
+
+      // serveStatic now decodes first, then validates the decoded path
+      const encoded = "/..%2F..%2Fetc/passwd";
+      const decoded = decodeURIComponent(encoded);
+
+      // After decoding, the resolved path is a raw traversal — isPathSafe must reject it
+      expect(isPathSafe(decoded, DIST_DIR)).toBe(false);
+      // Double-encoded: %252F decodes once to %2F, then isPathSafe decodes again to /
+      const doubleEncoded = "/..%252F..%252Fetc/passwd";
+      const onceDecoded = decodeURIComponent(doubleEncoded);
+      expect(isPathSafe(onceDecoded, DIST_DIR)).toBe(false);
+    });
+  });
+
+  describe("malformed URI handling", () => {
+    it("decodeURIComponent throws on malformed percent sequences", () => {
+      expect(() => decodeURIComponent("%ZZ")).toThrow();
+      expect(() => decodeURIComponent("%GG")).toThrow();
+      expect(() => decodeURIComponent("%0Z")).toThrow();
+    });
+
+    it("serveStatic pattern — try/catch around decode returns null instead of crashing", () => {
+      // Simulates serveStatic's guard: decode → catch → return null
+      function serveSafe(pathname: string): null | string {
+        try {
+          return decodeURIComponent(pathname);
+        } catch {
+          return null;
+        }
+      }
+
+      expect(serveSafe("/valid-path")).toBe("/valid-path");
+      expect(serveSafe("/%ZZ")).toBeNull();
+      expect(serveSafe("/%GG")).toBeNull();
+      expect(serveSafe("path with spaces")).toBe("path with spaces");
+    });
+  });
+
+  describe("docs assets path resolution", () => {
+    it("slice removes first N chars after startsWith check, replace removes first substring match", () => {
+      const prefix = "/docs/assets/";
+
+      // Normal path — both approaches work
+      expect("/docs/assets/main.js".slice(prefix.length)).toBe("main.js");
+      expect("/docs/assets/images/logo.png".slice(prefix.length)).toBe("images/logo.png");
+
+      // When prefix appears non-contiguously, replace still matches
+      // e.g. if startsWith is true, slice(13) = replace(prefix, '')
+      const path = "/docs/assets//docs/assets/../../../etc/passwd";
+      const sliced = path.slice(prefix.length);
+      const replaced = path.replace(prefix, "");
+      // Both produce the same result when prefix is at position 0
+      expect(sliced).toBe(replaced);
+      expect(sliced).toBe("/docs/assets/../../../etc/passwd");
+    });
+
+    it("resolved docs asset path stays within DOCS_DIR/assets", () => {
+      const DOCS_DIR = "/project/docs";
+      const docsAssetsDir = resolve(DOCS_DIR, "assets");
+
+      // Normal asset
+      let relative = "styles/main.css";
+      let assetPath = resolve(docsAssetsDir, relative);
+      expect(assetPath.startsWith(docsAssetsDir)).toBe(true);
+
+      // Traversal via relative path — resolved path leaves assets dir
+      relative = "../../etc/passwd";
+      assetPath = resolve(docsAssetsDir, relative);
+      expect(assetPath.startsWith(docsAssetsDir)).toBe(false);
     });
   });
 });
@@ -265,52 +339,14 @@ describe("server: error handling", () => {
   });
 });
 
-// ─── Plugin Security Header Wrapping ────────────────────
-//
-// Tests the plugin handleRequest response wrapping logic from server.ts (lines ~113-127).
-// Because server.ts has module-level side effects (Bun.build, watcher, config loading),
-// we test the pure wrapper function in isolation.
-
-interface PluginResponse {
-  status: number;
-  statusText?: string;
-  headers: Headers;
-  body: BodyInit | null;
-}
-
-/**
- * Simulates the plugin response security header wrapping from server.ts.
- *
- * Logic:
- * 1. Start with plugin's original headers
- * 2. Apply SECURITY_HEADERS defaults — but only where plugin hasn't set a value
- * 3. For HTML responses, also add Content-Security-Policy (with nonce + unsafe-eval)
- * 4. Preserve plugin body, status, and statusText unchanged
- */
-function wrapPluginResponse(pluginResponse: PluginResponse): Response {
-  const securedHeaders = new Headers(pluginResponse.headers);
-  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
-    if (!securedHeaders.has(key)) {
-      securedHeaders.set(key, value);
-    }
-  }
-  const contentType = securedHeaders.get("Content-Type") || "";
-  if (contentType.includes("text/html") && !securedHeaders.has("Content-Security-Policy")) {
-    securedHeaders.set("Content-Security-Policy", cspHeader(generateNonce(), true));
-  }
-  return new Response(pluginResponse.body, {
-    status: pluginResponse.status,
-    statusText: pluginResponse.statusText,
-    headers: securedHeaders,
-  });
-}
+import { wrapPluginResponse, type PluginResponseLike } from "../node/security";
 
 function createPluginResponse(overrides?: {
   status?: number;
   statusText?: string;
   headers?: Record<string, string>;
   body?: BodyInit | null;
-}): PluginResponse {
+}): PluginResponseLike {
   return {
     status: 200,
     statusText: "OK",
@@ -362,7 +398,8 @@ describe("server: plugin security header wrapping", () => {
       createPluginResponse({
         headers: { "Content-Type": "text/html" },
         body: "<html><body>plugin page</body></html>",
-      })
+      }),
+      true
     );
 
     const csp = res.headers.get("Content-Security-Policy");

@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { resolve, join } from "node:path";
+import { resolve } from "node:path";
 import { statSync } from "node:fs";
 import React, { type ReactNode } from "react";
 import { renderToString } from "react-dom/server";
@@ -62,19 +62,26 @@ async function getDocsForSlug(
   if (!isSlugSafe(slug, DOCS_DIR)) return null;
 
   const paths = [
-    join(DOCS_DIR, slug, "index.mdx"),
-    join(DOCS_DIR, `${slug}.mdx`),
-    join(DOCS_DIR, slug, "index.md"),
-    join(DOCS_DIR, `${slug}.md`),
+    resolve(DOCS_DIR, slug, "index.mdx"),
+    resolve(DOCS_DIR, `${slug}.mdx`),
+    resolve(DOCS_DIR, slug, "index.md"),
+    resolve(DOCS_DIR, `${slug}.md`),
   ];
 
+  const resolvedDocsDir = resolve(DOCS_DIR);
   let filePath: string | null = null;
   let raw: string | null = null;
   for (const p of paths) {
-    if (!p.startsWith(DOCS_DIR)) continue;
+    const resolvedCandidate = resolve(p);
+    if (
+      resolvedCandidate !== resolvedDocsDir &&
+      !resolvedCandidate.startsWith(resolvedDocsDir + "/")
+    ) {
+      continue;
+    }
     try {
-      raw = await readFile(p, "utf-8");
-      filePath = p;
+      raw = await readFile(resolvedCandidate, "utf-8");
+      filePath = resolvedCandidate;
       break;
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
@@ -231,8 +238,13 @@ export function handleNotFound(state: ServerState, depth = 0): Response {
 }
 
 export function serveStatic(pathname: string): Response | null {
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    return null;
+  }
   if (!isPathSafe(pathname, DIST_DIR)) return null;
-  const decoded = decodeURIComponent(pathname);
   const assetPath = resolve(DIST_DIR, decoded.slice(1));
   try {
     const s = statSync(assetPath);
@@ -246,10 +258,11 @@ export function serveStatic(pathname: string): Response | null {
   }
 
   if (decoded.startsWith("/docs/assets/")) {
-    const docsAsset = resolve(DOCS_DIR, "assets", decoded.replace("/docs/assets/", ""));
     const docsAssetsDir = resolve(DOCS_DIR, "assets");
-    const docsAssetsDirSlash = docsAssetsDir.endsWith("/") ? docsAssetsDir : docsAssetsDir + "/";
-    if (docsAsset !== docsAssetsDir && !docsAsset.startsWith(docsAssetsDirSlash)) return null;
+    const requestedRelative = decoded.slice("/docs/assets/".length);
+    const docsAsset = resolve(docsAssetsDir, requestedRelative);
+    const docsAssetsDirWithSep = docsAssetsDir.endsWith("/") ? docsAssetsDir : docsAssetsDir + "/";
+    if (docsAsset !== docsAssetsDir && !docsAsset.startsWith(docsAssetsDirWithSep)) return null;
     try {
       const s = statSync(docsAsset);
       if (s.isFile()) {
