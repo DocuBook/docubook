@@ -198,7 +198,7 @@ export interface PluginBuilder {
 
   /**
    * Register additional remark (Markdown) plugins for the MDX compilation pipeline.
-   * Plugins from all plugins are merged and applied **after** the default set.
+   * Plugins from all registered callbacks are merged and applied **after** the default set.
    *
    * @example
    * build.remarkPlugins(() => [require("remark-custom-heading-id")]);
@@ -207,7 +207,7 @@ export interface PluginBuilder {
 
   /**
    * Register additional rehype (HTML) plugins for the MDX compilation pipeline.
-   * Plugins from all plugins are merged and applied **after** the default set.
+   * Plugins from all registered callbacks are merged and applied **after** the default set.
    *
    * @example
    * build.rehypePlugins(() => [require("rehype-autolink-headings")]);

@@ -89,6 +89,40 @@ export function injectNonce(html: string, nonce: string): string {
   });
 }
 
+export interface PluginResponseLike {
+  status: number;
+  statusText?: string;
+  headers: Headers;
+  body: BodyInit | null;
+}
+
+/**
+ * Wrap a plugin response with security headers.
+ * - Fills in SECURITY_HEADERS defaults where plugin hasn't set a value
+ * - Adds Content-Security-Policy for HTML responses (with optional unsafe-eval)
+ * - Preserves plugin body, status, statusText unchanged
+ */
+export function wrapPluginResponse(
+  pluginResponse: PluginResponseLike,
+  allowEval = false
+): Response {
+  const securedHeaders = new Headers(pluginResponse.headers);
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    if (!securedHeaders.has(key)) {
+      securedHeaders.set(key, value);
+    }
+  }
+  const contentType = securedHeaders.get("Content-Type") || "";
+  if (contentType.includes("text/html") && !securedHeaders.has("Content-Security-Policy")) {
+    securedHeaders.set("Content-Security-Policy", cspHeader(generateNonce(), allowEval));
+  }
+  return new Response(pluginResponse.body, {
+    status: pluginResponse.status,
+    statusText: pluginResponse.statusText,
+    headers: securedHeaders,
+  });
+}
+
 export function htmlResponse(
   html: string,
   nonce: string,

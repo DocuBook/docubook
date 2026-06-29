@@ -15,11 +15,11 @@ import {
   serverErrorResponse,
   type ServerState,
 } from "./server-routes";
-import { SECURITY_HEADERS, cspHeader, generateNonce } from "./security";
+import { wrapPluginResponse } from "./security";
 
 const docuConfig = loadDocuConfig();
 
-const PORT = process.env.PORT ?? "3000";
+const PORT = Number(process.env.PORT ?? 3000);
 
 logger.buildStart();
 
@@ -103,28 +103,14 @@ const server = Bun.serve({
     const startTime = performance.now();
 
     if (builder) {
+      const serverPort = server.port ?? PORT;
+      const serverHostname = server.hostname ?? "localhost";
       const pluginResponse = await builder.runHandleRequest(req, {
-        port: server.port!,
-        hostname: server.hostname!,
+        port: serverPort,
+        hostname: serverHostname,
       });
       if (pluginResponse) {
-        // Wrap plugin response with security headers.
-        // Plugin's own headers take precedence over defaults.
-        const securedHeaders = new Headers(pluginResponse.headers);
-        for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
-          if (!securedHeaders.has(key)) {
-            securedHeaders.set(key, value);
-          }
-        }
-        const contentType = securedHeaders.get("Content-Type") || "";
-        if (contentType.includes("text/html") && !securedHeaders.has("Content-Security-Policy")) {
-          securedHeaders.set("Content-Security-Policy", cspHeader(generateNonce(), true));
-        }
-        const securedResponse = new Response(pluginResponse.body, {
-          status: pluginResponse.status,
-          statusText: pluginResponse.statusText,
-          headers: securedHeaders,
-        });
+        const securedResponse = wrapPluginResponse(pluginResponse, true);
         logger.request(
           req.method,
           pathname,

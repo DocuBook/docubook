@@ -2,13 +2,15 @@ import { resolve } from "node:path";
 import { PROJECT_ROOT } from "./paths";
 import type { DocuBookPlugin, PluginEntry } from "./plugin";
 
+const NPM_PACKAGE_RE = /^(?:@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/;
+
 /**
  * Resolve a plugin specifier to an absolute path or npm package name.
  *
  * Resolution rules:
  * 1. Relative path (starts with `.`) → resolve from project root, guard traversal
  * 2. Absolute path (starts with `/`) → guard traversal
- * 3. Anything else → treat as npm package name (handled by Bun's import)
+ * 3. Anything else → validate as npm package name, then pass to Bun's import
  *
  * Path traversal protection:
  * - All file-system paths (relative & absolute) must resolve within PROJECT_ROOT.
@@ -25,7 +27,12 @@ export function resolveSpecifier(specifier: string): string {
     // Absolute path → use as-is
     resolved = specifier;
   } else {
-    // npm package name → handled by Bun's import
+    // npm package name → validate format, then handled by Bun's import
+    if (!NPM_PACKAGE_RE.test(specifier)) {
+      throw new Error(
+        `[plugin-loader] Invalid plugin specifier "${specifier}": must be a valid npm package name, relative path, or absolute path`
+      );
+    }
     return specifier;
   }
 
