@@ -42,7 +42,7 @@ logger.routes();
 // Plugin setup — all hooks active (onLoad, remark/rehype, frontmatter, head/body, html transform, handleRequest)
 const hasPlugins = !!docuConfig.plugins?.length;
 const builder = hasPlugins ? new BuildPluginBuilder(docuConfig) : null;
-if (hasPlugins && builder) {
+if (builder) {
   const plugins = await loadPlugins(docuConfig.plugins!);
   for (const plugin of plugins) {
     await plugin.setup(builder);
