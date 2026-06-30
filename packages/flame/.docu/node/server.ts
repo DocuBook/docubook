@@ -19,7 +19,8 @@ import { wrapPluginResponse } from "./security";
 
 const docuConfig = loadDocuConfig();
 
-const PORT = Number(process.env.PORT ?? 3000);
+const parsedPort = parseInt(process.env.PORT ?? "3000", 10);
+const PORT = Number.isInteger(parsedPort) && parsedPort > 0 && parsedPort <= 65535 ? parsedPort : 3000;
 
 logger.buildStart();
 
