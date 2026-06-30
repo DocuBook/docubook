@@ -1,5 +1,17 @@
 # @docubook/flame
 
+## 1.3.7
+
+### Patch Changes
+
+- [#247](https://github.com/DocuBook/docubook/pull/247) [`35f8e7b`](https://github.com/DocuBook/docubook/commit/35f8e7b154044ad7e70cb700bb739e8f84d80768) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - fix: validate PORT env var with `parseInt` and range check (1–65535)
+
+  Replace naive `Number(process.env.PORT ?? 3000)` with `parseInt(..., 10)` plus integer and range validation. Invalid values fall back to port 3000.
+
+  refactor: remove redundant `hasPlugins` check in plugin setup (server.ts + build.ts)
+
+  `builder` is already `null` when `hasPlugins` is falsy (from `hasPlugins ? new BuildPluginBuilder(docuConfig) : null`), so the extra `hasPlugins &&` guard was unnecessary in both the dev server and static build paths.
+
 ## 1.3.6
 
 ### Patch Changes
