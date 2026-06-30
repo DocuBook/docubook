@@ -220,7 +220,7 @@ async function build() {
 
   const hasPlugins = !!docuConfig.plugins?.length;
   const builder = hasPlugins ? new BuildPluginBuilder(docuConfig) : null;
-  if (hasPlugins && builder) {
+  if (builder) {
     const plugins = await loadPlugins(docuConfig.plugins!);
     for (const plugin of plugins) {
       await plugin.setup(builder);
