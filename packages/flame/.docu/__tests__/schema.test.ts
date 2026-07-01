@@ -2,6 +2,52 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+describe("docu.schema.json — sidebar field", () => {
+  const schemaPath = join(import.meta.dirname, "..", "..", "docu.schema.json");
+  const schema: Record<string, unknown> = JSON.parse(readFileSync(schemaPath, "utf-8"));
+
+  it("has a sidebar property", () => {
+    const properties = schema.properties as Record<string, unknown>;
+    expect(properties.sidebar).toBeDefined();
+  });
+
+  it("defines sidebar as object type", () => {
+    const sidebar = (schema.properties as Record<string, unknown>).sidebar as Record<
+      string,
+      unknown
+    >;
+    expect(sidebar.type).toBe("object");
+  });
+
+  it("has context enum with dropdown and separator", () => {
+    const sidebar = (schema.properties as Record<string, unknown>).sidebar as Record<
+      string,
+      unknown
+    >;
+    const context = sidebar.properties as Record<string, unknown>;
+    const contextProp = context.context as Record<string, unknown>;
+    expect(contextProp.enum).toEqual(["dropdown", "separator"]);
+  });
+
+  it("defaults context to dropdown", () => {
+    const sidebar = (schema.properties as Record<string, unknown>).sidebar as Record<
+      string,
+      unknown
+    >;
+    const context = sidebar.properties as Record<string, unknown>;
+    const contextProp = context.context as Record<string, unknown>;
+    expect(contextProp.default).toBe("dropdown");
+  });
+
+  it("does not allow additional properties on sidebar", () => {
+    const sidebar = (schema.properties as Record<string, unknown>).sidebar as Record<
+      string,
+      unknown
+    >;
+    expect(sidebar.additionalProperties).toBe(false);
+  });
+});
+
 describe("docu.schema.json — plugins field", () => {
   const schemaPath = join(import.meta.dirname, "..", "..", "docu.schema.json");
   const schema: Record<string, unknown> = JSON.parse(readFileSync(schemaPath, "utf-8"));
