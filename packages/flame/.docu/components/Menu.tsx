@@ -40,7 +40,30 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
   // Separator mode: render all context sections as group headers + nav items
   if (mode === "separator") {
     const contextRoutes = menuRoutes.filter((r) => r.context);
-    if (contextRoutes.length === 0) return null;
+
+    // No context routes defined — fall back to flat list of all routes
+    if (contextRoutes.length === 0) {
+      return (
+        <nav
+          aria-label="Documentation navigation"
+          className={cn("transition-all duration-200", className)}
+        >
+          <ul className="flex flex-col gap-1.5 py-4">
+            {menuRoutes.map((route) => (
+              <li key={route.href}>
+                <Sublink
+                  {...route}
+                  href={route.href}
+                  level={0}
+                  onNavigate={onNavigate}
+                  parentHref="/docs"
+                />
+              </li>
+            ))}
+          </ul>
+        </nav>
+      );
+    }
 
     return (
       <nav
@@ -54,15 +77,17 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
               title={route.context?.title || route.title}
             />
             <ul className="border-base-300 flex flex-col gap-1.5 border-l-2 pb-0.5 pl-3 pt-0.5">
-              <li>
-                <Sublink
-                  {...route}
-                  href={route.href}
-                  level={0}
-                  onNavigate={onNavigate}
-                  parentHref="/docs"
-                />
-              </li>
+              {route.items?.map((item) => (
+                <li key={item.href}>
+                  <Sublink
+                    {...item}
+                    href={item.href}
+                    level={0}
+                    onNavigate={onNavigate}
+                    parentHref={`/docs${route.href}`}
+                  />
+                </li>
+              ))}
             </ul>
           </div>
         ))}

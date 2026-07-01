@@ -6,6 +6,9 @@
     "baseURL": "https://docubook.pro",
     "favicon": "/docs/assets/images/favicon.ico"
   },
+  "sidebar": {
+    "context": "separator"
+  },
   "themes": {
     "colors": "default"
   },
