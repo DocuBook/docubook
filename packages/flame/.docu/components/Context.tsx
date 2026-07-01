@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { cn } from "../node/utils";
 import { Dropdown, DropdownItem } from "@docubook/ui-react/dropdown";
-import { routes } from "../node/client-routes";
+import { routes, config as docuConfig } from "../node/client-routes";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { renderLucideIcon } from "./Lucide";
 
@@ -26,6 +26,9 @@ function getActiveContextRoute(path: string) {
 }
 
 export function Context({ className }: ContextProps) {
+  const mode = docuConfig.sidebar?.context || "dropdown";
+  if (mode === "separator") return null;
+
   const [pathname] = useState(() =>
     typeof window !== "undefined" ? window.location.pathname : "/"
   );
