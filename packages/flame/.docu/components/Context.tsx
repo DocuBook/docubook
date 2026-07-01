@@ -26,13 +26,13 @@ function getActiveContextRoute(path: string) {
 }
 
 export function Context({ className }: ContextProps) {
-  const mode = docuConfig.sidebar?.context || "dropdown";
-  if (mode === "separator") return null;
-
   const [pathname] = useState(() =>
     typeof window !== "undefined" ? window.location.pathname : "/"
   );
   const mounted = typeof window !== "undefined";
+
+  const mode = docuConfig.sidebar?.context || "dropdown";
+  if (mode === "separator") return null;
   const activeRoute = pathname.startsWith("/docs") ? getActiveContextRoute(pathname) : undefined;
   const contextRoutes = getContextRoutes();
   const fallbackRoute = routes[0];
