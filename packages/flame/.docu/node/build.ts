@@ -82,7 +82,7 @@ async function renderDocsPage(
   rawMdx: string,
   filePath: string,
   gitDates?: Map<string, string>,
-  builder?: BuildPluginBuilder,
+  builder?: BuildPluginBuilder | null,
   nonce?: string
 ): Promise<string> {
   let content = rawMdx;
@@ -218,10 +218,10 @@ async function build() {
     };
   }
 
-  const hasPlugins = !!docuConfig.plugins?.length;
-  const builder = hasPlugins ? new BuildPluginBuilder(docuConfig) : null;
+  const pluginsConfig = docuConfig.plugins ?? [];
+  const builder = pluginsConfig.length > 0 ? new BuildPluginBuilder(docuConfig) : null;
   if (builder) {
-    const plugins = await loadPlugins(docuConfig.plugins!);
+    const plugins = await loadPlugins(pluginsConfig);
     for (const plugin of plugins) {
       await plugin.setup(builder);
     }
