@@ -34,6 +34,13 @@ export interface DocuFooter {
   social: SocialLink[];
 }
 
+export interface DocuSidebar {
+  /** How context sections are displayed.
+   *  "dropdown" — context switcher dropdown (default)
+   *  "separator" — inline group headers in sidebar */
+  context?: "dropdown" | "separator";
+}
+
 export interface RepoConfig {
   url: string;
   path: string;
@@ -75,6 +82,7 @@ export interface DocuConfig {
   navbar: DocuNavbar;
   footer: DocuFooter;
   repo: RepoConfig;
+  sidebar?: DocuSidebar;
   routes: DocuRoute[];
   themes?: {
     colors: ThemeConfig;

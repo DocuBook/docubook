@@ -113,6 +113,19 @@
         "edit": { "type": "boolean", "description": "Enable edit link on pages" }
       }
     },
+    "sidebar": {
+      "type": "object",
+      "description": "Sidebar configuration",
+      "additionalProperties": false,
+      "properties": {
+        "context": {
+          "type": "string",
+          "enum": ["dropdown", "separator"],
+          "default": "dropdown",
+          "description": "How context sections are displayed in sidebar — dropdown (switcher) or separator (inline group headers)"
+        }
+      }
+    },
     "routes": {
       "type": "array",
       "description": "Documentation navigation routes. Leave empty for auto-detection from docs/ folder.",
