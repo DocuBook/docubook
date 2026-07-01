@@ -7,7 +7,7 @@ interface SidebarGroupHeaderProps {
 
 export default function SidebarGroupHeader({ icon, title }: SidebarGroupHeaderProps) {
   return (
-    <div className="sidebar-group-header mb-3.5 flex items-center gap-2.5 pl-4 font-medium text-gray-900 lg:mb-2.5 dark:text-gray-200">
+    <div className="sidebar-group-header mb-3.5 flex items-center gap-2.5 font-medium text-gray-900 lg:mb-2.5 dark:text-gray-200">
       {icon && (
         <span className="flex h-4 w-4 shrink-0 items-center justify-center">
           {renderLucideIcon(icon, "h-3.5 w-3.5")}
