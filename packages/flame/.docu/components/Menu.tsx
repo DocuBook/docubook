@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Sublink from "./Sublink";
+import SidebarGroupHeader from "./SidebarGroupHeader";
 import type { DocuRoute } from "../node/types";
 import { cn } from "../node/utils";
+import { config as docuConfig } from "../node/client-routes";
 
 interface MenuProps {
   onNavigate?: () => void;
@@ -33,6 +35,42 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
 
   if (!currentPath.startsWith("/docs")) return null;
 
+  const mode = docuConfig.sidebar?.context || "dropdown";
+
+  // Separator mode: render all context sections as group headers + nav items
+  if (mode === "separator") {
+    const contextRoutes = menuRoutes.filter((r) => r.context);
+    if (contextRoutes.length === 0) return null;
+
+    return (
+      <nav
+        aria-label="Documentation navigation"
+        className={cn("transition-all duration-200", className)}
+      >
+        {contextRoutes.map((route, i) => (
+          <div key={route.href} className={i > 0 ? "mt-6 lg:mt-8" : ""}>
+            <SidebarGroupHeader
+              icon={route.context?.icon}
+              title={route.context?.title || route.title}
+            />
+            <ul className="flex flex-col gap-1.5 py-4">
+              <li>
+                <Sublink
+                  {...route}
+                  href={route.href}
+                  level={0}
+                  onNavigate={onNavigate}
+                  parentHref="/docs"
+                />
+              </li>
+            </ul>
+          </div>
+        ))}
+      </nav>
+    );
+  }
+
+  // Dropdown mode: render only the active context section
   const isDocsRoot = currentPath === "/docs" || currentPath === "/docs/";
   const currentContext = isDocsRoot
     ? menuRoutes[0]?.href.replace(/^\/+|\/+$/, "")
