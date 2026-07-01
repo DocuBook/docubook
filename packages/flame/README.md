@@ -214,7 +214,9 @@ Theme resolution follows this order (first match wins):
 
 ### Sidebar
 
-Configure sidebar behavior with the `sidebar` object. Currently supports one option — context mode.
+Controls how documentation sections appear in the sidebar. Defaults to **dropdown** mode when not configured.
+
+To switch to **separator** mode, add `sidebar` to the top level of your `docu.json`:
 
 ```json
 {
@@ -224,42 +226,26 @@ Configure sidebar behavior with the `sidebar` object. Currently supports one opt
 }
 ```
 
-#### Context Mode
-
-Controls how documentation sections (routes with a `context` property) appear in the sidebar.
-
 | Mode | Description |
 |------|-------------|
-| `"dropdown"` (default) | A dropdown at the top of the sidebar lets users switch between sections. Only the active section's items are shown. |
-| `"separator"` | All sections render inline with a group header (icon + title) and a tree connector line. Items appear nested under their section. |
-
-**Dropdown mode** — compact, one section at a time:
+| `"dropdown"` (default) | Compact view — a dropdown at the top of the sidebar lets users switch between sections. Only the active section's items are shown. |
+| `"separator"` | All sections visible — group header (icon + title) with tree connector line. Items nest under their section. |
 
 ```
-┌──────────────────────┐
-│  📖 Guides     ▼     │  ← context switcher
-├──────────────────────┤
-│  Introduction        │
-│  Installation        │
-└──────────────────────┘
+  Default (dropdown)              Separator
+  ┌──────────────────┐       📖 Guides
+  │  📖 Guides  ▼    │       │
+  ├──────────────────┤       ├─ Introduction
+  │  Introduction    │       ├─ Installation
+  │  Installation    │       │
+  └──────────────────┘       🧩 Markdown
+                              │
+                              ├─ Accordion
+                              ├─ Button
+                              └─ Card
 ```
 
-**Separator mode** — all sections visible with tree lines:
-
-```
-📖 Guides              
-│                      
-├─ Introduction        
-├─ Installation        
-│                      
-🧩 Markdown            
-│                      
-├─ Accordion           
-├─ Button              
-└─ Card                
-```
-
-> Omit `sidebar` or set `sidebar.context` to `"dropdown"` for the default behavior. The mode is static per page — no runtime switching.
+> Omit `sidebar` entirely → dropdown mode. Set `"context": "separator"` → separator mode. Mode is static per page, no runtime switching.
 
 ---
 
