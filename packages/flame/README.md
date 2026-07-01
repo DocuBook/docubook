@@ -212,6 +212,57 @@ Theme resolution follows this order (first match wins):
 
 ---
 
+### Sidebar
+
+Configure sidebar behavior with the `sidebar` object. Currently supports one option — context mode.
+
+```json
+{
+  "sidebar": {
+    "context": "separator"
+  }
+}
+```
+
+#### Context Mode
+
+Controls how documentation sections (routes with a `context` property) appear in the sidebar.
+
+| Mode | Description |
+|------|-------------|
+| `"dropdown"` (default) | A dropdown at the top of the sidebar lets users switch between sections. Only the active section's items are shown. |
+| `"separator"` | All sections render inline with a group header (icon + title) and a tree connector line. Items appear nested under their section. |
+
+**Dropdown mode** — compact, one section at a time:
+
+```
+┌──────────────────────┐
+│  📖 Guides     ▼     │  ← context switcher
+├──────────────────────┤
+│  Introduction        │
+│  Installation        │
+└──────────────────────┘
+```
+
+**Separator mode** — all sections visible with tree lines:
+
+```
+📖 Guides              
+│                      
+├─ Introduction        
+├─ Installation        
+│                      
+🧩 Markdown            
+│                      
+├─ Accordion           
+├─ Button              
+└─ Card                
+```
+
+> Omit `sidebar` or set `sidebar.context` to `"dropdown"` for the default behavior. The mode is static per page — no runtime switching.
+
+---
+
 ### Routes
 
 When `routes` is an empty array `[]`, Flame automatically scans your `docs/` folder at build-time and generates the sidebar navigation from the directory structure. Folders become collapsible sections, and `.mdx`/`.md` files become links — sorted alphabetically.
@@ -240,6 +291,8 @@ To define navigation manually, populate the `routes` array:
 ```
 
 > Manual routes take priority — if `routes` has entries, folder scanning is skipped entirely.
+
+> Context on a route (`icon`, `title`, `description`) provides metadata for the sidebar context switcher. In **dropdown** mode it fills the dropdown; in **separator** mode it renders the group header + tree. The icon name must match a [Lucide icon](https://lucide.dev/icons) export (e.g., `"BookOpen"`, `"Layers"`).
 
 ---
 
