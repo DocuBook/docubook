@@ -105,10 +105,32 @@
       "description": "Repository configuration for edit links",
       "additionalProperties": false,
       "properties": {
-        "url": { "type": "string", "description": "Repository URL" },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Repository base URL. Supported platforms: GitHub, GitLab, Bitbucket, Gitea (gitea.com), Codeberg (codeberg.org), Gogs, Forgejo, or any self-hosted Gitea-compatible forge.",
+          "examples": [
+            "https://github.com/owner/repo",
+            "https://gitlab.com/owner/repo",
+            "https://bitbucket.org/owner/repo",
+            "https://gitea.com/owner/repo",
+            "https://codeberg.org/owner/repo"
+          ]
+        },
         "path": {
           "type": "string",
-          "description": "Path template for edit links. Use {filePath} as placeholder."
+          "description": "Path template for edit links. Must contain {filePath} as a placeholder. Format: {platform-path}/{optional-subdir}/{filePath}. Leave empty to auto-detect from repo.url hostname.",
+          "pattern": "\\{filePath\\}",
+          "examples": [
+            "blob/main/{filePath}",
+            "blob/main/apps/web/{filePath}",
+            "blob/develop/{filePath}",
+            "-/blob/main/{filePath}",
+            "-/blob/main/docs/{filePath}",
+            "src/main/{filePath}",
+            "src/branch/main/{filePath}",
+            "src/branch/main/docs/{filePath}"
+          ]
         },
         "edit": { "type": "boolean", "description": "Enable edit link on pages" }
       }

@@ -105,14 +105,91 @@ bun run deploy    # Build + prepare for GitHub Pages
   },
   "repo": {
     "url": "https://github.com/you/repo",
-    "path": "blob/main/{filePath}",
     "edit": true
   },
   "routes": []
 }
 ```
 
-### Home Page
+### Repo & Edit Links
+
+The `repo` section enables **"Edit this page"** links on every doc page, pointing directly to the source file in your repository.
+
+```json
+{
+  "repo": {
+    "url": "https://github.com/you/repo",
+    "edit": true
+  }
+}
+```
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `url` | `string` (URI) | ✅ Yes | Base URL of your repository |
+| `edit` | `boolean` | ✅ Yes | Show or hide the edit link on pages |
+| `path` | `string` | No | Path template override — see below |
+
+#### Platform Auto-Detection
+
+When `path` is omitted, Flame detects the correct path format from `url` automatically:
+
+| Platform | Domain | Auto-generated path |
+|----------|--------|---------------------|
+| GitHub | `github.com` | `blob/main/{filePath}` |
+| GitLab | `gitlab.com` | `-/blob/main/{filePath}` |
+| Bitbucket | `bitbucket.org` | `src/main/{filePath}` |
+| Gitea Cloud | `gitea.com` | `src/branch/main/{filePath}` |
+| Codeberg (Forgejo) | `codeberg.org` | `src/branch/main/{filePath}` |
+| Gogs / self-hosted Gitea / Forgejo | any other host | `src/branch/main/{filePath}` |
+
+For most single-repo projects this is all you need — just set `url` and `edit: true`.
+
+#### When to set `path` manually
+
+Override `path` when auto-detection is not enough. The value must contain `{filePath}` as a placeholder:
+
+**Monorepo** — docs live in a subdirectory, not the repo root:
+
+```json
+{
+  "repo": {
+    "url": "https://github.com/org/monorepo",
+    "path": "blob/main/apps/docs/{filePath}",
+    "edit": true
+  }
+}
+```
+
+**Non-default branch** — your default branch is not `main`:
+
+```json
+{
+  "repo": {
+    "url": "https://github.com/you/repo",
+    "path": "blob/master/{filePath}",
+    "edit": true
+  }
+}
+```
+
+**Self-hosted GitLab on a custom domain** — auto-detect falls back to Gitea format, which is wrong for GitLab:
+
+```json
+{
+  "repo": {
+    "url": "https://git.mycompany.com/team/repo",
+    "path": "-/blob/main/{filePath}",
+    "edit": true
+  }
+}
+```
+
+> **Rule of thumb:** if your docs are at the root of the repo and the branch is `main`, skip `path` — auto-detect handles it. Add `path` only when you need to point to a subdirectory, a different branch, or a self-hosted platform with a non-standard URL format.
+
+
+
+### Homepage
 
 The `home` section configures your landing page with a hero section and feature cards:
 

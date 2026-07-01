@@ -23,4 +23,24 @@ Add `sidebar.context` configuration with two modes: "dropdown" (default) and "se
 - Absent `sidebar` or `sidebar.context === "dropdown"` preserves existing behavior
 - Dropdown mode code path unchanged
 - Sublink.tsx behavior unchanged
-- All 291 tests pass
+
+---
+
+Expand `detectPlatformPath` platform support and improve `repo` schema
+
+**Platform detection (`node/helpers.ts`):**
+- Add explicit cases for `gitea.com` (Gitea Cloud) and `codeberg.org` (Forgejo)
+- Update JSDoc comment — fallback now described as "Gogs, Forgejo, or any self-hosted Gitea-compatible forge"
+- Previously only GitHub, GitLab, Bitbucket were explicit; all others fell through to GitHub-style fallback (incorrect for Gitea-based platforms)
+
+**Schema (`docu.schema.json`):**
+- `repo.url`: add `format: "uri"`, expand description to list all supported platforms, add `examples` for GitHub / GitLab / Bitbucket / Gitea / Codeberg
+- `repo.path`: add `pattern: \{filePath\}` for editor validation, expand description with format guide and auto-detect note, add `examples` covering root repo + monorepo + non-default branch for all platforms
+
+**Documentation (`README.md`):**
+- Add dedicated `### Repo & Edit Links` section with platform auto-detection table, property table, and three annotated override examples (monorepo, non-default branch, self-hosted GitLab on custom domain)
+- Update full config example — remove hardcoded `path` to reflect that it is optional for root repos
+
+**Tests:**
+- `helpers.test.ts`: add unit tests for `gitea.com` and `codeberg.org` in `detectPlatformPath` and platform integration loop (22 tests total)
+- `schema.test.ts`: add `docu.schema.json — repo.url field` and `docu.schema.json — repo.path field` describe blocks covering `format`, `pattern`, `examples`, and `description` content (22 schema tests total)
