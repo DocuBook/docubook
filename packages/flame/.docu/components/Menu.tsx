@@ -53,7 +53,7 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
               icon={route.context?.icon}
               title={route.context?.title || route.title}
             />
-            <ul className="flex flex-col gap-1.5 py-4">
+            <ul className="border-base-300 flex flex-col gap-1.5 border-l-2 pb-0.5 pl-3 pt-0.5">
               <li>
                 <Sublink
                   {...route}
