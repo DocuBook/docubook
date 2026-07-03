@@ -1,6 +1,7 @@
 ---
 "@docubook/mdx-content": minor
 "@docubook/core": minor
+"@docubook/flame": patch
 ---
 
 ### `@docubook/mdx-content` — New `MermaidMdx` component
@@ -23,3 +24,10 @@
 - Added `rehypeMermaid` rehype plugin that transforms fenced ` ```mermaid ` code blocks into `<Mermaid chart="...">` JSX elements during MDX compilation.
 - This avoids JSX parse collisions caused by Mermaid's `{...}` (decision nodes) and `[...]` (label nodes) syntax when written inline as JSX.
 - Exported from `@docubook/core` for use in any framework adapter.
+
+### `@docubook/flame` — Sidebar active-item highlight and Mermaid docs
+
+**Fix**
+
+- Active sidebar item now scrolls into view on page load (`scrollIntoView({ block: "nearest" })`).
+- Added Mermaid diagram types documentation page to the flame docs site.
