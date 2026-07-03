@@ -1,6 +1,6 @@
 ---
 "@docubook/mdx-content": minor
-"@docubook/core": patch
+"@docubook/core": minor
 ---
 
 ### `@docubook/mdx-content` — New `MermaidMdx` component
