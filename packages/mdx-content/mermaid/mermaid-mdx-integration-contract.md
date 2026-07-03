@@ -53,13 +53,13 @@ escape hatch remains for programmatic use.
 
 Primary syntax — fenced code block (matches GitHub/VitePress/Docusaurus):
 
-```mdx
+````mdx
 ```mermaid
 graph TD
   A[Start] --> B{Decision}
   B -->|Yes| C[Process]
 ```
-```
+````
 
 Internally, the rehype plugin rewrites this into `<Mermaid chart="...">` component.
 
@@ -69,13 +69,13 @@ Internally, the rehype plugin rewrites this into `<Mermaid chart="...">` compone
 Props:
   chart: string            (required) — Mermaid syntax definition (from rehype plugin or programmatic)
   id?: string              (optional) — custom DOM id, auto-generated if empty
-  config?: {
-    theme?: 'dark' | 'light' | 'neutral' | 'forest' | 'base'
-    maxTextSize?: number
-    fontFamily?: string
-  }
   className?: string       (optional) — additional CSS class
 ```
+
+> **Note:** Per-diagram theme overrides are expressed via `%%{init: {"theme": "forest"}}%%`
+> directives inside the chart definition — mermaid's `initialize()` is global-only and
+> does not accept per-node config, so a `config` prop would cause race conditions between
+> diagrams. Global theme is managed automatically via the MutationObserver theme-sync logic.
 
 ### MDX Usage
 
