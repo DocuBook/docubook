@@ -40,7 +40,7 @@ export default function Sublink({
 
   useEffect(() => {
     if (isActive && activeRef.current) {
-      activeRef.current.scrollIntoView({ block: "center" });
+      activeRef.current.scrollIntoView({ block: "nearest" });
     }
   }, [isActive]);
 

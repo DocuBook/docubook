@@ -3,7 +3,7 @@
 import { useId, useRef, useEffect, useState } from "react";
 import type { Mermaid } from "mermaid";
 
-// ponytail: module-level singleton — one dynamic import regardless of diagram count
+// Module-level singleton — one dynamic import regardless of diagram count
 let mermaidPromise: Promise<typeof import("mermaid")> | null = null;
 
 interface MermaidMdxProps {
@@ -84,6 +84,8 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
         if (cancelled || !mermaidRef.current || !ref.current) return;
         // Mermaid replaces innerHTML — restore original chart text before re-render
         ref.current.textContent = chartRef.current;
+        // Remove data-processed so mermaid v11 does not skip this node
+        ref.current.removeAttribute("data-processed");
         mermaidRef.current.initialize({
           startOnLoad: false,
           theme: getTheme(),
@@ -102,7 +104,7 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
       lazyObserver?.disconnect();
       syncObserver?.disconnect();
     };
-    // ponytail: chart string is static from MDX — this only fires on mount
+    // chart string is static from MDX — this only fires on mount
   }, []);
 
   // Guard: empty chart

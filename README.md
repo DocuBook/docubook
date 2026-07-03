@@ -10,7 +10,7 @@
   DocuBook
 </h1>
 <h3 align="center" style="font-size: 20px;">
-  An open-source alternative to Mintlify or GitBook. Write documentation in MDX with the runtime and UI library you already use. Supports Bun, Node, or Deno, plus React or Vue.
+  An open-source alternative to Mintlify or GitBook. Write documentation in MDX with the runtime and UI library you already use. Built on Bun + React today, with Node, Deno, and Vue support on the roadmap.
 </h3>
 
 [![DocuBook CLI](https://shieldcn.dev/npm/v/@docubook/cli?label=CLI&variant=secondary)](https://www.npmjs.com/package/@docubook/cli)
