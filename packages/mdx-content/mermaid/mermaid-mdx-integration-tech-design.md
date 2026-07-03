@@ -111,9 +111,9 @@ erDiagram
 ### Key Design Decisions
 
 1. **Mermaid definition comes from fenced code blocks** — rehype plugin extracts the code text as a `chart` string prop on `<Mermaid>`. No raw Mermaid text as JSX children.
-2. **Config cascades**: global `mermaid.initialize()` default → per-diagram prop overrides.
+2. **Config cascades**: global `mermaid.initialize()` default → per-diagram `%%{init: {...}}%%` directives inside the chart definition. `initialize()` is global-only, so there is no per-diagram config prop.
 3. **SSR renders a placeholder `<pre>`** — Mermaid only runs client-side. No SSR of SVG to avoid hydration mismatch and bundle size.
-4. **`mermaid` is a direct dependency** of `@docubook/mdx-content` (not optional peer) — TypeScript needs types at build time, tree-shaking keeps it out of the initial bundle regardless.
+4. **`mermaid` is a direct dependency** of `@docubook/mdx-content` (not optional peer) — TypeScript needs types at build time, and the dynamic import code-splits it out of the initial bundle regardless.
 
 ---
 
@@ -244,7 +244,7 @@ Escape hatch — prop-based (for programmatic use):
 | ----------------------- | ---------------------------------- |
 | Diagrams per page       | 1–20 (typical doc page: 1–5)       |
 | Diagram definition size | 50–500 chars per diagram           |
-| Mermaid library size    | ~2.4 MB full, ~1.2 MB tiny variant |
+| Mermaid library size    | ~2.4 MB minified, several hundred KB gzipped (effectively monolithic) |
 | Concurrent readers      | N/A (static site, per-reader)      |
 
 ### Rendering Strategy
@@ -285,11 +285,12 @@ flowchart LR
 | Asset | Without Mermaid | With Mermaid | Delta |
 |-------|----------------|--------------|-------|
 | Main JS bundle | ~150 KB | ~150 KB | 0 (dynamic import) |
-| Mermaid chunk (lazy) | — | ~120 KB (minified gzip) | +120 KB on diagram pages |
+| Mermaid chunk (lazy) | — | several hundred KB (minified gzip) | only on diagram pages, deferred by IntersectionObserver |
 | CSS | existing | +0 (Mermaid renders inline SVG) | 0 |
 
-- Use `mermaid` npm package (not CDN) — tree-shakeable via ES module import.
-- Consider `mermaid-tiny` if mindmap/architecture diagrams not needed.
+- Use `mermaid` npm package (not CDN), loaded via dynamic import — the bundle is effectively monolithic, so unused diagram types are NOT tree-shaken away; code-splitting (not tree-shaking) is what keeps it out of the main chunk.
+- No smaller official build of mermaid exists — the mitigation is lazy loading (dynamic import + IntersectionObserver), not a lighter package.
+- Re-measure the real chunk size with the bundle analyzer during T-002 so acceptance criteria use measured numbers, not estimates.
 
 ---
 

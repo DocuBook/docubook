@@ -13,7 +13,7 @@
 
 | Task # | Task Name | Description | Effort | Dependencies | Acceptance Criteria | Source Docs |
 |--------|-----------|-------------|--------|--------------|---------------------|-------------|
-| T-001 | Add `mermaid` as direct dependency | Add `mermaid` to `dependencies` in `packages/mdx-content/package.json`. Direct dep (not peer) because TypeScript needs types at build time and `import()` is tree-shaken anyway | S | — | `pnpm install` succeeds, `import("mermaid")` resolves in both build and runtime | Contract §Dependency Strategy, Design §5 |
+| T-001 | Add `mermaid` as direct dependency | Add `mermaid` to `dependencies` in `packages/mdx-content/package.json`. Direct dep (not peer) because TypeScript needs types at build time and the dynamic `import()` code-splits it out of the initial bundle anyway | S | — | `pnpm install` succeeds, `import("mermaid")` resolves in both build and runtime | Contract §Dependency Strategy, Design §5 |
 | T-002 | Create `MermaidMdx` component | Build client-side React component: SSR renders `<pre class="mermaid">`, dynamic import via singleton promise (`let p; p ??= import("mermaid")`), `mermaid.parse(chart)`, batch push ref → queueMicrotask → `mermaid.run({ nodes })`, error fallback, auto-generate unique DOM id | M | T-001 | SSR renders placeholder, client hydrates to SVG, syntax error shows raw code, unique id per instance, `mermaid` not in initial bundle, singleton loader (one import) | Contract §API Contract, Design §5 |
 | T-003 | Register `MermaidMdx` in package exports | Export from `src/components/index.ts`, add to `src/client.ts` (client-only), register in `src/registry/index.ts` as `Mermaid` in `createMdxComponents` | S | T-002 | `import { MermaidMdx } from "@docubook/mdx-content/client"` resolves, `createMdxComponents` includes `Mermaid` key | Contract §Files Changed |
 | T-004 | Wire up `Mermaid` in web app MDX config | Add `Mermaid: MermaidMdx` to `builtInOverrides` in `apps/web/lib/mdx-components.ts` | S | T-003 | ` ```mermaid ` fenced block renders as SVG diagram in docs | Contract §Files Changed |
@@ -62,7 +62,7 @@ Execution order:
 
 | Risk | Severity | Mitigation |
 |------|----------|------------|
-| **Mermaid library size (~2.4 MB)** | Medium | Dynamic import + use `mermaid-tiny` if mindmap/architecture diagrams aren't needed |
+| **Mermaid library size (~2.4 MB minified, several hundred KB gzipped)** | Medium | Dynamic import + IntersectionObserver lazy loading; no smaller official build exists — measure the real chunk size with the bundle analyzer in T-002 |
 | **Theme sync mutation observer race** | Low | Debounce 200ms, store chart in ref to restore on re-render (mermaid replaces innerHTML) |
 | **Mermaid API breaking changes** | Low | Pin `mermaid` at `^11`, test lock |
 | **Hydration mismatch** | Low | SSR renders plain `<pre>`, no SVG — safe from mismatch |

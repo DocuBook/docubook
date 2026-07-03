@@ -116,7 +116,7 @@ Client:
 
 `mermaid` is a **direct dependency** of `@docubook/mdx-content`, not an optional peer:
 - TypeScript needs `mermaid` types at build time for `import('mermaid')`
-- Tree-shaking via dynamic import keeps it out of the initial bundle regardless
+- Code-splitting via dynamic import keeps it out of the initial bundle regardless
 - Consumers (web app, flame) don't need to remember to install it
 
 ---
