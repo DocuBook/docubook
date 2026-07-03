@@ -109,7 +109,7 @@ Client:
 | `packages/mdx-content/src/registry/index.ts` | UPDATE — register `Mermaid` |
 | `packages/mdx-content/package.json` | UPDATE — add `mermaid` as dependency (see dep strategy below) |
 | `apps/web/lib/mdx-components.ts` | UPDATE — add `Mermaid` override |
-| `packages/core/src/plugins/mermaid.ts` | CREATE — rehype plugin for ` ```mermaid ` → `<Mermaid>` |
+| `packages/core/src/plugins/rehypeMermaid.ts` | CREATE — rehype plugin for ` ```mermaid ` → `<Mermaid>` |
 | `packages/core/src/compile.ts` | UPDATE — register mermaid rehype plugin |
 
 ### Dependency Strategy
