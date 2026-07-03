@@ -37,6 +37,12 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
 
   const mode = docuConfig.sidebar?.context || "dropdown";
 
+  // Helper: check if a sublink under a given route matches the current path
+  const isItemActive = (itemHref: string, parentRouteHref: string) => {
+    const fullHref = `/docs${parentRouteHref}${itemHref}`;
+    return currentPath === fullHref || currentPath === `${fullHref}.html`;
+  };
+
   // Separator mode: render all context sections as group headers + nav items
   if (mode === "separator") {
     const contextRoutes = menuRoutes.filter((r) => r.context);
@@ -77,17 +83,29 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
               title={route.context?.title || route.title}
             />
             <ul className="border-base-300 flex flex-col gap-1.5 border-l-2 pb-0.5 pl-3 pt-0.5">
-              {route.items?.map((item) => (
-                <li key={item.href}>
-                  <Sublink
-                    {...item}
-                    href={item.href}
-                    level={0}
-                    onNavigate={onNavigate}
-                    parentHref={`/docs${route.href}`}
-                  />
-                </li>
-              ))}
+              {route.items?.map((item) => {
+                const isActive = isItemActive(item.href, route.href);
+                return (
+                  <li key={item.href}>
+                    <div
+                      className={cn(
+                        "-ml-[14px] border-l-2",
+                        isActive ? "border-primary" : "border-transparent"
+                      )}
+                    >
+                      <div className="pl-3">
+                        <Sublink
+                          {...item}
+                          href={item.href}
+                          level={0}
+                          onNavigate={onNavigate}
+                          parentHref={`/docs${route.href}`}
+                        />
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}

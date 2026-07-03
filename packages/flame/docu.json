@@ -213,6 +213,10 @@
           "href": "/link"
         },
         {
+          "title": "Mermaid",
+          "href": "/mermaid"
+        },
+        {
           "title": "Note",
           "href": "/note"
         },
