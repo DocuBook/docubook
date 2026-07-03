@@ -8,6 +8,7 @@ export { FileMdx, FilesMdx, FolderMdx } from "./components/FileTreeMdx";
 export { ImageMdx, type ImageMdxProps } from "./components/ImageMdx";
 export { KbdMdx } from "./components/KbdMdx";
 export { LinkMdx, type LinkMdxProps } from "./components/LinkMdx";
+export { MermaidMdx } from "./components/MermaidMdx";
 export { NoteMdx } from "./components/NoteMdx";
 export { ChangesMdx, ReleaseMdx } from "./components/ReleaseMdx";
 export { StepMdx, StepsMdx } from "./components/StepperMdx";

@@ -5,3 +5,4 @@ export { TooltipMdx } from "./components/TooltipMdx";
 export { ImageMdx } from "./components/ImageMdx";
 export { CardMdx } from "./components/CardMdx";
 export { FileMdx, FilesMdx, FolderMdx } from "./components/FileTreeMdx";
+export { MermaidMdx } from "./components/MermaidMdx";

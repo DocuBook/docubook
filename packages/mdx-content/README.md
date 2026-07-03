@@ -64,6 +64,7 @@ import {
     TableHeaderMdx,
     TableMdx,
     TableRowMdx,
+    MermaidMdx,
     TooltipMdx,
     YoutubeMdx,
 } from "@docubook/mdx-content";
@@ -97,6 +98,7 @@ const builtInOverrides: MdxComponentMap = {
     Folder: FolderMdx,
     Youtube: YoutubeMdx,
     Tooltip: TooltipMdx,
+    Mermaid: MermaidMdx,
     img: ImageMdx,
     a: LinkMdx,
     Link: LinkMdx,
@@ -131,7 +133,7 @@ const docsService = createMdxContentService({
 |              Path              |                          Description                           |
 | ------------------------------ | -------------------------------------------------------------- |
 | `@docubook/mdx-content`        | All server-safe components + `createMdxComponents` registry    |
-| `@docubook/mdx-content/client` | Client-only components (accordion, tabs, tooltip, etc.)        |
+| `@docubook/mdx-content/client` | Client-only components (accordion, tabs, tooltip, mermaid, etc.)        |
 | `@docubook/mdx-content/server` | Server-side components                                         |
 | `@docubook/mdx-content/next`   | Next.js-optimized adapters (`Link`, `Button`, `Card`, `Image`) |
 | `@docubook/mdx-content/styles.css` | Stylesheet for MDX components (required)                   |
@@ -246,6 +248,7 @@ Components included out of the box:
 - `Steps` / `Step`
 - `Tabs` / `Tab`
 - `Tooltip`
+- `Mermaid` — renders Mermaid.js diagrams (flowchart, sequence, class, state, gantt, pie, ER) from ` ```mermaid ` fenced code blocks
 - `Youtube`
 - Table (`table`, `thead`, `tbody`, `tfoot`, `tr`, `th`, `td`)
 

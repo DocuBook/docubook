@@ -89,6 +89,7 @@ const tocs = await docsService.getTocsForSlug("getting-started/introduction");
 | `handleCodeTitles` | Move code title metadata to `<pre>` attributes (advanced) | transformer function |
 | `handleCodeExpandableRemark` | Remark plugin that detects `Expandable` meta on code blocks and injects expandable data attributes | transformer function |
 | `handleCodeExpandable` | Rehype plugin that propagates expandable metadata from `<code>` to `<pre>` elements | transformer function |
+| `rehypeMermaid` | Rehype plugin that transforms ` ```mermaid ` fenced code blocks into `<Mermaid chart="...">` elements | transformer function |
 | `serialize` | Re-exported from `next-mdx-remote/serialize` for non-RSC MDX compilation workflows | `MDXRemoteSerializeResult` |
 | `MDXRemote` | Re-exported from `next-mdx-remote` for client-side MDX hydration | React component |
 | `cn` | Merge class names using `clsx` + `tailwind-merge` | `string` |
@@ -254,7 +255,30 @@ const mdxSource = await serialize(rawMdx, { parseFrontmatter: true });
 
 Use this for Pages Router or non-RSC environments where `compileMDX` (used internally by `parseMdx`) is not available. `serialize` compiles MDX on the server and `MDXRemote` hydrates it on the client.
 
-#### 12. Expandable code blocks (code plugins)
+#### 12. Mermaid diagram support (`rehypeMermaid`)
+
+```ts
+import { rehypeMermaid } from "@docubook/core";
+```
+
+This plugin transforms ` ```mermaid ` fenced code blocks into `<Mermaid chart="...">` elements during MDX compilation. It runs after `preProcess` and before other code transforms, so mermaid blocks are converted before prism or expandable-code plugins process them.
+
+The plugin is included in `createDefaultRehypePlugins()` by default — no manual registration needed.
+
+In your MDX files:
+
+````md
+```mermaid
+graph TD
+  A[Start] --> B{Decision}
+  B -->|Yes| C[Process]
+  B -->|No| D[End]
+```
+````
+
+This requires the `<Mermaid>` component to be registered in your MDX component map (provided by `@docubook/mdx-content`).
+
+#### 13. Expandable code blocks (code plugins)
 
 ```ts
 import {

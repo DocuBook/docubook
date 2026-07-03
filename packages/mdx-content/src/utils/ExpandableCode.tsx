@@ -78,7 +78,7 @@ export function ExpandableCode({
           style={{
             margin: 0,
             padding: "0.9rem",
-            overflowX: "visible",
+            overflowX: "auto",
             minWidth: "100%",
             maxHeight: isCollapsed ? collapsedMaxHeight : "none",
             overflowY: isCollapsed ? "hidden" : "visible",

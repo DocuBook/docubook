@@ -12,6 +12,7 @@ import {
   ImageMdx,
   KbdMdx,
   LinkMdx,
+  MermaidMdx,
   NoteMdx,
   ReleaseMdx,
   ChangesMdx,
@@ -65,6 +66,7 @@ export function createMdxComponents(customComponents: MdxComponentMap = {}): Mdx
     img: ImageMdx,
     Youtube: YoutubeMdx,
     Tooltip: TooltipMdx,
+    Mermaid: MermaidMdx,
     ...customComponents,
   };
 }

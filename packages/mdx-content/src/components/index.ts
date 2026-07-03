@@ -23,3 +23,4 @@ export {
 } from "./TableMdx";
 export { TooltipMdx } from "./TooltipMdx";
 export { YoutubeMdx } from "./YoutubeMdx";
+export { MermaidMdx } from "./MermaidMdx";
