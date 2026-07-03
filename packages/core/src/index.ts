@@ -11,6 +11,7 @@ export {
 } from "./compile";
 export { handleCodeTitles } from "./plugins/handleCodeTitles";
 export { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/handleCodeExpandable";
+export { rehypeMermaid } from "./plugins/rehypeMermaid";
 export {
   extractFrontmatter,
   extractFrontmatterWithContent,

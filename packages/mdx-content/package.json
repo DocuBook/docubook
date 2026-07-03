@@ -57,6 +57,9 @@
   "author": "wildan.nrs",
   "author-url": "https://wildan.dev",
   "license": "MIT",
+  "dependencies": {
+    "mermaid": "^11.16.0"
+  },
   "peerDependencies": {
     "@docubook/core": "workspace:^",
     "lucide-react": "^1.7.0",

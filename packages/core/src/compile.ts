@@ -9,6 +9,7 @@ import rehypeSlug from "rehype-slug";
 import rehypeCodeTitles from "rehype-code-titles";
 import { handleCodeTitles } from "./plugins/handleCodeTitles";
 import { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/handleCodeExpandable";
+import { rehypeMermaid } from "./plugins/rehypeMermaid";
 import type { MdxCompileResult } from "./types";
 import type { ElementNode } from "./utils";
 import type { Pluggable } from "unified";
@@ -91,6 +92,7 @@ export const postProcess = () => (tree: Node) => {
 export function createDefaultRehypePlugins(): Pluggable[] {
   return [
     preProcess,
+    rehypeMermaid, // Transform ```mermaid before code transforms
     rehypeCodeTitles,
     handleCodeTitles,
     handleCodeExpandable, // Copy expandable metadata from <code> to <pre> before prism transforms nodes.
