@@ -16,6 +16,12 @@ directly in `.mdx` files without external tools. This feature provides a `<Merma
 component that renders Mermaid text-based definitions into interactive SVG in the
 browser — just like GitHub, Docusaurus, and VitePress.
 
+**Key revision:** Mermaid definitions are authored via fenced code blocks (` ```mermaid `),
+not JSX children — because Mermaid syntax uses `{...}` (decisions) and `[...]` (labels)
+which collide with MDX's JSX expression parsing. A rehype plugin in `@docubook/core`
+transforms the fenced block into a `<Mermaid chart="...">` element. A `<Mermaid chart="...">`
+escape hatch remains for programmatic use.
+
 ---
 
 ## Scope
@@ -24,10 +30,11 @@ browser — just like GitHub, Docusaurus, and VitePress.
 |----------|--------------|
 | `<Mermaid>` component for MDX | SSR pre-render to static SVG |
 | Client-side hydration via `mermaid.run()` | Live Editor integration |
-| All diagram types (flowchart, sequence, class, state, gantt, pie, git, erd) | Theme editor |
-| Dark/light theme via Mermaid config | Export PNG/SVG |
+| All diagram types (flowchart, sequence, class, state, gantt, pie, git, erd) | Theme editor UI |
+| Dark/light theme via MutationObserver on `document.documentElement.classList` | Export PNG/SVG |
 | Lazy loading via IntersectionObserver | Real-time collaboration |
 | Error fallback (invalid syntax → show raw code) | — |
+| Rehype plugin to transform ` ```mermaid ` fenced blocks | — |
 
 ### Invariants
 
@@ -36,16 +43,31 @@ browser — just like GitHub, Docusaurus, and VitePress.
 3. SSR: render placeholder `<pre class="mermaid">`, **must not** throw
 4. `mermaid` library loaded via dynamic import, not in initial bundle
 5. Re-render only triggered by theme change, not by other React state
+6. Theme detection uses `MutationObserver` on `<html class>`, not `matchMedia` — because DocuBook's theme toggle is class-driven (next-themes + flame localStorage script), not OS-preference-driven
 
 ---
 
 ## API Contract
 
+### MDX Authoring Surface
+
+Primary syntax — fenced code block (matches GitHub/VitePress/Docusaurus):
+
+```mdx
+```mermaid
+graph TD
+  A[Start] --> B{Decision}
+  B -->|Yes| C[Process]
+```
+```
+
+Internally, the rehype plugin rewrites this into `<Mermaid chart="...">` component.
+
 ### `<Mermaid>` Component
 
 ```
 Props:
-  children: string         (required) — Mermaid syntax definition
+  chart: string            (required) — Mermaid syntax definition (from rehype plugin or programmatic)
   id?: string              (optional) — custom DOM id, auto-generated if empty
   config?: {
     theme?: 'dark' | 'light' | 'neutral' | 'forest' | 'base'
@@ -58,29 +80,21 @@ Props:
 ### MDX Usage
 
 ```mdx
-<Mermaid>
-  graph TD
-    A[Start] --> B{Decision}
-    B -->|Yes| C[Process]
-</Mermaid>
-
-<Mermaid theme="dark" id="sequence-diagram">
-  sequenceDiagram
-    Alice->>John: Hello!
+<Mermaid chart="graph TD&#10;  A[Start] --> B{Decision}&#10;  B -->|Yes| C[Process]">
 </Mermaid>
 ```
 
 ### Lifecycle (SSR → Client)
 
 ```
-SSR:  <pre class="mermaid not-prose">{children}</pre>
+SSR:  <pre class="mermaid not-prose">{chart}</pre>
        ↓ (hydrate)
 Client:
-  1. dynamic import('mermaid')
+  1. dynamic import('mermaid') — singleton promise, shared across instances
   2. mermaid.initialize({ startOnLoad: false })
-  3. mermaid.parse(definition) — validate syntax
-  4. mermaid.run({ nodes: [ref] }) — render to SVG
-  5. matchMedia('prefers-color-scheme') listener → re-render on theme change
+  3. mermaid.parse(chart) — validate syntax
+  4. queueMicrotask → mermaid.run({ nodes: [ref] }) — batched one call for all
+  5. MutationObserver on document.documentElement.classList → re-render on theme change
 ```
 
 ---
@@ -93,24 +107,34 @@ Client:
 | `packages/mdx-content/src/components/index.ts` | UPDATE — export `MermaidMdx` |
 | `packages/mdx-content/src/client.ts` | UPDATE — export `MermaidMdx` (client-only) |
 | `packages/mdx-content/src/registry/index.ts` | UPDATE — register `Mermaid` |
-| `packages/mdx-content/package.json` | UPDATE — add `mermaid` optional peer dep |
+| `packages/mdx-content/package.json` | UPDATE — add `mermaid` as dependency (see dep strategy below) |
 | `apps/web/lib/mdx-components.ts` | UPDATE — add `Mermaid` override |
+| `packages/core/src/plugins/mermaid.ts` | CREATE — rehype plugin for ` ```mermaid ` → `<Mermaid>` |
+| `packages/core/src/compile.ts` | UPDATE — register mermaid rehype plugin |
 
-> **No changes** to `@docubook/core` — the MDX compilation pipeline is untouched.
+### Dependency Strategy
+
+`mermaid` is a **direct dependency** of `@docubook/mdx-content`, not an optional peer:
+- TypeScript needs `mermaid` types at build time for `import('mermaid')`
+- Tree-shaking via dynamic import keeps it out of the initial bundle regardless
+- Consumers (web app, flame) don't need to remember to install it
 
 ---
 
 ## Verification / Acceptance Criteria
 
+- [ ] ` ```mermaid ` fenced block renders as SVG diagram (primary path)
+- [ ] `<Mermaid chart="...">` prop syntax works (escape hatch)
 - [ ] Component renders `<pre class="mermaid">` placeholder during SSR
 - [ ] Diagram renders as SVG after client hydration
 - [ ] Diagram with syntax error shows error fallback (raw code)
 - [ ] Dynamic import of `mermaid` does not inflate main JS bundle
-- [ ] Dark/light theme syncs automatically
-- [ ] Multiple `<Mermaid>` on one page — each has a unique ID
-- [ ] `mermaid` imported only once, `run()` called once for all nodes
+- [ ] Dark/light theme syncs automatically — works with both next-themes and flame
+- [ ] Multiple diagrams on one page — each has a unique ID
+- [ ] `mermaid` imported only once, `run()` called once per batch
 - [ ] No errors/warnings in console during SSR
 - [ ] Existing MDX files unaffected (backward-compatible)
+- [ ] IntersectionObserver delays render for off-screen diagrams
 
 ---
 
