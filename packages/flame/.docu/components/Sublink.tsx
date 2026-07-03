@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import Anchor from "./Anchor";
 import type { DocuRoute } from "../node/types";
@@ -35,11 +35,17 @@ export default function Sublink({
 
   // Shared padding based on nesting level
   const levelPadding = cn(level === 1 && "pl-2", level === 2 && "pl-4", level >= 3 && "pl-6");
+  const isActive = currentPathname === fullHref || currentPathname === `${fullHref}.html`;
+  const activeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isActive && activeRef.current) {
+      activeRef.current.scrollIntoView({ block: "center" });
+    }
+  }, [isActive]);
 
   // Leaf node (no children)
   if (!items) {
-    const isActive = currentPathname === fullHref || currentPathname === `${fullHref}.html`;
-
     const link = (
       <Anchor
         href={fullHref}
@@ -51,8 +57,10 @@ export default function Sublink({
         {title}
       </Anchor>
     );
+
     return (
       <div
+        ref={activeRef}
         className={cn(
           "py-1.5",
           levelPadding,
@@ -67,7 +75,7 @@ export default function Sublink({
 
   // Section with children
   return (
-    <div className={cn("flex flex-col", levelPadding)}>
+    <div ref={isActive ? activeRef : undefined} className={cn("flex flex-col", levelPadding)}>
       {/* Section header */}
       <button
         type="button"
