@@ -10,7 +10,7 @@
   DocuBook
 </h1>
 <h3 align="center" style="font-size: 20px;">
-  An open-source alternative to Mintlify or GitBook. Just write in MDX — it works with pretty much any React framework.
+  An open-source alternative to Mintlify or GitBook. Write documentation in MDX with the runtime and UI library you already use. Supports Bun, Node, or Deno, plus React or Vue.
 </h3>
 
 [![DocuBook CLI](https://shieldcn.dev/npm/v/@docubook/cli?label=CLI&variant=secondary)](https://www.npmjs.com/package/@docubook/cli)
@@ -20,60 +20,62 @@
 [![UI React](https://shieldcn.dev/npm/v/@docubook/ui-react?label=UI%20React&variant=secondary)](https://www.npmjs.com/package/@docubook/ui-react)
 [![License](https://shieldcn.dev/github/license/DocuBook/docubook.svg?variant=secondary)](https://github.com/DocuBook/docubook)
 
----
+## Architecture
 
-> **DocuBook** is a documentation web project designed to provide a simple and user-friendly interface
-> for accessing various types of documentation. This site is crafted for developers and teams who need
-> quick access to references, guides, and essential documents.
+DocuBook is a **layer between MDX content and the browser**. The core pipeline compiles MDX into renderable output, and the runtime layer determines how that output is served — Node, Bun, or Deno. You bring the content; DocuBook handles everything in between.
 
-## Features
+```mermaid
+flowchart TD
+    A[MDX Content]
+    B["@docubook/core — compile pipeline, rehype/remark plugins"]
+    C["@docubook/mdx-content — portable UI components (framework-agnostic)"]
+    D["@docubook/flame"]
+    D1["Bun + React - ready to use"]
+    D2["Node — in development"]
+    D3["Deno — in development"]
+    E[Browser]
 
-- **@docubook/core** : Shared MDX compile pipeline and markdown utilities.
-- **@docubook/mdx-content** : Portable MDX components and framework adapters.
-- **@docubook/cli** : CLI tool that helps you initialize, update, and deploy documentation directly from your terminal.
-- **starter template** : ready-to-use templates with a choice of modern frameworks for the react ecosystem.
-  
-  - **@docubook/flame** : A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.
-  - **nextjs-vercel** : This template is optimized for deployment on Vercel (the default hosting target).
-  - **nextjs-docker** : This template includes an opinionated Docker setup optimized for building a small, production-ready Next.js standalone image using multi-stage
-    builds and an Alpine base.
-  - **react-router** : a minimal documentation template with SSR + Hydration (in development)
+    A -->  B --> C --> D
+    D --> D1 --> E
+    D --> D2 --> E
+    D --> D3 --> E
+```
+
+## Packages
+
+|                                     Package                                      |                                                                    Description                                                                    |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[@docubook/core](https://www.npmjs.com/package/@docubook/core)**               | Shared MDX compile pipeline, rehype/remark plugins, and markdown utilities.                                                                       |
+| **[@docubook/mdx-content](https://www.npmjs.com/package/@docubook/mdx-content)** | Portable MDX components (Mermaid, CodeBlock, Tabs, etc.) with framework-agnostic adapters.                                                        |
+| **[@docubook/flame](https://www.npmjs.com/package/@docubook/flame)**             | The runtime layer — a React + MDX framework that bridges compiled content to the browser. Supports Bun today; Node and Deno runtimes coming soon. |
+| **[@docubook/cli](https://www.npmjs.com/package/@docubook/cli)**                 | CLI tool to initialize, update, and deploy documentation from your terminal.                                                                      |
+
+## Runtimes
+
+DocuBook is designed to be runtime-agnostic. The same MDX content runs on any supported runtime — swap the runtime layer without touching your content.
+
+| Runtime  | UI Library |      Status      |          Recipe           |
+| -------- | ---------- | ---------------- | ------------------------- |
+| **Bun**  | React      | ✅ Available      | `bun add @docubook/flame` |
+| **Node** | React      | 🚧 In development | —                         |
+| **Deno** | React      | 🚧 In development | —                         |
+| **Bun**  | Vue        | 🔮 Planned        | —                         |
+| **Node** | Vue        | 🔮 Planned        | —                         |
+| **Deno** | Vue        | 🔮 Planned        | —                         |
 
 ## Installation
 
-```bash
-npx @docubook/cli@latest
-```
-
-#### command output
+### Bun + React (available now)
 
 ```bash
-┌────────────────────────────────────────────────────────────────────────────┐
-│ ▛▀▀▜                                                                       │
-│ ▌>_▐  DocuBook CLI v0.6.1                                                  │
-│ ▙▄▄▟  Initialize, build, and deploy docs from terminal.                    │
-│                                                                            │
-│      Visit our documentation. https://www.docubook.pro/                    │
-└────────────────────────────────────────────────────────────────────────────┘
-
-? What is your project named? › test-docs
-✔ What is your project named? … test-docs
-
-? Select your template: › - Use arrow-keys. Return to submit.
-❯ nextjs-vercel
-   Next.js and Vercel deployment (optimized for vercel)
-  nextjs-docker
-  react-router (Coming Soon)
-✔ Select your template: › nextjs-vercel
-
-? Would you like to install dependencies now? › (Y/n)
-✔ Would you like to install dependencies now? … no
-
-ℹ Creating a new DocuBook project in /path/test-docs...
-
-Creating Project
-Initializing...
+mkdir my-docs && cd my-docs
+bun add @docubook/flame
+bunx flame init
+bun run dev
 ```
+
+> [!WARNING]
+> The `nextjs-vercel`, `nextjs-docker`, and `react-router` templates are **deprecated** and will no longer be maintained. Use `@docubook/flame` as the recommended starting point going forward.
 
 ## Contributing
 
