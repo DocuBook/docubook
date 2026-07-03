@@ -84,7 +84,7 @@ erDiagram
     }
 
     MermaidConfig {
-        Theme theme "dark | light | neutral"
+        Theme theme "default | dark | forest | neutral | base"
         boolean startOnLoad "auto-run"
         number maxTextSize "safety-limit"
         string fontFamily "rendering-font"
@@ -177,12 +177,12 @@ Mermaid {
 
   optional:
     id?: string            // custom DOM id (auto-generated if omitted)
-    config?: {             // per-diagram MermaidConfig overrides
-      theme?: 'dark' | 'light' | 'neutral' | 'forest' | 'base'
-      maxTextSize?: number
-      fontFamily?: string
-    }
     className?: string     // additional CSS class on container
+
+  // Per-diagram theme overrides: use %%{init: {"theme": "forest"}}%% directive inside
+  // the chart definition. mermaid.initialize() is global-only — a config prop would
+  // race between concurrent diagram instances. Global theme is synced automatically
+  // via MutationObserver on document.documentElement.classList.
 
   SSR behavior:
     renders <pre class="mermaid not-prose">{chart}</pre>
@@ -193,7 +193,7 @@ Mermaid {
     2. await singleton mermaid promise (module-level: let mermaidPromise; first
        mount assigns mermaidPromise = import("mermaid"), all instances await
        the same promise — satisfies invariant 6)
-    3. mermaid.initialize({ startOnLoad: false, ...mergedConfig })
+    3. mermaid.initialize({ startOnLoad: false, theme: currentTheme })
     4. mermaid.parse(chart) — guard against invalid syntax
     5. push ref to module-level pending set; queueMicrotask flushes once,
        calling mermaid.run({ nodes: [...pending] })
@@ -208,14 +208,14 @@ Mermaid {
 
 Primary syntax — fenced code block:
 
-```mdx
+````mdx
 ```mermaid
 graph TD
   A[Start] --> B{Decision}
   B -->|Yes| C[Process]
   B -->|No| D[End]
 ```
-```
+````
 
 Escape hatch — prop-based (for programmatic use):
 
@@ -314,7 +314,7 @@ flowchart LR
 |                         File                         |                            Action                            |
 | ---------------------------------------------------- | ------------------------------------------------------------ |
 | `packages/core/src/plugins/rehypeMermaid.ts`          | **CREATE** — rehype plugin for ` ```mermaid ` → `<Mermaid>` |
-| `packages/core/src/plugins/index.ts`                  | **UPDATE** — re-export `rehypeMermaid`                      |
+| `packages/core/src/index.ts`                          | **UPDATE** — re-export `rehypeMermaid` (no `plugins/index.ts` barrel exists yet) |
 | `packages/core/src/compile.ts`                        | **UPDATE** — add `rehypeMermaid` to `createDefaultRehypePlugins` |
 | `packages/mdx-content/src/components/MermaidMdx.tsx`  | **CREATE** — Mermaid component                                |
 | `packages/mdx-content/src/components/index.ts`        | **UPDATE** — re-export `MermaidMdx`                           |
