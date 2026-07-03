@@ -33,7 +33,7 @@
   - Added Mermaid diagram types documentation page to the flame docs site.
 
 - Updated dependencies [[`5b864e6`](https://github.com/DocuBook/docubook/commit/5b864e66d03117d408ad11ecdbb79090305eec10)]:
-  - @docubook/mdx-content@4.0.0
+  - @docubook/mdx-content@3.3.0
   - @docubook/core@1.8.0
 
 ## 1.4.0
