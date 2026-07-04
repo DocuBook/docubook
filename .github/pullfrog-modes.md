@@ -30,20 +30,20 @@ You are working on the DocuBook monorepo. Follow these guidelines:
 
 ### Packages Detail
 
-#### @docubook/core (v1.7.2)
+#### @docubook/core
 Pure TypeScript — MDX compilation pipeline (unified, remark-gfm, rehype-prism-plus).
 `createMdxContentService()` facade: `getParsedForSlug()`, `getCompiledForSlug()`,
 `getFrontmatterForSlug()`, `getTocsForSlug()`. Git date integration.
 No React dependency. Tests: Vitest.
 
-#### @docubook/mdx-content (v3.2.2)
+#### @docubook/mdx-content
 18+ Portable React components: Accordion, Tabs, CodeBlock, Note, Card, FileTree,
 Image, Link, Table, Stepper, Youtube, Tooltip, Button, Release, Kbd.
 Framework adapters: `./next` (Next.js image+link), `./client`, `./server`.
 Uses `createComponentsRegistry()` for dynamic component resolution.
 Tests: Vitest + @testing-library/react.
 
-#### @docubook/flame (v1.3.5)
+#### @docubook/flame
 Bun SSG — NOT Node.js. Uses `Bun.build()`, `Bun.write()`, `Bun.serve()`, `Bun.FileSystemRouter`.
 Plugin system: 10 hooks via `DocuBookPlugin` interface (`setup(build: PluginBuilder)`).
 Hooks: `onStart`, `onLoad` (regex-filtered file transform), `transformFrontmatter` (waterfall),
@@ -58,17 +58,17 @@ Icon system: `FnKey.configure()` for keyboard shortcuts, `Lucide.tsx` for app ic
 Sentry: optional via `@sentry/bun` peer dep (opt-in).
 Dev server: HMR via SSE on `/__hmr`, file watcher on `docs/` for `.mdx`/`.md`.
 
-#### @docubook/ui-react (v0.1.4)
+#### @docubook/ui-react
 DaisyUI 5 + Tailwind CSS 4 components: Collapse, Modal, Dropdown, Drawer, Input, Kbd,
 Navbar, Pagination, Toggle, ThemeController, Breadcrumbs.
 Bundled with tsup → CJS + ESM. Tests: Vitest + jsdom.
 
-#### @docubook/themes-colors (v0.10.2)
+#### @docubook/themes-colors
 Theme presets: default (blue, ~210° hue), freshlime (~85°), coffee (~25-35°).
 24 CSS variables per mode (light + dark) + syntax highlighting tokens.
 Consumed by flame via `docu.json → theme.colors`.
 
-#### @docubook/cli (v0.6.1)
+#### @docubook/cli
 Node.js CLI (Commander 12). Scaffolds projects from template artifacts on GitHub.
 Package manager auto-detection. Prompt-based template selection.
 
@@ -243,4 +243,4 @@ Known architectural commitments (do not contradict):
 - Conventional commits: `type(scope): description` (feat, fix, refactor, chore, docs, test, ci).
 - Changeset required for any public package version change (core, mdx-content, flame, cli, ui-react, themes-colors).
 - PR description should link to the plan or issue.
-- Architecture documentation lives in `architecture/`. Update it when changing component inventory, data flow, security model, or ADRs.
+- Architecture documentation lives in the root `ARCHITECTURE.md`. Update it when changing component inventory, data flow, security model, or key decisions.
