@@ -8,8 +8,10 @@
 **DocuBook** is an open-source documentation platform that compiles MDX content
 into production-ready documentation websites. A shared compilation pipeline
 (`@docubook/core`) and portable UI components (`@docubook/mdx-content`) work
-across multiple React frameworks, so teams can pick their deployment target
-(static CDN, Vercel, Docker) without rewriting content or components.
+across React frameworks. The Bun-powered **flame** framework is the recommended
+and actively maintained consumer — it deploys to Vercel or any static host. The
+Next.js and React Router starter templates are **deprecated** and no longer
+maintained (see the warning in [README.md](./README.md)).
 
 **Scope boundaries:** content authoring and rendering only. No CMS, no user
 authentication, no database. Content is file-based (`.mdx`), configuration is
@@ -25,9 +27,9 @@ declarative (`docu.json`), and deployment is CI-driven.
 | `@docubook/ui-react` | `packages/ui/react` | Reusable DaisyUI + Tailwind CSS React component library (Collapse, Modal, Dropdown, Drawer, Navbar, Pagination, and more). Consumed by flame. Note the path: `packages/ui/react`, not `packages/ui-react`. |
 | `@docubook/themes-colors` | `packages/themes-colors` | Theme color presets (default, freshlime, coffee) — CSS variables per light/dark mode plus syntax highlighting tokens. Consumed by flame via `docu.json → theme.colors`. |
 | `@docubook/cli` | `packages/cli` | Node.js scaffolding CLI (Commander) — template selection, project init, package manager detection. Downloads templates from GitHub release artifacts. |
-| `nextjs` template | `packages/template/nextjs` | Starter template for Vercel deployment (Next.js App Router). |
-| `nextjs-docker` template | `packages/template/nextjs-docker` | Starter template for self-hosted Docker deployment (multi-stage Alpine). |
-| `react-router` template | `packages/template/react-router` | React Router SSR starter — planned, see `packages/template/react-router/plan.md`. |
+| `nextjs` template | `packages/template/nextjs` | Starter template for Vercel deployment (Next.js App Router). **Deprecated.** |
+| `nextjs-docker` template | `packages/template/nextjs-docker` | Starter template for self-hosted Docker deployment (multi-stage Alpine). **Deprecated.** |
+| `react-router` template | `packages/template/react-router` | React Router SSR starter (never completed — see `packages/template/react-router/plan.md`). **Deprecated.** |
 
 ### Monorepo Infrastructure
 
@@ -48,7 +50,7 @@ docs/*.mdx → @docubook/core (compile) → framework render → static HTML / S
                                                  ↓
                                      docu.json → routes, theme, nav, search
                                                  ↓
-                                     flame: static output · Next.js: Vercel
+                                     flame: static output → Vercel / any host
 ```
 
 Flame build pipeline (`packages/flame/.docu/node/build.ts`):
@@ -92,10 +94,10 @@ Condensed from the retired ADRs — these commitments are still in force:
    routes, navigation, theme, and search. Validated by
    `packages/flame/docu.schema.json` (a published artifact — editing it ships
    to npm and warrants a changeset).
-4. **DaisyUI for flame, Radix UI for Next.js templates.** DaisyUI is CSS-only —
-   minimal JS for static output; Radix provides accessible primitives where a
-   full framework runtime exists. `@docubook/mdx-content` stays
-   framework-agnostic.
+4. **DaisyUI for flame, Radix UI for the (deprecated) Next.js templates.**
+   DaisyUI is CSS-only — minimal JS for static output; Radix provides
+   accessible primitives where a full framework runtime exists.
+   `@docubook/mdx-content` stays framework-agnostic.
 5. **Island hydration in flame — mixed strategy.** `createRoot` for sidebar,
    mobile bar, and MDX content (avoids hydration mismatches); `hydrateRoot` for
    stable islands (TOC, theme toggle).
