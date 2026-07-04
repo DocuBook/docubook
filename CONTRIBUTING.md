@@ -184,9 +184,14 @@ Git hooks are automatically installed via Husky during `pnpm install` (via the `
 - `packages/core`: Shared MDX compile pipeline and content utilities
 - `packages/flame`: Bun-powered React + MDX documentation framework (uses Bun as runtime/bundler; production site on Vercel)
 - `packages/mdx-content`: Portable MDX components and framework adapters
-- `packages/template/nextjs-vercel`: Starter template for Vercel deployment
+- `packages/ui/react`: Reusable DaisyUI + Tailwind CSS React component library (`@docubook/ui-react`)
+- `packages/themes-colors`: Theme color presets consumed by flame
+- `packages/template/nextjs`: Starter template for Vercel deployment
 - `packages/template/nextjs-docker`: Starter template for Docker/self-host deployment
-- `packages/template/react-router`: Starter template with React Router (SSR)
+- `packages/template/react-router`: Starter template with React Router (planned)
+
+For a deeper overview — package responsibilities, data flow, deployment, and the key design
+decisions — see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ## Branch and Commit Guidelines
 
