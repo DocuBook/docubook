@@ -113,27 +113,32 @@ pnpm clean
 pnpm version-packages
 ```
 
-### 🔒 Strict Commit Hooks (Husky + Commitlint)
+### 🔒 Git Hooks and Commit Tooling
 
-> **⚠️ Important**: Commit hooks in this repository are **strictly enforced** and **cannot be skipped**
-> with `--no-verify`. All hooks must pass before a commit is accepted.
+Four tools work together to enforce code quality and commit hygiene. All of them run
+automatically through git hooks — every commit and push must pass before it is accepted.
 
-Git hooks are automatically installed via Husky during `pnpm install` (via the `prepare` script).
+| Tool | Purpose | Configuration |
+| ---- | ------- | ------------- |
+| [Husky](https://typicode.github.io/husky/) | Installs the git hooks during `pnpm install` (via the `prepare` script) | `.husky/` |
+| [lint-staged](https://github.com/lint-staged/lint-staged) | Formats and lints staged files on commit | `.lintstagedrc.json` |
+| [commitlint](https://commitlint.js.org/) | Validates commit messages against Conventional Commits | `commitlint.config.js` |
+| [czg](https://cz-git.qbb.sh/cli/) | Interactive commit prompt (`pnpm commit`) and the `commit-msg` hook | `commitlint.config.js` (`prompt` key) |
 
 #### What Runs on Every Commit
 
 | Hook | Runs | Scope |
 |------|------|-------|
-| `pre-commit` | `pnpm lint-staged` (ESLint + Prettier) | Staged files only ✅ |
+| `pre-commit` | `pnpm lint-staged` (Prettier + ESLint) | Staged files only ✅ |
 | `commit-msg` | `czg --hook` (commitlint) | Current commit message ✅ |
 
 ```bash
 # Pre-commit: lint-staged
-#    ESLint on staged JS/TS/JSX/TSX/MDX files
-#    Prettier formatting check on staged JSON/MD/MDX files
-#    If any check fails, the commit is blocked
+#    Prettier (--write) formats all staged files
+#    ESLint checks staged JS/TS/JSX/TSX files
+#    If ESLint fails, the commit is blocked
 
-# Commit-msg: czg (commitlint)
+# Commit-msg: czg --hook (commitlint)
 #    Validates commit message follows Conventional Commits format
 #    Format: <type>(<scope>): <subject>
 #    Example: feat(cli): add new template command
@@ -160,12 +165,36 @@ Git hooks are automatically installed via Husky during `pnpm install` (via the `
 
 # 3. Validate ALL commit messages since last push (or origin/main)
 #    - Rules enforced:
-#      - type must be one of: feat \| fix \| docs \| style \| refactor \| perf \| test \| build \| ci \| chore \| revert
-#      - scope is optional (app, packages, cli, core, flame, mdx-content, docs, configs, template)
+#      - type must be one of: feat \| fix \| docs \| style \| refactor \| perf \| test \| build \| ci \| chore \| revert \| review
+#      - scope is optional (docs, packages, cli, core, mdx-content, flame, template)
 #      - subject must be lowercase (no Sentence-case, UPPER-CASE, etc.)
 #      - header max 100 characters
 #    - Every commit in the push must pass — rebase to fix older messages
 ```
+
+#### Non-Interactive Environments (CI and Agents)
+
+`pnpm commit` and the `commit-msg` hook both run **czg**, which prompts for input in the
+terminal. In CI pipelines and agent sessions without a TTY, that prompt fails (typically with
+`readline was closed`). When committing non-interactively:
+
+1. Write the Conventional Commits message manually — do not run `pnpm commit`.
+2. Skip the local hooks for that commit:
+
+   ```bash
+   git commit --no-verify -m "<type>(<scope>): <subject>"
+   # or disable Husky for the whole session
+   HUSKY=0 git commit -m "<type>(<scope>): <subject>"
+   ```
+
+3. `--no-verify` also skips lint-staged, so check formatting yourself before pushing:
+
+   ```bash
+   pnpm exec prettier --check <changed-files>
+   ```
+
+Skipping local hooks does not skip validation — CI runs commitlint on every commit in a pull
+request and lints the full workspace, so malformed messages or unformatted code still fail checks.
 
 #### Why So Strict?
 
@@ -225,22 +254,22 @@ format:
 | `ci`       | CI configuration changes                    |
 | `chore`    | Other changes that don't modify src         |
 | `revert`   | Reverting a previous commit                 |
+| `review`   | Changes made in response to code review     |
 
 #### Scopes
 
-The `scope` is optional but recommended. Common scopes:
+The `scope` is optional but recommended. Common scopes (matching the `czg` prompt in
+`commitlint.config.js`):
 
 |     Scope     |        Description        |
 | ------------- | ------------------------- |
-| `app`         | Main application          |
+| `docs`        | Documentation             |
 | `packages`    | Package changes (general) |
 | `cli`         | CLI package               |
 | `core`        | Core package              |
-| `flame`       | Bun-powered docs framework |
 | `mdx-content` | MDX content package       |
-| `docs`        | Documentation             |
-| `configs`     | Configuration files       |
-| `template`    | starter template          |
+| `flame`       | Bun-powered docs framework |
+| `template`    | Starter templates (deprecated) |
 
 #### Examples
 
@@ -248,7 +277,7 @@ The `scope` is optional but recommended. Common scopes:
 feat(cli): add new command
 fix(core): resolve template rendering issue
 docs: update API documentation
-refactor(app): simplify navigation logic
+refactor(flame): simplify navigation logic
 chore: update dependencies
 ```
 
@@ -271,6 +300,10 @@ pnpm commit
 ```
 
 This provides a guided interface for writing properly formatted commit messages.
+
+> **Note**: `czg` requires an interactive terminal. In CI or agent environments, write the
+> commit message manually instead — see
+> [Non-Interactive Environments](#non-interactive-environments-ci-and-agents).
 
 ## Pull Request Guidelines
 
