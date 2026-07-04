@@ -17,7 +17,6 @@
 [![DocuBook Core](https://shieldcn.dev/npm/v/@docubook/core?label=Core&variant=secondary)](https://www.npmjs.com/package/@docubook/core)
 [![MDX Content](https://shieldcn.dev/npm/v/@docubook/mdx-content?label=MDX%20Content&variant=secondary)](https://www.npmjs.com/package/@docubook/mdx-content)
 [![Flame](https://shieldcn.dev/npm/v/@docubook/flame?label=Flame&variant=secondary)](https://www.npmjs.com/package/@docubook/flame)
-[![UI React](https://shieldcn.dev/npm/v/@docubook/ui-react?label=UI%20React&variant=secondary)](https://www.npmjs.com/package/@docubook/ui-react)
 [![License](https://shieldcn.dev/github/license/DocuBook/docubook.svg?variant=secondary)](https://github.com/DocuBook/docubook)
 
 ## Architecture
