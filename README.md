@@ -13,11 +13,10 @@
   An open-source alternative to Mintlify or GitBook. Write documentation in MDX with the runtime and UI library you already use. Built on Bun + React today, with Node, Deno, and Vue support on the roadmap.
 </h3>
 
-[![DocuBook CLI](https://shieldcn.dev/npm/v/@docubook/cli?label=CLI&variant=secondary)](https://www.npmjs.com/package/@docubook/cli)
-[![DocuBook Core](https://shieldcn.dev/npm/v/@docubook/core?label=Core&variant=secondary)](https://www.npmjs.com/package/@docubook/core)
-[![MDX Content](https://shieldcn.dev/npm/v/@docubook/mdx-content?label=MDX%20Content&variant=secondary)](https://www.npmjs.com/package/@docubook/mdx-content)
 [![Flame](https://shieldcn.dev/npm/v/@docubook/flame?label=Flame&variant=secondary)](https://www.npmjs.com/package/@docubook/flame)
-[![License](https://shieldcn.dev/github/license/DocuBook/docubook.svg?variant=secondary)](https://github.com/DocuBook/docubook)
+[![Downloads](https://shieldcn.dev/npm/dt/@docubook/flame?label=Downloads&variant=secondary)](https://www.npmjs.com/package/@docubook/flame)
+[![CI](https://shieldcn.dev/github/ci/DocuBook/docubook.svg?variant=secondary)](https://github.com/DocuBook/docubook/actions/workflows/ci.yml)
+[![License](https://shieldcn.dev/github/license/DocuBook/docubook.svg?variant=secondary)](https://github.com/DocuBook/docubook/blob/main/LICENSE)
 
 ## Architecture
 
