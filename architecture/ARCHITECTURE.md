@@ -14,8 +14,7 @@
 |------|------|-----------|---------|-------------|
 | `@docubook/core` | MDX compilation pipeline — remark/rehype plugins, frontmatter, TOC, code blocks, content service | TypeScript, unified, remark-gfm, rehype-prism-plus | 1.7.2 | Consumed by all frameworks at build time |
 | `@docubook/mdx-content` | Portable React MDX components (Tabs, Accordion, CodeBlock, Note, FileTree, Table, Stepper, Youtube, Tooltip, Release, Kbd, Card, Link, Image) + framework adapters | React 19, TypeScript | 3.2.2 | Imported by frameworks; adapters for Next.js (`./next`), generic client (`./client`), generic server (`./server`) |
-| `@docubook/flame` | Bun-powered SSG framework — fs-scanner, incremental build (content hashing, build cache, concurrency), plugin system (10 hooks), island hydration (mixed createRoot/hydrateRoot), HMR via SSE, hierarchy-based search index, Sentry error tracking (optional) | Bun 1.1+, React 19, DaisyUI 5, Tailwind CSS 4, Lucide React | 1.3.5 | Reads `docu.json`, imports core + mdx-content + ui-react + themes-colors, outputs static HTML + client bundle |
-| `apps/web` | Production docs site (docubook.pro) — Next.js App Router, Algolia DocSearch, Radix UI + shadcn/ui | Next.js 16, React 19.2, Geist font, Sonner | 1.0.0 | Deployed on Vercel; imports core + mdx-content |
+| `@docubook/flame` | Bun-powered SSG framework — fs-scanner, incremental build (content hashing, build cache, concurrency), plugin system (10 hooks), island hydration (mixed createRoot/hydrateRoot), HMR via SSE, hierarchy-based search index, Sentry error tracking (optional) | Bun 1.1+, React 19, DaisyUI 5, Tailwind CSS 4, Lucide React | 1.3.5 | Reads `docu.json`, imports core + mdx-content + ui-react + themes-colors, outputs static HTML + client bundle; production docs site (docubook.pro) deployed on Vercel |
 | `packages/template/nextjs` | Starter template for Vercel deployment | Next.js 16, App Router, Tailwind CSS 4, Radix UI, framer-motion | 1.0.0 | Distributed via CLI; imports core + mdx-content |
 | `packages/template/nextjs-docker` | Starter template for self-hosted Docker deployment | Next.js 16, Docker multi-stage Alpine | — | Dockerfile + template config for containerized deployment |
 | `@docubook/ui-react` | Reusable DaisyUI 5 + Tailwind CSS 4 React component library — Collapse, Modal, Dropdown, Drawer, Input, Kbd, Navbar, Pagination, Toggle, ThemeController, Breadcrumbs | React 19, DaisyUI 5, Tailwind CSS 4, Lucide React | 0.1.4 | Consumed by flame app components and registry |
@@ -63,7 +62,7 @@
     - `mdx-content-island`: `createRoot` — MDX content with `MDXRemote` + `createMdxComponents()` from `@docubook/mdx-content`
 13. **User searches** — Keystroke triggers fuzzy match against loaded JSON index using Levenshtein distance scoring over hierarchy-based records.
 
-### Secondary Flow (Next.js — apps/web & template)
+### Secondary Flow (Next.js — templates)
 
 Steps 1–3 identical. Step 4 uses `generateStaticParams` from docu.json routes. Step 5 uses React Server Components. Step 6 uses Algolia crawler/DocSearch. Step 7 deploys to Vercel Edge. Step 8 uses full App Router hydration. Step 9 queries Algolia DocSearch API. Additional: `@docubook/mdx-content/next` adapter provides Next.js-specific `ImageMdx` and `LinkMdx` using `next/image` and `next/link`.
 

@@ -52,18 +52,18 @@
 │                                                                                   │
 │  ┌────────────────────── Consumer Frameworks ─────────────────────────────────────┐
 │  │                                                                                │
-│  │  ┌────────────────────┐  ┌────────────────────┐  ┌─────────────────────────┐   │
-│  │  │   @docubook/flame  │  │     apps/web       │  │  packages/template/     │   │
-│  │  │   (v1.3.5)         │  │     (v1.0.0)       │  │  nextjs (v1.0.0)        │   │
-│  │  │                    │  │                    │  │  nextjs-docker          │   │
-│  │  │  Bun SSG           │  │  Production site   │  │                         │   │
-│  │  │  Plugin system     │  │  Next.js 16        │  │  Starter kits for       │   │
-│  │  │  DaisyUI 5         │  │  Radix UI/shadcn   │  │  end users              │   │
-│  │  │  CDN deploy        │  │  Algolia DocSearch │  │  Vercel / Docker        │   │
-│  │  │  Island hydration  │  │  Geist font        │  │                         │   │
-│  │  │  HMR via SSE       │  │  Sonner toasts     │  │                         │   │
-│  │  │  Sentry (optional) │  │                    │  │                         │   │
-│  │  └────────────────────┘  └────────────────────┘  └─────────────────────────┘   │
+│  │  ┌────────────────────┐  ┌─────────────────────────┐                           │
+│  │  │   @docubook/flame  │  │  packages/template/     │                           │
+│  │  │   (v1.3.5)         │  │  nextjs (v1.0.0)        │                           │
+│  │  │                    │  │  nextjs-docker          │                           │
+│  │  │  Bun SSG           │  │                         │                           │
+│  │  │  Plugin system     │  │  Starter kits for       │                           │
+│  │  │  DaisyUI 5         │  │  end users              │                           │
+│  │  │  Vercel/CDN deploy │  │  Vercel / Docker        │                           │
+│  │  │  Island hydration  │  │                         │                           │
+│  │  │  HMR via SSE       │  │                         │                           │
+│  │  │  Sentry (optional) │  │                         │                           │
+│  │  └────────────────────┘  └─────────────────────────┘                           │
 │  │                                                                                │
 │  │  ┌───────────────────────────────────────────────────────────────────────────┐ │
 │  │  │  packages/template/react-router (PLANNED)                                 │ │
@@ -109,8 +109,7 @@
 
 | Component | Responsibility | Deployment |
 |-----------|---------------|------------|
-| `@docubook/flame` | Bun-powered SSG framework — fs-scanner, incremental build (content hashing + build cache + concurrency), plugin system (10 hooks), static HTML generation, client-side hydration (createRoot + hydrateRoot), hierarchy-based search index, optional Sentry error tracking, homepage sections (Hero, Features) | CDN (any static host, GitHub Pages) |
-| `apps/web` | Production documentation site (docubook.pro) — Next.js App Router 16, Algolia DocSearch, Radix UI, Geist font | Vercel |
+| `@docubook/flame` | Bun-powered SSG framework — fs-scanner, incremental build (content hashing + build cache + concurrency), plugin system (10 hooks), static HTML generation, client-side hydration (createRoot + hydrateRoot), hierarchy-based search index, optional Sentry error tracking, homepage sections (Hero, Features). Builds the production documentation site (docubook.pro). | Vercel (static output), CDN (any static host, GitHub Pages) |
 | `packages/template/nextjs` | Starter template for Vercel deployment — Next.js 16, Radix UI, framer-motion | Vercel |
 | `packages/template/nextjs-docker` | Starter template for self-hosted Docker deployment | Docker/any host |
 | `packages/template/react-router` | React Router v6 framework mode (planned) — SSR, server-side search, cookie-based theme | Node.js server (Vercel, Railway, VPS) |
@@ -288,7 +287,7 @@ build()                              server.fetch(req)
                                                                 ▼
 ┌───────────────────────────────────────────────────────────────────┐
 │                     Consumer Frameworks                           │
-│  flame │ apps/web │ template/nextjs │ template/react-router       │
+│  flame │ template/nextjs │ template/react-router                  │
 └───────────────────────────┬───────────────────────────────────────┘
                             │
                             ▼

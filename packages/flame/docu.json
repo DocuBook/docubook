@@ -103,7 +103,7 @@
   },
   "repo": {
     "url": "https://github.com/DocuBook/docubook",
-    "path": "blob/main/apps/web/{filePath}",
+    "path": "blob/main/packages/flame/{filePath}",
     "edit": true
   },
   "routes": [

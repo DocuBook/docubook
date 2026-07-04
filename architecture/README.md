@@ -35,7 +35,7 @@
 |----------|-----------|---------|
 | **Runtime** | Node.js, Bun (flame only) | ≥20.0.0, ≥1.1.0 |
 | **Language** | TypeScript, JavaScript (CLI) | TS 5.9 |
-| **Frameworks** | Next.js (apps/web + template), React Router v6 (react-router — planned), Bun HTTP (flame dev) | Next 16, RRv6 |
+| **Frameworks** | Next.js (templates), React Router v6 (react-router — planned), Bun HTTP (flame dev) | Next 16, RRv6 |
 | **UI** | React, Tailwind CSS, DaisyUI (flame/react-router), Radix UI (Next.js), framer-motion (template), Lucide React | React 19, TW 4, DaisyUI 5 |
 | **Build** | Turborepo, Vite (react-router), Bun.build (flame), tsc (core/mdx-content) | Turbo 2.9 |
 | **Testing** | Vitest, jsdom, @testing-library/react | Vitest 4 |
