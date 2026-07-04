@@ -9,7 +9,7 @@ Accepted
 DocuBook supports two rendering frameworks that use Tailwind CSS 4:
 
 - **`@docubook/flame`** — Bun-powered SSG with no PostCSS pipeline built in. Uses `Bun.build()` for JS and needs a separate CSS build step.
-- **Next.js (`apps/web`, templates)** — Built-in PostCSS support via `next.config.mjs` and `postcss.config.cjs`.
+- **Next.js (templates)** — Built-in PostCSS support via `next.config.mjs` and `postcss.config.cjs`.
 
 Options considered:
 1. PostCSS for both — requires PostCSS dependency + config in flame, adds complexity

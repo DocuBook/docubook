@@ -140,7 +140,7 @@ docu.json
 @docubook/mdx-content   (depends on core as peerDependency)
         │
         ▼
-flame │ apps/web │ templates │ react-router  (depend on core + mdx-content)
+flame │ templates │ react-router  (depend on core + mdx-content)
 ```
 
 ### Flame Incremental Build (build.ts)

@@ -17,7 +17,7 @@ You are working on the DocuBook monorepo. Follow these guidelines:
 
 - **Monorepo**: pnpm workspaces, Turborepo (build/lint/typecheck/test orchestration), Changesets (versioning).
 - **Packages**: `packages/core` (MDX compile), `packages/mdx-content` (React MDX components + framework adapters), `packages/flame` (Bun SSG), `packages/cli` (scaffolding), `packages/ui/react` (DaisyUI components), `packages/themes-colors` (theme presets).
-- **Apps**: `apps/web` (Next.js 16 production site on Vercel).
+- **Production site**: `packages/flame` builds the docs site (docubook.pro), deployed to Vercel as static output.
 - **Templates**: `packages/template/nextjs`, `packages/template/nextjs-docker`, `packages/template/react-router` (planned).
 
 ### Key Constraints

@@ -38,8 +38,8 @@ Thank you for your interest in contributing to DocuBook!
 DocuBook is a documentation platform built as a monorepo to help teams create, manage, and publish
 technical docs efficiently.
 
-The project combines a Next.js documentation app, a CLI for scaffolding and project setup, and
-reusable packages for MDX processing and docs-tree generation.
+The project combines a Bun-powered documentation framework (flame), a CLI for scaffolding and
+project setup, and reusable packages for MDX processing and docs-tree generation.
 
 In short, DocuBook focuses on fast documentation delivery, clean developer experience, and scalable
 open-source release workflows.
@@ -180,10 +180,9 @@ Git hooks are automatically installed via Husky during `pnpm install` (via the `
 > scripting across all packages. **Bun** is used exclusively as the runtime and bundler inside
 > `packages/flame` — it does not affect the rest of the workspace.
 
-- `apps/web`: Next.js documentation app (production site)
 - `packages/cli`: CLI scaffold and installer utilities
 - `packages/core`: Shared MDX compile pipeline and content utilities
-- `packages/flame`: Bun-powered React + MDX documentation framework (uses Bun as runtime/bundler)
+- `packages/flame`: Bun-powered React + MDX documentation framework (uses Bun as runtime/bundler; production site on Vercel)
 - `packages/mdx-content`: Portable MDX components and framework adapters
 - `packages/template/nextjs-vercel`: Starter template for Vercel deployment
 - `packages/template/nextjs-docker`: Starter template for Docker/self-host deployment
