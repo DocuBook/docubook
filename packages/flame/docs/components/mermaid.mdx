@@ -124,6 +124,7 @@ Every rendered diagram gets a GFM-style control cluster in the bottom-right corn
 - **Arrow buttons** — pan the diagram up, down, left, or right in fixed steps
 - **Zoom in / zoom out** — scale the diagram between 0.4× and 4×
 - **Reset** — restore the original position and scale
+- **Full screen** — open the diagram in a lightbox overlay; close it with the same button or <kbd>Escape</kbd>
 
 The diagram container is keyboard accessible: focus it with <kbd>Tab</kbd>, then pan with the arrow keys, zoom with <kbd>+</kbd> / <kbd>-</kbd>, and reset with <kbd>0</kbd>.
 
@@ -164,7 +165,7 @@ Escape hatch — prop syntax (for programmatic use):
 ## Notes
 
 - Diagrams are rendered **client-side**. During SSR, a `<pre class="mermaid">` placeholder is rendered instead.
-- **Pan and zoom**: Button-driven controls (GFM-style) appear once a diagram renders; mouse drag and scroll-wheel zoom are intentionally not intercepted.
+- **Pan, zoom, and fullscreen**: Button-driven controls (GFM-style) appear once a diagram renders, including a fullscreen lightbox toggle; mouse drag and scroll-wheel zoom are intentionally not intercepted.
 - **Theme synchronization**: The component automatically detects dark/light theme changes and re-renders diagrams.
 - **Lazy loading**: Off-screen diagrams are only rendered when scrolled into view (200px margin).
 - **Error fallback**: If a diagram has invalid Mermaid syntax, the raw code is shown with an error message.
