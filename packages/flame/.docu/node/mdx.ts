@@ -139,12 +139,8 @@ export async function compileMdx(
   // remarkMdxJsxDocsHtmlLinks must run before user plugins so custom remark
   // transforms see already-fixed hrefs.  rehypeDocsHtmlLinks handles plain
   // markdown [text](path) → <a> elements in the HAST phase.
-  const finalRemark = remarkPlugins?.length
-    ? [...defaultRemark, remarkMdxJsxDocsHtmlLinks, ...remarkPlugins]
-    : [...defaultRemark, remarkMdxJsxDocsHtmlLinks];
-  const finalRehype = rehypePlugins?.length
-    ? [...defaultRehype, rehypeDocsHtmlLinks, ...rehypePlugins]
-    : [...defaultRehype, rehypeDocsHtmlLinks];
+  const finalRemark = [...defaultRemark, remarkMdxJsxDocsHtmlLinks, ...(remarkPlugins ?? [])];
+  const finalRehype = [...defaultRehype, rehypeDocsHtmlLinks, ...(rehypePlugins ?? [])];
 
   const serialized = await serialize(strippedContent, {
     mdxOptions: {
