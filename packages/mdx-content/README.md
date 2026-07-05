@@ -248,7 +248,7 @@ Components included out of the box:
 - `Steps` / `Step`
 - `Tabs` / `Tab`
 - `Tooltip`
-- `Mermaid` — renders Mermaid.js diagrams (flowchart, sequence, class, state, gantt, pie, ER) from ` ```mermaid ` fenced code blocks
+- `Mermaid` — renders Mermaid.js diagrams (flowchart, sequence, class, state, gantt, pie, ER) from ` ```mermaid ` fenced code blocks, with GFM-style pan/zoom controls (button and keyboard driven)
 - `Youtube`
 - Table (`table`, `thead`, `tbody`, `tfoot`, `tr`, `th`, `td`)
 
