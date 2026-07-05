@@ -96,6 +96,7 @@ export function MermaidMdx({ chart, id, className, panZoom = true }: MermaidMdxP
   const [error, setError] = useState<string | null>(null);
   const [rendered, setRendered] = useState(false);
   const [view, setView] = useState({ x: 0, y: 0, scale: 1 });
+  const [fullscreen, setFullscreen] = useState(false);
 
   // Keep chartRef in sync so theme-change re-render (T-005) can restore text
   chartRef.current = chart;
@@ -183,6 +184,16 @@ export function MermaidMdx({ chart, id, className, panZoom = true }: MermaidMdxP
     // chart string is static from MDX — this only fires on mount
   }, []);
 
+  // Lock page scroll while the fullscreen lightbox is open
+  useEffect(() => {
+    if (!fullscreen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [fullscreen]);
+
   // Guard: empty chart
   if (!chart) return null;
 
@@ -204,6 +215,7 @@ export function MermaidMdx({ chart, id, className, panZoom = true }: MermaidMdxP
       "=": () => zoom(ZOOM_STEP),
       "-": () => zoom(1 / ZOOM_STEP),
       "0": resetView,
+      ...(fullscreen ? { Escape: () => setFullscreen(false) } : {}),
     };
     const action = actions[e.key];
     if (!action) return;
@@ -257,7 +269,17 @@ export function MermaidMdx({ chart, id, className, panZoom = true }: MermaidMdxP
       }
       onKeyDown={handleKeyDown}
       style={{
-        position: "relative",
+        ...(fullscreen
+          ? {
+              position: "fixed",
+              inset: 0,
+              zIndex: 50,
+              background: "hsl(var(--background, 0 0% 100%))",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }
+          : { position: "relative" }),
         ...(controlsActive ? { overflow: "hidden" } : { overflowX: "auto" }),
       }}
     >
@@ -295,6 +317,17 @@ export function MermaidMdx({ chart, id, className, panZoom = true }: MermaidMdxP
             gap: 4,
           }}
         >
+          <ControlButton
+            label={fullscreen ? "Exit full screen" : "Enter full screen"}
+            onClick={() => setFullscreen((f) => !f)}
+            cell={{ col: 1, row: 1 }}
+          >
+            {fullscreen ? (
+              <path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3" />
+            ) : (
+              <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" />
+            )}
+          </ControlButton>
           <ControlButton label="Pan up" onClick={() => pan(0, -PAN_STEP)} cell={{ col: 2, row: 1 }}>
             <path d="m18 15-6-6-6 6" />
           </ControlButton>

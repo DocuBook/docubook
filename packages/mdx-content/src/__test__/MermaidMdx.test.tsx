@@ -182,6 +182,7 @@ describe("MermaidMdx", () => {
         "Zoom in",
         "Zoom out",
         "Reset view",
+        "Enter full screen",
       ];
       for (const label of labels) {
         expect(container.querySelector(`button[aria-label="${label}"]`)).not.toBeNull();
@@ -244,6 +245,21 @@ describe("MermaidMdx", () => {
       fireEvent.keyDown(viewport, { key: "=", metaKey: true });
       fireEvent.keyDown(viewport, { key: "ArrowLeft", altKey: true });
       expect(layer.style.transform).toBe("translate(0px, 0px) scale(1)");
+    });
+
+    it("toggles the fullscreen lightbox via button and Escape", async () => {
+      const { container } = await renderWithControls();
+      const viewport = container.querySelector('[tabindex="0"]') as HTMLElement;
+
+      fireEvent.click(container.querySelector('button[aria-label="Enter full screen"]')!);
+      expect(viewport.style.position).toBe("fixed");
+      expect(document.body.style.overflow).toBe("hidden");
+      expect(container.querySelector('button[aria-label="Exit full screen"]')).not.toBeNull();
+
+      fireEvent.keyDown(viewport, { key: "Escape" });
+      expect(viewport.style.position).toBe("relative");
+      expect(document.body.style.overflow).toBe("");
+      expect(container.querySelector('button[aria-label="Enter full screen"]')).not.toBeNull();
     });
   });
 });
