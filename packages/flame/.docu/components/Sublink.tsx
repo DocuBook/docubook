@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import Anchor from "./Anchor";
 import type { DocuRoute } from "../node/types";
-import { cn } from "../node/utils";
+import { cn, docsHtmlHref } from "../node/utils";
 
 interface SublinkProps extends DocuRoute {
   level: number;
@@ -48,7 +48,7 @@ export default function Sublink({
   if (!items) {
     const link = (
       <Anchor
-        href={fullHref}
+        href={docsHtmlHref(fullHref)}
         className="text-foreground hover:text-foreground/80 text-sm transition-colors"
         activeClassName="text-primary font-medium"
         activeWhen={(path) => path === fullHref || path === `${fullHref}.html`}
@@ -91,7 +91,7 @@ export default function Sublink({
           <span>{title}</span>
         ) : (
           <Anchor
-            href={fullHref}
+            href={docsHtmlHref(fullHref)}
             className="text-foreground hover:text-foreground/80 transition-colors"
             activeClassName="text-primary"
             activeWhen={(path) => path === fullHref || path === `${fullHref}.html`}

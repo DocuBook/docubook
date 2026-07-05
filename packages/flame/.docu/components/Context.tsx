@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "../node/utils";
+import { cn, docsHtmlHref } from "../node/utils";
 import { Dropdown, DropdownItem } from "@docubook/ui-react/dropdown";
 import { routes, config as docuConfig } from "../node/client-routes";
 import { ChevronsUpDown, Check } from "lucide-react";
@@ -68,7 +68,7 @@ export function Context({ className }: ContextProps) {
       {contextRoutes.map((route) => {
         const isActive = activeRoute?.href === route.href;
         const firstItemPath = getFirstItemHref(route);
-        const contextPath = `/docs${firstItemPath}`;
+        const contextPath = docsHtmlHref(`/docs${firstItemPath}`);
 
         return (
           <DropdownItem

@@ -15,7 +15,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { extractFrontmatterWithContent } from "@docubook/core";
 import { DOCS_DIR, ASSETS_DIR, loadDocuConfig } from "./paths";
-import { scanMdxFiles } from "./utils";
+import { scanMdxFiles, docsHtmlHref } from "./utils";
 
 const docuConfig = loadDocuConfig();
 
@@ -72,7 +72,7 @@ export function stripJsx(content: string): string {
 export function extractRecords(filePath: string, raw: string): SearchRecord[] {
   const { frontmatter, strippedContent: content } = extractFrontmatterWithContent<Frontmatter>(raw);
   const records: SearchRecord[] = [];
-  const url = `/docs/${filePath}`;
+  const url = docsHtmlHref(`/docs/${filePath}`);
   const lvl0 = getSectionTitle(filePath);
   const lvl1 = frontmatter.title || null;
 

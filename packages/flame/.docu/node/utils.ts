@@ -44,6 +44,18 @@ export function isExternalUrl(url: string): boolean {
   return /^(https?:\/\/|\/\/)/.test(url);
 }
 
+/** Suffix an internal docs link with `.html` to match the flat static build output. */
+export function docsHtmlHref(path: string): string {
+  return `${path}.html`;
+}
+
+/** Map a `/docs/*.html` request back to its extensionless route (dev server). */
+export function stripDocsHtmlSuffix(pathname: string): string {
+  return pathname.startsWith("/docs/") && pathname.endsWith(".html")
+    ? pathname.slice(0, -".html".length)
+    : pathname;
+}
+
 export function getPath(url: string): string {
   try {
     return new URL(url).pathname;

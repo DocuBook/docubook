@@ -23,7 +23,7 @@ import {
   generateNonce,
   cspHeader,
 } from "../node/security";
-import { getContentType } from "../node/utils";
+import { getContentType, stripDocsHtmlSuffix } from "../node/utils";
 import { errorHtml, hmrScript, htmlShell } from "../node/html";
 
 // ─── Helpers ────────────────────────────────────────────
@@ -274,6 +274,36 @@ describe("route dispatch", () => {
       expect(matchRoute("/about")).toBeNull();
       expect(matchRoute("/api")).toBeNull();
       expect(matchRoute("/docsx")).toBeNull();
+    });
+  });
+
+  describe("stripDocsHtmlSuffix — .html link normalization", () => {
+    it("strips .html from docs pathnames", () => {
+      expect(stripDocsHtmlSuffix("/docs/getting-started.html")).toBe("/docs/getting-started");
+      expect(stripDocsHtmlSuffix("/docs/guides/installation.html")).toBe(
+        "/docs/guides/installation"
+      );
+    });
+
+    it("normalized pathnames parse to the expected slug", () => {
+      expect(parseDocsSlug(stripDocsHtmlSuffix("/docs/getting-started.html"))).toEqual([
+        "getting-started",
+      ]);
+      expect(
+        parseDocsSlug(stripDocsHtmlSuffix("/docs/guides/advanced/customization.html"))
+      ).toEqual(["guides", "advanced", "customization"]);
+    });
+
+    it("normalized docs pathnames dispatch to handleDocs instead of serveStatic", () => {
+      expect(dispatchRoute(stripDocsHtmlSuffix("/docs/getting-started.html"))).toBe("handleDocs");
+    });
+
+    it("leaves extensionless and non-docs pathnames untouched", () => {
+      expect(stripDocsHtmlSuffix("/docs/getting-started")).toBe("/docs/getting-started");
+      expect(stripDocsHtmlSuffix("/docs")).toBe("/docs");
+      expect(stripDocsHtmlSuffix("/404.html")).toBe("/404.html");
+      expect(stripDocsHtmlSuffix("/assets/app.js")).toBe("/assets/app.js");
+      expect(stripDocsHtmlSuffix("/docs/assets/image.png")).toBe("/docs/assets/image.png");
     });
   });
 
