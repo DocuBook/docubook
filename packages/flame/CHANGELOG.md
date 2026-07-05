@@ -1,5 +1,17 @@
 # @docubook/flame
 
+## 1.4.3
+
+### Patch Changes
+
+- [#267](https://github.com/DocuBook/docubook/pull/267) [`2f4cbd7`](https://github.com/DocuBook/docubook/commit/2f4cbd77a59a53b9531b8244477399a37159de1d) Thanks [@pullfrog](https://github.com/apps/pullfrog)! - fix(flame): append `.html` to generated internal navigation links (sidebar, pagination, context switcher, search index, landing feature cards) so they resolve on static hosts without clean-URL rewriting; the dev server normalizes `/docs/*.html` requests back to their extensionless routes
+
+  - add `rehypeDocsHtmlLinks` rehype plugin to append `.html` to internal `/docs/` hrefs on markdown `[text](path)` links (`<a>` elements in HAST)
+  - add `remarkMdxJsxDocsHtmlLinks` remark plugin to append `.html` to `href` attributes on MDX JSX components (e.g. `<Card href="/docs/…">`) at the MDAST phase, before the MDX compiler converts them to JavaScript
+  - fix `stripDocsHtmlSuffix` in `utils.ts` to handle the `/docs.html` edge case in addition to `/docs/*.html`
+  - fix `index.tsx` homepage to apply `.html` suffix to `home.features[].link` and `home.hero.actions[].link` for configured entries, using `isExternalUrl` to skip external URLs
+  - move imports in `types.ts` to top of file (style fix)
+
 ## 1.4.2
 
 ### Patch Changes
