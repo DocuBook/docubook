@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render } from "@testing-library/react";
+import { render, fireEvent } from "@testing-library/react";
 import { MermaidMdx } from "../components/MermaidMdx";
 
 // Mock mermaid module for client-side hydration tests
@@ -158,5 +158,92 @@ describe("MermaidMdx", () => {
     document.documentElement.classList.remove("dark");
     unmount();
     vi.useRealTimers();
+  });
+
+  describe("pan/zoom controls", () => {
+    async function renderWithControls() {
+      mockParse.mockResolvedValueOnce(undefined);
+      const result = render(<MermaidMdx chart="graph TD; A-->B;" />);
+      await vi.waitFor(() => {
+        expect(
+          result.container.querySelector('[aria-label="Pan and zoom controls"]')
+        ).not.toBeNull();
+      });
+      return result;
+    }
+
+    it("shows all controls after the diagram renders", async () => {
+      const { container } = await renderWithControls();
+      const labels = [
+        "Pan up",
+        "Pan down",
+        "Pan left",
+        "Pan right",
+        "Zoom in",
+        "Zoom out",
+        "Reset view",
+      ];
+      for (const label of labels) {
+        expect(container.querySelector(`button[aria-label="${label}"]`)).not.toBeNull();
+      }
+    });
+
+    it("does not show controls when panZoom is false", async () => {
+      mockParse.mockResolvedValueOnce(undefined);
+      const { container } = render(<MermaidMdx chart="graph TD; A-->B;" panZoom={false} />);
+      await vi.waitFor(() => {
+        expect(mockRun).toHaveBeenCalled();
+      });
+      expect(container.querySelector('[aria-label="Pan and zoom controls"]')).toBeNull();
+    });
+
+    it("zoom, pan, and reset buttons update the transform", async () => {
+      const { container } = await renderWithControls();
+      const layer = container.querySelector("pre.mermaid")?.parentElement as HTMLElement;
+
+      fireEvent.click(container.querySelector('button[aria-label="Zoom in"]')!);
+      expect(layer.style.transform).toBe("translate(0px, 0px) scale(1.2)");
+
+      fireEvent.click(container.querySelector('button[aria-label="Pan right"]')!);
+      expect(layer.style.transform).toBe("translate(50px, 0px) scale(1.2)");
+
+      fireEvent.click(container.querySelector('button[aria-label="Reset view"]')!);
+      expect(layer.style.transform).toBe("translate(0px, 0px) scale(1)");
+    });
+
+    it("clamps zoom at the maximum scale", async () => {
+      const { container } = await renderWithControls();
+      const layer = container.querySelector("pre.mermaid")?.parentElement as HTMLElement;
+      const zoomIn = container.querySelector('button[aria-label="Zoom in"]')!;
+
+      for (let i = 0; i < 20; i++) fireEvent.click(zoomIn);
+      expect(layer.style.transform).toBe("translate(0px, 0px) scale(4)");
+    });
+
+    it("pans with arrow keys on the focused container", async () => {
+      const { container } = await renderWithControls();
+      const viewport = container.querySelector('[tabindex="0"]') as HTMLElement;
+      const layer = container.querySelector("pre.mermaid")?.parentElement as HTMLElement;
+
+      fireEvent.keyDown(viewport, { key: "ArrowRight" });
+      expect(layer.style.transform).toBe("translate(50px, 0px) scale(1)");
+
+      fireEvent.keyDown(viewport, { key: "ArrowUp" });
+      expect(layer.style.transform).toBe("translate(50px, -50px) scale(1)");
+
+      fireEvent.keyDown(viewport, { key: "0" });
+      expect(layer.style.transform).toBe("translate(0px, 0px) scale(1)");
+    });
+
+    it("ignores key presses with modifier keys (browser shortcuts)", async () => {
+      const { container } = await renderWithControls();
+      const viewport = container.querySelector('[tabindex="0"]') as HTMLElement;
+      const layer = container.querySelector("pre.mermaid")?.parentElement as HTMLElement;
+
+      fireEvent.keyDown(viewport, { key: "-", ctrlKey: true });
+      fireEvent.keyDown(viewport, { key: "=", metaKey: true });
+      fireEvent.keyDown(viewport, { key: "ArrowLeft", altKey: true });
+      expect(layer.style.transform).toBe("translate(0px, 0px) scale(1)");
+    });
   });
 });
