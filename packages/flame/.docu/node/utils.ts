@@ -49,11 +49,13 @@ export function docsHtmlHref(path: string): string {
   return `${path}.html`;
 }
 
-/** Map a `/docs/*.html` request back to its extensionless route (dev server). */
+/** Map a `/docs{.html,/*.html}` request back to its extensionless route (dev server).
+ *  Handles both `/docs/*.html` (pages) and `/docs.html` (edge case). */
 export function stripDocsHtmlSuffix(pathname: string): string {
-  return pathname.startsWith("/docs/") && pathname.endsWith(".html")
-    ? pathname.slice(0, -".html".length)
-    : pathname;
+  if (pathname === "/docs.html") return "/docs";
+  if (pathname.startsWith("/docs/") && pathname.endsWith(".html"))
+    return pathname.slice(0, -".html".length);
+  return pathname;
 }
 
 export function getPath(url: string): string {
