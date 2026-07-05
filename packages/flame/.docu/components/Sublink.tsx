@@ -62,7 +62,7 @@ export default function Sublink({
       <div
         ref={activeRef}
         className={cn(
-          "py-1.5",
+          "py-1",
           levelPadding,
           level >= 2 && "border-l-2",
           level >= 2 && (isActive ? "border-primary" : "border-base-300")
@@ -110,7 +110,7 @@ export default function Sublink({
 
       {/* Children */}
       {isOpen && (
-        <div className="flex flex-col py-1.5">
+        <div className="flex flex-col py-1">
           {items.map((item) => (
             <Sublink
               key={`${fullHref}${item.href}`}
