@@ -54,7 +54,7 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
           aria-label="Documentation navigation"
           className={cn("transition-all duration-200", className)}
         >
-          <ul className="flex flex-col gap-1.5 py-4">
+          <ul className="flex flex-col gap-0.5 py-4">
             {menuRoutes.map((route) => (
               <li key={route.href}>
                 <Sublink
@@ -82,7 +82,7 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
               icon={route.context?.icon}
               title={route.context?.title || route.title}
             />
-            <ul className="border-base-300 flex flex-col gap-1.5 border-l-2 pb-0.5 pl-3 pt-0.5">
+            <ul className="border-base-300 flex flex-col gap-0.5 border-l-2 pb-0.5 pl-3 pt-0.5">
               {route.items?.map((item) => {
                 const isActive = isItemActive(item.href, route.href);
                 return (
@@ -135,7 +135,7 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
       aria-label="Documentation navigation"
       className={cn("transition-all duration-200", className)}
     >
-      <ul className="flex flex-col gap-1.5 py-4">
+      <ul className="flex flex-col gap-0.5 py-4">
         <li key={contextRoute.title}>
           <Sublink
             {...contextRoute}
