@@ -298,7 +298,7 @@ export function MermaidMdx({ chart, id, className, panZoom = true }: MermaidMdxP
           ref={ref}
           id={domId}
           className={`mermaid not-prose${className ? ` ${className}` : ""}`}
-          style={{ margin: "1em 0" }}
+          style={{ margin: "1em auto", width: "fit-content", maxWidth: "100%" }}
         >
           {chart}
         </pre>
