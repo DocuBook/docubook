@@ -1,4 +1,5 @@
 import { loadDocuConfig } from "../node/paths";
+import { docsHtmlHref } from "../node/utils";
 import { Hero, Features } from "../components/home";
 import type { HomeFeature } from "../node/types";
 
@@ -30,7 +31,7 @@ export default function IndexPage() {
         icon: route.context?.icon,
         title: route.context?.title || route.title,
         description: route.context?.description || "",
-        link: `/docs${route.href}${route.items?.[0]?.href || ""}`,
+        link: docsHtmlHref(`/docs${route.href}${route.items?.[0]?.href || ""}`),
       }));
 
   // Use home.hero if configured, otherwise fallback to meta

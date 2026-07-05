@@ -139,4 +139,44 @@ Make sure to use the <Alert type="info">Don't forget to install bun</Alert> comp
       expect(hasTableText).toBe(false);
     });
   });
+
+  // ==========================================
+  // UNIT TEST: Record URLs
+  // ==========================================
+  describe("extractRecords() - Record URLs", () => {
+    it("should append .html to page urls so records match the flat static output", () => {
+      const mdxContent = `---
+title: Integration Guide
+---
+Intro paragraph text.
+
+## Final Subheading
+
+Text under the subheading.
+      `;
+
+      const records = extractRecords("getting-started/integration", mdxContent);
+
+      expect(records.length).toBeGreaterThan(0);
+      expect(records.every((r) => r.url.startsWith("/docs/getting-started/integration.html"))).toBe(
+        true
+      );
+
+      const pageRecord = records.find((r) => r.type === "lvl1");
+      expect(pageRecord?.url).toBe("/docs/getting-started/integration.html");
+    });
+
+    it("should place heading anchors after the .html suffix", () => {
+      const mdxContent = `---
+title: Integration Guide
+---
+## Final Subheading
+      `;
+
+      const records = extractRecords("getting-started/integration", mdxContent);
+
+      const headingRecord = records.find((r) => r.type === "lvl2");
+      expect(headingRecord?.url).toBe("/docs/getting-started/integration.html#final-subheading");
+    });
+  });
 });

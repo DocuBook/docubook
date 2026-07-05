@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { getPreviousNext } from "../node/route";
+import { docsHtmlHref } from "../node/utils";
 import { PaginationDocs } from "@docubook/ui-react/pagination";
 
 interface PaginationProps {
@@ -27,8 +28,8 @@ export default function Pagination({
 
   return (
     <PaginationDocs
-      prev={prev ? { href: `/docs${prev.href}`, title: prev.title } : undefined}
-      next={next ? { href: `/docs${next.href}`, title: next.title } : undefined}
+      prev={prev ? { href: docsHtmlHref(`/docs${prev.href}`), title: prev.title } : undefined}
+      next={next ? { href: docsHtmlHref(`/docs${next.href}`), title: next.title } : undefined}
       className={className}
       prevIcon={prevIcon}
       nextIcon={nextIcon}

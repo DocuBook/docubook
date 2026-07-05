@@ -16,6 +16,7 @@ import {
   type ServerState,
 } from "./server-routes";
 import { wrapPluginResponse } from "./security";
+import { stripDocsHtmlSuffix } from "./utils";
 
 const docuConfig = loadDocuConfig();
 
@@ -103,7 +104,9 @@ const server = Bun.serve({
 
   async fetch(req) {
     const url = new URL(req.url);
-    const pathname = url.pathname;
+    // Generated links carry `.html` (matching the static build output);
+    // route them to the same handler as their extensionless form.
+    const pathname = stripDocsHtmlSuffix(url.pathname);
     const startTime = performance.now();
 
     if (builder) {
@@ -150,7 +153,7 @@ const server = Bun.serve({
         if (staticRes) return staticRes;
       }
 
-      const match = router?.match(req);
+      const match = router?.match(pathname);
       let response: Response;
 
       if (match) {
