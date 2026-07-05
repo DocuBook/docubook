@@ -1,5 +1,5 @@
 import { loadDocuConfig } from "../node/paths";
-import { docsHtmlHref } from "../node/utils";
+import { docsHtmlHref, isExternalUrl } from "../node/utils";
 import { Hero, Features } from "../components/home";
 import type { HomeFeature } from "../node/types";
 
@@ -22,9 +22,20 @@ export default function IndexPage() {
   const { meta, home } = docuConfig;
   const routes = (docuConfig.routes as RouteItem[]) || [];
 
+  // Docs pages under /docs/ are flat .html files; the root /docs is
+  // docs/index.html via directory index — no .html suffix needed.
+  const linkWithHtml = (link: string) => {
+    if (isExternalUrl(link)) return link;
+    if (link.startsWith("/docs/")) return `${link}.html`;
+    return link;
+  };
+
   // Use home.features if configured, otherwise fallback to routes with context
   const features: HomeFeature[] =
-    home?.features ||
+    home?.features?.map((f) => ({
+      ...f,
+      link: f.link ? linkWithHtml(f.link) : undefined,
+    })) ||
     routes
       .filter((r) => r.context)
       .map((route) => ({
@@ -35,10 +46,18 @@ export default function IndexPage() {
       }));
 
   // Use home.hero if configured, otherwise fallback to meta
-  const hero = home?.hero || {
-    headline: meta.title,
-    description: meta.description,
-  };
+  const hero = home?.hero
+    ? {
+        ...home.hero,
+        actions: home.hero.actions?.map((a) => ({
+          ...a,
+          link: linkWithHtml(a.link),
+        })),
+      }
+    : {
+        headline: meta.title,
+        description: meta.description,
+      };
 
   return (
     <div className="bg-base-100 relative isolate min-h-screen overflow-hidden">

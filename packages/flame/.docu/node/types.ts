@@ -1,3 +1,6 @@
+import type { ThemeConfig } from "@docubook/themes-colors";
+import type { PluginEntry } from "./plugin";
+
 export interface DocuRouteContext {
   title?: string;
   icon?: string;
@@ -72,9 +75,6 @@ export interface HomeConfig {
   hero?: Hero;
   features?: HomeFeature[];
 }
-
-import type { ThemeConfig } from "@docubook/themes-colors";
-import type { PluginEntry } from "./plugin";
 
 export interface DocuConfig {
   meta: DocuMeta;
