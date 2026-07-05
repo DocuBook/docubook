@@ -2,93 +2,78 @@
 
 Thank you for your interest in contributing to DocuBook!
 
-## Quick Contribution Flow
+## About DocuBook
 
-1. **Fork the repository**: Fork the
-   [DocuBook repository](https://github.com/DocuBook/docubook/fork) to your GitHub account.
+DocuBook is an open-source documentation platform that compiles MDX content into production-ready
+documentation websites. It uses a monorepo structure with **pnpm workspaces**, **Turborepo**, and
+**Changesets**.
+
+For a detailed architecture overview — package responsibilities, data flow, deployment, and design
+decisions — see [ARCHITECTURE.md](./ARCHITECTURE.md).
+
+## Code of Conduct
+
+Be respectful, constructive, and collaborative. If you report sensitive issues (security, abuse,
+private data), avoid public disclosure and contact maintainers privately first.
+
+## Ways to Contribute
+
+- Report bugs with clear reproduction steps
+- Propose features and improvements
+- Improve docs, examples, and developer experience
+- Submit pull requests for fixes or enhancements
+- Help review issues and PR discussions
+
+## Quick Start
+
+1. **Fork the repository** — [DocuBook repo](https://github.com/DocuBook/docubook/fork)
 2. **Clone your fork**:
    ```bash
    git clone https://github.com/<your-username>/docubook.git
    cd docubook
    ```
-3. **Check existing issues**: Before starting any work, always check the
-   [issues](https://github.com/DocuBook/docubook/issues) in the repository. If your idea, bug, or
-   feature is not already listed, create a new issue with the appropriate label (e.g., `bug`,
-   `feature`, `docs`).
-4. **Create a branch**: Once your issue is created, create a branch with a descriptive name based on
-   the issue (see branch naming guidelines below).
-5. **Install dependencies and validate**:
+3. **Check issues first** — always search [existing issues](https://github.com/DocuBook/docubook/issues)
+   and PRs before opening a new one. If your concern isn't listed, create an issue with the
+   appropriate label (`bug`, `feature`, `docs`, etc.). For non-trivial changes, open an
+   issue/discussion first to align scope.
+4. **Create a branch** — use a descriptive name:
+   ```
+   fix/search-modal-focus
+   feat/cli-template-update
+   docs/improve-installation
+   ```
+5. **Install and validate**:
    ```bash
    pnpm install
    pnpm build
    pnpm lint
    pnpm typecheck
    ```
-6. **Make your changes** and add a changeset:
+6. **Make your changes** and add a changeset if your change is user-facing:
    ```bash
    pnpm changeset
    ```
-7. **Open a Pull Request (PR)**: After pushing your branch, open a PR referencing the issue. Do not
-   open a PR without an associated issue.
+7. **Open a Pull Request** — reference the issue in your PR description. Do not open a PR without
+   an associated issue.
 
 ---
 
-## About DocuBook
-
-DocuBook is a documentation platform built as a monorepo to help teams create, manage, and publish
-technical docs efficiently.
-
-The project combines a Bun-powered documentation framework (flame), a CLI for scaffolding and
-project setup, and reusable packages for MDX processing and docs-tree generation.
-
-In short, DocuBook focuses on fast documentation delivery, clean developer experience, and scalable
-open-source release workflows.
-
-## Code of Conduct
-
-Be respectful, constructive, and collaborative.
-
-If you report sensitive issues (security, abuse, private data), avoid public disclosure and contact
-maintainers privately first.
-
-## Ways to Contribute
-
-- Report bugs with clear reproduction steps
-- Propose features and improvements
-- Improve docs, examples, and DX
-- Submit pull requests for fixes or enhancements
-- Help review issues and PR discussions
-
-## Before You Start
-
-- **Always search existing issues and pull requests before opening a new one.**
-- If no similar issue exists, create a new issue with a clear description and the correct label.
-- For non-trivial changes, open an issue/discussion first to align scope.
-- Keep pull requests focused: one concern per PR.
-
 ## Development Setup
-
-This monorepo uses **pnpm workspaces** and includes automated git hooks for consistent development
-workflow.
 
 ### Requirements
 
 - **Node.js** >= 20.0.0
 - **pnpm** >= 11.0.0
 
-### Package Manager
-
-This project is configured to use **pnpm** as the package manager. Using other package managers may
-cause workspace resolution issues.
-
-If you have `corepack` enabled, pnpm will be automatically selected:
+This project uses **pnpm** exclusively. Using other package managers may cause workspace resolution
+issues. Enable with corepack:
 
 ```bash
 corepack enable
 corepack prepare pnpm@11.0.0 --activate
 ```
 
-### Installing Dependencies
+Then install:
 
 ```bash
 pnpm install
@@ -96,389 +81,206 @@ pnpm install
 
 ### Common Commands
 
-```bash
-# Build all packages/apps
-pnpm build
+|         Command         |                       Purpose                        |
+| ----------------------- | ---------------------------------------------------- |
+| `pnpm build`            | Build all packages                                   |
+| `pnpm lint`             | Lint all workspaces                                  |
+| `pnpm typecheck`        | Type-check all workspaces                            |
+| `pnpm clean`            | Clean turbo outputs                                  |
+| `pnpm commit`           | Interactive commit prompt (czg)                      |
+| `pnpm version-packages` | Consume changesets, bump versions, update CHANGELOGs |
 
-# Lint all workspaces
-pnpm lint
+### 🔒 Git Hooks
 
-# Type-check all workspaces
-pnpm typecheck
+Four tools work together through git hooks — every commit and push must pass before it is
+accepted:
 
-# Clean turbo outputs
-pnpm clean
+|                           Tool                            |                   Purpose                   |          File          |
+| --------------------------------------------------------- | ------------------------------------------- | ---------------------- |
+| [Husky](https://typicode.github.io/husky/)                | Installs hooks during `pnpm install`        | `.husky/`              |
+| [lint-staged](https://github.com/lint-staged/lint-staged) | Formats + lints staged files on commit      | `.lintstagedrc.json`   |
+| [commitlint](https://commitlint.js.org/)                  | Validates commit messages                   | `commitlint.config.js` |
+| [czg](https://cz-git.qbb.sh/cli/)                         | Interactive commit prompt + commit-msg hook | `commitlint.config.js` |
 
-# Version all packages (consumes changesets, bumps versions, updates CHANGELOGs)
-pnpm version-packages
-```
+#### On Every Commit
 
-### 🔒 Git Hooks and Commit Tooling
+|     Hook     |                  Runs                  |         Scope          |
+| ------------ | -------------------------------------- | ---------------------- |
+| `pre-commit` | `pnpm lint-staged` (Prettier + ESLint) | Staged files only      |
+| `commit-msg` | `czg --hook` (commitlint)              | Current commit message |
 
-Four tools work together to enforce code quality and commit hygiene. All of them run
-automatically through git hooks — every commit and push must pass before it is accepted.
+#### On Every Push (`pre-push`) — Stricter
 
-| Tool | Purpose | Configuration |
-| ---- | ------- | ------------- |
-| [Husky](https://typicode.github.io/husky/) | Installs the git hooks during `pnpm install` (via the `prepare` script) | `.husky/` |
-| [lint-staged](https://github.com/lint-staged/lint-staged) | Formats and lints staged files on commit | `.lintstagedrc.json` |
-| [commitlint](https://commitlint.js.org/) | Validates commit messages against Conventional Commits | `commitlint.config.js` |
-| [czg](https://cz-git.qbb.sh/cli/) | Interactive commit prompt (`pnpm commit`) and the `commit-msg` hook | `commitlint.config.js` (`prompt` key) |
+> Pre-push validates the **entire workspace** and **all commits** since last push, not just staged
+> files. A commit can pass pre-commit but be rejected on push.
 
-#### What Runs on Every Commit
+|    Hook    |                               Actions                                |
+| ---------- | -------------------------------------------------------------------- |
+| `pre-push` | `pnpm turbo lint` → `pnpm turbo build` → `commitlint --from @{push}` |
 
-| Hook | Runs | Scope |
-|------|------|-------|
-| `pre-commit` | `pnpm lint-staged` (Prettier + ESLint) | Staged files only ✅ |
-| `commit-msg` | `czg --hook` (commitlint) | Current commit message ✅ |
+Enforced rules:
+- Every commit message follows Conventional Commits format (see [Commit Guidelines](#commit-guidelines))
+- Full workspace passes lint and build
+- All commits since last push are validated — rebase to fix older messages
 
-```bash
-# Pre-commit: lint-staged
-#    Prettier (--write) formats all staged files
-#    ESLint checks staged JS/TS/JSX/TSX files
-#    If ESLint fails, the commit is blocked
+#### Non-Interactive Environments (CI & Agents)
 
-# Commit-msg: czg --hook (commitlint)
-#    Validates commit message follows Conventional Commits format
-#    Format: <type>(<scope>): <subject>
-#    Example: feat(cli): add new template command
-#    If invalid, the commit is rejected with a clear error
-```
-
-#### What Runs on Every Push (`pre-push`)
-
-> ⚠️ **Pre-push is significantly stricter than pre-commit.** A commit can pass pre-commit
-> (which only checks staged files) but still be rejected on push.
-
-|    Hook    |                                 Runs                                 |                         Scope                          |
-| ---------- | -------------------------------------------------------------------- | ------------------------------------------------------ |
-| `pre-push` | `pnpm turbo lint` → `pnpm turbo build` → `commitlint --from @{push}` | **Entire workspace** + **all commits** since last push |
+`pnpm commit` and `commit-msg` both run **czg**, which requires a TTY. When committing
+non-interactively:
 
 ```bash
-# 1. Lint all workspaces (not just staged files)
-#    - Runs full turbo lint across every package
-#    - Prevents pushing broken code that only worked on staged files
+# Write the message manually with --no-verify (skips hooks + lint-staged)
+git commit --no-verify -m "<type>(<scope>): <subject>"
 
-# 2. Build all workspaces
-#    - Ensures every package compiles successfully
-#    - Catches tree-wide regressions missed by pre-commit
-
-# 3. Validate ALL commit messages since last push (or origin/main)
-#    - Rules enforced:
-#      - type must be one of: feat \| fix \| docs \| style \| refactor \| perf \| test \| build \| ci \| chore \| revert \| review
-#      - scope is optional (docs, packages, cli, core, mdx-content, flame, template)
-#      - subject must be lowercase (no Sentence-case, UPPER-CASE, etc.)
-#      - header max 100 characters
-#    - Every commit in the push must pass — rebase to fix older messages
+# Check formatting yourself before pushing
+pnpm exec prettier --check <changed-files>
 ```
 
-#### Non-Interactive Environments (CI and Agents)
-
-`pnpm commit` and the `commit-msg` hook both run **czg**, which prompts for input in the
-terminal. In CI pipelines and agent sessions without a TTY, that prompt fails (typically with
-`readline was closed`). When committing non-interactively:
-
-1. Write the Conventional Commits message manually — do not run `pnpm commit`.
-2. Skip the local hooks for that commit:
-
-   ```bash
-   git commit --no-verify -m "<type>(<scope>): <subject>"
-   # or disable Husky for the whole session
-   HUSKY=0 git commit -m "<type>(<scope>): <subject>"
-   ```
-
-3. `--no-verify` also skips lint-staged, so check formatting yourself before pushing:
-
-   ```bash
-   pnpm exec prettier --check <changed-files>
-   ```
-
-Skipping local hooks does not skip validation — CI runs commitlint on every commit in a pull
-request and lints the full workspace, so malformed messages or unformatted code still fail checks.
+Skipping local hooks does not skip CI — commitlint and workspace lint still run on every PR.
 
 #### Why So Strict?
 
-- Ensures consistent, readable git history across all contributors
-- Catches formatting and lint issues **before** they reach CI
-- Guarantees every commit message is release-ready for changelog generation
-- Reduces friction in code review by enforcing quality at the earliest stage
+- Consistent, readable git history across all contributors
+- Catch formatting and lint issues before they reach CI
+- Every commit message is release-ready for changelog generation
 
-## Project Structure (High Level)
+---
 
-> **Note**: This monorepo uses **pnpm** for workspace management, dependency resolution, and
-> scripting across all packages. **Bun** is used exclusively as the runtime and bundler inside
-> `packages/flame` — it does not affect the rest of the workspace.
+## Commit Guidelines
 
-- `packages/cli`: CLI scaffold and installer utilities
-- `packages/core`: Shared MDX compile pipeline and content utilities
-- `packages/flame`: Bun-powered React + MDX documentation framework (uses Bun as runtime/bundler; production site on Vercel)
-- `packages/mdx-content`: Portable MDX components and framework adapters
-- `packages/ui/react`: Reusable DaisyUI + Tailwind CSS React component library (`@docubook/ui-react`)
-- `packages/themes-colors`: Theme color presets consumed by flame
-- `packages/template/nextjs`: Starter template for Vercel deployment (deprecated)
-- `packages/template/nextjs-docker`: Starter template for Docker/self-host deployment (deprecated)
-- `packages/template/react-router`: Starter template with React Router (deprecated, never completed)
+### Branch Naming
 
-For a deeper overview — package responsibilities, data flow, deployment, and the key design
-decisions — see [ARCHITECTURE.md](./ARCHITECTURE.md).
+Branch from `main` and use descriptive names:
 
-## Branch and Commit Guidelines
+```
+fix/<short-description>
+feat/<short-description>
+docs/<short-description>
+```
 
-- Branch from the default branch
-- Use descriptive branch names, for example:
-  - `fix/search-modal-focus`
-  - `feat/cli-template-update`
-  - `docs/improve-installation`
+### Commit Message Format
 
-### Commit Message Convention
-
-This project follows the **Conventional Commits** specification. Commit messages must follow this
-format:
+This project follows **Conventional Commits**. Every message must follow:
 
 ```
 <type>(<scope>): <subject>
 ```
 
+**Subject must be lowercase** and **max 100 characters**.
+
+|                ✅ Good                |                 ❌ Bad                |
+| ------------------------------------- | ------------------------------------- |
+| `feat(cli): add new template command` | `feat(cli): Add new template command` |
+| `fix(core): resolve rendering issue`  | `fix(core): RESOLVE RENDERING ISSUE`  |
+
 #### Types
 
-| Type       | Description                                 |
-| ---------- | ------------------------------------------- |
-| `feat`     | New feature                                 |
-| `fix`      | Bug fix                                     |
-| `docs`     | Documentation only changes                  |
-| `style`    | Code style changes (formatting, semicolons) |
-| `refactor` | Code refactoring without feature/fix        |
-| `perf`     | Performance improvements                    |
-| `test`     | Adding or modifying tests                   |
-| `build`    | Build system or dependency changes          |
-| `ci`       | CI configuration changes                    |
-| `chore`    | Other changes that don't modify src         |
-| `revert`   | Reverting a previous commit                 |
-| `review`   | Changes made in response to code review     |
+`feat` | `fix` | `docs` | `style` | `refactor` | `perf` | `test` | `build` | `ci` | `chore` | `revert` | `review`
 
-#### Scopes
+#### Scopes (optional but recommended)
 
-The `scope` is optional but recommended. Common scopes (matching the `czg` prompt in
-`commitlint.config.js`):
-
-|     Scope     |        Description        |
-| ------------- | ------------------------- |
-| `docs`        | Documentation             |
-| `packages`    | Package changes (general) |
-| `cli`         | CLI package               |
-| `core`        | Core package              |
-| `mdx-content` | MDX content package       |
-| `flame`       | Bun-powered docs framework |
-| `template`    | Starter templates (deprecated) |
+`docs` — Documentation &nbsp;&middot;&nbsp; `packages` — General package changes<br>
+`cli` — CLI package &nbsp;&middot;&nbsp; `core` — Core package<br>
+`mdx-content` — MDX content &nbsp;&middot;&nbsp; `flame` — Framework<br>
+`template` — Starter templates (deprecated)
 
 #### Examples
 
-```bash
-feat(cli): add new command
+```
+feat(cli): add new template command
 fix(core): resolve template rendering issue
 docs: update API documentation
 refactor(flame): simplify navigation logic
-chore: update dependencies
 ```
 
-### Commit Message Rules (Enforced by Pre-push)
+For an interactive prompt, use `pnpm commit` (requires a TTY).
 
-In addition to the format above, pre-push hooks enforce these rules:
-
-- **Subject must be lowercase** — no Sentence-case, UPPER-CASE, or Title Case
-  - ✅ `feat(cli): add new template command`
-  - ❌ `feat(cli): Add new template command`
-- **Header max 100 characters** — keep it concise
-- **All commits since last push are validated** — rebase to fix older messages
-
-### Interactive Commit (czg)
-
-For an interactive commit prompt, use:
-
-```bash
-pnpm commit
-```
-
-This provides a guided interface for writing properly formatted commit messages.
-
-> **Note**: `czg` requires an interactive terminal. In CI or agent environments, write the
-> commit message manually instead — see
-> [Non-Interactive Environments](#non-interactive-environments-ci-and-agents).
+---
 
 ## Pull Request Guidelines
 
 ### Before Opening a PR
 
-1. **Read the issues list**: Only open a PR if there is an existing issue describing your change. If
-   not, create a new issue first and wait for confirmation or discussion.
-2. **Create a branch**: Name your branch according to the issue and guidelines below.
-3. **Keep your branch up to date**: Always rebase your feature branch on the latest `main`
-   before opening a PR.
+1. **Only open a PR if there is an existing issue** describing your change. If not, create one first
+   and wait for discussion.
+2. **Rebase your branch on the latest `main`** before opening a PR — keeps history linear and
+   avoids merge commits that would fail `commitlint`.
 
-#### How to Rebase with `main`
+   ```bash
+   git fetch origin
+   git rebase origin/main
+   git push --force-with-lease origin your-branch
+   ```
 
-Before opening a pull request, **rebase** your feature branch on the latest `main` to keep a
-clean, linear history. Since pre-push hooks strictly validate every commit message (including
-merge commits), rebasing avoids creating merge commits that would fail those checks.
+3. Keep PRs focused — one concern per PR.
 
-- **Rebase** replays your commits on top of `main`, producing a clean linear history
-  without extra merge commits — and keeps the `commitlint` hook happy.
+### PR Title & Description
 
-To rebase on the latest `main`:
-
-```bash
-git fetch origin
-git checkout your-branch
-git rebase origin/main
-```
-
-Resolve any conflicts if prompted, then force-push your branch (history has been rewritten):
-
-```bash
-git push --force-with-lease origin your-branch
-```
-
-> **Note**: `--force-with-lease` is safer than `--force` — it prevents accidentally
-> overwriting others' work on shared branches.
-
-### PR Title
-
-Use concise, descriptive titles. Conventional style is preferred.
-
-### PR Description
-
-Include:
-
-- What changed
-- Why it changed
-- Scope and affected package(s)
-- Screenshots or terminal output (if relevant)
-- Linked issue (for example `Closes #123`)
+- **Title**: concise, descriptive. Conventional Commits style preferred.
+- **Description**: what changed, why, affected package(s), screenshots if relevant, and the linked
+  issue (`Closes #123`).
 
 ### Pre-PR Checklist
-
-Before requesting review, ensure:
 
 - [ ] `pnpm lint` passes
 - [ ] `pnpm typecheck` passes
 - [ ] Relevant build/dev flow works locally
-- [ ] Docs are updated if behavior changed
-- [ ] Changes are scoped and free from unrelated refactors
+- [ ] Docs updated if behavior changed
+- [ ] Changes are scoped, no unrelated refactors
+- [ ] Verification notes included in PR if runtime behavior changed
 
-## Tests and Validation
+---
 
-This repository uses linting, type checking, and real workflow validation as core quality gates.
+## Changesets & Releases
 
-When touching runtime behavior, validate the affected package/app locally and include verification
-notes in the PR.
-
-## Changesets and Releases
-
-This monorepo uses Changesets for versioning and publishing.
-
-For any user-facing package change, add a changeset:
+This monorepo uses [Changesets](https://github.com/changesets/changesets) for versioning and
+publishing. For any user-facing package change, add a changeset:
 
 ```bash
 pnpm changeset
 ```
 
-### Version Bump Guide
+Then `pnpm version-packages` consumes pending changesets, bumps versions, and updates
+CHANGELOGs.
 
-> **Note**: The `pnpm version-packages` command runs `changeset version` under the hood — it consumes
-> pending changesets, bumps package versions, and updates CHANGELOGs accordingly.
+### Bump Types
 
-Choose the bump type based on the nature of the change:
+| Type | When | Version |
+|------|------|---------|
+| `patch` | Bug fixes, small changes that don't affect the API | `1.0.0` → `1.0.1` |
+| `minor` | New features, backward-compatible | `1.0.0` → `1.1.0` |
+| `major` | Breaking API changes | `1.0.0` → `2.0.0` |
 
-| Type    | When to use                                             | Version example   |
-| ------- | ------------------------------------------------------- | ----------------- |
-| `patch` | Bug fixes and small changes that do not affect the API  | `1.0.0` → `1.0.1` |
-| `minor` | New features that are backward-compatible               | `1.0.0` → `1.1.0` |
-| `major` | Breaking changes — API is no longer backward-compatible | `1.0.0` → `2.0.0` |
+### Standard Workflow
 
----
-
-<details>
-<summary>Workflow: Patch Release (bug fix)</summary>
+The same steps apply regardless of bump type — only the changeset selection and commit message
+differ:
 
 ```bash
-# 1. Create a changeset — select the affected package(s) and choose "patch"
+# 1. Create a changeset — select affected packages and choose patch/minor/major
 pnpm changeset
 
 # 2. Commit the generated changeset
 git add .changeset/
-git commit -m "chore: add changeset for patch fix"
+git commit -m "chore: add changeset for <patch|minor|major> change"
 
 # 3. Apply version bumps and generate CHANGELOG
 pnpm version-packages
 
 # 4. Commit the version bump
 git add .
-git commit -m "chore: release patch"
+git commit -m "chore: release <patch|minor|major>"
 
-# 5. Push your branch and open a Pull Request
+# 5. Push and open a PR
 git push <branch-name>
 ```
 
-</details>
+### Documentation Contributions
+
+Docs improvements and examples are highly encouraged. Keep writing concise, example-driven, and
+consistent with the existing tone.
 
 ---
-
-<details>
-<summary>Workflow: Minor Release (new feature)</summary>
-
-```bash
-# 1. Create a changeset — select the affected package(s) and choose "minor"
-pnpm changeset
-
-# 2. Commit the generated changeset
-git add .changeset/
-git commit -m "chore: add changeset for new feature"
-
-# 3. Apply version bumps and generate CHANGELOG
-pnpm version-packages
-
-# 4. Commit the version bump
-git add .
-git commit -m "chore: release minor"
-
-# 5. Push your branch and open a Pull Request
-git push <branch-name>
-```
-
-</details>
-
----
-
-<details>
-<summary>Workflow: Major Release (breaking change)</summary>
-
-```bash
-# 1. Create a changeset — select the affected package(s) and choose "major"
-pnpm changeset
-
-# 2. Commit the generated changeset
-git add .changeset/
-git commit -m "chore: add changeset for breaking change"
-
-# 3. Apply version bumps and generate CHANGELOG
-pnpm version-packages
-
-# 4. Commit the version bump
-git add .
-git commit -m "chore: release major"
-
-# 5. Push your branch and open a Pull Request
-git push <branch-name>
-```
-
-</details>
-
-## Documentation Contributions
-
-Docs improvements are highly encouraged.
-
-Please keep writing concise, example-driven, and consistent with existing tone and file
-organization.
 
 ## Review Process
 
@@ -486,50 +288,34 @@ organization.
 - Feedback is expected and normal in collaborative OSS work
 - Be responsive and open to iteration
 
-## Contributor Benefits
+---
 
-Contributing here is not about financial incentives. The core value is helping sustain a healthy
-ecosystem and long-term product quality.
+## Recognition & Sponsorship
+
+### Impact of Your Contribution
 
 By contributing, you help:
-
 - Keep the DocuBook ecosystem reliable for users and teams
 - Improve long-term maintainability and reduce technical debt
-- Protect release stability through better quality and review culture
 - Strengthen shared knowledge through docs, examples, and issue discussions
 - Build your open-source track record through meaningful public contributions
 
-## Sponsorship and Fairness
+### Sponsorship
 
-DocuBook welcomes sponsorship and donations to support ongoing maintenance, documentation, and
-community activities.
+DocuBook welcomes sponsorship to support maintenance, documentation, and community activities.
 
-CI/CD is handled through GitHub Actions, and the main documentation site is hosted for free on
-Vercel. Sponsor funds are therefore primarily intended to help cover support for active
-contributors, community coordination, and domain costs.
+**Fairness is a priority** — sponsorship does not affect the review process:
+- Everyone gets the same review process
+- Sponsorship is not a shortcut to merge or priority treatment
+- All issues and PRs are evaluated on technical merit and project alignment
 
-Sponsor support is appreciated, but it does not affect the contribution review process. All issues
-and pull requests are evaluated on their technical merit, quality, and alignment with project goals.
-
-Sponsor benefits may include:
-
-- public thank-you in the repository or release notes
-- access to roadmap summaries or sponsorship updates
-- invitation to community channels or sponsor-only briefs
-
-Fairness is a priority:
-
-- everyone gets the same review process
-- sponsorship is not a shortcut to merge or priority treatment
-- transparency about fund usage builds trust
+Sponsor benefits may include: public thank-you, roadmap summaries, community channel access.
 
 <!-- prettier-ignore -->
 > [!NOTE]
-> Because this project has a small maintainer team, the owner may use automated agents like GitHub Copilot and Anthropic Claude for work. Some funds may be used to pay for API token subscriptions needed by those agents.
+> Because this project has a small maintainer team, the owner may use automated agents (GitHub
+> Copilot, Claude, etc.) for development. Some funds may be used for API token subscriptions.
 
-## Recognition
+---
 
-All meaningful contributions are appreciated, including code, docs, issue triage, and design
-feedback.
-
-Thank you for helping improve DocuBook.
+*Thank you for helping improve DocuBook.*

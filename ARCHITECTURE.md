@@ -45,27 +45,48 @@ declarative (`docu.json`), and deployment is CI-driven.
 
 ## Data Flow
 
+```mermaid
+flowchart LR
+    A["docs/*.mdx"] --> B["@docubook/core<br/>(compile)"]
+    B --> C["Framework render<br/>static HTML / SSR"]
+
+    D["docu.json<br/>routes, theme, nav, search"] --> C
+
+    C --> E["Flame: static output"]
+    E --> F["Vercel"]
+    E --> G["Any static host"]
 ```
-docs/*.mdx → @docubook/core (compile) → framework render → static HTML / SSR
-                                                 ↓
-                                     docu.json → routes, theme, nav, search
-                                                 ↓
-                                     flame: static output → Vercel / any host
+
+### Build Pipeline
+
+`packages/flame/.docu/node/build.ts`:
+
+```mermaid
+flowchart TD
+    Start["loadPlugins()"] --> OnStart["runOnStart()"]
+    OnStart --> Bundle["buildClientBundle()<br/>Bun.build + @tailwindcss/cli"]
+
+    Bundle --> Loop["For each MDX file<br/>(concurrency: BUILD_CONCURRENCY, default 4)"]
+
+    Loop --> Load["onLoad"]
+    Load --> FM["transformFrontmatter"]
+    FM --> Compile["compileMdx<br/>remark + rehype plugins"]
+    Compile --> Render["renderToString"]
+    Render --> Collect["collectHead / collectBody"]
+    Collect --> Transform["transformHtml"]
+    Transform --> Write["write HTML<br/>(per-page nonce)"]
+
+    Write --> Next["Landing + 404 pages"]
+    Next --> Search["generateSearchIndex()"]
+    Search --> OnEnd["runOnEnd()"]
+    OnEnd --> Cache["writeCache()"]
+
+    Write --> Output["packages/flame/.docu/dist/"]
 ```
 
-Flame build pipeline (`packages/flame/.docu/node/build.ts`):
-
-1. `loadPlugins()` → `runOnStart()`
-2. `buildClientBundle()` (`Bun.build` + `@tailwindcss/cli`)
-3. For each MDX file (concurrency via `BUILD_CONCURRENCY`, default 4):
-   `onLoad` → `transformFrontmatter` → `compileMdx` (remark + rehype plugins)
-   → `renderToString` → `collectHead`/`collectBody` → `transformHtml`
-   → write HTML with a per-page nonce
-4. Landing + 404 pages → `generateSearchIndex()` → `runOnEnd()` → `writeCache()`
-
-Output goes to `packages/flame/.docu/dist`: landing `index.html`, `404.html`,
-and pages as flat `docs/<slug>.html` files with extensionless internal links
-(static hosts need cleanUrls-style rewriting).
+Output: landing `index.html`, `404.html`, and pages as flat `docs/<slug>.html`
+files with extensionless internal links (static hosts need `cleanUrls`-style
+rewriting).
 
 ## Deployment
 
