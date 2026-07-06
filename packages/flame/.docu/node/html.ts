@@ -59,7 +59,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
 </head>
 <body>
   <div id="root">${body}</div>
-  <script${nonceAttr} src="${Bun.escapeHTML(assetPrefix + js)}"></script>${extraScripts ? `\n  ${extraScripts}` : ""}${bodyInjection}
+  <script type="module"${nonceAttr} src="${Bun.escapeHTML(assetPrefix + js)}"></script>${extraScripts ? `\n  ${extraScripts}` : ""}${bodyInjection}
 </body>
 </html>`;
 }
