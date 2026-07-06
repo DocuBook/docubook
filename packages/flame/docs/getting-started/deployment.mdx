@@ -1,0 +1,165 @@
+---
+title: Deployment
+description: Deploy your documentation to any static hosting provider and configure clean URLs.
+---
+
+Flame builds a fully static site — no server runtime is required. `bun run build` writes everything to `.docu/dist/`:
+
+```
+.docu/dist/
+├── index.html          # Landing page
+├── 404.html
+└── docs/
+    ├── getting-started.html
+    └── installation.html
+```
+
+Pages are emitted as flat `.html` files, and internal links are generated with the `.html` suffix so navigation works on any static host that serves files by exact path — with **zero configuration**.
+
+Whether the `.html` suffix stays visible in the browser address bar depends on your provider's **clean URL** support. Some providers strip the suffix automatically, others need a small config file, and a few cannot rewrite URLs at all.
+
+## Provider Overview
+
+|       Provider        | Clean URLs |         Configuration          |
+| --------------------- | ---------- | ------------------------------ |
+| Cloudflare Pages      | Automatic  | None                           |
+| AWS Amplify Hosting   | Automatic  | None                           |
+| Vercel                | Yes        | `vercel.json`                  |
+| Netlify               | Yes        | `netlify.toml` or UI           |
+| Firebase Hosting      | Yes        | `firebase.json`                |
+| Azure Static Web Apps | Yes        | `staticwebapp.config.json`     |
+| Render                | Yes        | Dashboard rewrite rule         |
+| Heroku                | Yes        | Static buildpack + `static.json` |
+| GitHub Pages          | No         | Not supported                  |
+| AWS S3 + CloudFront   | Limited    | CloudFront Function required   |
+
+## Zero Configuration
+
+These providers handle clean URLs automatically — deploy `.docu/dist/` as-is.
+
+### Cloudflare Pages
+
+Cloudflare Pages natively redirects `/page.html` → `/page` and `/about/index.html` → `/about/`. No config file needed.
+
+Source: [Cloudflare Pages — Serving Pages](https://developers.cloudflare.com/pages/configuration/serving-pages/#route-matching)
+
+### AWS Amplify Hosting
+
+Amplify automatically serves `/about` from `/about.html` when the file exists. It resolves `.html` extensions and trailing slashes based on the build output — no additional configuration required.
+
+Source: [AWS Amplify — Trailing slashes and clean URLs](https://docs.aws.amazon.com/amplify/latest/userguide/redirect-rewrite-examples.html#trailing-slashes-and-clean-urls)
+
+## Configuration Required
+
+These providers support clean URLs, but you must enable them explicitly.
+
+### Vercel
+
+```json:vercel.json
+{
+  "cleanUrls": true
+}
+```
+
+When `true`, Vercel strips `.html` from all URLs and responds with a `308` redirect for `/page.html` → `/page`.
+
+<Note type="info" title="DocuBook repository">
+  The `vercel.json` in the DocuBook repository already sets `"cleanUrls": true` — deployments of this
+  documentation site need no extra configuration.
+</Note>
+
+Source: [Vercel — cleanUrls](https://vercel.com/docs/project-configuration/vercel-json#cleanurls)
+
+### Netlify
+
+```toml:netlify.toml
+[build]
+  publish = ".docu/dist"
+
+[build.processing.html]
+  pretty_urls = true
+```
+
+Alternatively, enable it in the UI: **Project configuration → Build & deploy → Post processing → Pretty URLs**.
+
+Source: [Netlify — Pretty URLs](https://docs.netlify.com/configure-builds/file-based-configuration/#pretty-urls)
+
+### Firebase Hosting
+
+```json:firebase.json
+{
+  "hosting": {
+    "public": ".docu/dist",
+    "cleanUrls": true
+  }
+}
+```
+
+When `true`, Firebase drops `.html` from uploaded URLs and responds with a `301` redirect for requests that include the extension.
+
+Source: [Firebase — Full hosting configuration](https://firebase.google.com/docs/hosting/full-config)
+
+### Azure Static Web Apps
+
+Azure SWA has no `cleanUrls` option, and route `redirect` values do not support wildcard captures — so per-route redirect rules cannot strip `.html` site-wide. Use the `trailingSlash` setting instead, which normalizes URLs globally:
+
+```json:staticwebapp.config.json
+{
+  "trailingSlash": "never"
+}
+```
+
+With `"never"` (or `"auto"`), a request to `/docs/page.html` is permanently redirected (`301`) to `/docs/page`, and the `.html` file is served at the extensionless path. Place the config file at the root of the deployed output.
+
+Source: [Azure Static Web Apps — Configuration](https://learn.microsoft.com/en-us/azure/static-web-apps/configuration#trailing-slash)
+
+### Render
+
+Render does not strip `.html` automatically. Add a rewrite rule in the Render Dashboard:
+
+|  Source   | Destination  | Action  |
+| --------- | ------------ | ------- |
+| `/docs/*` | `/docs/*.html` | Rewrite |
+
+Render serves existing files first — the rule only applies when no file exists at the requested path, so it never shadows real assets. Note that Render has no redirect in the other direction: links within the site keep their `.html` suffix, and the rewrite ensures extensionless URLs resolve when visited directly.
+
+Source: [Render — Redirects and Rewrites](https://render.com/docs/redirects-rewrites)
+
+### Heroku
+
+Heroku has no native static hosting — use the `heroku-community/static` buildpack and add `static.json` to the repo root:
+
+```json:static.json
+{
+  "root": ".docu/dist",
+  "clean_urls": true
+}
+```
+
+`clean_urls: true` configures nginx to serve `/page` from `/page.html`.
+
+<Note type="warning" title="Deprecated buildpack">
+  Heroku has deprecated `heroku-buildpack-static` and no longer maintains it. It still works, but
+  Heroku recommends the [nginx buildpack](https://github.com/heroku/heroku-buildpack-nginx) for new
+  projects.
+</Note>
+
+Source: [Heroku — static buildpack](https://elements.heroku.com/buildpacks/heroku/heroku-buildpack-static)
+
+## Limited Support
+
+These platforms cannot rewrite URLs — the site still works, but the `.html` suffix stays visible.
+
+### GitHub Pages
+
+GitHub Pages serves files at their exact path only: `/docs/page.html` works, `/docs/page` returns a `404`. There is no official rewrite mechanism for static files.
+
+Flame ships a deploy helper for GitHub Pages — `bun run deploy` builds the site, adds a `.nojekyll` file, and generates a `.github/workflows/deploy.yml` workflow if one does not exist. Deployment works out of the box; the `.html` suffix remaining in the address bar is the only limitation.
+
+Source: [GitHub Pages documentation](https://docs.github.com/en/pages)
+
+### AWS S3 + CloudFront
+
+S3 static website hosting does not strip `.html` extensions. Clean URLs require a viewer-request handler on the CloudFront distribution — a [CloudFront Function](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-functions.html) or Lambda@Edge — that appends `.html` to extensionless request URIs before they reach S3. This requires additional AWS infrastructure beyond a basic static deploy.
+
+Source: [Amazon S3 — Hosting a static website](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteHosting.html)

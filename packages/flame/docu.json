@@ -146,6 +146,10 @@
           "href": "/plugins"
         },
         {
+          "title": "Deployment",
+          "href": "/deployment"
+        },
+        {
           "title": "Search",
           "href": "/search",
           "noLink": true,
