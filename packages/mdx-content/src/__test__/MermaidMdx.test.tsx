@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, fireEvent, cleanup } from "@testing-library/react";
 import { MermaidMdx } from "../components/MermaidMdx";
 
 // Mock mermaid module for client-side hydration tests
@@ -38,6 +38,12 @@ vi.stubGlobal("IntersectionObserver", FakeIntersectionObserver);
 
 beforeEach(() => {
   vi.clearAllMocks();
+});
+
+// No vitest globals — RTL's auto-cleanup does not register, so unmount
+// explicitly to disconnect each component's Mutation/IntersectionObservers
+afterEach(() => {
+  cleanup();
 });
 
 describe("MermaidMdx", () => {
@@ -155,6 +161,101 @@ describe("MermaidMdx", () => {
     expect(dataProcessedAtCallTime).toBeNull();
 
     // Cleanup
+    document.documentElement.classList.remove("dark");
+    unmount();
+    vi.useRealTimers();
+  });
+
+  it("does not re-run when a class mutation leaves the theme unchanged", async () => {
+    mockParse.mockResolvedValue(undefined);
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+
+    const { unmount } = render(<MermaidMdx chart="graph TD; A-->B;" />);
+
+    await vi.waitFor(() => {
+      expect(mockRun).toHaveBeenCalled();
+    });
+    mockRun.mockClear();
+
+    // Mutates the class attribute without flipping the theme — the case
+    // mount effects trigger on every page load
+    document.documentElement.classList.add("unrelated-class");
+    await vi.advanceTimersByTimeAsync(250);
+
+    expect(mockRun).not.toHaveBeenCalled();
+
+    document.documentElement.classList.remove("unrelated-class");
+    unmount();
+    vi.useRealTimers();
+  });
+
+  it("warns instead of showing the error fallback when a theme re-render fails", async () => {
+    mockParse.mockResolvedValue(undefined);
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const { container, unmount } = render(<MermaidMdx chart="graph TD; A-->B;" />);
+
+    await vi.waitFor(() => {
+      expect(mockRun).toHaveBeenCalled();
+    });
+    mockRun.mockClear();
+    mockRun.mockRejectedValueOnce(new Error("detached node"));
+
+    document.documentElement.classList.add("dark");
+    await vi.advanceTimersByTimeAsync(250);
+
+    await vi.waitFor(() => {
+      expect(warnSpy).toHaveBeenCalledWith("[mermaid] diagram render error:", expect.any(Error));
+    });
+    expect(container.textContent).not.toContain("Diagram rendering error");
+
+    document.documentElement.classList.remove("dark");
+    warnSpy.mockRestore();
+    unmount();
+    vi.useRealTimers();
+  });
+
+  it("serializes overlapping runs instead of running them concurrently", async () => {
+    mockParse.mockResolvedValue(undefined);
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+
+    let resolveFirst!: () => void;
+    const callOrder: string[] = [];
+    mockRun.mockImplementationOnce(() => {
+      callOrder.push("start-1");
+      return new Promise<void>((resolve) => {
+        resolveFirst = () => {
+          callOrder.push("end-1");
+          resolve();
+        };
+      });
+    });
+    mockRun.mockImplementationOnce(() => {
+      callOrder.push("start-2");
+      return Promise.resolve();
+    });
+
+    const { unmount } = render(<MermaidMdx chart="graph TD; A-->B;" />);
+
+    // First run starts via the (stubbed) IntersectionObserver
+    await vi.waitFor(() => {
+      expect(mockRun).toHaveBeenCalledTimes(1);
+    });
+
+    // Theme flips while the first run is still in flight
+    document.documentElement.classList.add("dark");
+    await vi.advanceTimersByTimeAsync(250);
+
+    // Second run must wait for the first to settle
+    expect(mockRun).toHaveBeenCalledTimes(1);
+
+    resolveFirst();
+    await vi.waitFor(() => {
+      expect(mockRun).toHaveBeenCalledTimes(2);
+    });
+    expect(callOrder).toEqual(["start-1", "end-1", "start-2"]);
+
     document.documentElement.classList.remove("dark");
     unmount();
     vi.useRealTimers();
