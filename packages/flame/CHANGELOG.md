@@ -1,5 +1,14 @@
 # @docubook/flame
 
+## 1.4.4
+
+### Patch Changes
+
+- [#272](https://github.com/DocuBook/docubook/pull/272) [`64db22d`](https://github.com/DocuBook/docubook/commit/64db22dee3a7ce01bd80d67dae9d8c4af1dc1c70) Thanks [@pullfrog](https://github.com/apps/pullfrog)! - Load the client bundle with `<script type="module">`. The bundle is built as ESM; executing it as a classic script leaked top-level declarations onto `window`, letting d3-hierarchy's `Node` constructor clobber the browser's `Node` global. DOMPurify then failed to resolve `Node.prototype.nodeName` and every `mermaid.run()` rejected in the dev server, showing the "Diagram rendering error" fallback instead of diagrams. Production was unaffected only because minification renames top-level symbols.
+
+- Updated dependencies [[`1f719b1`](https://github.com/DocuBook/docubook/commit/1f719b145035f01094b40e910df725bbc536742c)]:
+  - @docubook/mdx-content@3.4.1
+
 ## 1.4.3
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @docubook/mdx-content
 
+## 3.4.1
+
+### Patch Changes
+
+- [#272](https://github.com/DocuBook/docubook/pull/272) [`1f719b1`](https://github.com/DocuBook/docubook/commit/1f719b145035f01094b40e910df725bbc536742c) Thanks [@pullfrog](https://github.com/apps/pullfrog)! - Fix d3-selection `dispatchEvent` TypeError from overlapping mermaid renders: serialize `mermaid.run()` calls, skip theme-sync re-renders when the theme is unchanged, guard against detached nodes, and catch theme-sync render failures with a console warning.
+
 ## 3.4.0
 
 ### Minor Changes
