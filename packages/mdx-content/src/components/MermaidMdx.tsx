@@ -109,6 +109,20 @@ export function MermaidMdx({ chart, id, className, panZoom = true }: MermaidMdxP
     let lazyObserver: IntersectionObserver | null = null;
     let syncObserver: MutationObserver | null = null;
     let themeTimer: ReturnType<typeof setTimeout> | null = null;
+    let lastTheme = getTheme();
+    // Serialize mermaid.run calls — overlapping runs on the same node detach
+    // in-flight SVG and crash inside d3's dispatchEvent (issue #268)
+    let runChain: Promise<void> = Promise.resolve();
+
+    function enqueueRun(run: () => Promise<void>): Promise<void> {
+      const next = runChain.then(() => {
+        if (cancelled || !ref.current?.isConnected) return;
+        return run();
+      });
+      // Keep the chain alive after a failure; the caller handles rejection
+      runChain = next.catch(() => {});
+      return next;
+    }
 
     async function init(): Promise<void> {
       try {
@@ -135,7 +149,11 @@ export function MermaidMdx({ chart, id, className, panZoom = true }: MermaidMdxP
         lazyObserver = new IntersectionObserver(
           ([entry]) => {
             if (!entry.isIntersecting || cancelled || !ref.current) return;
-            Promise.resolve(mermaid.run({ nodes: [ref.current] }))
+            enqueueRun(() => {
+              const node = ref.current;
+              if (!node) return Promise.resolve();
+              return mermaid.run({ nodes: [node] });
+            })
               .then(() => {
                 if (!cancelled) setRendered(true);
               })
@@ -159,15 +177,24 @@ export function MermaidMdx({ chart, id, className, panZoom = true }: MermaidMdxP
       if (themeTimer) clearTimeout(themeTimer);
       themeTimer = setTimeout(() => {
         if (cancelled || !mermaidRef.current || !ref.current) return;
-        // Mermaid replaces innerHTML — restore original chart text before re-render
-        ref.current.textContent = chartRef.current;
-        // Remove data-processed so mermaid v11 does not skip this node
-        ref.current.removeAttribute("data-processed");
-        mermaidRef.current.initialize({
-          startOnLoad: false,
-          theme: getTheme(),
+        // Mount effects toggle the class without changing the theme — skip
+        // so a spurious mutation cannot race the initial render (issue #268)
+        if (getTheme() === lastTheme) return;
+        enqueueRun(() => {
+          const mermaid = mermaidRef.current;
+          const node = ref.current;
+          if (!mermaid || !node) return Promise.resolve();
+          lastTheme = getTheme();
+          // Mermaid replaces innerHTML — restore original chart text before re-render
+          node.textContent = chartRef.current;
+          // Remove data-processed so mermaid v11 does not skip this node
+          node.removeAttribute("data-processed");
+          mermaid.initialize({ startOnLoad: false, theme: lastTheme });
+          return mermaid.run({ nodes: [node] });
+        }).catch((e) => {
+          // Warn, not error state — the previously rendered diagram is still on screen
+          console.warn("[mermaid] diagram render error:", e);
         });
-        mermaidRef.current.run({ nodes: [ref.current] });
       }, 200);
     });
     syncObserver.observe(document.documentElement, {
