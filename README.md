@@ -10,7 +10,7 @@
   DocuBook
 </h1>
 <h3 align="center" style="font-size: 20px;">
-  An open-source alternative to Mintlify or GitBook. Write documentation in MDX with the runtime and UI library you already use. Built on React, running on Bun, Node.js, and Deno — with Vue support on the roadmap.
+  An open-source alternative to Mintlify or GitBook. Write documentation in MDX with your favourite UI library. The toolchain runs on Bun, Node.js, or Deno — output is flat static HTML, no server required.
 </h3>
 
 [![Flame](https://shieldcn.dev/npm/v/@docubook/flame?label=Flame&variant=secondary)](https://www.npmjs.com/package/@docubook/flame)
@@ -20,23 +20,24 @@
 
 ## Architecture
 
-DocuBook is a **layer between MDX content and the browser**. The core pipeline compiles MDX into renderable output, and the runtime layer determines how that output is served — Node, Bun, or Deno. You bring the content; DocuBook handles everything in between.
+DocuBook is a **static site generator for documentation**. The core pipeline compiles MDX into flat `.html` files. The runtime (Bun, Node.js, Deno) is only needed for the build toolchain and local dev server; the final output is pure static HTML + assets — deploy to any CDN or static host.
 
 ```mermaid
 flowchart TD
-    A[MDX Content]
+    A[MDX Content - *.mdx]
     B["@docubook/core — compile pipeline, rehype/remark plugins"]
-    C["@docubook/mdx-content — portable UI components (framework-agnostic)"]
-    D["@docubook/flame"]
+    C["@docubook/mdx-content — portable UI components"]
+    D["@docubook/flame - Frameworks Docs"]
+    RUNT["@docubook/runt — Runtime adapters"]
     D1["Bun + React - ready to use"]
     D2["Node + React - ready to use"]
     D3["Deno + React - ready to use"]
-    E[Browser]
+    E[Browser - *.html]
 
     A -->  B --> C --> D
     D --> D1 --> E
-    D --> D2 --> E
-    D --> D3 --> E
+    D --> RUNT --> D2 --> E
+    D --> RUNT --> D3 --> E
 ```
 
 ## Packages
@@ -51,7 +52,7 @@ flowchart TD
 
 ## Runtimes
 
-DocuBook is designed to be runtime-agnostic. The same MDX content runs on any supported runtime — swap the runtime layer without touching your content.
+The runtime is only needed for the build toolchain and local dev server. The output is flat static HTML — deploy to any CDN or static host (Vercel, Netlify, Cloudflare Pages, GitHub Pages, S3, etc.).
 
 | Runtime  | UI Library |      Status      |                    Recipe                    |
 | -------- | ---------- | ---------------- | -------------------------------------------- |
