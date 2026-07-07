@@ -33,3 +33,43 @@ jobs:
 
       - name: ${{ matrix.task }}
         run: pnpm turbo ${{ matrix.task }}
+
+  runtime-smoke:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [node, deno]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: denoland/setup-deno@v2
+        if: matrix.runtime == 'deno'
+        with:
+          deno-version: v2.x
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build workspace dependencies
+        run: pnpm turbo build --filter=@docubook/flame^...
+
+      - name: Precompile .docu/lib
+        run: node bin/compile-lib.mjs
+        working-directory: packages/flame
+
+      - name: Node runtime smoke (flame build)
+        if: matrix.runtime == 'node'
+        run: NODE_ENV=production FLAME_RUNTIME=node node bin/cli.js build
+        working-directory: packages/flame
+
+      - name: Deno runtime smoke (flame build)
+        if: matrix.runtime == 'deno'
+        run: NODE_ENV=production deno run -A bin/cli.js build
+        working-directory: packages/flame

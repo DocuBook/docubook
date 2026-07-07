@@ -150,7 +150,7 @@ Condensed from the retired ADRs — these commitments are still in force:
     (`server-routes.ts`, `mdx.ts`) were neutralized in place with `node:` APIs,
     which Bun runs natively. HTTP serving goes through `@docubook/runt`
     adapters. Because Node cannot import `.tsx` and Deno does not execute
-    TypeScript inside npm packages, `scripts/compile-lib.mjs` bundles the
+    TypeScript inside npm packages, `bin/compile-lib.mjs` bundles the
     Node/Deno entries to plain ESM in `.docu/lib/` at publish time; the CLI
     (`bin/cli.js`) detects the runtime (`FLAME_RUNTIME` override → `Bun`
     global → `Deno` global → node) and routes Bun to `.docu/node/*.ts`,
