@@ -64,72 +64,80 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
   await cleanOldBundles();
 
   const nodeEnv = process.env.NODE_ENV || "development";
-  const { build } = await import("esbuild");
+  const esbuild = await import("esbuild");
+  const { build } = esbuild;
 
-  const result = await build({
-    entryPoints: [join(LIB_DIR, "client.ts")],
-    bundle: true,
-    outdir: ASSETS_DIR,
-    entryNames: "client-[hash]",
-    platform: "browser",
-    format: "esm",
-    minify: nodeEnv === "production",
-    define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
-    jsx: "automatic",
-    jsxDev: nodeEnv !== "production",
-    metafile: true,
-    logLevel: "silent",
-    plugins: [
-      {
-        // The client graph reaches modules that import node builtins for
-        // their server-only exports (e.g. utils.ts, core's content module).
-        // Bun.build tolerates this for browser targets; esbuild needs empty
-        // CJS stubs (named imports become undefined, matching the
-        // never-called server paths).
-        name: "node-builtin-stub",
-        setup(build) {
-          const builtins = builtinModules.map((m) => m.replace(/\//g, "\\/")).join("|");
-          build.onResolve({ filter: new RegExp(`^(node:.*|${builtins})$`) }, (args) => ({
-            path: args.path,
-            namespace: "node-stub",
-          }));
-          build.onLoad({ filter: /.*/, namespace: "node-stub" }, () => ({
-            contents: "module.exports = {};",
-            loader: "js",
-          }));
+  let result: Awaited<ReturnType<typeof build>>;
+  try {
+    result = await build({
+      entryPoints: [join(LIB_DIR, "client.ts")],
+      bundle: true,
+      outdir: ASSETS_DIR,
+      entryNames: "client-[hash]",
+      platform: "browser",
+      format: "esm",
+      minify: nodeEnv === "production",
+      define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
+      jsx: "automatic",
+      jsxDev: nodeEnv !== "production",
+      metafile: true,
+      logLevel: "silent",
+      plugins: [
+        {
+          // The client graph reaches modules that import node builtins for
+          // their server-only exports (e.g. utils.ts, core's content module).
+          // Bun.build tolerates this for browser targets; esbuild needs empty
+          // CJS stubs (named imports become undefined, matching the
+          // never-called server paths).
+          name: "node-builtin-stub",
+          setup(build) {
+            const builtins = builtinModules.map((m) => m.replace(/\//g, "\\/")).join("|");
+            build.onResolve({ filter: new RegExp(`^(node:.*|${builtins})$`) }, (args) => ({
+              path: args.path,
+              namespace: "node-stub",
+            }));
+            build.onLoad({ filter: /.*/, namespace: "node-stub" }, () => ({
+              contents: "module.exports = {};",
+              loader: "js",
+            }));
+          },
         },
-      },
-      {
-        name: "docu-config",
-        setup(build) {
-          build.onResolve({ filter: /docu\.json$/ }, (args) => ({
-            path: args.path,
-            namespace: "docu-config",
-          }));
-          build.onLoad({ filter: /.*/, namespace: "docu-config" }, () => {
-            const config = loadDocuConfig();
-            const resolved = {
-              ...config,
-              routes: resolveRoutes(config.routes as DocuRoute[] | undefined),
-            };
-            return { contents: JSON.stringify(resolved), loader: "json" };
-          });
+        {
+          name: "docu-config",
+          setup(build) {
+            build.onResolve({ filter: /docu\.json$/ }, (args) => ({
+              path: args.path,
+              namespace: "docu-config",
+            }));
+            build.onLoad({ filter: /.*/, namespace: "docu-config" }, () => {
+              const config = loadDocuConfig();
+              const resolved = {
+                ...config,
+                routes: resolveRoutes(config.routes as DocuRoute[] | undefined),
+              };
+              return { contents: JSON.stringify(resolved), loader: "json" };
+            });
+          },
         },
-      },
-      {
-        name: "mdx-jsx-runtime",
-        setup(build) {
-          build.onLoad({ filter: /next-mdx-remote[/\\].*jsx-runtime/ }, () => {
-            const source =
-              nodeEnv === "production"
-                ? `module.exports.jsxRuntime = require("react/jsx-runtime");`
-                : `module.exports.jsxRuntime = require("react/jsx-dev-runtime");`;
-            return { contents: source, loader: "js" };
-          });
+        {
+          name: "mdx-jsx-runtime",
+          setup(build) {
+            build.onLoad({ filter: /next-mdx-remote[/\\].*jsx-runtime/ }, () => {
+              const source =
+                nodeEnv === "production"
+                  ? `module.exports.jsxRuntime = require("react/jsx-runtime");`
+                  : `module.exports.jsxRuntime = require("react/jsx-dev-runtime");`;
+              return { contents: source, loader: "js" };
+            });
+          },
         },
-      },
-    ],
-  });
+      ],
+    });
+  } finally {
+    // esbuild's service child process keeps Deno's event loop alive after a
+    // one-shot build (node-compat gap) — stop it so `flame build` exits.
+    await esbuild.stop();
+  }
 
   const jsOutput = Object.keys(result.metafile.outputs).find((p) => p.endsWith(".js"));
   if (!jsOutput) {
@@ -158,10 +166,7 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
   await writeFile(join(ASSETS_DIR, cssFile), cssContent);
   await unlink(tmpCss);
 
-  await writeFile(
-    join(ASSETS_DIR, "manifest.json"),
-    JSON.stringify({ js: jsFile, css: cssFile })
-  );
+  await writeFile(join(ASSETS_DIR, "manifest.json"), JSON.stringify({ js: jsFile, css: cssFile }));
 
   return { js: jsFile, css: cssFile };
 }
