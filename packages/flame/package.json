@@ -31,10 +31,10 @@
     "clean": "bun .docu/node/clean.ts",
     "preview": "bun .docu/node/preview.ts",
     "deploy": "bun .docu/node/deploy.ts",
-    "compile:lib": "node scripts/compile-lib.mjs",
+    "compile:lib": "node bin/compile-lib.mjs",
     "test": "vitest run",
     "lint": "eslint .",
-    "prepublishOnly": "bun .docu/node/clean.ts && eslint . && vitest run && node scripts/compile-lib.mjs"
+    "prepublishOnly": "bun .docu/node/clean.ts && eslint . && vitest run && node bin/compile-lib.mjs"
   },
   "keywords": [
     "docubook",
