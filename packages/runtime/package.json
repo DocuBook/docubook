@@ -1,0 +1,52 @@
+{
+  "name": "@docubook/runt",
+  "version": "0.1.0",
+  "description": "Runtime HTTP server adapters (Bun, Node.js, Deno) for DocuBook",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "pnpm run clean && pnpm run build"
+  },
+  "keywords": [
+    "docubook",
+    "runtime",
+    "adapter",
+    "bun",
+    "node",
+    "deno"
+  ],
+  "homepage": "https://github.com/DocuBook/docubook/tree/main/packages/runtime",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DocuBook/docubook.git",
+    "directory": "packages/runtime"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "author": "wildan.nrs",
+  "author-url": "https://wildan.dev",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.17"
+  }
+}
