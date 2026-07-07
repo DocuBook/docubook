@@ -1,8 +1,8 @@
 "use client";
 
 import { useContext, useId, useState, type KeyboardEvent, type ReactNode } from "react";
-import { AccordionGroupContext } from "../utils/AccordionGroupContext";
-import { IconProp, resolveLucideIcon } from "../utils/Icon";
+import { AccordionGroupContext } from "../utils/AccordionGroupContext.js";
+import { IconProp, resolveLucideIcon } from "../utils/Icon.js";
 import { ChevronRight } from "lucide-react";
 
 type AccordionMdxProps = {

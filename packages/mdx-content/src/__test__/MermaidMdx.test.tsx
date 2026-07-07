@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent, cleanup } from "@testing-library/react";
-import { MermaidMdx } from "../components/MermaidMdx";
+import { MermaidMdx } from "../components/MermaidMdx.js";
 
 // Mock mermaid module for client-side hydration tests
 const mockInitialize = vi.fn();

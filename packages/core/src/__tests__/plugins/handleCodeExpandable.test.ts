@@ -3,8 +3,8 @@ import type { Node } from "unist";
 import {
   handleCodeExpandableRemark,
   handleCodeExpandable,
-} from "../../plugins/handleCodeExpandable";
-import type { ElementNode } from "../../utils";
+} from "../../plugins/handleCodeExpandable.js";
+import type { ElementNode } from "../../utils.js";
 
 // --- Remark plugin tests ---
 

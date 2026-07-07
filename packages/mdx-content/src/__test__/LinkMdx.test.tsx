@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { LinkMdx } from "../components/LinkMdx";
+import { LinkMdx } from "../components/LinkMdx.js";
 
 describe("LinkMdx", () => {
   it("renders external link with target _blank", () => {

@@ -9,7 +9,7 @@ import {
   MDXRemote,
 } from "@docubook/core";
 import { createMdxComponents } from "@docubook/mdx-content";
-import { getGitLastModified, getGitLastModifiedBatch } from "./utils";
+import { getGitLastModified, getGitLastModifiedBatch } from "./git";
 
 /**
  * Return the value with `.html` appended, or null if the value should be left

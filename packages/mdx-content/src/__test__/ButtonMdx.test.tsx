@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { ButtonMdx } from "../components/ButtonMdx";
+import { ButtonMdx } from "../components/ButtonMdx.js";
 
 describe("ButtonMdx", () => {
   it("renders with valid icon", () => {

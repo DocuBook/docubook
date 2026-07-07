@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { CardMdx } from "../components/CardMdx";
+import { CardMdx } from "../components/CardMdx.js";
 
 describe("CardMdx", () => {
   it("renders with valid icon", () => {

@@ -5,7 +5,7 @@ import {
   parseMdxFile,
   compileParsedMdxFile,
   createMdxContentService,
-} from "../content";
+} from "../content.js";
 
 const FIXTURES_ROOT = path.resolve(__dirname, "__fixtures__");
 

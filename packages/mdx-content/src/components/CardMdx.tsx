@@ -1,9 +1,9 @@
 "use client";
 
 import type { ComponentType, CSSProperties, HTMLAttributes, ReactNode } from "react";
-import { LinkMdx } from "./LinkMdx";
-import { IconProp, resolveLucideIcon } from "../utils/Icon";
-import type { LinkMdxProps } from "./LinkMdx";
+import { LinkMdx } from "./LinkMdx.js";
+import { IconProp, resolveLucideIcon } from "../utils/Icon.js";
+import type { LinkMdxProps } from "./LinkMdx.js";
 
 type LinkRenderer = ComponentType<LinkMdxProps>;
 

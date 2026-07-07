@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { NoteMdx } from "../components/NoteMdx";
+import { NoteMdx } from "../components/NoteMdx.js";
 
 describe("NoteMdx", () => {
   it("renders with default type", () => {

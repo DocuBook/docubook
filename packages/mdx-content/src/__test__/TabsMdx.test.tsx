@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { TabsMdx, TabMdx } from "../components/TabsMdx";
+import { TabsMdx, TabMdx } from "../components/TabsMdx.js";
 
 describe("TabsMdx", () => {
   it("renders tabs with multiple Tab children", () => {

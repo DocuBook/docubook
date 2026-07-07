@@ -1,5 +1,5 @@
-export type { TocItem, MdxCompileResult } from "./types";
-export { cn, parseDate, stringToDate, formatDate, formatDate2, toIsoDateOnly } from "./utils";
+export type { TocItem, MdxCompileResult } from "./types.js";
+export { cn, parseDate, stringToDate, formatDate, formatDate2, toIsoDateOnly } from "./utils.js";
 export {
   parseMdx,
   serialize,
@@ -8,26 +8,26 @@ export {
   postProcess,
   createDefaultRehypePlugins,
   createDefaultRemarkPlugins,
-} from "./compile";
-export { handleCodeTitles } from "./plugins/handleCodeTitles";
-export { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/handleCodeExpandable";
-export { rehypeMermaid } from "./plugins/rehypeMermaid";
+} from "./compile.js";
+export { handleCodeTitles } from "./plugins/handleCodeTitles.js";
+export { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/handleCodeExpandable.js";
+export { rehypeMermaid } from "./plugins/rehypeMermaid.js";
 export {
   extractFrontmatter,
   extractFrontmatterWithContent,
   extractTocsFromRawMdx,
   sluggify,
-} from "./extract";
-export type { ParseMdxOptions } from "./compile";
+} from "./extract.js";
+export type { ParseMdxOptions } from "./compile.js";
 export {
   readMdxFileBySlug,
   parseMdxFile,
   compileParsedMdxFile,
   createMdxContentService,
-} from "./content";
+} from "./content.js";
 export type {
   ReadMdxFileResult,
   ParsedMdxFile,
   CompiledMdxFile,
   CreateMdxContentServiceOptions,
-} from "./content";
+} from "./content.js";

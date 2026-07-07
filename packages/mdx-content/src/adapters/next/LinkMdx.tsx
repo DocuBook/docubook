@@ -1,5 +1,5 @@
 import NextLink from "next/link";
-import type { LinkMdxProps } from "../../components/LinkMdx";
+import type { LinkMdxProps } from "../../components/LinkMdx.js";
 
 export function LinkMdx({ href, rel, target, ...props }: LinkMdxProps) {
     if (!href) return null;

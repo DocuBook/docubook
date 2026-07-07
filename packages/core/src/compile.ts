@@ -7,11 +7,11 @@ import rehypePrism from "rehype-prism-plus";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeSlug from "rehype-slug";
 import rehypeCodeTitles from "rehype-code-titles";
-import { handleCodeTitles } from "./plugins/handleCodeTitles";
-import { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/handleCodeExpandable";
-import { rehypeMermaid } from "./plugins/rehypeMermaid";
-import type { MdxCompileResult } from "./types";
-import type { ElementNode } from "./utils";
+import { handleCodeTitles } from "./plugins/handleCodeTitles.js";
+import { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/handleCodeExpandable.js";
+import { rehypeMermaid } from "./plugins/rehypeMermaid.js";
+import type { MdxCompileResult } from "./types.js";
+import type { ElementNode } from "./utils.js";
 import type { Pluggable } from "unified";
 
 // Re-export serialize for non-RSC usage

@@ -40,7 +40,7 @@ export type {
   ThemeConfig,
   SyntaxModeTokens,
   ThemeRegistry,
-} from "./types";
+} from "./types.js";
 
 // Re-export utilities
 export {
@@ -53,13 +53,13 @@ export {
   hslToRgb,
   rgbToOklch,
   hexToOklch,
-} from "./hex-to-hsl";
+} from "./hex-to-hsl.js";
 
 // Re-export resolver
-export { resolveTheme } from "./resolve";
+export { resolveTheme } from "./resolve.js";
 
 // Re-export CSS generator
-export { generateThemeCss, generateSyntaxCss } from "./generate-css";
+export { generateThemeCss, generateSyntaxCss } from "./generate-css.js";
 
 // Re-export pre-built registry
-export { presetRegistry } from "./registry";
+export { presetRegistry } from "./registry.js";

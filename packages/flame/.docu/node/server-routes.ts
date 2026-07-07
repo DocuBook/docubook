@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { statSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import React, { type ReactNode } from "react";
 import { renderToString } from "react-dom/server";
 import { compileMdx } from "./mdx";
@@ -14,7 +14,7 @@ import NotFoundPage from "../pages/404";
 import IndexPage from "../pages/index";
 import { DocsLayout } from "../components/DocsLayout";
 import { generateNonce, isPathSafe, isSlugSafe, htmlResponse, SECURITY_HEADERS } from "./security";
-import { htmlShell as createHtmlShell, hmrScript, errorHtml } from "./html";
+import { htmlShell as createHtmlShell, hmrScript, errorHtml } from "./html.shared";
 
 export interface ServerState {
   docuConfig: DocuConfig;
@@ -249,7 +249,7 @@ export function serveStatic(pathname: string): Response | null {
   try {
     const s = statSync(assetPath);
     if (s.isFile()) {
-      return new Response(Bun.file(assetPath), {
+      return new Response(readFileSync(assetPath), {
         headers: { "Content-Type": getContentType(pathname) },
       });
     }
@@ -266,7 +266,7 @@ export function serveStatic(pathname: string): Response | null {
     try {
       const s = statSync(docsAsset);
       if (s.isFile()) {
-        return new Response(Bun.file(docsAsset), {
+        return new Response(readFileSync(docsAsset), {
           headers: { "Content-Type": getContentType(pathname) },
         });
       }

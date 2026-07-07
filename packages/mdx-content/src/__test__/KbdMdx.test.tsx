@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { KbdMdx } from "../components/KbdMdx";
+import { KbdMdx } from "../components/KbdMdx.js";
 
 describe("KbdMdx", () => {
   it("renders windows key", () => {

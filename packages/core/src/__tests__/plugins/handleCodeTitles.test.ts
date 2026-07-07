@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { Node, Parent } from "unist";
-import { handleCodeTitles } from "../../plugins/handleCodeTitles";
-import type { ElementNode } from "../../utils";
+import { handleCodeTitles } from "../../plugins/handleCodeTitles.js";
+import type { ElementNode } from "../../utils.js";
 
 function buildTree(children: Node[]): Parent {
   return { type: "root", children } as Parent;
