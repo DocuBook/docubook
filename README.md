@@ -10,7 +10,7 @@
   DocuBook
 </h1>
 <h3 align="center" style="font-size: 20px;">
-  An open-source alternative to Mintlify or GitBook. Write documentation in MDX with the runtime and UI library you already use. Built on Bun + React today, with Node, Deno, and Vue support on the roadmap.
+  An open-source alternative to Mintlify or GitBook. Write documentation in MDX with the runtime and UI library you already use. Built on React, running on Bun, Node.js, and Deno — with Vue support on the roadmap.
 </h3>
 
 [![Flame](https://shieldcn.dev/npm/v/@docubook/flame?label=Flame&variant=secondary)](https://www.npmjs.com/package/@docubook/flame)
@@ -29,8 +29,8 @@ flowchart TD
     C["@docubook/mdx-content — portable UI components (framework-agnostic)"]
     D["@docubook/flame"]
     D1["Bun + React - ready to use"]
-    D2["Node — in development"]
-    D3["Deno — in development"]
+    D2["Node + React - ready to use"]
+    D3["Deno + React - ready to use"]
     E[Browser]
 
     A -->  B --> C --> D
@@ -45,31 +45,49 @@ flowchart TD
 | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **[@docubook/core](https://www.npmjs.com/package/@docubook/core)**               | Shared MDX compile pipeline, rehype/remark plugins, and markdown utilities.                                                                       |
 | **[@docubook/mdx-content](https://www.npmjs.com/package/@docubook/mdx-content)** | Portable MDX components (Mermaid, CodeBlock, Tabs, etc.) with framework-agnostic adapters.                                                        |
-| **[@docubook/flame](https://www.npmjs.com/package/@docubook/flame)**             | The runtime layer — a React + MDX framework that bridges compiled content to the browser. Supports Bun today; Node and Deno runtimes coming soon. |
+| **[@docubook/flame](https://www.npmjs.com/package/@docubook/flame)**             | The runtime layer — a React + MDX framework that bridges compiled content to the browser. Runs on Bun, Node.js, and Deno.                         |
+| **[@docubook/runt](https://www.npmjs.com/package/@docubook/runt)**               | Runtime HTTP server adapters (Bun, Node.js, Deno) behind a single `RuntimeAdapter` interface.                                                     |
 | **[@docubook/cli](https://www.npmjs.com/package/@docubook/cli)**                 | CLI tool to initialize, update, and deploy documentation from your terminal.                                                                      |
 
 ## Runtimes
 
 DocuBook is designed to be runtime-agnostic. The same MDX content runs on any supported runtime — swap the runtime layer without touching your content.
 
-| Runtime  | UI Library |      Status      |          Recipe           |
-| -------- | ---------- | ---------------- | ------------------------- |
-| **Bun**  | React      | ✅ Available      | `bun add @docubook/flame` |
-| **Node** | React      | 🚧 In development | —                         |
-| **Deno** | React      | 🚧 In development | —                         |
-| **Bun**  | Vue        | 🔮 Planned        | —                         |
-| **Node** | Vue        | 🔮 Planned        | —                         |
-| **Deno** | Vue        | 🔮 Planned        | —                         |
+| Runtime  | UI Library |      Status      |                    Recipe                    |
+| -------- | ---------- | ---------------- | -------------------------------------------- |
+| **Bun**  | React      | ✅ Available      | `bun add @docubook/flame`                    |
+| **Node** | React      | ✅ Available      | `npm install @docubook/flame`                |
+| **Deno** | React      | ✅ Available      | `deno run -A npm:@docubook/flame init`       |
+| **Bun**  | Vue        | 🔮 Planned        | —                                            |
+| **Node** | Vue        | 🔮 Planned        | —                                            |
+| **Deno** | Vue        | 🔮 Planned        | —                                            |
 
 ## Installation
 
-### Bun + React (available now)
+### Bun + React
 
 ```bash
 mkdir my-docs && cd my-docs
 bun add @docubook/flame
 bunx flame init
 bun run dev
+```
+
+### Node.js + React (Node >= 20.11)
+
+```bash
+mkdir my-docs && cd my-docs
+npm install @docubook/flame
+npx flame init
+npm run dev
+```
+
+### Deno + React
+
+```bash
+mkdir my-docs && cd my-docs
+deno run -A npm:@docubook/flame init
+deno task dev
 ```
 
 > [!WARNING]

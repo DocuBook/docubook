@@ -23,7 +23,8 @@ declarative (`docu.json`), and deployment is CI-driven.
 |---------|------|------|
 | `@docubook/core` | `packages/core` | MDX compilation pipeline — unified/remark/rehype plugins, frontmatter, TOC, code blocks, `createMdxContentService()` facade, git date integration. Pure TypeScript, no React dependency. |
 | `@docubook/mdx-content` | `packages/mdx-content` | Portable React MDX components (Accordion, Tabs, CodeBlock, Note, Card, FileTree, Stepper, and more) with framework adapters: `./next` (Next.js image + link), `./client`, `./server`. |
-| `@docubook/flame` | `packages/flame` | Bun-powered SSG framework — incremental build, plugin system, island hydration, dev server with HMR, search index. Builds the production docs site (docubook.pro). Runs on Bun, not Node.js. |
+| `@docubook/flame` | `packages/flame` | SSG framework — incremental build, plugin system, island hydration, dev server with HMR, search index. Builds the production docs site (docubook.pro). Runs on Bun (native path), Node.js, and Deno (via `@docubook/runt` + precompiled `.docu/lib`). |
+| `@docubook/runt` | `packages/runtime` | Runtime HTTP server adapters — `RuntimeAdapter` interface with `bunAdapter` (`Bun.serve`), `nodeAdapter` (streaming `http.createServer` bridge to Web `Request`/`Response`), and `denoAdapter` (`Deno.serve`). Zero dependencies. |
 | `@docubook/ui-react` | `packages/ui/react` | Reusable DaisyUI + Tailwind CSS React component library (Collapse, Modal, Dropdown, Drawer, Navbar, Pagination, and more). Consumed by flame. Note the path: `packages/ui/react`, not `packages/ui-react`. |
 | `@docubook/themes-colors` | `packages/themes-colors` | Theme color presets (default, freshlime, coffee) — CSS variables per light/dark mode plus syntax highlighting tokens. Consumed by flame via `docu.json → theme.colors`. |
 | `@docubook/cli` | `packages/cli` | Node.js scaffolding CLI (Commander) — template selection, project init, package manager detection. Downloads templates from GitHub release artifacts. |
@@ -139,6 +140,21 @@ Condensed from the retired ADRs — these commitments are still in force:
    `Response` wins). Sequential execution in registration order; no plugins
    means no behavior change. Implementation:
    `packages/flame/.docu/node/plugin.ts`.
+10. **Multi-runtime via duplication at the entry layer, not abstraction of Bun
+    code.** The Bun entry files (`server.ts`, `build.ts`, `preview.ts`,
+    `html.ts`, `hydrate.ts`, `utils.ts`, `deploy.ts`) are frozen for backward
+    compatibility. Node/Deno get parallel entries (`*.node.ts` / `*.deno.ts`
+    over shared `*.impl.ts`) that swap only the Bun-coupled leaves:
+    `html.shared.ts` (pure `escapeHtml`), `git.ts` (`child_process`),
+    `hydrate.node.ts` (esbuild client bundling). Non-protected shared modules
+    (`server-routes.ts`, `mdx.ts`) were neutralized in place with `node:` APIs,
+    which Bun runs natively. HTTP serving goes through `@docubook/runt`
+    adapters. Because Node cannot import `.tsx` and Deno does not execute
+    TypeScript inside npm packages, `scripts/compile-lib.mjs` bundles the
+    Node/Deno entries to plain ESM in `.docu/lib/` at publish time; the CLI
+    (`bin/cli.js`) detects the runtime (`FLAME_RUNTIME` override → `Bun`
+    global → `Deno` global → node) and routes Bun to `.docu/node/*.ts`,
+    others to `.docu/lib/*.js`.
 
 ## Testing
 
@@ -155,6 +171,6 @@ Condensed from the retired ADRs — these commitments are still in force:
 | Limitation | Impact | Mitigation |
 |-----------|--------|------------|
 | No dynamic content — MDX files only, no database/CMS | No user-generated content or real-time updates | Acceptable for documentation |
-| Bun dependency (flame) — build step requires Bun | Limits build environments | Output is plain static HTML; only the build needs Bun |
+| Bun-only code paths duplicated for Node/Deno (entry layer) | Fixes to protected Bun entries may need mirroring in `*.impl.ts` counterparts | Duplication is confined to thin entries + three leaf modules; shared logic lives in neutral modules |
 | `unsafe-eval` in serving CSP | Weakens CSP against XSS | Required by `next-mdx-remote` island hydration; all other CSP directives stay strict |
 | Single `docu.json` config — no dynamic route generation | Routes cannot come from external APIs | Covers documentation use cases |

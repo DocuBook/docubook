@@ -6,7 +6,7 @@
 </h3>
 
 <p align="center">
-    <strong>@docubook/flame</strong> is a lightweight runtime for building documentation websites using React, MDX, and filesystem-based routing — all running on Bun.<br/>
+    <strong>@docubook/flame</strong> is a lightweight runtime for building documentation websites using React, MDX, and filesystem-based routing — running on Bun, Node.js, and Deno.<br/>
     No heavy abstractions. No complex tooling. Just a minimal layer between your content and the browser.
 </p>
 
@@ -19,6 +19,23 @@ mkdir my-docs && cd my-docs
 bun add @docubook/flame
 bunx flame init
 bun run dev
+```
+
+With Node.js (>= 20.11):
+
+```bash
+mkdir my-docs && cd my-docs
+npm install @docubook/flame
+npx flame init
+npm run dev
+```
+
+With Deno:
+
+```bash
+mkdir my-docs && cd my-docs
+deno run -A npm:@docubook/flame init
+deno task dev
 ```
 
 > **Lightweight** — 📦 ~57 kB packed, ~207 kB unpacked. No bloat, just fire.
@@ -448,7 +465,7 @@ See the [full plugin guide](docs/getting-started/plugins.mdx) for step-by-step i
 
 ## Architecture
 
-- **Bun** — runtime, bundler, file watcher
+- **Bun** — primary runtime, bundler, file watcher (Node.js and Deno supported via `@docubook/runt` adapters + esbuild)
 - **React + React DOM** — rendering (SSR + client hydration)
 - **@docubook/core** — MDX compilation, rehype/remark plugins
 - **@docubook/mdx-content** — pre-built MDX components
@@ -463,7 +480,7 @@ See the [full plugin guide](docs/getting-started/plugins.mdx) for step-by-step i
 | Docusaurus          | Node.js | React     | Full-featured, plugin-heavy |
 | VitePress           | Node.js | Vue       | Lightweight, Vue-only       |
 | Nextra              | Node.js | React     | Next.js-based               |
-| **@docubook/flame** | **Bun** | **React** | **Minimal, Bun-native SSR** |
+| **@docubook/flame** | **Bun · Node · Deno** | **React** | **Minimal, runtime-agnostic SSR** |
 
 ---
 

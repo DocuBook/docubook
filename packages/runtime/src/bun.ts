@@ -1,13 +1,8 @@
-import type { FetchHandler, RuntimeAdapter, ServerOptions } from "./types";
+import type { FetchHandler, RuntimeAdapter, ServerOptions } from "./types.js";
 
 /** Minimal ambient view of the Bun global — only what the adapter touches. */
 declare const Bun: {
-  serve(options: {
-    port: number;
-    hostname?: string;
-    idleTimeout?: number;
-    fetch: FetchHandler;
-  }): {
+  serve(options: { port: number; hostname?: string; idleTimeout?: number; fetch: FetchHandler }): {
     port?: number;
     hostname?: string;
     stop(closeActiveConnections?: boolean): void | Promise<void>;

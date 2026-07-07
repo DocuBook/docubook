@@ -1,4 +1,4 @@
-import type { FetchHandler, RuntimeAdapter, ServerOptions } from "./types";
+import type { FetchHandler, RuntimeAdapter, ServerOptions } from "./types.js";
 
 /** Minimal ambient view of the Deno global — only what the adapter touches. */
 declare const Deno: {
