@@ -5,17 +5,19 @@
 
 ## System Purpose
 
-**DocuBook** is an open-source documentation platform that compiles MDX content
-into production-ready documentation websites. A shared compilation pipeline
-(`@docubook/core`) and portable UI components (`@docubook/mdx-content`) work
-across React frameworks. The Bun-powered **flame** framework is the recommended
-and actively maintained consumer — it deploys to Vercel or any static host. The
-Next.js and React Router starter templates are **deprecated** and no longer
-maintained (see the warning in [README.md](./README.md)).
+**DocuBook** is a static site generator for documentation — compiles MDX content
+into flat `.html` files. A shared compilation pipeline (`@docubook/core`),
+portable UI components (`@docubook/mdx-content`), and runtime adapters
+(`@docubook/runt`) work together to produce pure static output. The **flame**
+framework is the recommended consumer, running on Bun, Node.js, or Deno — it
+deploys to Vercel or any static host. The Next.js and React Router starter
+templates are **deprecated** and no longer maintained (see the warning in
+[README.md](./README.md)).
 
 **Scope boundaries:** content authoring and rendering only. No CMS, no user
 authentication, no database. Content is file-based (`.mdx`), configuration is
-declarative (`docu.json`), and deployment is CI-driven.
+declarative (`docu.json`), deployment is CI-driven. Output is pure static
+HTML + assets — no server needed in production.
 
 ## Package Inventory
 
@@ -48,15 +50,21 @@ declarative (`docu.json`), and deployment is CI-driven.
 
 ```mermaid
 flowchart LR
-    A["docs/*.mdx"] --> B["@docubook/core<br/>(compile)"]
-    B --> C["Framework render<br/>static HTML / SSR"]
+    A["docs/*.mdx"] --> B["@docubook/core<br/>(compile pipeline)"]
+    B --> C["@docubook/mdx-content<br/>(portable components)"]
+    C --> D["@docubook/flame<br/>(SSG build)"]
 
-    D["docu.json<br/>routes, theme, nav, search"] --> C
+    E["docu.json<br/>routes, theme, nav, search"] --> D
 
-    C --> E["Flame: static output"]
-    E --> F["Vercel"]
-    E --> G["Any static host"]
+    D --> F["@docubook/runt<br/>(runtime adapters)"]
+    F --> G["Static HTML output<br/>(flat .html + assets)"]
+    G --> H["Vercel"]
+    G --> I["Any static host"]
 ```
+
+> The runtime (Bun, Node.js, Deno) is only needed for the build toolchain and
+> local dev server. The final output is flat static HTML — deploy to any CDN or
+> static host.
 
 ### Build Pipeline
 
