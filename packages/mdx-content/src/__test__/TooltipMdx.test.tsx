@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { TooltipMdx } from "../components/TooltipMdx.js";
+import { TooltipMdx } from "../components/TooltipMdx";
 
 describe("TooltipMdx", () => {
   it("renders with text and tip props", () => {

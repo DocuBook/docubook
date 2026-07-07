@@ -1,11 +1,11 @@
-export { ButtonMdx } from "./components/ButtonMdx.js";
-export { CardsMdx } from "./components/CardsMdx.js";
-export { CodeBlock } from "./components/CodeBlockMdx.js";
-export { KbdMdx } from "./components/KbdMdx.js";
-export { LinkMdx } from "./components/LinkMdx.js";
-export { NoteMdx } from "./components/NoteMdx.js";
-export { ChangesMdx, ReleaseMdx } from "./components/ReleaseMdx.js";
-export { StepMdx, StepsMdx } from "./components/StepperMdx.js";
+export { ButtonMdx } from "./components/ButtonMdx";
+export { CardsMdx } from "./components/CardsMdx";
+export { CodeBlock } from "./components/CodeBlockMdx";
+export { KbdMdx } from "./components/KbdMdx";
+export { LinkMdx } from "./components/LinkMdx";
+export { NoteMdx } from "./components/NoteMdx";
+export { ChangesMdx, ReleaseMdx } from "./components/ReleaseMdx";
+export { StepMdx, StepsMdx } from "./components/StepperMdx";
 export {
   TableMdx,
   TableHeaderMdx,
@@ -14,5 +14,5 @@ export {
   TableRowMdx,
   TableHeadMdx,
   TableCellMdx,
-} from "./components/TableMdx.js";
-export { YoutubeMdx } from "./components/YoutubeMdx.js";
+} from "./components/TableMdx";
+export { YoutubeMdx } from "./components/YoutubeMdx";

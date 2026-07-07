@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { hexToRgb, rgbToHsl, hexToHsl, hslToString, generateScale } from "../hex-to-hsl.js";
-import { expectedScaleKeys } from "../__fixtures__/themes.js";
+import { hexToRgb, rgbToHsl, hexToHsl, hslToString, generateScale } from "../hex-to-hsl";
+import { expectedScaleKeys } from "../__fixtures__/themes";
 
 describe("hexToRgb", () => {
   it("converts full 6-digit hex with #", () => {

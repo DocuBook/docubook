@@ -1,4 +1,4 @@
-import type { FetchHandler, RuntimeAdapter, ServerOptions } from "./types.js";
+import type { FetchHandler, RuntimeAdapter, ServerOptions } from "./types";
 
 /** Minimal ambient view of the Bun global — only what the adapter touches. */
 declare const Bun: {

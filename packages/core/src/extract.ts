@@ -1,5 +1,5 @@
 import matter from "@11ty/gray-matter";
-import type { TocItem } from "./types.js";
+import type { TocItem } from "./types";
 
 const FENCE_MARKER_REGEX = /^(````|```)(?!`)/;
 const HEADING_REGEX = /^(#{2,4})\s+(.+)$/;

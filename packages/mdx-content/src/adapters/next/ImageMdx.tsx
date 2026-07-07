@@ -2,7 +2,7 @@
 
 import { type ComponentProps } from "react";
 import NextImage from "next/image";
-import { ImageMdx as CoreImageMdx, type ImageMdxProps as CoreImageMdxProps } from "../../components/ImageMdx.js";
+import { ImageMdx as CoreImageMdx, type ImageMdxProps as CoreImageMdxProps } from "../../components/ImageMdx";
 
 export type ImageMdxProps = Omit<CoreImageMdxProps, "src"> & {
     src?: ComponentProps<typeof NextImage>["src"];

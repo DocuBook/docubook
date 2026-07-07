@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { generateThemeCss, generateSyntaxCss } from "../generate-css.js";
-import { minimalTheme, emptySyntaxTheme, defaultTheme } from "../__fixtures__/themes.js";
+import { generateThemeCss, generateSyntaxCss } from "../generate-css";
+import { minimalTheme, emptySyntaxTheme, defaultTheme } from "../__fixtures__/themes";
 
 describe("generateThemeCss", () => {
   it("starts with @layer base", () => {

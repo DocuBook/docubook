@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { AccordionGroupContext } from "../utils/AccordionGroupContext.js";
+import { AccordionGroupContext } from "../utils/AccordionGroupContext";
 
 type AccordionsMdxProps = {
   children?: ReactNode;

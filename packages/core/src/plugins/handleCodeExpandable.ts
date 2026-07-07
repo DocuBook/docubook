@@ -1,6 +1,6 @@
 import type { Node } from "unist";
 import { visit } from "unist-util-visit";
-import type { ElementNode } from "../utils.js";
+import type { ElementNode } from "../utils";
 
 /**
  * Escape metadata values that are interpolated into MDX-compiled JavaScript.

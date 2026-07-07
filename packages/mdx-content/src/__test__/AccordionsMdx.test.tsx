@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { AccordionsMdx } from "../components/AccordionsMdx.js";
-import { AccordionMdx } from "../components/AccordionMdx.js";
+import { AccordionsMdx } from "../components/AccordionsMdx";
+import { AccordionMdx } from "../components/AccordionMdx";
 
 describe("AccordionsMdx", () => {
   it("renders group with multiple accordions", () => {

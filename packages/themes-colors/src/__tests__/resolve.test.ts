@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { resolveTheme } from "../resolve.js";
-import { defaultTheme, mockRegistry } from "../__fixtures__/themes.js";
-import type { ThemeRegistry } from "../types.js";
+import { resolveTheme } from "../resolve";
+import { defaultTheme, mockRegistry } from "../__fixtures__/themes";
+import type { ThemeRegistry } from "../types";
 
 afterEach(() => {
   vi.restoreAllMocks();

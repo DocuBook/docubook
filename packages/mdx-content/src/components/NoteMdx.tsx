@@ -1,5 +1,5 @@
 import type { CSSProperties, HTMLAttributes, ReactNode } from "react";
-import { IconProp, IconName, resolveLucideIcon } from "../utils/Icon.js";
+import { IconProp, IconName, resolveLucideIcon } from "../utils/Icon";
 
 type NoteType = "danger" | "warning" | "success" | "info" | "tip";
 

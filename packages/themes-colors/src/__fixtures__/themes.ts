@@ -1,4 +1,4 @@
-import type { ResolvedTheme, ThemeData } from "../types.js";
+import type { ResolvedTheme, ThemeData } from "../types";
 
 /**
  * Full default theme fixture with all 24 variables × 2 modes + syntax tokens.

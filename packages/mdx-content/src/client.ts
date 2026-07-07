@@ -1,8 +1,8 @@
-export { AccordionMdx } from "./components/AccordionMdx.js";
-export { AccordionsMdx } from "./components/AccordionsMdx.js";
-export { TabMdx, TabsMdx } from "./components/TabsMdx.js";
-export { TooltipMdx } from "./components/TooltipMdx.js";
-export { ImageMdx } from "./components/ImageMdx.js";
-export { CardMdx } from "./components/CardMdx.js";
-export { FileMdx, FilesMdx, FolderMdx } from "./components/FileTreeMdx.js";
-export { MermaidMdx } from "./components/MermaidMdx.js";
+export { AccordionMdx } from "./components/AccordionMdx";
+export { AccordionsMdx } from "./components/AccordionsMdx";
+export { TabMdx, TabsMdx } from "./components/TabsMdx";
+export { TooltipMdx } from "./components/TooltipMdx";
+export { ImageMdx } from "./components/ImageMdx";
+export { CardMdx } from "./components/CardMdx";
+export { FileMdx, FilesMdx, FolderMdx } from "./components/FileTreeMdx";
+export { MermaidMdx } from "./components/MermaidMdx";
