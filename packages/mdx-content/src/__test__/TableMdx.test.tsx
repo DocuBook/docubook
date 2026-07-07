@@ -8,7 +8,7 @@ import {
   TableRowMdx,
   TableHeadMdx,
   TableCellMdx,
-} from "../components/TableMdx.js";
+} from "../components/TableMdx";
 
 describe("TableMdx", () => {
   it("renders full table structure", () => {

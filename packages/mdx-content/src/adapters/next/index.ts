@@ -1,4 +1,4 @@
-export { LinkMdx } from "./LinkMdx.js";
-export { ButtonMdx } from "./ButtonMdx.js";
-export { CardMdx } from "./CardMdx.js";
-export { ImageMdx, type ImageMdxProps } from "./ImageMdx.js";
+export { LinkMdx } from "./LinkMdx";
+export { ButtonMdx } from "./ButtonMdx";
+export { CardMdx } from "./CardMdx";
+export { ImageMdx, type ImageMdxProps } from "./ImageMdx";

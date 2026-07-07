@@ -1,8 +1,8 @@
 "use client";
 
-import { ButtonMdx as CoreButtonMdx } from "../../components/ButtonMdx.js";
-import type { ButtonMdxProps as CoreButtonMdxProps } from "../../components/ButtonMdx.js";
-import { LinkMdx } from "./LinkMdx.js";
+import { ButtonMdx as CoreButtonMdx } from "../../components/ButtonMdx";
+import type { ButtonMdxProps as CoreButtonMdxProps } from "../../components/ButtonMdx";
+import { LinkMdx } from "./LinkMdx";
 
 export type ButtonMdxProps = Omit<CoreButtonMdxProps, "__LinkComponent">;
 

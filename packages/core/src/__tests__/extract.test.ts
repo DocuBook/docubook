@@ -4,7 +4,7 @@ import {
   extractTocsFromRawMdx,
   extractFrontmatter,
   extractFrontmatterWithContent,
-} from "../extract.js";
+} from "../extract";
 
 describe("sluggify", () => {
   it("converts text to lowercase kebab-case", () => {

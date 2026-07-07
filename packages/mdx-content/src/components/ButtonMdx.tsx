@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, ComponentType, CSSProperties } from "react";
-import { LinkMdx } from "./LinkMdx.js";
-import { IconProp, resolveLucideIcon } from "../utils/Icon.js";
-import type { LinkMdxProps } from "./LinkMdx.js";
+import { LinkMdx } from "./LinkMdx";
+import { IconProp, resolveLucideIcon } from "../utils/Icon";
+import type { LinkMdxProps } from "./LinkMdx";
 
 type LinkRenderer = ComponentType<LinkMdxProps>;
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { FilesMdx, FolderMdx, FileMdx } from "../components/FileTreeMdx.js";
+import { FilesMdx, FolderMdx, FileMdx } from "../components/FileTreeMdx";
 
 describe("FileTreeMdx", () => {
   it("renders full tree structure", () => {

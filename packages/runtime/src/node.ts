@@ -1,5 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import type { FetchHandler, RuntimeAdapter, ServerHandle, ServerOptions } from "./types.js";
+import type { FetchHandler, RuntimeAdapter, ServerHandle, ServerOptions } from "./types";
 
 function toWebRequest(req: IncomingMessage, port: number, hostname: string): Request {
   const host = req.headers.host ?? `${hostname}:${port}`;

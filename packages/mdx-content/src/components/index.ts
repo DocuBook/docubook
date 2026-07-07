@@ -1,17 +1,17 @@
-export { AccordionMdx } from "./AccordionMdx.js";
-export { AccordionsMdx } from "./AccordionsMdx.js";
-export { ButtonMdx } from "./ButtonMdx.js";
-export { CardMdx } from "./CardMdx.js";
-export { CardsMdx } from "./CardsMdx.js";
-export { CodeBlock } from "./CodeBlockMdx.js";
-export { FileMdx, FilesMdx, FolderMdx } from "./FileTreeMdx.js";
-export { ImageMdx } from "./ImageMdx.js";
-export { KbdMdx } from "./KbdMdx.js";
-export { LinkMdx } from "./LinkMdx.js";
-export { NoteMdx } from "./NoteMdx.js";
-export { ChangesMdx, ReleaseMdx } from "./ReleaseMdx.js";
-export { StepMdx, StepsMdx } from "./StepperMdx.js";
-export { TabMdx, TabsMdx } from "./TabsMdx.js";
+export { AccordionMdx } from "./AccordionMdx";
+export { AccordionsMdx } from "./AccordionsMdx";
+export { ButtonMdx } from "./ButtonMdx";
+export { CardMdx } from "./CardMdx";
+export { CardsMdx } from "./CardsMdx";
+export { CodeBlock } from "./CodeBlockMdx";
+export { FileMdx, FilesMdx, FolderMdx } from "./FileTreeMdx";
+export { ImageMdx } from "./ImageMdx";
+export { KbdMdx } from "./KbdMdx";
+export { LinkMdx } from "./LinkMdx";
+export { NoteMdx } from "./NoteMdx";
+export { ChangesMdx, ReleaseMdx } from "./ReleaseMdx";
+export { StepMdx, StepsMdx } from "./StepperMdx";
+export { TabMdx, TabsMdx } from "./TabsMdx";
 export {
   TableMdx,
   TableHeaderMdx,
@@ -20,7 +20,7 @@ export {
   TableRowMdx,
   TableHeadMdx,
   TableCellMdx,
-} from "./TableMdx.js";
-export { TooltipMdx } from "./TooltipMdx.js";
-export { YoutubeMdx } from "./YoutubeMdx.js";
-export { MermaidMdx } from "./MermaidMdx.js";
+} from "./TableMdx";
+export { TooltipMdx } from "./TooltipMdx";
+export { YoutubeMdx } from "./YoutubeMdx";
+export { MermaidMdx } from "./MermaidMdx";

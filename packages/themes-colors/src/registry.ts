@@ -1,10 +1,10 @@
-import type { ThemeRegistry } from "./types.js";
-import defaultTheme from "../themes/default.json" with { type: "json" };
-import freshlimeTheme from "../themes/freshlime.json" with { type: "json" };
-import coffeeTheme from "../themes/coffee.json" with { type: "json" };
-import defaultSyntax from "../syntax/default-syntax.json" with { type: "json" };
-import freshlimeSyntax from "../syntax/freshlime-syntax.json" with { type: "json" };
-import coffeeSyntax from "../syntax/coffee-syntax.json" with { type: "json" };
+import type { ThemeRegistry } from "./types";
+import defaultTheme from "../themes/default.json";
+import freshlimeTheme from "../themes/freshlime.json";
+import coffeeTheme from "../themes/coffee.json";
+import defaultSyntax from "../syntax/default-syntax.json";
+import freshlimeSyntax from "../syntax/freshlime-syntax.json";
+import coffeeSyntax from "../syntax/coffee-syntax.json";
 
 /**
  * Pre-built registry of all preset themes with their syntax data.

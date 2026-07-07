@@ -1,4 +1,4 @@
-import type { ResolvedTheme, SyntaxTokens, ThemeData } from "./types.js";
+import type { ResolvedTheme, SyntaxTokens, ThemeData } from "./types";
 
 /**
  * Generate a CSS string from resolved theme variables.

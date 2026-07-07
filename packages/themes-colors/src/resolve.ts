@@ -1,5 +1,5 @@
-import type { ResolvedTheme, ThemeConfig, ThemeData, ThemeRegistry } from "./types.js";
-import { hexToHsl, generateScale, generateSyntaxScale } from "./hex-to-hsl.js";
+import type { ResolvedTheme, ThemeConfig, ThemeData, ThemeRegistry } from "./types";
+import { hexToHsl, generateScale, generateSyntaxScale } from "./hex-to-hsl";
 
 /**
  * Default empty syntax tokens used as fallback.

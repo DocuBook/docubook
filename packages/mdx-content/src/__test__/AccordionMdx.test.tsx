@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { AccordionMdx } from "../components/AccordionMdx.js";
+import { AccordionMdx } from "../components/AccordionMdx";
 
 describe("AccordionMdx", () => {
   it("renders with valid icon", () => {

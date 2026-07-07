@@ -1,6 +1,6 @@
 import type { Node, Parent } from "unist"
 import { visit } from "unist-util-visit"
-import type { ElementNode } from "../utils.js"
+import type { ElementNode } from "../utils"
 
 interface TextNode extends Node {
   type: "text"

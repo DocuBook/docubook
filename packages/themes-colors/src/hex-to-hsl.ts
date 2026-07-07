@@ -1,4 +1,4 @@
-import type { HslColor, OklchColor, RgbColor } from "./types.js";
+import type { HslColor, OklchColor, RgbColor } from "./types";
 
 /**
  * Convert a hex color string to RGB values.

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { ImageMdx } from "../components/ImageMdx.js";
+import { ImageMdx } from "../components/ImageMdx";
 
 describe("ImageMdx", () => {
   it("renders image with src", () => {
