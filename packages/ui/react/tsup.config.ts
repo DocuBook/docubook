@@ -1,6 +1,6 @@
 import { defineConfig } from "tsup";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 
 // Generate entry points that match package.json exports structure
 const baseDir = "src/base";
