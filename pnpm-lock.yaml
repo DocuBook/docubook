@@ -157,6 +157,9 @@ importers:
       '@docubook/mdx-content':
         specifier: workspace:^
         version: link:../mdx-content
+      '@docubook/runt':
+        specifier: workspace:^
+        version: link:../runtime
       '@docubook/themes-colors':
         specifier: workspace:^
         version: link:../themes-colors
@@ -178,6 +181,9 @@ importers:
       daisyui:
         specifier: ^5.5.19
         version: 5.5.23
+      esbuild:
+        specifier: '>=0.28.1'
+        version: 0.28.1
       lucide-react:
         specifier: ^1.14.0
         version: 1.18.0(react@19.2.7)

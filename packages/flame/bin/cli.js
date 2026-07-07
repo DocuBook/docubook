@@ -1,18 +1,45 @@
-#!/usr/bin/env bun
-/* global process, console */
+#!/usr/bin/env node
+/* global process, console, Bun, Deno */
 
 import { resolve, join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { cpSync, existsSync, readFileSync, writeFileSync, renameSync } from "node:fs";
 
 const __dirname = import.meta.dirname;
 
+// Runtime detection — override with FLAME_RUNTIME=bun|node|deno for testing.
+const runtime =
+  process.env.FLAME_RUNTIME ||
+  (typeof Bun !== "undefined" ? "bun" : typeof Deno !== "undefined" ? "deno" : "node");
+
 const COMMAND_MAP = {
-  dev: "server.ts",
-  build: "build.ts",
-  clean: "clean.ts",
-  preview: "preview.ts",
-  deploy: "deploy.ts",
-};
+  bun: {
+    dev: "server.ts",
+    build: "build.ts",
+    clean: "clean.ts",
+    preview: "preview.ts",
+    deploy: "deploy.ts",
+  },
+  node: {
+    dev: "server.node.ts",
+    build: "build.node.ts",
+    clean: "clean.ts",
+    preview: "preview.node.ts",
+    deploy: "deploy.node.ts",
+  },
+  deno: {
+    dev: "server.deno.ts",
+    build: "build.deno.ts",
+    clean: "clean.ts",
+    preview: "preview.deno.ts",
+    deploy: "deploy.deno.ts",
+  },
+}[runtime];
+
+if (!COMMAND_MAP) {
+  console.error(`Unknown runtime: "${process.env.FLAME_RUNTIME}" (expected bun, node, or deno)`);
+  process.exit(1);
+}
 
 const command = process.argv[2];
 
@@ -24,7 +51,7 @@ if (themeIndex !== -1 && themeIndex + 1 < process.argv.length) {
 
 if (!command || command === "--help" || command === "-h") {
   console.log(`
-  @docubook/flame — A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.
+  @docubook/flame — A blazing-fast React + MDX framework for modern documentation experiences. Runs on Bun, Node.js, and Deno.
 
   Usage: flame <command>
 
@@ -70,9 +97,24 @@ if (command === "init") {
     const flamePkg = JSON.parse(readFileSync(resolve(__dirname, "../package.json"), "utf-8"));
     pkg.dependencies = pkg.dependencies || {};
     pkg.dependencies["@docubook/flame"] = `^${flamePkg.version}`;
+    if (runtime === "deno") {
+      // Deno has no node_modules/.bin — tasks must call flame via npm: specifier.
+      const flameCmd = "deno run -A npm:@docubook/flame";
+      pkg.scripts = {
+        dev: `${flameCmd} dev`,
+        build: `${flameCmd} build`,
+        preview: `${flameCmd} preview`,
+        deploy: `${flameCmd} deploy`,
+      };
+    }
     writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
 
-    console.log(`\n  ✓ Project scaffolded!\n\n  Next steps:\n    bun install\n    bun run dev\n`);
+    const nextSteps = {
+      bun: "    bun install\n    bun run dev",
+      node: "    npm install\n    npm run dev",
+      deno: "    deno task dev",
+    }[runtime];
+    console.log(`\n  ✓ Project scaffolded!\n\n  Next steps:\n${nextSteps}\n`);
     process.exit(0);
   } catch (err) {
     console.error(`Failed to scaffold project: ${err.message}`);
@@ -85,7 +127,18 @@ if (!(command in COMMAND_MAP)) {
   process.exit(1);
 }
 
-const nodePath = resolve(__dirname, "../.docu/node", COMMAND_MAP[command]);
-const libPath = resolve(__dirname, "../.docu/lib", COMMAND_MAP[command]);
-const scriptPath = existsSync(nodePath) ? nodePath : libPath;
-await import(scriptPath);
+const sourceFile = COMMAND_MAP[command];
+const nodePath = resolve(__dirname, "../.docu/node", sourceFile);
+const libPath = resolve(__dirname, "../.docu/lib", sourceFile.replace(/\.ts$/, ".js"));
+// Bun executes TypeScript sources directly; Node and Deno use the
+// precompiled JS in .docu/lib (generated at publish), falling back to the
+// TS sources for monorepo development.
+const scriptPath =
+  runtime === "bun"
+    ? existsSync(nodePath)
+      ? nodePath
+      : libPath
+    : existsSync(libPath)
+      ? libPath
+      : nodePath;
+await import(pathToFileURL(scriptPath).href);

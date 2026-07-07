@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { render, cleanup, act } from "@testing-library/react";
-import { ExpandableCode } from "../../utils/ExpandableCode";
+import { ExpandableCode } from "../../utils/ExpandableCode.js";
 
 afterEach(() => {
   cleanup();

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { YoutubeMdx } from "../components/YoutubeMdx";
+import { YoutubeMdx } from "../components/YoutubeMdx.js";
 
 describe("YoutubeMdx", () => {
   it("renders iframe with videoId", () => {

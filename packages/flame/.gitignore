@@ -36,3 +36,6 @@ tsconfig.tsbuildinfo
 # Build artifacts
 *.tgz
 build-cache.json
+
+# Precompiled JS for Node/Deno runtimes (generated at publish)
+.docu/lib/

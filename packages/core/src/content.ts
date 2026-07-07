@@ -1,8 +1,8 @@
 import path from "path";
 import { promises as fs } from "fs";
-import { extractFrontmatterWithContent, extractTocsFromRawMdx } from "./extract";
-import { parseMdx, type ParseMdxOptions } from "./compile";
-import type { MdxCompileResult, TocItem } from "./types";
+import { extractFrontmatterWithContent, extractTocsFromRawMdx } from "./extract.js";
+import { parseMdx, type ParseMdxOptions } from "./compile.js";
+import type { MdxCompileResult, TocItem } from "./types.js";
 
 type CacheFn = <T extends (...args: any[]) => any>(fn: T) => T;
 

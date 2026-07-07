@@ -29,7 +29,7 @@ import {
   TabsMdx,
   TooltipMdx,
   YoutubeMdx,
-} from "../components";
+} from "../components/index.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type MdxComponentMap = Record<string, ComponentType<any>>;

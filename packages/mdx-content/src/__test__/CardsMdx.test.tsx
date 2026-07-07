@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { CardsMdx } from "../components/CardsMdx";
-import { CardMdx } from "../components/CardMdx";
+import { CardsMdx } from "../components/CardsMdx.js";
+import { CardMdx } from "../components/CardMdx.js";
 
 describe("CardsMdx", () => {
   it("renders grid with children", () => {

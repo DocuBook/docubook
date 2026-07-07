@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { ReleaseMdx, ChangesMdx } from "../components/ReleaseMdx";
+import { ReleaseMdx, ChangesMdx } from "../components/ReleaseMdx.js";
 
 describe("ReleaseMdx", () => {
   it("renders with all props", () => {

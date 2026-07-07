@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { resolveLucideIcon } from "../../utils/Icon";
+import { resolveLucideIcon } from "../../utils/Icon.js";
 
 describe("resolveLucideIcon", () => {
   it("renders a valid icon", () => {

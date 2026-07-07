@@ -6,8 +6,8 @@ import {
   createDefaultRehypePlugins,
   createDefaultRemarkPlugins,
   parseMdx,
-} from "../compile";
-import type { ElementNode } from "../utils";
+} from "../compile.js";
+import type { ElementNode } from "../utils.js";
 
 function buildPreTree(lang: string, code: string): Node {
   return {

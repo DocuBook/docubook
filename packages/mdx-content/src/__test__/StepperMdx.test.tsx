@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { StepsMdx, StepMdx } from "../components/StepperMdx";
+import { StepsMdx, StepMdx } from "../components/StepperMdx.js";
 
 describe("StepperMdx", () => {
   it("renders steps with auto-numbered items", () => {

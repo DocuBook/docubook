@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { render, cleanup, act } from "@testing-library/react";
-import { CodeBlock } from "../components/CodeBlockMdx";
+import { CodeBlock } from "../components/CodeBlockMdx.js";
 
 afterEach(() => {
   cleanup();

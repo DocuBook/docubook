@@ -59,6 +59,12 @@ export default tseslint.config(
   },
 
   {
-    ignores: ["node_modules/**", ".docu/dist/**", ".docu/build-cache.json", "tailwind.config.ts"],
+    ignores: [
+      "node_modules/**",
+      ".docu/dist/**",
+      ".docu/lib/**",
+      ".docu/build-cache.json",
+      "tailwind.config.ts",
+    ],
   }
 );
