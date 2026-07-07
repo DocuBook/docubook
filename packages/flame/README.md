@@ -12,7 +12,44 @@
 
 ---
 
+## Prerequisites
+
+Choose **one** runtime to get started.
+
+### Bun (≥ 1.1.0)
+
+```bash
+# Install: https://bun.sh
+curl -fsSL https://bun.sh/install | bash
+# or: npm install -g bun
+
+bun --version
+```
+
+### Node.js (≥ 20.11)
+
+```bash
+# Install: https://nodejs.org
+# or: https://github.com/nvm-sh/nvm#installing-and-updating
+
+node --version
+```
+
+### Deno (≥ 2.x)
+
+```bash
+# Install: https://deno.com
+curl -fsSL https://deno.land/install.sh | sh
+# or (macOS): brew install deno
+
+deno --version
+```
+
+---
+
 ## Quick Start
+
+With Bun:
 
 ```bash
 mkdir my-docs && cd my-docs
@@ -21,7 +58,7 @@ bunx flame init
 bun run dev
 ```
 
-With Node.js (>= 20.11):
+With Node.js:
 
 ```bash
 mkdir my-docs && cd my-docs
