@@ -99,7 +99,7 @@ export function ExpandableCode({
             justifyContent: "center",
             padding: "0.6rem",
             background: "hsl(var(--muted, 210 20% 92%))",
-            borderTop: "1px solid hsl(var(--border, 210 20% 85%))",
+            borderTop: "1px solid hsl(var(--border-color, 210 20% 85%))",
           }}
         >
           <button
@@ -110,7 +110,7 @@ export function ExpandableCode({
               alignItems: "center",
               gap: "0.5rem",
               padding: "0.4rem 0.8rem",
-              border: "1px solid hsl(var(--border, 210 20% 85%))",
+              border: "1px solid hsl(var(--border-color, 210 20% 85%))",
               borderRadius: 6,
               background: "hsl(var(--background, 210 40% 98%))",
               color: "hsl(var(--foreground, 220 30% 15%))",

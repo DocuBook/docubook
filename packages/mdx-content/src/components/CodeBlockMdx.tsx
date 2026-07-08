@@ -153,7 +153,7 @@ export function CodeBlock({ children, raw, ...rest }: CodeBlockProps) {
       style={{
         position: "relative",
         margin: "1.5rem 0",
-        border: "1px solid hsl(var(--border, 210 20% 85%))",
+        border: "1px solid hsl(var(--border-color, 210 20% 85%))",
         overflow: "hidden",
         fontSize: "0.875rem",
         borderRadius: "0.75rem",
@@ -168,7 +168,7 @@ export function CodeBlock({ children, raw, ...rest }: CodeBlockProps) {
           gap: "0.75rem",
           background: "hsl(var(--muted, 210 20% 92%))",
           padding: "0.5rem 1rem",
-          borderBottom: "1px solid hsl(var(--border, 210 20% 85%))",
+          borderBottom: "1px solid hsl(var(--border-color, 210 20% 85%))",
           color: "hsl(var(--muted-foreground, 220 15% 50%))",
           fontFamily: "monospace",
           fontSize: "0.8rem",

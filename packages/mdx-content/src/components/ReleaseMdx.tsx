@@ -18,8 +18,8 @@ type ReleaseMdxProps = {
 };
 
 type ChangesMdxProps = {
-    type?: "added" | "changed" | "fixed" | "improved" | "deprecated" | "removed";
-    children?: ReactNode;
+  type?: "added" | "changed" | "fixed" | "improved" | "deprecated" | "removed";
+  children?: ReactNode;
 };
 
 type ChangeType = NonNullable<ChangesMdxProps["type"]>;
@@ -47,7 +47,7 @@ export function ReleaseMdx({ version, date, title, children, style }: ReleaseMdx
   return (
     <section
       style={{
-        border: "1px solid hsl(var(--border, 210 20% 85%))",
+        border: "1px solid hsl(var(--border-color, 210 20% 85%))",
         borderRadius: 12,
         padding: "1rem",
         margin: "1rem 0",
@@ -68,7 +68,7 @@ export function ReleaseMdx({ version, date, title, children, style }: ReleaseMdx
       <h3 style={{ margin: 0 }}>{title}</h3>
       <div style={{ marginTop: "0.75rem" }}>{children}</div>
     </section>
-    );
+  );
 }
 
 export function ChangesMdx({ type = "changed", children }: ChangesMdxProps) {
@@ -95,5 +95,5 @@ export function ChangesMdx({ type = "changed", children }: ChangesMdxProps) {
       </span>
       <div style={{ marginTop: "0.45rem" }}>{children}</div>
     </div>
-    );
+  );
 }

@@ -29,7 +29,7 @@ export function FilesMdx({ children, style, className, ...props }: FilesMdxProps
       role="tree"
       aria-label={props["aria-label"] ?? "File tree"}
       style={{
-        border: "1px solid hsl(var(--border, 210 20% 85%))",
+        border: "1px solid hsl(var(--border-color, 210 20% 85%))",
         borderRadius: 12,
         padding: "0.5rem",
         margin: "1rem 0",
@@ -156,7 +156,7 @@ export function FolderMdx({ name, children, style, className, ...props }: Folder
           role="group"
           style={{
             marginLeft: "1rem",
-            borderLeft: "2px solid hsl(var(--border, 210 20% 85%))",
+            borderLeft: "2px solid hsl(var(--border-color, 210 20% 85%))",
             paddingLeft: "0.6rem",
           }}
         >

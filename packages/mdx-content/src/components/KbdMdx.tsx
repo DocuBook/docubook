@@ -10,7 +10,7 @@ const wrapperStyle: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
-  border: "1px solid hsl(var(--border, 210 20% 85%))",
+  border: "1px solid hsl(var(--border-color, 210 20% 85%))",
   borderBottomWidth: 2,
   borderRadius: 8,
   background: "hsl(var(--muted, 210 20% 92%))",

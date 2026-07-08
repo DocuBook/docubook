@@ -1,5 +1,6 @@
 import { resolve, join } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
+import { readdir, rm, unlink } from "node:fs/promises";
 import type { DocuConfig } from "./types";
 
 /**
@@ -30,6 +31,29 @@ export const DOCU_CONFIG_PATH = join(PROJECT_ROOT, "docu.json");
 
 // Config singleton
 let _config: DocuConfig | null = null;
+
+/** Clean stale client bundles and split chunks from a previous build. */
+export async function cleanOldBundles() {
+  try {
+    const files = await readdir(ASSETS_DIR);
+    for (const file of files) {
+      if (file.startsWith("client.") || file.startsWith("client-")) {
+        await unlink(join(ASSETS_DIR, file));
+      }
+    }
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+      console.error("Failed to clean old bundles:", (err as Error).message);
+    }
+  }
+  // Stale split chunks accumulate across builds (content-hashed names); drop
+  // the whole chunks dir so only the new build's chunks remain.
+  try {
+    await rm(join(ASSETS_DIR, "chunks"), { recursive: true, force: true });
+  } catch (err) {
+    console.error("Failed to clean old chunks:", (err as Error).message);
+  }
+}
 
 export function loadDocuConfig(): DocuConfig {
   if (_config) return _config;

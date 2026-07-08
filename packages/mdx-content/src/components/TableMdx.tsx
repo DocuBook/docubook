@@ -11,7 +11,7 @@ const tableShellStyle: CSSProperties = {
   width: "100%",
   overflowX: "auto",
   overflowY: "hidden",
-  border: "1px solid hsl(var(--border, 210 20% 85%))",
+  border: "1px solid hsl(var(--border-color, 210 20% 85%))",
   borderRadius: 10,
   margin: "1rem 0",
 };
@@ -19,7 +19,7 @@ const tableShellStyle: CSSProperties = {
 const cellBaseStyle: CSSProperties = {
   padding: "0.6rem 0.75rem",
   verticalAlign: "middle",
-  borderBottom: "1px solid hsl(var(--border, 210 20% 85%))",
+  borderBottom: "1px solid hsl(var(--border-color, 210 20% 85%))",
 };
 
 export function TableMdx({ style, ...props }: TableHTMLAttributes<HTMLTableElement>) {
@@ -36,7 +36,7 @@ export function TableMdx({ style, ...props }: TableHTMLAttributes<HTMLTableEleme
         }}
       />
     </div>
-    );
+  );
 }
 
 export function TableHeaderMdx(props: HTMLAttributes<HTMLTableSectionElement>) {
@@ -48,7 +48,7 @@ export function TableHeaderMdx(props: HTMLAttributes<HTMLTableSectionElement>) {
         ...props.style,
       }}
     />
-    );
+  );
 }
 
 export function TableBodyMdx(props: HTMLAttributes<HTMLTableSectionElement>) {
@@ -61,11 +61,11 @@ export function TableFooterMdx(props: HTMLAttributes<HTMLTableSectionElement>) {
       {...props}
       style={{
         background: "hsl(var(--muted, 210 20% 92%))",
-        borderTop: "1px solid hsl(var(--border, 210 20% 85%))",
+        borderTop: "1px solid hsl(var(--border-color, 210 20% 85%))",
         ...props.style,
       }}
     />
-    );
+  );
 }
 
 export function TableRowMdx(props: HTMLAttributes<HTMLTableRowElement>) {
@@ -85,7 +85,7 @@ export function TableHeadMdx(props: ThHTMLAttributes<HTMLTableCellElement>) {
         ...props.style,
       }}
     />
-    );
+  );
 }
 
 export function TableCellMdx(props: TdHTMLAttributes<HTMLTableCellElement>) {
