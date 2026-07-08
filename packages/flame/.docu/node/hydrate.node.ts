@@ -184,6 +184,15 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
               if (args.namespace === "lucide-virt") {
                 return { path: getLucideRealEntry(), namespace: "file" };
               }
+              // Files that do dynamic name lookups (namespace import)
+              // need the full barrel — bypass the virtual module.
+              if (
+                args.importer &&
+                (args.importer.endsWith("/.docu/components/Lucide.tsx") ||
+                  args.importer.includes("/mdx-content/dist/"))
+              ) {
+                return { path: getLucideRealEntry(), namespace: "file" };
+              }
               return { path: args.path, namespace: "lucide-virt" };
             });
             build.onLoad({ filter: /.*/, namespace: "lucide-virt" }, () => {
