@@ -9,6 +9,7 @@
 @plugin "@tailwindcss/typography";
 @source "../../.docu/components";
 @source "../../.docu/pages";
+@source "../../node_modules/@docubook/ui-react/dist";
 
 @custom-variant dark (&:is(.dark *));
 
