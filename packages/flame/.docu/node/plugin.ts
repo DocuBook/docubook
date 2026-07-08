@@ -66,6 +66,9 @@ export type { DocuConfig };
  * - Plugins register lifecycle callbacks through typed methods
  * - Callbacks are executed sequentially in registration order
  * - `config` provides read-only access to the resolved build config
+ *
+ * Hooks run on Bun, Node, and Deno — use `node:` APIs
+ * (e.g. `node:fs/promises`) rather than `Bun.*` globals.
  */
 export interface PluginBuilder {
   /** Resolved DocuBook configuration (read-only after setup phase). */
@@ -93,9 +96,9 @@ export interface PluginBuilder {
    * @param callback - Receives config and aggregated page metadata. May return a Promise.
    *
    * @example
-   * build.onEnd((config, pages) => {
+   * build.onEnd(async (config, pages) => {
    *   const xml = generateSitemap(pages, config.meta.baseURL);
-   *   await Bun.write(join(DIST_DIR, "sitemap.xml"), xml);
+   *   await writeFile(join(DIST_DIR, "sitemap.xml"), xml);
    * });
    */
   onEnd(callback: (config: DocuConfig, pages: PageMeta[]) => void | Promise<void>): void;

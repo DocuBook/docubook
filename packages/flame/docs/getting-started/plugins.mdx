@@ -452,6 +452,8 @@ Execution is **sequential** (waterfall). Plugins run in `docu.json` order. `hand
 
 ## Example Plugins
 
+Plugin hooks run on Bun, Node, and Deno — stick to `node:` APIs (e.g. `node:fs/promises`) rather than `Bun.*` globals so your plugin works on every runtime.
+
 ```typescript
 // plugins/reading-time.ts
 import type { DocuBookPlugin } from "@docubook/flame";
@@ -469,6 +471,7 @@ export default {
 
 ```typescript
 // plugins/sitemap.ts
+import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { DocuBookPlugin } from "@docubook/flame";
 
@@ -482,7 +485,7 @@ export default function pluginSitemap(opts?: { hostname?: string }): DocuBookPlu
           (p) => `<url><loc>${host}/docs/${p.slug}</loc></url>`
         );
         const xml = `<?xml version="1.0"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
-        await Bun.write(join(".docu/dist", "sitemap.xml"), xml);
+        await writeFile(join(".docu/dist", "sitemap.xml"), xml);
       });
     },
   };
