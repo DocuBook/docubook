@@ -9,7 +9,7 @@
 @plugin "@tailwindcss/typography";
 @source "../../.docu/components";
 @source "../../.docu/pages";
-@source "../../node_modules/@docubook/ui-react/dist";
+@source inline("breadcrumbs collapse collapse-open collapse-close collapse-arrow collapse-plus collapse-title collapse-content modal modal-top modal-middle modal-bottom modal-box modal-backdrop drawer drawer-end drawer-toggle drawer-side drawer-overlay drawer-content sm:drawer-open md:drawer-open lg:drawer-open xl:drawer-open navbar menu menu-horizontal kbd kbd-xs kbd-sm kbd-md kbd-lg kbd-xl toggle theme-controller toggle-xs toggle-sm toggle-md toggle-lg toggle-primary toggle-secondary toggle-accent toggle-neutral toggle-success toggle-warning toggle-info toggle-error input input-ghost input-xs input-sm input-md input-lg input-xl input-primary input-secondary input-accent input-neutral input-success input-warning input-info input-error label");
 
 @custom-variant dark (&:is(.dark *));
 
