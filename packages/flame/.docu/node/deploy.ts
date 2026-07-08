@@ -13,6 +13,13 @@ import { DIST_DIR, PROJECT_ROOT } from "./paths";
 const WORKFLOW_DIR = join(PROJECT_ROOT, ".github/workflows");
 const WORKFLOW_FILE = join(WORKFLOW_DIR, "deploy.yml");
 
+const HEADERS_FILE = `/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/chunks/*
+  Cache-Control: public, max-age=31536000, immutable
+`;
+
 async function deploy() {
   console.log("📦 Building for production...\n");
 
@@ -29,6 +36,10 @@ async function deploy() {
 
   // Add .nojekyll
   await writeFile(join(DIST_DIR, ".nojekyll"), "");
+
+  // _headers: long-cache immutable assets for Netlify/Cloudflare Pages.
+  // GitHub Pages ignores it (its CDN caches separately) — harmless to emit.
+  await writeFile(join(DIST_DIR, "_headers"), HEADERS_FILE);
 
   // Generate GitHub Actions workflow
   if (!existsSync(WORKFLOW_FILE)) {
