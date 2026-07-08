@@ -11,7 +11,7 @@
 
 ---
 
-> **Lightweight** — 📦 ~57 kB packed, ~207 kB unpacked. No bloat, just fire.
+> **Lightweight** — 📦 ~132 kB packed. No bloat, just fire.
 
 ---
 ## Quick Start
