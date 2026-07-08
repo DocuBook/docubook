@@ -4,6 +4,7 @@
 import { resolve, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { cpSync, existsSync, readFileSync, writeFileSync, renameSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 
 const __dirname = import.meta.dirname;
 
@@ -128,11 +129,32 @@ if (!(command in COMMAND_MAP)) {
 }
 
 const sourceFile = COMMAND_MAP[command];
-const nodePath = resolve(__dirname, "../.docu/node", sourceFile);
-const libPath = resolve(__dirname, "../.docu/lib", sourceFile.replace(/\.ts$/, ".js"));
+const packageRoot = resolve(__dirname, "..");
+const nodePath = join(packageRoot, ".docu/node", sourceFile);
+const libPath = join(packageRoot, ".docu/lib", sourceFile.replace(/\.ts$/, ".js"));
+
 // Bun executes TypeScript sources directly; Node and Deno use the
-// precompiled JS in .docu/lib (generated at publish), falling back to the
-// TS sources for monorepo development.
+// precompiled JS in .docu/lib, generated at publish. In a monorepo clone
+// .docu/lib is gitignored, so compile it lazily — the entry graph imports
+// .tsx sources that Node cannot load.
+if (runtime !== "bun" && !existsSync(libPath) && existsSync(nodePath)) {
+  console.log("flame: .docu/lib missing — precompiling entry points...");
+  const compileScript = join(__dirname, "compile-lib.mjs");
+  const result = spawnSync(
+    process.execPath,
+    typeof Deno === "undefined" ? [compileScript] : ["run", "-A", compileScript],
+    { cwd: packageRoot, stdio: "inherit" }
+  );
+  if (result.status !== 0) {
+    console.error(
+      result.error
+        ? `flame: failed to run compile-lib.mjs: ${result.error.message}`
+        : "flame: failed to precompile .docu/lib (see output above)."
+    );
+    process.exit(result.status ?? 1);
+  }
+}
+
 const scriptPath =
   runtime === "bun"
     ? existsSync(nodePath)

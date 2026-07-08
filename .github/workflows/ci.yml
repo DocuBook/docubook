@@ -60,10 +60,8 @@ jobs:
       - name: Build workspace dependencies
         run: pnpm turbo build --filter=@docubook/flame^...
 
-      - name: Precompile .docu/lib
-        run: node bin/compile-lib.mjs
-        working-directory: packages/flame
-
+      # No explicit `compile-lib` step: the CLI compiles .docu/lib lazily
+      # when it is missing, and these jobs exercise that path.
       - name: Node runtime smoke (flame build)
         if: matrix.runtime == 'node'
         run: NODE_ENV=production FLAME_RUNTIME=node node bin/cli.js build
