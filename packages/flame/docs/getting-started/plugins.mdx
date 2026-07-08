@@ -452,7 +452,7 @@ Execution is **sequential** (waterfall). Plugins run in `docu.json` order. `hand
 
 ## Example Plugins
 
-Plugin hooks run on Bun, Node, and Deno — stick to `node:` APIs (e.g. `node:fs/promises`) rather than `Bun.*` globals so your plugin works on every runtime.
+Plugin hooks run on Bun, Node, and Deno — stick to `node:` APIs (e.g. `node:fs/promises`) rather than `Bun.*` globals so your plugin works on every runtime. On Bun, `Bun.write` is marginally faster than `writeFile`, but Bun implements `node:fs/promises` natively, so for a once-per-build write the difference is negligible — reserve `Bun.*` globals for plugins that will only ever run in a Bun-only project.
 
 ```typescript
 // plugins/reading-time.ts
