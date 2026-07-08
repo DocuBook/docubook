@@ -8,7 +8,7 @@
  */
 
 import { rmSync } from "node:fs";
-import { build } from "esbuild";
+import { build, stop } from "esbuild";
 
 const ENTRIES = [
   "server.node.ts",
@@ -60,3 +60,8 @@ await build({
     },
   ],
 });
+
+// esbuild's service process keeps Deno's event loop alive after one-shot
+// build() calls — stop it explicitly so `flame` can invoke this script
+// under Deno. Harmless under Node.
+await stop();
