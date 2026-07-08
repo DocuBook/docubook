@@ -1,14 +1,15 @@
 ---
 title: DocuBook Flame 🔥
-description: Fast as flame — a Bun-native framework for modern documentation.
+description: An open-source alternative to Mintlify or GitBook — MDX-powered documentation, static HTML output.
 ---
 
-**@docubook/flame** is a lightweight runtime for documentation sites using React, MDX, and filesystem routing. Runs on Bun, Node.js, and Deno.
+**@docubook/flame** is a static site generator for documentation. Write in MDX, compile to flat static HTML — no server required. Runs on **Bun**, **Node.js**, and **Deno**.
 
-```bash
-npm create flame@latest my-docs
-cd my-docs
-npm run dev
+```mermaid
+flowchart LR
+    A[Your .mdx content] --> B[flame build]
+    B --> C[Static HTML + assets]
+    C --> D[Vercel / Netlify / GitHub Pages / S3]
 ```
 
-Check the sidebar for guides on configuration, components, routing, and deployment.
+Check the sidebar for guides on getting started, configuration, components, routing, and deployment.

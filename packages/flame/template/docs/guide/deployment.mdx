@@ -1,7 +1,9 @@
 ---
 title: Deployment
-description: Deploy your Flame site.
+description: Deploy your Flame site to any static host.
 ---
+
+Flame produces **flat static HTML** — no server, no database, no runtime required. Deploy the output of `.docu/dist/` to any CDN or static host.
 
 ## GitHub Pages
 
@@ -9,12 +11,17 @@ description: Deploy your Flame site.
 npm run deploy
 ```
 
-This builds the site, adds `.nojekyll`, and creates a deploy workflow on first run.
+This builds the site, adds `.nojekyll`, and generates a GitHub Actions workflow on first run.
 
-## Static hosting
+## Manual
 
 ```bash
 npm run build
 ```
 
-Upload `.docu/dist/` to any static host (Netlify, Cloudflare Pages, Vercel, S3).
+Upload `.docu/dist/` to any of:
+
+- **Vercel** — drop the folder or connect your repo
+- **Netlify** — publish directory: `.docu/dist`
+- **Cloudflare Pages** — output directory: `.docu/dist`
+- **S3 / GCS / Azure** — sync and serve via CDN

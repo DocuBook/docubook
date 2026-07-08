@@ -1,23 +1,25 @@
 ---
 title: Routing
-description: How Flame maps files to URLs.
+description: How Flame maps MDX files to static HTML pages.
 ---
 
-## Filesystem routing
-
-Files in `docs/` map to URLs automatically:
+Flame uses **filesystem-based routing** — every `.mdx` file in `docs/` compiles to a matching `.html` path:
 
 ```
 docs/
-├── index.mdx                  → /docs
+├── index.mdx                       → /docs/index.html
 ├── getting-started/
-│   ├── index.mdx              → /docs/getting-started
-│   └── configuration.mdx      → /docs/getting-started/configuration
+│   ├── overview.mdx                → /docs/getting-started/overview.html
+│   └── configuration.mdx           → /docs/getting-started/configuration.html
 └── guide/
-    ├── components.mdx         → /docs/guide/components
-    └── deployment.mdx         → /docs/guide/deployment
+    ├── components.mdx              → /docs/guide/components.html
+    └── routing.mdx                 → /docs/guide/routing.html
 ```
+
+## Auto-routing
+
+When `routes: []` in `docu.json`, Flame automatically scans `docs/` at build time and generates the sidebar from the directory structure.
 
 ## Manual routes
 
-Define `routes` in `docu.json` for custom sidebar structure. See this site's `docu.json` for an example.
+Define `routes` in `docu.json` for a custom sidebar. Add `context` groups with icons for multi-section documentation. See this project's `docu.json` for examples.
