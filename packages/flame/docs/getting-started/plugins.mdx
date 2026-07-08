@@ -452,7 +452,7 @@ Execution is **sequential** (waterfall). Plugins run in `docu.json` order. `hand
 
 ## Example Plugins
 
-Plugin hooks run on Bun, Node, and Deno — stick to `node:` APIs (e.g. `node:fs/promises`) rather than `Bun.*` globals so your plugin works on every runtime. On Bun, `Bun.write` is marginally faster than `writeFile`, but Bun implements `node:fs/promises` natively, so for a once-per-build write the difference is negligible — reserve `Bun.*` globals for plugins that will only ever run in a Bun-only project.
+Plugin hooks run on Bun, Node, and Deno. For a plugin that works everywhere, use `node:` APIs (e.g. `node:fs/promises`). If you want Bun's faster `Bun.write` when it is available, guard it behind a `typeof Bun !== "undefined"` check and fall back to `writeFile` on Node and Deno — the sitemap plugin below does exactly that. Plugins that will only ever run in a Bun-only project can call `Bun.write` directly.
 
 ```typescript
 // plugins/reading-time.ts
@@ -485,7 +485,11 @@ export default function pluginSitemap(opts?: { hostname?: string }): DocuBookPlu
           (p) => `<url><loc>${host}/docs/${p.slug}</loc></url>`
         );
         const xml = `<?xml version="1.0"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
-        await writeFile(join(".docu/dist", "sitemap.xml"), xml);
+        const out = join(".docu/dist", "sitemap.xml");
+        // Bun.write on Bun for speed, writeFile on Node/Deno
+        await (typeof Bun !== "undefined"
+          ? Bun.write(out, xml)
+          : writeFile(out, xml));
       });
     },
   };
