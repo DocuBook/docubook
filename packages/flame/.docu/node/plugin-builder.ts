@@ -193,7 +193,11 @@ export class BuildPluginBuilder implements PluginBuilder {
    * @example
    * build.onEnd(async (config, pages) => {
    *   const xml = generateSitemap(pages, config.meta.baseURL);
-   *   await writeFile(".docu/dist/sitemap.xml", xml);
+   *   const out = ".docu/dist/sitemap.xml";
+   *   // Bun.write on Bun for speed, writeFile on Node/Deno
+   *   await (typeof Bun !== "undefined"
+   *     ? Bun.write(out, xml)
+   *     : writeFile(out, xml));
    * });
    */
   onEnd(callback: (config: DocuConfig, pages: PageMeta[]) => Awaitable<void>): void {

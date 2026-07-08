@@ -68,7 +68,9 @@ export type { DocuConfig };
  * - `config` provides read-only access to the resolved build config
  *
  * Hooks run on Bun, Node, and Deno — use `node:` APIs
- * (e.g. `node:fs/promises`) rather than `Bun.*` globals.
+ * (e.g. `node:fs/promises`) for portability, or guard `Bun.*`
+ * usage behind a `typeof Bun !== "undefined"` check to keep
+ * Bun's faster natives when available.
  */
 export interface PluginBuilder {
   /** Resolved DocuBook configuration (read-only after setup phase). */
@@ -98,7 +100,11 @@ export interface PluginBuilder {
    * @example
    * build.onEnd(async (config, pages) => {
    *   const xml = generateSitemap(pages, config.meta.baseURL);
-   *   await writeFile(join(DIST_DIR, "sitemap.xml"), xml);
+   *   const out = join(DIST_DIR, "sitemap.xml");
+   *   // Bun.write on Bun for speed, writeFile on Node/Deno
+   *   await (typeof Bun !== "undefined"
+   *     ? Bun.write(out, xml)
+   *     : writeFile(out, xml));
    * });
    */
   onEnd(callback: (config: DocuConfig, pages: PageMeta[]) => void | Promise<void>): void;
