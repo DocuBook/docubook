@@ -1,0 +1,20 @@
+---
+title: Deployment
+description: Deploy your Flame site.
+---
+
+## GitHub Pages
+
+```bash
+npm run deploy
+```
+
+This builds the site, adds `.nojekyll`, and creates a deploy workflow on first run.
+
+## Static hosting
+
+```bash
+npm run build
+```
+
+Upload `.docu/dist/` to any static host (Netlify, Cloudflare Pages, Vercel, S3).

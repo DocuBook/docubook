@@ -1,0 +1,23 @@
+---
+title: Routing
+description: How Flame maps files to URLs.
+---
+
+## Filesystem routing
+
+Files in `docs/` map to URLs automatically:
+
+```
+docs/
+├── index.mdx                  → /docs
+├── getting-started/
+│   ├── index.mdx              → /docs/getting-started
+│   └── configuration.mdx      → /docs/getting-started/configuration
+└── guide/
+    ├── components.mdx         → /docs/guide/components
+    └── deployment.mdx         → /docs/guide/deployment
+```
+
+## Manual routes
+
+Define `routes` in `docu.json` for custom sidebar structure. See this site's `docu.json` for an example.

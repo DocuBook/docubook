@@ -1,0 +1,33 @@
+---
+title: Quick Start
+description: Get your first documentation site running.
+---
+
+## Prerequisites
+
+- [Bun](https://bun.sh) >= 1.1, Node.js >= 20, or Deno >= 2
+
+## Create a project
+
+```bash
+mkdir my-docs && cd my-docs
+npm init -y
+npm install @docubook/flame
+npx flame init
+```
+
+## Start development
+
+```bash
+npm run dev
+```
+
+Open http://localhost:3000 — changes to `docs/` or `docu.json` are hot-reloaded.
+
+## Build for production
+
+```bash
+npm run build
+```
+
+Static output goes to `.docu/dist/` — deploy anywhere.

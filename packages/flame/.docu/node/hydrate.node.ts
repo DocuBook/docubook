@@ -1,27 +1,54 @@
 /**
- * Runtime-neutral client bundling — esbuild port of `buildClientBundle()`
- * from `hydrate.ts` (Bun-only, protected). Used by the Node/Deno entries;
- * the Bun entries keep using `Bun.build` untouched. The pure theme helpers
- * (`getThemeConfig`, `buildThemeCss`, `computeInlineThemeCss`) are reused
- * from `hydrate.ts` — that module only touches Bun APIs inside
- * `buildClientBundle` itself, so importing it is safe on any runtime.
+ * Client bundle builder for Node/Deno runtimes.
+ *
+ * Wraps esbuild with the plugins needed to produce a browser-ready client
+ * bundle (JS + CSS) from the same components Bun.build handles natively.
+ * Theme helpers (getThemeConfig, buildThemeCss, computeInlineThemeCss)
+ * are re-exported from `hydrate.ts` — that module's `buildClientBundle`
+ * is Bun-only and unused here.
  */
 
 import { execFile } from "node:child_process";
 import { builtinModules, createRequire } from "node:module";
 import { basename, dirname, join, resolve } from "node:path";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { promisify } from "node:util";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { ASSETS_DIR, cleanOldBundles, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
+import {
+  ASSETS_DIR,
+  FRAMEWORK_ROOT,
+  cleanOldBundles,
+  LIB_DIR,
+  STYLES_DIR,
+  loadDocuConfig,
+} from "./paths";
 import { buildThemeCss, getThemeConfig } from "./hydrate";
 import { resolveRoutes } from "./fs-scanner";
-import type { DocuRoute } from "./types";
+import type { DocuConfig, DocuRoute } from "./types";
+
+/** Extract Lucide icon names from user docu.json configuration. */
+function extractConfigIcons(config: DocuConfig): string[] {
+  const icons: string[] = [];
+  const pushIf = (s: string | undefined) => {
+    if (s) icons.push(s);
+  };
+  config.home?.hero?.actions?.forEach((a) => pushIf(a.icon));
+  config.home?.features?.forEach((f) => pushIf(f.icon));
+  (function walk(routes: DocuRoute[]) {
+    for (const r of routes) {
+      pushIf(r.context?.icon);
+      if (r.items) walk(r.items);
+    }
+  })(config.routes ?? []);
+  return [...new Set(icons.filter((n) => /^[A-Z]/.test(n)))];
+}
 
 export { buildThemeCss, computeInlineThemeCss, getThemeConfig } from "./hydrate";
 
 const execFileAsync = promisify(execFile);
 
+/** Resolve the @tailwindcss/cli binary path from the installed package. */
 function resolveTailwindBin(): string {
   const require = createRequire(import.meta.url);
   const pkgPath = require.resolve("@tailwindcss/cli/package.json");
@@ -30,10 +57,10 @@ function resolveTailwindBin(): string {
   return join(dirname(pkgPath), binRel);
 }
 
+/** Run Tailwind CLI to produce minified CSS. */
 async function runTailwind(outputCss: string): Promise<void> {
   const bin = resolveTailwindBin();
   const twArgs = ["-i", join(STYLES_DIR, "globals.css"), "-o", outputCss, "--minify"];
-  // Deno's process.execPath is the deno binary, which needs the `run` subcommand.
   const isDeno = "Deno" in globalThis;
   const args = isDeno ? ["run", "-A", bin, ...twArgs] : [bin, ...twArgs];
   try {
@@ -44,6 +71,70 @@ async function runTailwind(outputCss: string): Promise<void> {
   }
 }
 
+const NODE_BUILTINS_RE = new RegExp(
+  `^(node:.*|${builtinModules.map((m) => m.replace(/\//g, "\\/")).join("|")})$`
+);
+
+let lucideRealEntry: string | undefined;
+
+/** Resolve the real lucide-react entry path once (cached). */
+function getLucideRealEntry(): string {
+  if (!lucideRealEntry) {
+    lucideRealEntry = createRequire(import.meta.url).resolve("lucide-react");
+  }
+  return lucideRealEntry;
+}
+
+const LUCIDE_IMPORT_RE = /import\s*\{([^}]+)\}\s*from\s*["']lucide-react["']/g;
+const LUCIDE_ICON_RE = /^[A-Z]/;
+
+/** Walk a directory scanning JS/TS/TSX files for `lucide-react` named imports. */
+function scanDirLucideIcons(dir: string, set: Set<string>): void {
+  if (!existsSync(dir)) return;
+  try {
+    const entries = readdirSync(dir, { withFileTypes: true });
+    for (const e of entries) {
+      const full = join(dir, e.name);
+      if (e.isDirectory()) {
+        if (e.name !== "node_modules") scanDirLucideIcons(full, set);
+      } else if (/\.(js|ts|tsx)$/.test(e.name)) {
+        const content = readFileSync(full, "utf-8");
+        for (const m of content.matchAll(LUCIDE_IMPORT_RE)) {
+          for (const s of m[1].split(",")) {
+            const name = s
+              .trim()
+              .split(/\s+as\s+/)[0]
+              .trim();
+            if (LUCIDE_ICON_RE.test(name)) set.add(name);
+          }
+        }
+      }
+    }
+  } catch {
+    /* skip unreadable dirs */
+  }
+}
+
+/** Collect every lucide icon name imported across flame sources and deps. */
+function collectAllLucideIcons(): string[] {
+  const icons = new Set<string>();
+  // Scan flame's own components and pages
+  scanDirLucideIcons(join(FRAMEWORK_ROOT, ".docu/components"), icons);
+  scanDirLucideIcons(join(FRAMEWORK_ROOT, ".docu/pages"), icons);
+  // Scan dependency dist directories. In development (monorepo) they live under
+  // packages/; in production they are under node_modules/@docubook/.
+  const depDirs = [
+    join(FRAMEWORK_ROOT, "..", "mdx-content", "dist"),
+    join(FRAMEWORK_ROOT, "..", "ui-react", "dist"),
+    join(FRAMEWORK_ROOT, "..", "core", "dist"),
+    join(FRAMEWORK_ROOT, "..", "runt", "dist"),
+    join(FRAMEWORK_ROOT, "..", "themes-colors", "dist"),
+  ];
+  for (const d of depDirs) scanDirLucideIcons(resolve(d), icons);
+  return [...icons];
+}
+
+/** Build the client JS bundle and Tailwind CSS. */
 export async function buildClientBundle(): Promise<{ js: string; css: string }> {
   await mkdir(ASSETS_DIR, { recursive: true });
   await cleanOldBundles();
@@ -53,12 +144,11 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
   const { build } = esbuild;
 
   const entryPath = join(LIB_DIR, "client.ts");
-  // esbuild metafile paths are relative to absWorkingDir (defaults to cwd).
   const workingDir = process.cwd();
   let result: Awaited<ReturnType<typeof build>>;
   try {
     result = await build({
-      entryPoints: [join(LIB_DIR, "client.ts")],
+      entryPoints: [entryPath],
       bundle: true,
       outdir: ASSETS_DIR,
       entryNames: "client-[hash]",
@@ -74,15 +164,9 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
       logLevel: "silent",
       plugins: [
         {
-          // The client graph reaches modules that import node builtins for
-          // their server-only exports (e.g. utils.ts, core's content module).
-          // Bun.build tolerates this for browser targets; esbuild needs empty
-          // CJS stubs (named imports become undefined, matching the
-          // never-called server paths).
           name: "node-builtin-stub",
           setup(build) {
-            const builtins = builtinModules.map((m) => m.replace(/\//g, "\\/")).join("|");
-            build.onResolve({ filter: new RegExp(`^(node:.*|${builtins})$`) }, (args) => ({
+            build.onResolve({ filter: NODE_BUILTINS_RE }, (args) => ({
               path: args.path,
               namespace: "node-stub",
             }));
@@ -90,6 +174,27 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
               contents: "module.exports = {};",
               loader: "js",
             }));
+          },
+        },
+        {
+          name: "lucide-optimize",
+          setup(build) {
+            build.onResolve({ filter: /^lucide-react$/ }, (args) => {
+              // Imports from within our virtual module go to the real package.
+              if (args.namespace === "lucide-virt") {
+                return { path: getLucideRealEntry(), namespace: "file" };
+              }
+              return { path: args.path, namespace: "lucide-virt" };
+            });
+            build.onLoad({ filter: /.*/, namespace: "lucide-virt" }, () => {
+              const scanned = collectAllLucideIcons();
+              const configured = extractConfigIcons(loadDocuConfig());
+              const allIcons = [...new Set([...scanned, ...configured])];
+              return {
+                contents: `export { ${allIcons.join(", ")} } from "lucide-react";`,
+                loader: "js",
+              };
+            });
           },
         },
         {
@@ -133,8 +238,9 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
   // `entryPoint` is set on the user entry AND on every dynamic-import chunk
   // (esbuild treats dynamic imports as entry points), so match the resolved
   // source path instead of grabbing the first truthy `entryPoint`.
-  const jsOutput = Object.keys(result.metafile.outputs).find((p) => {
-    const o = result.metafile.outputs[p];
+  const { outputs } = result.metafile!;
+  const jsOutput = Object.keys(outputs).find((p) => {
+    const o = outputs[p];
     return o.entryPoint && resolve(workingDir, o.entryPoint) === entryPath;
   });
   if (!jsOutput) {
