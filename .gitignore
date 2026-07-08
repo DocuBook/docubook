@@ -39,6 +39,9 @@ Thumbs.db
 .temp
 .tmp
 
+# Dev-only test script (runtime compatibility)
+test-flame-init.mjs
+
 # System
 *.pem
 *.p12
