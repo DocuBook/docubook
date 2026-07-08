@@ -22,7 +22,7 @@ const baseStyle: CSSProperties = {
   justifyContent: "center",
   gap: "0.375rem",
   borderRadius: 10,
-  border: "1px solid hsl(var(--border, 210 20% 85%))",
+  border: "1px solid hsl(var(--border-color, 210 20% 85%))",
   background: "hsl(var(--card, 0 0% 100%))",
   color: "hsl(var(--foreground, 220 30% 15%))",
   textDecoration: "none",

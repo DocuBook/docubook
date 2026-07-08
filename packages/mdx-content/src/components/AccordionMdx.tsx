@@ -34,7 +34,7 @@ export function AccordionMdx({ title, icon, className, children }: AccordionMdxP
     <div
       className={`mdx-accordion ${isGroup ? "mdx-accordion-group-item" : ""} ${className ?? ""}`}
       style={{
-        border: "1px solid hsl(var(--border, 210 20% 85%))",
+        border: "1px solid hsl(var(--border-color, 210 20% 85%))",
         borderRadius: 10,
         overflow: "hidden",
         background: "hsl(var(--card, 0 0% 100%))",

@@ -4,12 +4,22 @@
 @plugin "daisyui" {
   themes:
     light --default,
-    dark --prefersdark;
+    dark;
 }
 @plugin "@tailwindcss/typography";
 @source "../../.docu/components";
 @source "../../.docu/pages";
-@source inline("breadcrumbs collapse collapse-open collapse-close collapse-arrow collapse-plus collapse-title collapse-content modal modal-top modal-middle modal-bottom modal-box modal-backdrop drawer drawer-end drawer-toggle drawer-side drawer-overlay drawer-content sm:drawer-open md:drawer-open lg:drawer-open xl:drawer-open navbar menu menu-horizontal kbd kbd-xs kbd-sm kbd-md kbd-lg kbd-xl toggle theme-controller toggle-xs toggle-sm toggle-md toggle-lg toggle-primary toggle-secondary toggle-accent toggle-neutral toggle-success toggle-warning toggle-info toggle-error input input-ghost input-xs input-sm input-md input-lg input-xl input-primary input-secondary input-accent input-neutral input-success input-warning input-info input-error label");
+@source inline("breadcrumbs collapse collapse-open collapse-close collapse-arrow collapse-plus collapse-title collapse-content");
+@source inline("modal modal-top modal-middle modal-bottom modal-box modal-backdrop");
+@source inline("drawer drawer-end drawer-toggle drawer-side drawer-overlay drawer-content");
+@source inline("sm:drawer-open md:drawer-open lg:drawer-open xl:drawer-open");
+@source inline("navbar menu menu-horizontal");
+@source inline("kbd kbd-xs kbd-sm kbd-md kbd-lg kbd-xl");
+@source inline("toggle theme-controller toggle-xs toggle-sm toggle-md toggle-lg");
+@source inline("toggle-primary toggle-secondary toggle-accent toggle-neutral toggle-success toggle-warning toggle-info toggle-error");
+@source inline("input input-ghost input-xs input-sm input-md input-lg input-xl");
+@source inline("input-primary input-secondary input-accent input-neutral input-success input-warning input-info input-error");
+@source inline("label");
 
 @custom-variant dark (&:is(.dark *));
 
@@ -18,7 +28,7 @@
   --color-base-200: oklch(var(--base-200, 100% 0 0));
   --color-base-300: oklch(var(--base-300, 100% 0 0));
   --color-base-content: oklch(var(--base-content, 100% 0 0));
-  --color-border: hsl(var(--border));
+  --color-border: hsl(var(--border-color));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
   --color-background: hsl(var(--background));
@@ -85,7 +95,7 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 0 85% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 210 20% 85%;
+    --border-color: 210 20% 85%;
     --input: 210 20% 85%;
     --ring: 210 81% 56%;
     --radius: 0.5rem;
@@ -112,7 +122,7 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 0 80% 65%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 10% 28%;
+    --border-color: 220 10% 28%;
     --input: 220 10% 28%;
     --ring: 210 100% 67%;
     --radius: 0.5rem;

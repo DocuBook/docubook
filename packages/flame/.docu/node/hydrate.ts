@@ -1,34 +1,12 @@
 import { join } from "node:path";
-import { mkdir, readdir, rm, unlink } from "node:fs/promises";
+import { mkdir, unlink } from "node:fs/promises";
 import { resolveTheme, generateThemeCss, presetRegistry } from "@docubook/themes-colors";
-import { ASSETS_DIR, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
+import { ASSETS_DIR, cleanOldBundles, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
 import { resolveRoutes } from "./fs-scanner";
 import type { DocuRoute } from "./types";
 import type { ThemeConfig } from "@docubook/themes-colors";
 
 const themeRegistry = presetRegistry;
-
-async function cleanOldBundles() {
-  try {
-    const files = await readdir(ASSETS_DIR);
-    for (const file of files) {
-      if (file.startsWith("client.") || file.startsWith("client-")) {
-        await unlink(join(ASSETS_DIR, file));
-      }
-    }
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
-      console.error("Failed to clean old bundles:", (err as Error).message);
-    }
-  }
-  // Stale split chunks accumulate across builds (content-hashed names); drop
-  // the whole chunks dir so only the new build's chunks remain.
-  try {
-    await rm(join(ASSETS_DIR, "chunks"), { recursive: true, force: true });
-  } catch (err) {
-    console.error("Failed to clean old chunks:", (err as Error).message);
-  }
-}
 
 /**
  * Read the effective theme config with this priority:

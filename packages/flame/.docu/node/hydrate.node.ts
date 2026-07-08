@@ -11,9 +11,9 @@ import { execFile } from "node:child_process";
 import { builtinModules, createRequire } from "node:module";
 import { basename, dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
-import { mkdir, readFile, readdir, rm, unlink, writeFile } from "node:fs/promises";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { ASSETS_DIR, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
+import { ASSETS_DIR, cleanOldBundles, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
 import { buildThemeCss, getThemeConfig } from "./hydrate";
 import { resolveRoutes } from "./fs-scanner";
 import type { DocuRoute } from "./types";
@@ -21,26 +21,6 @@ import type { DocuRoute } from "./types";
 export { buildThemeCss, computeInlineThemeCss, getThemeConfig } from "./hydrate";
 
 const execFileAsync = promisify(execFile);
-
-async function cleanOldBundles() {
-  try {
-    const files = await readdir(ASSETS_DIR);
-    for (const file of files) {
-      if (file.startsWith("client.") || file.startsWith("client-")) {
-        await unlink(join(ASSETS_DIR, file));
-      }
-    }
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
-      console.error("Failed to clean old bundles:", (err as Error).message);
-    }
-  }
-  try {
-    await rm(join(ASSETS_DIR, "chunks"), { recursive: true, force: true });
-  } catch (err) {
-    console.error("Failed to clean old chunks:", (err as Error).message);
-  }
-}
 
 function resolveTailwindBin(): string {
   const require = createRequire(import.meta.url);

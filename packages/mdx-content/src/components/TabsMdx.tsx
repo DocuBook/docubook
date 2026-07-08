@@ -66,7 +66,7 @@ export function TabsMdx({ className, children }: TabsMdxProps) {
           gap: "0.75rem",
           alignItems: "center",
           overflowX: "auto",
-          borderBottom: "1px solid hsl(var(--border, 210 20% 85%))",
+          borderBottom: "1px solid hsl(var(--border-color, 210 20% 85%))",
         }}
       >
         {tabItems.map((item) => {

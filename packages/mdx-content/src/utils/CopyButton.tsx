@@ -40,7 +40,7 @@ export function CopyButton({ content }: CopyButtonProps) {
       aria-describedby={statusId}
       style={{
         position: "relative",
-        border: "1px solid hsl(var(--border, 210 20% 85%))",
+        border: "1px solid hsl(var(--border-color, 210 20% 85%))",
         borderRadius: 8,
         background: "hsl(var(--card, 0 0% 100%))",
         color: "hsl(var(--foreground, 220 30% 15%))",

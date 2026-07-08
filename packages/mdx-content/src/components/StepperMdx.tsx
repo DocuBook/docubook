@@ -10,19 +10,19 @@ import {
 } from "react";
 
 type StepsMdxProps = HTMLAttributes<HTMLOListElement> & {
-    children?: ReactNode;
-    style?: CSSProperties;
+  children?: ReactNode;
+  style?: CSSProperties;
 };
 
 type StepMdxProps = LiHTMLAttributes<HTMLLIElement> & {
-    title: string;
-    children?: ReactNode;
-    style?: CSSProperties;
+  title: string;
+  children?: ReactNode;
+  style?: CSSProperties;
 };
 
 // Internal props including stepNumber (auto-injected)
 type InternalStepProps = StepMdxProps & {
-    stepNumber?: number;
+  stepNumber?: number;
 };
 
 export function StepsMdx({ children, style, className, ...props }: StepsMdxProps) {
@@ -47,11 +47,11 @@ export function StepsMdx({ children, style, className, ...props }: StepsMdxProps
           return child;
         }
 
-          const item = child as ReactElement<InternalStepProps>;
+        const item = child as ReactElement<InternalStepProps>;
 
         return cloneElement(item, {
           stepNumber: index + 1,
-            });
+        });
       })}
 
       {items.length > 1 ? (
@@ -63,13 +63,13 @@ export function StepsMdx({ children, style, className, ...props }: StepsMdxProps
             top: "0.8rem",
             bottom: "0.8rem",
             width: 1,
-            background: "hsl(var(--border, 210 20% 85%))",
+            background: "hsl(var(--border-color, 210 20% 85%))",
             pointerEvents: "none",
           }}
         />
       ) : null}
     </ol>
-    );
+  );
 }
 
 export function StepMdx({ title, children, style, className, ...props }: InternalStepProps) {
@@ -107,7 +107,7 @@ export function StepMdx({ title, children, style, className, ...props }: Interna
           fontWeight: 600,
           color: "hsl(var(--muted-foreground, 220 15% 50%))",
           background: "hsl(var(--muted, 210 12% 92%))",
-          border: "1px solid hsl(var(--border, 210 20% 85%))",
+          border: "1px solid hsl(var(--border-color, 210 20% 85%))",
         }}
       >
         {stepNumber ?? "-"}
