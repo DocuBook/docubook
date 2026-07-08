@@ -191,9 +191,9 @@ export class BuildPluginBuilder implements PluginBuilder {
    * @param callback - Receives config and page metadata array. May return a Promise.
    *
    * @example
-   * build.onEnd((config, pages) => {
+   * build.onEnd(async (config, pages) => {
    *   const xml = generateSitemap(pages, config.meta.baseURL);
-   *   await Bun.write(".docu/dist/sitemap.xml", xml);
+   *   await writeFile(".docu/dist/sitemap.xml", xml);
    * });
    */
   onEnd(callback: (config: DocuConfig, pages: PageMeta[]) => Awaitable<void>): void {
