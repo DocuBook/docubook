@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { mkdir, readdir, unlink } from "node:fs/promises";
+import { mkdir, readdir, rm, unlink } from "node:fs/promises";
 import { resolveTheme, generateThemeCss, presetRegistry } from "@docubook/themes-colors";
 import { ASSETS_DIR, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
 import { resolveRoutes } from "./fs-scanner";
@@ -20,6 +20,13 @@ async function cleanOldBundles() {
     if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
       console.error("Failed to clean old bundles:", (err as Error).message);
     }
+  }
+  // Stale split chunks accumulate across builds (content-hashed names); drop
+  // the whole chunks dir so only the new build's chunks remain.
+  try {
+    await rm(join(ASSETS_DIR, "chunks"), { recursive: true, force: true });
+  } catch (err) {
+    console.error("Failed to clean old chunks:", (err as Error).message);
   }
 }
 
@@ -78,7 +85,13 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
   const result = await Bun.build({
     entrypoints: [join(LIB_DIR, "client.ts")],
     outdir: ASSETS_DIR,
-    naming: "client-[hash].[ext]",
+    format: "esm",
+    splitting: true,
+    naming: {
+      entry: "client-[hash].[ext]",
+      chunk: "chunks/[name]-[hash].[ext]",
+      asset: "[name]-[hash].[ext]",
+    },
     target: "browser",
     minify: nodeEnv === "production",
     optimizeImports: ["lucide-react"],
@@ -124,7 +137,13 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
   if (!result.outputs[0]) {
     throw new Error("Client bundle produced no output files");
   }
-  const jsFile = result.outputs[0].path.split("/").pop()!;
+  // With splitting enabled Bun emits entry + chunk artifacts; select the entry
+  // explicitly rather than by position (chunks may precede it in the array).
+  const entry = result.outputs.find((o) => o.kind === "entry-point");
+  if (!entry) {
+    throw new Error("Client bundle produced no entry-point output");
+  }
+  const jsFile = entry.path.split("/").pop()!;
   const tmpCss = join(ASSETS_DIR, "_tmp.css");
   const proc = Bun.spawn(
     [

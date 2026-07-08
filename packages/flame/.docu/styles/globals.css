@@ -1,7 +1,11 @@
-@import "daisyui/daisyui.css";
-@import "@docubook/mdx-content/styles.css";
 @import "tailwindcss";
+@import "@docubook/mdx-content/styles.css";
 
+@plugin "daisyui" {
+  themes:
+    light --default,
+    dark --prefersdark;
+}
 @plugin "@tailwindcss/typography";
 @source "../../.docu/components";
 @source "../../.docu/pages";

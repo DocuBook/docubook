@@ -97,6 +97,15 @@ Output: landing `index.html`, `404.html`, and pages as flat `docs/<slug>.html`
 files with extensionless internal links (static hosts need `cleanUrls`-style
 rewriting).
 
+The client bundle is built with ESM code splitting (`splitting: true` in both
+the Bun and esbuild bundlers). The entry chunk (`client-[hash].js`) is the only
+file referenced from HTML via a single `<script type="module">`; the browser
+natively follows its `import` statements to shared/dynamic chunks under
+`assets/chunks/`. Heavy dynamically-imported modules (e.g. `mermaid`) ship as
+separate chunks fetched on demand, not inlined into every page's critical path.
+daisyUI is configured via `@plugin "daisyui"` with only the `light` and `dark`
+themes to avoid emitting all ~35 built-in themes.
+
 ## Deployment
 
 The production docs site is built by flame and deployed to Vercel as static
@@ -110,6 +119,12 @@ flame pages hydrate MDX islands via `next-mdx-remote`, which evaluates compiled
 MDX at runtime. Static HTML itself carries per-page nonces but no CSP meta tag —
 CSP always comes from the serving layer (dev/preview server headers or
 `vercel.json` in production).
+
+Hashed assets under `/assets/*` (bundles, chunks, CSS) are served with
+`Cache-Control: public, max-age=31536000, immutable` — `vercel.json` sets this
+for the Vercel deploy, and `flame deploy` writes a `_headers` file into the
+output for Netlify/Cloudflare Pages (GitHub Pages ignores it; its CDN handles
+caching separately).
 
 ## Key Decisions
 

@@ -9,9 +9,9 @@
 
 import { execFile } from "node:child_process";
 import { builtinModules, createRequire } from "node:module";
-import { basename, dirname, join } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
-import { mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, rm, unlink, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { ASSETS_DIR, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
 import { buildThemeCss, getThemeConfig } from "./hydrate";
@@ -34,6 +34,11 @@ async function cleanOldBundles() {
     if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
       console.error("Failed to clean old bundles:", (err as Error).message);
     }
+  }
+  try {
+    await rm(join(ASSETS_DIR, "chunks"), { recursive: true, force: true });
+  } catch (err) {
+    console.error("Failed to clean old chunks:", (err as Error).message);
   }
 }
 
@@ -67,6 +72,9 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
   const esbuild = await import("esbuild");
   const { build } = esbuild;
 
+  const entryPath = join(LIB_DIR, "client.ts");
+  // esbuild metafile paths are relative to absWorkingDir (defaults to cwd).
+  const workingDir = process.cwd();
   let result: Awaited<ReturnType<typeof build>>;
   try {
     result = await build({
@@ -74,8 +82,10 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
       bundle: true,
       outdir: ASSETS_DIR,
       entryNames: "client-[hash]",
+      chunkNames: "chunks/[name]-[hash]",
       platform: "browser",
       format: "esm",
+      splitting: true,
       minify: nodeEnv === "production",
       define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
       jsx: "automatic",
@@ -139,7 +149,14 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
     await esbuild.stop();
   }
 
-  const jsOutput = Object.keys(result.metafile.outputs).find((p) => p.endsWith(".js"));
+  // With splitting enabled esbuild emits the entry plus shared/dynamic chunks.
+  // `entryPoint` is set on the user entry AND on every dynamic-import chunk
+  // (esbuild treats dynamic imports as entry points), so match the resolved
+  // source path instead of grabbing the first truthy `entryPoint`.
+  const jsOutput = Object.keys(result.metafile.outputs).find((p) => {
+    const o = result.metafile.outputs[p];
+    return o.entryPoint && resolve(workingDir, o.entryPoint) === entryPath;
+  });
   if (!jsOutput) {
     throw new Error("Client bundle produced no output files");
   }
