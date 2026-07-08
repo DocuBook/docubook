@@ -1,33 +1,50 @@
 ---
 title: Quick Start
-description: Get your first documentation site running.
+description: Get your first documentation site running on Bun, Node.js, or Deno.
 ---
 
 ## Prerequisites
 
-- [Bun](https://bun.sh) >= 1.1, Node.js >= 20, or Deno >= 2
+Choose **one** runtime:
+
+- **Bun** >= 1.1: `curl -fsSL https://bun.sh/install | bash`
+- **Node.js** >= 20.11: [nodejs.org](https://nodejs.org)
+- **Deno** >= 2.x: `curl -fsSL https://deno.land/install.sh | sh`
 
 ## Create a project
 
-```bash
-mkdir my-docs && cd my-docs
-npm init -y
-npm install @docubook/flame
-npx flame init
-```
+<Tabs>
+  <Tab title="Bun">
+    ```bash
+    mkdir my-docs && cd my-docs
+    bun add @docubook/flame
+    bunx flame init
+    bun run dev
+    ```
+  </Tab>
+  <Tab title="Node.js">
+    ```bash
+    mkdir my-docs && cd my-docs
+    npm install @docubook/flame
+    npx flame init
+    npm run dev
+    ```
+  </Tab>
+  <Tab title="Deno">
+    ```bash
+    mkdir my-docs && cd my-docs
+    deno run -A npm:@docubook/flame init
+    deno task dev
+    ```
+  </Tab>
+</Tabs>
 
-## Start development
-
-```bash
-npm run dev
-```
-
-Open http://localhost:3000 — changes to `docs/` or `docu.json` are hot-reloaded.
+Open http://localhost:3000 — changes to `docs/` or `docu.json` hot-reload.
 
 ## Build for production
 
 ```bash
-npm run build
+npm run build     # or: bun run build / deno task build
 ```
 
-Static output goes to `.docu/dist/` — deploy anywhere.
+Static output goes to `.docu/dist/` — deploy to any CDN or static host.
