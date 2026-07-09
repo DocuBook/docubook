@@ -111,13 +111,19 @@ if (command === "init") {
         preview: `${flameCmd} preview`,
         deploy: `${flameCmd} deploy`,
       };
+
+      // Generate deno.json with nodeModulesDir for npm compat.
+      const denoConfig = {
+        nodeModulesDir: "auto",
+      };
+      writeFileSync(join(targetDir, "deno.json"), JSON.stringify(denoConfig, null, 2) + "\n");
     }
     writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
 
     const nextSteps = {
       bun: "    bun install\n    bun run dev",
       node: "    npm install\n    npm run dev",
-      deno: "    deno task dev",
+      deno: "    deno task dev\n\n  ⚠️  If you see a freshness error, run:\n    DENO_ALLOW_NEWER=true deno task dev",
     }[runtime];
     console.log(`\n  ✓ Project scaffolded!\n\n  Next steps:\n${nextSteps}\n`);
     process.exit(0);
