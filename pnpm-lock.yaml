@@ -13,8 +13,7 @@ overrides:
   "@types/react": 19.2.17
   "@types/react-dom": 19.2.3
   "@sentry/bun": ">=10.0.0"
-  read-yaml-file: ">=2.1.0"
-  js-yaml: ">=5.0.0"
+  read-yaml-file: ^2.1.0
   undici: ^7.28.0
 
 importers:
@@ -5275,10 +5274,10 @@ packages:
         integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==,
       }
 
-  js-yaml@5.2.1:
+  js-yaml@4.3.0:
     resolution:
       {
-        integrity: sha512-zfLtNfQqxVqq3uaTqSkh4x4hZw3KHobGUA0fJUj4wawW8bsQLTVqpHdXSIzidh7o+4lEW36tANuAGdaFx6Zgnw==,
+        integrity: sha512-1td788aAnnZ5qs7V2QIRl1owjtYpbKt749Y3xauqQgwIIGF/xXWz1wMTEBx5O3LK3lXLVuqXPdPxj2BoFHaW9Q==,
       }
     hasBin: true
 
@@ -6631,12 +6630,12 @@ packages:
       }
     engines: { node: ">=0.10.0" }
 
-  read-yaml-file@3.0.0:
+  read-yaml-file@2.1.0:
     resolution:
       {
-        integrity: sha512-7urDNDyx3oJt9NGkymzT3qudju76BoJhT6ICWclx6274zxMeSUOhyiceHscSBk4Lfbs0IYpjOjUwLkaOzrsJdQ==,
+        integrity: sha512-UkRNRIwnhG+y7hpqnycCL/xbTk7+ia9VuVTC0S+zVbwd65DI9eUpRMfsWIGrCWxTU/mi+JW8cHQCrv+zfCbEPQ==,
       }
-    engines: { node: ">=22.13" }
+    engines: { node: ">=10.13" }
 
   readdirp@4.1.2:
     resolution:
@@ -7159,12 +7158,12 @@ packages:
       }
     engines: { node: ">=12" }
 
-  strip-bom@5.0.0:
+  strip-bom@4.0.0:
     resolution:
       {
-        integrity: sha512-p+byADHF7SzEcVnLvc/r3uognM1hUhObuHXxJcgLCfD194XAkaLbjq3Wzb0N5G2tgIjH0dgT708Z51QxMeu60A==,
+        integrity: sha512-3xurFv5tEgii33Zi8Jtp55wEIILR9eh34FAW00PZf+JnSsTmV/ioewSgQl97JHvgjoRGwPShsWm+IdrxB35d0w==,
       }
-    engines: { node: ">=12" }
+    engines: { node: ">=8" }
 
   strip-indent@3.0.0:
     resolution:
@@ -7974,7 +7973,7 @@ packages:
 snapshots:
   "@11ty/gray-matter@2.1.0":
     dependencies:
-      js-yaml: 5.2.1
+      js-yaml: 4.3.0
       section-matter: 1.0.0
 
   "@adobe/css-tools@4.5.0": {}
@@ -8269,7 +8268,7 @@ snapshots:
   "@changesets/parse@0.4.3":
     dependencies:
       "@changesets/types": 6.1.0
-      js-yaml: 5.2.1
+      js-yaml: 4.3.0
 
   "@changesets/pre@2.0.2":
     dependencies:
@@ -8615,7 +8614,7 @@ snapshots:
       globals: 14.0.0
       ignore: 5.3.2
       import-fresh: 3.3.1
-      js-yaml: 5.2.1
+      js-yaml: 4.3.0
       minimatch: 3.1.5
       strip-json-comments: 3.1.1
     transitivePeerDependencies:
@@ -8707,7 +8706,7 @@ snapshots:
       "@manypkg/find-root": 1.1.0
       fs-extra: 8.1.0
       globby: 11.1.0
-      read-yaml-file: 3.0.0
+      read-yaml-file: 2.1.0
 
   "@mdx-js/mdx@3.1.1":
     dependencies:
@@ -9959,7 +9958,7 @@ snapshots:
     dependencies:
       env-paths: 2.2.1
       import-fresh: 3.3.1
-      js-yaml: 5.2.1
+      js-yaml: 4.3.0
       parse-json: 5.2.0
     optionalDependencies:
       typescript: 5.9.3
@@ -11192,7 +11191,7 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  js-yaml@5.2.1:
+  js-yaml@4.3.0:
     dependencies:
       argparse: 2.0.1
 
@@ -12173,10 +12172,10 @@ snapshots:
 
   react@19.2.7: {}
 
-  read-yaml-file@3.0.0:
+  read-yaml-file@2.1.0:
     dependencies:
-      js-yaml: 5.2.1
-      strip-bom: 5.0.0
+      js-yaml: 4.3.0
+      strip-bom: 4.0.0
 
   readdirp@4.1.2: {}
 
@@ -12629,7 +12628,7 @@ snapshots:
     dependencies:
       ansi-regex: 6.2.2
 
-  strip-bom@5.0.0: {}
+  strip-bom@4.0.0: {}
 
   strip-indent@3.0.0:
     dependencies:
