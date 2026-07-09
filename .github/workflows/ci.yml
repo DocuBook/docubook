@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: step-security/setup-bun@v1
         if: matrix.task == 'build' || matrix.task == 'test'
 
       - uses: pnpm/action-setup@v4
