@@ -25,6 +25,7 @@ import {
 } from "./paths";
 import { buildThemeCss, getThemeConfig } from "./hydrate";
 import { resolveRoutes } from "./fs-scanner";
+import { normalizeImporterPath } from "./security";
 import type { DocuConfig, DocuRoute } from "./types";
 
 /** Extract Lucide icon names from user docu.json configuration. */
@@ -186,12 +187,14 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
               }
               // Files that do dynamic name lookups (namespace import)
               // need the full barrel — bypass the virtual module.
-              if (
-                args.importer &&
-                (args.importer.endsWith("/.docu/components/Lucide.tsx") ||
-                  args.importer.includes("/mdx-content/dist/"))
-              ) {
-                return { path: getLucideRealEntry(), namespace: "file" };
+              if (args.importer) {
+                const normalized = normalizeImporterPath(args.importer);
+                if (
+                  normalized.endsWith("/.docu/components/Lucide.tsx") ||
+                  normalized.includes("/mdx-content/dist/")
+                ) {
+                  return { path: getLucideRealEntry(), namespace: "file" };
+                }
               }
               return { path: args.path, namespace: "lucide-virt" };
             });

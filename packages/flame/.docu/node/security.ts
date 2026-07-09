@@ -80,6 +80,11 @@ export function isSlugSafe(slug: string, docsDir: string): boolean {
   }
 }
 
+/** Normalize an esbuild importer path to a canonical forward-slash absolute form. */
+export function normalizeImporterPath(importer: string): string {
+  return resolve(importer).replace(/\\/g, "/");
+}
+
 export function injectNonce(html: string, nonce: string): string {
   return html.replace(/<script\b(?![^>]*\bsrc\s*=)([^>]*)>/gi, (match) => {
     if (/nonce\s*=/i.test(match)) {
