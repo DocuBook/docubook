@@ -10,9 +10,7 @@ into flat `.html` files. A shared compilation pipeline (`@docubook/core`),
 portable UI components (`@docubook/mdx-content`), and runtime adapters
 (`@docubook/runt`) work together to produce pure static output. The **flame**
 framework is the recommended consumer, running on Bun, Node.js, or Deno — it
-deploys to Vercel or any static host. The Next.js and React Router starter
-templates are **deprecated** and no longer maintained (see the warning in
-[README.md](./README.md)).
+deploys to Vercel or any static host.
 
 **Scope boundaries:** content authoring and rendering only. No CMS, no user
 authentication, no database. Content is file-based (`.mdx`), configuration is
@@ -23,19 +21,20 @@ HTML + assets — no server needed in production.
 
 | Package | Path | Role |
 |---------|------|------|
-| `@docubook/core` | `packages/core` | MDX compilation pipeline — unified/remark/rehype plugins, frontmatter, TOC, code blocks, `createMdxContentService()` facade, git date integration. Pure TypeScript, no React dependency. |
-| `@docubook/mdx-content` | `packages/mdx-content` | Portable React MDX components (Accordion, Tabs, CodeBlock, Note, Card, FileTree, Stepper, and more) with framework adapters: `./next` (Next.js image + link), `./client`, `./server`. |
+| `@docubook/core` | `packages/core` | MDX compilation pipeline — unified/remark/rehype plugins, frontmatter, TOC, code blocks, `createMdxContentService()` facade, git date integration. Pure TypeScript, no React dependency. Depends on `@docubook/mdx-remote` for MDX compilation. |
+| `@docubook/mdx-content` | `packages/mdx-content` | Portable React MDX components (Accordion, Tabs, CodeBlock, Note, Card, FileTree, Stepper, Mermaid, Button, Kbd, Tooltip, Table, Release, Youtube, Link, Image) with three export entry points: default `./` (server-safe), `./client` (`"use client"` banner), `./server` (RSC). |
 | `@docubook/flame` | `packages/flame` | SSG framework — incremental build, plugin system, island hydration, dev server with HMR, search index. Builds the production docs site (docubook.pro). Runs on Bun (native path), Node.js, and Deno (via `@docubook/runt` + precompiled `.docu/lib`). |
 | `@docubook/runt` | `packages/runtime` | Runtime HTTP server adapters — `RuntimeAdapter` interface with `bunAdapter` (`Bun.serve`), `nodeAdapter` (streaming `http.createServer` bridge to Web `Request`/`Response`), and `denoAdapter` (`Deno.serve`). Zero dependencies. |
-| `@docubook/ui-react` | `packages/ui/react` | Reusable DaisyUI + Tailwind CSS React component library (Collapse, Modal, Dropdown, Drawer, Navbar, Pagination, and more). Consumed by flame. Note the path: `packages/ui/react`, not `packages/ui-react`. |
+| `@docubook/ui-react` | `packages/ui/react` | Reusable DaisyUI + Tailwind CSS React component library (Input, Modal, Dropdown, Drawer, Collapse, Toggle, ThemeController, Navbar, Breadcrumbs, Pagination, Kbd). Ships both ESM and CJS. Consumed by flame. Note the path: `packages/ui/react`, not `packages/ui-react`. |
 | `@docubook/themes-colors` | `packages/themes-colors` | Theme color presets (default, freshlime, coffee) — CSS variables per light/dark mode plus syntax highlighting tokens. Consumed by flame via `docu.json → theme.colors`. |
-| `@docubook/cli` | `packages/cli` | Node.js scaffolding CLI (Commander) — template selection, project init, package manager detection. Downloads templates from GitHub release artifacts. |
-
+| `@docubook/mdx-remote` | `packages/mdx-remote` | Runtime MDX compilation for island hydration — `serialize()` compiles MDX string to JS function body; `MDXRemote` renders it client-side; `compileMDX` / `MDXRemote` (RSC) for App Router via `./rsc` entry. Fork of `next-mdx-remote` (MPL-2.0). Pure TypeScript + React, zero server deps. |
 
 ### Monorepo Infrastructure
 
-- **pnpm workspaces** — strict dependency resolution; `react`/`react-dom` and
-  their types are force-pinned via `overrides` in root `pnpm-workspace.yaml`.
+- **pnpm workspaces** — strict dependency resolution; `react`, `react-dom`, their
+  types, and other shared deps (`esbuild`, `postcss`, `@sentry/bun`, etc.) are
+  force-pinned via `overrides` in root `pnpm-workspace.yaml`. Also declares
+  `allowBuilds` for native modules (`esbuild`, `sharp`, `bun`, etc.).
 - **Turborepo** — orchestrates `build`, `lint`, `typecheck`, `test` with
   content-hash caching.
 - **Changesets** — independent versioning per published package.
@@ -66,7 +65,7 @@ flowchart LR
 
 ### Build Pipeline
 
-`packages/flame/.docu/node/build.ts`:
+`packages/flame/.docu/node/build.impl.ts` (shared logic, invoked by runtime-specific entry points `build.ts` / `build.node.ts` / `build.deno.ts`):
 
 ```mermaid
 flowchart TD
@@ -109,14 +108,18 @@ themes to avoid emitting all ~35 built-in themes.
 The production docs site is built by flame and deployed to Vercel as static
 output. Root `vercel.json` is the source of truth: it sets `"framework": null`
 (forces the static preset), builds with `turbo build --filter=@docubook/flame...`,
-serves `packages/flame/.docu/dist` with `cleanUrls`, and injects security
-headers (CSP, HSTS, X-Frame-Options, and friends).
+installs with `pnpm install --filter=@docubook/flame...`, serves
+`packages/flame/.docu/dist` with `cleanUrls`, and injects security headers
+(CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy,
+Permissions-Policy). An `ignoreCommand` skips re-deploys for non-production
+Vercel environments.
 
-The CSP applied by the serving layer must include `script-src 'unsafe-eval'`:
-flame pages hydrate MDX islands via `@docubook/mdx-remote`, which evaluates compiled
-MDX at runtime. Static HTML itself carries per-page nonces but no CSP meta tag —
-CSP always comes from the serving layer (dev/preview server headers or
-`vercel.json` in production).
+The CSP applied by the serving layer includes both `'unsafe-inline'` and
+`'unsafe-eval'` in `script-src`: `'unsafe-eval'` is required by
+`@docubook/mdx-remote` island hydration; `'unsafe-inline'` covers the blocking
+theme-init script injected per page. Static HTML itself carries per-page nonces
+but no CSP meta tag — CSP always comes from the serving layer (dev/preview
+server headers or `vercel.json` in production).
 
 Hashed assets under `/assets/*` (bundles, chunks, CSS) are served with
 `Cache-Control: public, max-age=31536000, immutable` — `vercel.json` sets this
@@ -133,47 +136,51 @@ Condensed from the retired ADRs — these commitments are still in force:
    must use pnpm (pinned via `packageManager`).
 2. **Shared MDX pipeline as `@docubook/core`.** One plugin chain for every
    framework — bug fixes propagate via version bump; no per-framework drift.
+   `@docubook/core` depends on `@docubook/mdx-remote` for runtime MDX compilation.
 3. **`docu.json` as universal configuration.** Framework-agnostic JSON drives
    routes, navigation, theme, and search. Validated by
    `packages/flame/docu.schema.json` (a published artifact — editing it ships
    to npm and warrants a changeset).
-4. **DaisyUI for flame, Radix UI for the (deprecated) Next.js templates.**
-   DaisyUI is CSS-only — minimal JS for static output; Radix provides
-   accessible primitives where a full framework runtime exists.
-   `@docubook/mdx-content` stays framework-agnostic.
-5. **Island hydration in flame — mixed strategy.** `createRoot` for sidebar,
-   mobile bar, and MDX content (avoids hydration mismatches); `hydrateRoot` for
-   stable islands (TOC, theme toggle).
+4. **DaisyUI for flame UI components.** DaisyUI is CSS-only — minimal JS for
+   static output. `@docubook/mdx-content` stays framework-agnostic (no DaisyUI
+   dependency). `@docubook/ui-react` provides the base DaisyUI component
+   primitives consumed by flame's internal components.
+5. **Island hydration in flame — mixed strategy.** A single `mountIsland()`
+   helper decides per-island: `hydrateRoot` when the container already has
+   server-rendered children (TOC, theme toggle); `createRoot` (force mode) for
+   sidebar, mobile bar, and MDX content where SSR output is discarded to avoid
+   hydration mismatches.
 6. **Theme persistence per rendering mode.** Flame sets a `dark` class on
    `documentElement` via a blocking inline script reading `localStorage`
-   (prevents FOUC); Next.js templates use `next-themes`. Theme-reactive
-   components must observe the class, not `matchMedia`.
+   (prevents FOUC). Theme-reactive components must observe the class, not
+   `matchMedia`.
 7. **Incremental builds with content hashing.** SHA-256 per-file hashes in
    `build-cache.json` skip unchanged pages; asset hash changes trigger a full
    rebuild; `--force`/`--clean` for manual rebuilds.
-8. **Dual Tailwind pipeline.** Flame uses `@tailwindcss/cli` (Bun has no
-   PostCSS); Next.js templates use `@tailwindcss/postcss`. Both produce
-   identical CSS.
+8. **Single Tailwind pipeline via `@tailwindcss/cli`.** Flame invokes
+   `@tailwindcss/cli` directly (Bun has no PostCSS runtime); the Node/Deno path
+   does the same through `hydrate.node.ts`. `postcss` is not a direct dependency
+   of any active package — it appears only as a security-patched transitive dep
+   in `pnpm-workspace.yaml` overrides.
 9. **Flame plugin system — hook-based, zero-config.** `DocuBookPlugin`
-   interface (`name` + `setup(build)`) with 10 hooks: `onStart`, `onLoad`,
-   `transformFrontmatter`, `remarkPlugins`, `rehypePlugins`, `injectHead`,
-   `injectBody`, `transformHtml`, `onEnd`, `handleRequest` (dev server, first
-   `Response` wins). Sequential execution in registration order; no plugins
-   means no behavior change. Implementation:
+   interface (`name` + `setup(build)`) with 10 hooks: `onStart`, `onEnd`,
+   `onLoad`, `transformFrontmatter`, `transformHtml`, `injectHead`,
+   `injectBody`, `remarkPlugins`, `rehypePlugins`, `handleRequest` (dev server,
+   first `Response` wins). Sequential execution in registration order; no
+   plugins means no behavior change. Implementation:
    `packages/flame/.docu/node/plugin.ts`.
 10. **Multi-runtime via duplication at the entry layer, not abstraction of Bun
     code.** The Bun entry files (`server.ts`, `build.ts`, `preview.ts`,
-    `html.ts`, `hydrate.ts`, `utils.ts`, `deploy.ts`) are frozen for backward
-    compatibility. Node/Deno get parallel entries (`*.node.ts` / `*.deno.ts`
-    over shared `*.impl.ts`) that swap only the Bun-coupled leaves:
-    `html.shared.ts` (pure `escapeHtml`), `git.ts` (`child_process`),
+    `deploy.ts`) delegate to shared `*.impl.ts` files. Node/Deno get parallel
+    entries (`*.node.ts` / `*.deno.ts`) that swap only the Bun-coupled leaves:
+    `html.shared.ts` (full HTML shell using pure `escapeHtml()` instead of `Bun.escapeHTML()`), `git.ts` (`child_process`),
     `hydrate.node.ts` (esbuild client bundling). Non-protected shared modules
-    (`server-routes.ts`, `mdx.ts`) were neutralized in place with `node:` APIs,
-    which Bun runs natively. HTTP serving goes through `@docubook/runt`
-    adapters. Because Node cannot import `.tsx` and Deno does not execute
-    TypeScript inside npm packages, `bin/compile-lib.mjs` bundles the
-    Node/Deno entries to plain ESM in `.docu/lib/` at publish time; the CLI
-    (`bin/cli.js`) detects the runtime (`FLAME_RUNTIME` override → `Bun`
+    (`server-routes.ts`, `mdx.ts`) use `node:` APIs, which Bun runs natively.
+    HTTP serving goes through `@docubook/runt` adapters. Because Node cannot
+    import `.tsx` and Deno does not execute TypeScript inside npm packages,
+    `bin/compile-lib.mjs` bundles the Node/Deno entries to plain ESM in
+    `.docu/lib/` at publish time; the CLI (`bin/cli.js`) detects the runtime
+    (`FLAME_RUNTIME` env override → `process.execPath` deno check → `Bun`
     global → `Deno` global → node) and routes Bun to `.docu/node/*.ts`,
     others to `.docu/lib/*.js`.
 
@@ -183,7 +190,8 @@ Condensed from the retired ADRs — these commitments are still in force:
 - Core tests: pure MDX compilation. mdx-content: component rendering with
   `@testing-library/react`. Flame: build pipeline, server, plugin system
   (suites in `packages/flame/.docu/__tests__/`). CLI: prompts and template
-  download.
+  download. `@docubook/ui-react`: component rendering with
+  `@testing-library/react`.
 - Flame suites import `@docubook/core` — build it first:
   `npx turbo run build --filter=@docubook/core`.
 
@@ -192,6 +200,6 @@ Condensed from the retired ADRs — these commitments are still in force:
 | Limitation | Impact | Mitigation |
 |-----------|--------|------------|
 | No dynamic content — MDX files only, no database/CMS | No user-generated content or real-time updates | Acceptable for documentation |
-| Bun-only code paths duplicated for Node/Deno (entry layer) | Fixes to protected Bun entries may need mirroring in `*.impl.ts` counterparts | Duplication is confined to thin entries + three leaf modules; shared logic lives in neutral modules |
-| `unsafe-eval` in serving CSP | Weakens CSP against XSS | Required by `@docubook/mdx-remote` island hydration; all other CSP directives stay strict |
+| Bun-only code paths duplicated for Node/Deno (entry layer) | Fixes to Bun entries may need mirroring in `*.impl.ts` counterparts | Duplication is confined to thin entries + three leaf modules; shared logic lives in neutral modules |
+| `unsafe-inline` + `unsafe-eval` in serving CSP | Weakens CSP against XSS | `unsafe-eval` required by `@docubook/mdx-remote` island hydration; `unsafe-inline` required by blocking theme-init script; all other CSP directives stay strict |
 | Single `docu.json` config — no dynamic route generation | Routes cannot come from external APIs | Covers documentation use cases |
