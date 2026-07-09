@@ -1,6 +1,6 @@
 {
   "name": "@docubook/themes-colors",
-  "version": "0.10.3",
+  "version": "1.0.0",
   "description": "Theme color presets and color utilities for DocuBook — hex-to-HSL, CSS variable generation, and 3 built-in themes (Default/Blue, Fresh Lime, Coffee).",
   "type": "module",
   "main": "./dist/index.js",
