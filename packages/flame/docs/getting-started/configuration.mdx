@@ -1,0 +1,249 @@
+---
+title: Configuration
+description: Complete reference for docu.json — the site configuration file for DocuBook Flame.
+---
+
+Flame reads project configuration from `docu.json` at the project root. This file controls site metadata, navigation, theming, plugins, and more.
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/DocuBook/docubook/main/packages/flame/docu.schema.json",
+  "meta": {
+    "title": "My Docs",
+    "description": "Documentation powered by DocuBook Flame",
+    "baseURL": "https://example.com"
+  },
+  "navbar": {
+    "logoText": "My Docs",
+    "menu": [
+      { "title": "Home", "href": "/" },
+      { "title": "Docs", "href": "/docs" }
+    ]
+  },
+  "themes": {
+    "colors": "default"
+  }
+}
+```
+
+## Root Fields
+
+|   Field   |  Type  | Required |              Description               |
+| --------- | ------ | -------- | -------------------------------------- |
+| `$schema` | string | No       | JSON Schema URL for IDE autocompletion |
+| `meta`    | object | **Yes**  | Site metadata                          |
+| `navbar`  | object | **Yes**  | Navigation bar configuration           |
+| `footer`  | object | No       | Footer configuration                   |
+| `home`    | object | No       | Landing page hero and features         |
+| `repo`    | object | No       | Repository link for edit-on-GitHub     |
+| `sidebar` | object | No       | Sidebar behavior options               |
+| `routes`  | array  | No       | Manual route table overrides           |
+| `themes`  | object | No       | Theme color configuration              |
+| `plugins` | array  | No       | Plugin list                            |
+
+## meta
+
+Site-wide metadata used for page `<title>`, `<meta name="description">`, Open Graph tags, and the RSS feed URL.
+
+```json
+{
+  "meta": {
+    "title": "My Docs",
+    "description": "Documentation powered by DocuBook Flame",
+    "baseURL": "https://example.com",
+    "favicon": "/docs/assets/images/favicon.ico"
+  }
+}
+```
+
+|     Field     |  Type  | Required |                         Description                          |
+| ------------- | ------ | -------- | ------------------------------------------------------------ |
+| `title`       | string | **Yes**  | Site title, used as `<title>` suffix                         |
+| `description` | string | No       | Site description for SEO                                     |
+| `baseURL`     | string | No       | Canonical URL for sitemaps and RSS                           |
+| `favicon`     | string | No       | Path to favicon (default: `/docs/assets/images/favicon.ico`) |
+
+## navbar
+
+Controls the top navigation bar.
+
+```json
+{
+  "navbar": {
+    "logoText": "My Docs",
+    "logo": {
+      "src": "/docs/assets/images/logo.svg",
+      "alt": "My Docs"
+    },
+    "menu": [
+      { "title": "Home", "href": "/" },
+      { "title": "Docs", "href": "/docs" }
+    ]
+  }
+}
+```
+
+|   Field    |  Type  | Required |                        Description                        |
+| ---------- | ------ | -------- | --------------------------------------------------------- |
+| `logoText` | string | **Yes**  | Text displayed next to the logo                           |
+| `logo`     | object | No       | Logo image (`src` + `alt`). Replaces `logoText` when set. |
+| `menu`     | array  | No       | Top navigation links. Each item has `title` and `href`.   |
+
+## footer
+
+Social links displayed in the site footer.
+
+```json
+{
+  "footer": {
+    "social": [
+      { "name": "github", "url": "https://github.com/DocuBook/docubook" },
+      { "name": "npm", "url": "https://www.npmjs.com/package/@docubook/flame" }
+    ]
+  }
+}
+```
+
+Supported social platform names: `github`, `gitlab`, `bitbucket`, `npm`, `youtube`, `twitter`, `x`, `instagram`, `linkedin`, `facebook`, `telegram`, `discord`, `threads`, `mastodon`.
+
+## repo
+
+Enables the **Edit on GitHub** link on documentation pages.
+
+```json
+{
+  "repo": {
+    "url": "https://github.com/DocuBook/docubook",
+    "path": "packages/flame/docs",
+    "edit": true
+  }
+}
+```
+
+| Field  |  Type   | Required |        Description         |
+| ------ | ------- | -------- | -------------------------- |
+| `url`  | string  | **Yes**  | Repository URL             |
+| `path` | string  | **Yes**  | Path prefix for edit links |
+| `edit` | boolean | **Yes**  | Show edit button on pages  |
+
+## home
+
+Customise the landing page hero section and feature cards.
+
+```json
+{
+  "home": {
+    "hero": {
+      "tagline": "Modern Documentation",
+      "headline": "Write docs in MDX",
+      "description": "A blazing-fast React + MDX framework.",
+      "actions": [
+        { "text": "Get Started", "link": "/docs", "theme": "primary" },
+        { "text": "GitHub", "link": "https://github.com", "theme": "secondary" }
+      ]
+    },
+    "features": [
+      {
+        "icon": "Zap",
+        "title": "Fast by default",
+        "description": "Built on Bun with instant startup."
+      }
+    ]
+  }
+}
+```
+
+### Hero
+
+| Field        | Type   | Description |
+| ------------ | ------ | ----------- |
+| `tagline`    | string | Small text above headline |
+| `headline`   | string | Main heading |
+| `description` | string | Subtitle text |
+| `actions`    | array  | Call-to-action buttons. Each has `text`, `link`, optional `theme` (`primary`/`secondary`/`ghost`), and optional `icon`. |
+
+### Feature
+
+| Field        | Type   | Description |
+| ------------ | ------ | ----------- |
+| `icon`       | string | Lucide icon name |
+| `title`      | string | Feature title |
+| `description` | string | Feature description |
+| `link`       | string | Optional link target |
+
+## sidebar
+
+Controls how context sections appear in the sidebar.
+
+```json
+{
+  "sidebar": {
+    "context": "separator"
+  }
+}
+```
+
+| Field    | Type   | Default | Description |
+| -------- | ------ | ------- | ----------- |
+| `context` | string | `"dropdown"` | How multi-context is displayed. `"dropdown"` — context switcher dropdown. `"separator"` — inline group headers in sidebar. |
+
+## routes
+
+Routes define the sidebar navigation tree. When omitted, Flame auto-generates routes from the filesystem (`docs/` folder).
+
+```json
+{
+  "routes": [
+    {
+      "title": "Getting Started",
+      "href": "/docs/getting-started",
+      "context": { "title": "Guide", "icon": "BookOpen" },
+      "items": [
+        { "title": "Introduction", "href": "/docs/getting-started/introduction" },
+        { "title": "Installation", "href": "/docs/getting-started/installation" }
+      ]
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `title` | string | Section or page title |
+| `href` | string | URL path |
+| `noLink` | boolean | If true, the item is a group header (not clickable) |
+| `items` | array | Nested child routes |
+| `context` | object | Context metadata: `title`, `icon` (Lucide name), `description` |
+
+## themes
+
+Controls the color system. See [Theme Colors](/docs/getting-started/themes) for full documentation.
+
+```json
+{
+  "themes": {
+    "colors": "default"
+  }
+}
+```
+
+| Field    | Type | Description |
+| -------- | ---- | ----------- |
+| `colors` | string or object | Preset name (`"default"`, `"freshlime"`, `"coffee"`) or custom `{ "primary": "#FF5733" }` |
+
+Override via CLI: `flame dev --theme freshlime`, `flame build --theme coffee`.
+
+## plugins
+
+Extend Flame with build and dev server hooks. See [Plugins](/docs/getting-started/plugins) for the full API.
+
+```json
+{
+  "plugins": [
+    "@docubook/plugin-sitemap",
+    ["./plugins/analytics", { "id": "G-XXXXXXX" }]
+  ]
+}
+```
+
+Each entry is a plugin name (npm package or relative path) optionally followed by an options object. Relative paths starting with `.` resolve from the project root; absolute paths and `..` traversal are blocked.

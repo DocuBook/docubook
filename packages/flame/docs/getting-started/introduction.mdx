@@ -1,11 +1,11 @@
 ---
 title: Introduction
-description: Overview of @docubook/flame — a Bun-native React + MDX documentation framework.
+description: Overview of @docubook/flame — a runtime-agnostic React + MDX documentation framework.
 ---
 
 ## Why Flame Exists
 
-Building documentation sites often means wrestling with heavyweight frameworks, slow tooling, and complex configuration. Flame takes a different approach: **minimal, Bun-native, and React-first**. It is designed to let you focus on writing content while providing a fast, developer-friendly foundation.
+Building documentation sites often means wrestling with heavyweight frameworks, slow tooling, and complex configuration. Flame takes a different approach: **minimal, runtime-agnostic, and React-first**. It is designed to let you focus on writing content while providing a fast, developer-friendly foundation — whether you use Bun, Node.js, or Deno.
 
 <Note title="Contribute">
   Want to contribute? Visit our [GitHub repository](https://github.com/DocuBook/docubook).
@@ -14,7 +14,7 @@ Building documentation sites often means wrestling with heavyweight frameworks, 
 
 ## Overview
 
-Flame is a lightweight runtime for building documentation websites using React, MDX, and filesystem-based routing — all running on Bun.
+Flame is a lightweight runtime for building documentation websites using React, MDX, and filesystem-based routing. The toolchain runs on Bun, Node.js, or Deno — the final output is pure static HTML.
 
 - **React-first** — JSX/TSX, hooks, component composition
 - **MDX content** — write Markdown with embedded React components
@@ -26,22 +26,48 @@ Flame is a lightweight runtime for building documentation websites using React, 
 - **Built-in search** — full-text search index generated at build time
 - **Plugin system** — extend the build pipeline and dev server with hooks
 - **Config-driven themes** — switch presets or use custom colors via `docu.json`
+- **Runtime-agnostic** — the same CLI, the same output, on Bun, Node.js, or Deno
 
 ## Technology Stack
 
-- **Bun** — runtime, bundler, file watcher
+- **Runtime** — Bun, Node.js >= 20.11, or Deno >= 2.x (auto-detected)
 - **React 19 + React DOM** — rendering (SSR + client hydration)
 - **@docubook/core** — MDX compilation, rehype/remark plugins
+- **@docubook/runt** — runtime adapters (Bun.serve, Node HTTP, Deno HTTP)
 - **@docubook/ui-react** — reusable UI components (sidebar, TOC, navbar)
 - **@docubook/themes-colors** — config-driven color system
 - **Tailwind CSS v4 + daisyUI v5** — styling
 - **Lucide React** — icons
 
+## Architecture
+
+The runtime is only needed for the build toolchain and local dev server:
+
+```mermaid
+graph TD
+    MDX["MDX (.mdx)"]
+    CORE["@docubook/core<br/><small>compile pipeline</small>"]
+    FLAME["@docubook/flame<br/><small>SSR + hydration + plugins</small>"]
+    BUN["Bun<br/><small>Bun.serve + native TS</small>"]
+    NODE["Node.js<br/><small>Node HTTP + esbuild</small>"]
+    DENO["Deno<br/><small>Deno HTTP + esbuild</small>"]
+    STATIC["Static HTML<br/><small>deploy to any CDN or static host</small>"]
+
+    MDX --> CORE
+    CORE --> FLAME
+    FLAME --> BUN
+    FLAME --> NODE
+    FLAME --> DENO
+    BUN --> STATIC
+    NODE --> STATIC
+    DENO --> STATIC
+```
+
 ## Build vs Dev Server
 
 |              | Dev Server                          | Static Build                       |
 | ------------ | ----------------------------------- | ---------------------------------- |
-| Command      | `bun run dev`                       | `bun run build`                    |
+| Command      | `flame dev`                         | `flame build`                      |
 | Output       | Dynamic SSR with HMR                | Static HTML files in `.docu/dist/` |
 | Use case     | Writing and previewing content      | Deployment to production           |
 | Features     | Hot reload, plugin API, search      | Pre-rendered pages, search index   |

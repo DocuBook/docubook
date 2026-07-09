@@ -6,7 +6,7 @@ description: Get up and running with @docubook/flame in minutes.
 Welcome to **@docubook/flame**! This guide walks you through creating your first documentation site.
 
 <Card title="Prerequisites & Setup" icon="Terminal" href="/docs/getting-started/installation">
-  Follow the installation guide to install Bun, scaffold with `flame init`,
+  Follow the installation guide to install Flame, scaffold with `flame init`,
   and start the dev server before continuing.
 </Card>
 
@@ -24,6 +24,8 @@ my-docs/
 ├── package.json            # Dependencies
 └── .gitignore
 ```
+
+On Deno, an additional `deno.json` is generated with `nodeModulesDir: "auto"`.
 
 ## Add Content
 
@@ -64,10 +66,38 @@ Edit `docu.json` to set your site title, navigation menu, and theme:
 }
 ```
 
+See the [Configuration reference](/docs/getting-started/configuration) for all available options.
+
 ## Build & Deploy
+
+<Tabs className="pt-5 pb-1">
+<Tab title="Bun">
 
 ```shell:bun
 bun run build      # Static build to .docu/dist/
 bun run preview    # Preview the built output
 bun run deploy     # Build + prepare for GitHub Pages
 ```
+
+</Tab>
+<Tab title="Node.js">
+
+```shell:bash
+npm run build      # Static build to .docu/dist/
+npm run preview    # Preview the built output
+npm run deploy     # Build + prepare for GitHub Pages
+```
+
+</Tab>
+<Tab title="Deno">
+
+```shell:bash
+deno task build    # Static build to .docu/dist/
+deno task preview  # Preview the built output
+deno task deploy   # Build + prepare for GitHub Pages
+```
+
+</Tab>
+</Tabs>
+
+The output is a fully static site in `.docu/dist/` — no server runtime required. Deploy to any CDN or static host.

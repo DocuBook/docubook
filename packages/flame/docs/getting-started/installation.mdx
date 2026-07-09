@@ -1,38 +1,60 @@
 ---
 title: Installation
-description: Install @docubook/flame and scaffold your first documentation site.
+description: Install @docubook/flame and scaffold your first documentation site on Bun, Node.js, or Deno.
 ---
 
-DocuBook Flame requires [Bun](https://bun.sh/) **>= 1.1.0**. It is a Bun-native framework and does not support Node.js.
+DocuBook Flame runs on **Bun >= 1.1.0**, **Node.js >= 20.11**, or **Deno >= 2.x**. The toolchain and CLI work identically across all three — pick the runtime you already use.
 
 ## Quick Setup
 
-<Steps>
-  <Step title="Install dependency">
-    ```shell:bun
-    mkdir my-docs && cd my-docs
-    bun add @docubook/flame
-    ```
-  </Step>
-  <Step title="Scaffold project structure">
-    Creates `docs/`, `docu.json`, `package.json`.
+<Tabs className="pt-5 pb-1">
+<Tab title="Bun">
 
-    ```shell:bun
-    bunx flame init
-    ```
-  </Step>
-  <Step title="Start dev server">
-    Open [http://localhost:3000](http://localhost:3000) in your browser.
+```shell:bun
+mkdir my-docs && cd my-docs
+bun add @docubook/flame
+bunx flame init
+bun run dev
+```
 
-    ```shell:bun
-    bun run dev
-    ```
-  </Step>
-</Steps>
+</Tab>
+<Tab title="Node.js">
+
+```shell:bash
+mkdir my-docs && cd my-docs
+npm add @docubook/flame
+npx flame init
+npm run dev
+```
+
+</Tab>
+<Tab title="Deno">
+
+```shell:bash
+mkdir my-docs && cd my-docs
+deno add npm:@docubook/flame
+deno run -A npm:@docubook/flame init
+deno task dev
+```
+
+<Note type="note" title="First run">
+  Deno may show a freshness/cache warning on first run. If you see one, set `DENO_ALLOW_NEWER=true deno task dev` to bypass it.
+</Note>
+
+</Tab>
+</Tabs>
+
+<Note type="info" title="First run (Node.js / Deno only)">
+  `flame init` only scaffolds files — `compile-lib.mjs` runs **lazily** on first `flame dev` or `flame build`, not during init.
+  This step precompiles TypeScript sources to `.docu/lib/` so Node.js and Deno can execute them.
+  In a published npm package `.docu/lib` is already included, so the lazy compile never runs.
+</Note>
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## CLI Reference
 
-```shell:bash
+```shell
 flame dev        # Start development server with HMR
 flame build      # Build for production
 flame preview    # Preview production build
@@ -40,6 +62,13 @@ flame deploy     # Build + prepare for GitHub Pages
 flame init       # Scaffold a new project
 flame clean      # Clean build artifacts
 flame --help     # Show all commands
+```
+
+The CLI auto-detects your runtime and dispatches to the correct server implementation automatically — `flame dev` uses Bun.serve on Bun, Node HTTP on Node.js, and Deno HTTP on Deno. Override detection with the `FLAME_RUNTIME` environment variable:
+
+```shell
+FLAME_RUNTIME=node flame dev    # Force Node runtime
+FLAME_RUNTIME=deno flame dev    # Force Deno runtime
 ```
 
 Scaffolded projects have these scripts in `package.json`:
@@ -55,11 +84,48 @@ Scaffolded projects have these scripts in `package.json`:
 }
 ```
 
+When scaffolding on Deno, `flame init` also generates a `deno.json` with `nodeModulesDir: "auto"` and sets the scripts to use the `npm:` specifier.
+
 ## Global Installation
+
+<Tabs className="pt-5 pb-1">
+<Tab title="Bun">
 
 ```shell:bun
 bun add -g @docubook/flame
+```
+
+</Tab>
+<Tab title="Node.js">
+
+```shell:bash
+npm add -g @docubook/flame
+```
+
+</Tab>
+<Tab title="Deno">
+
+Deno does not support global npm packages. Use `deno run -A npm:@docubook/flame <command>` or add a task in `deno.json`.
+
+</Tab>
+</Tabs>
+
+After global install, run:
+
+```shell
 flame init
 flame dev
 ```
 
+## Runtime Notes
+
+| Area               | Bun                        | Node.js                          | Deno                              |
+| ------------------ | -------------------------- | -------------------------------- | --------------------------------- |
+| **TypeScript**     | Runs `.ts` directly        | Needs precompiled `.docu/lib`    | Needs precompiled `.docu/lib`     |
+| **First run**      | Instant (native TS)        | `compile-lib.mjs` on first `dev`/`build` | `compile-lib.mjs` on first `dev`/`build` |
+| **Dev server**     | Bun.serve                  | Node HTTP + @docubook/runt      | Deno HTTP + @docubook/runt        |
+| **Build**          | Bun-native bundler         | esbuild (via hydrate.node)      | esbuild (via hydrate.node)        |
+| **Spawn model**    | Direct script execution    | In-process `build.impl`         | In-process `build.impl`           |
+| **Env override**   | `FLAME_RUNTIME=bun`        | `FLAME_RUNTIME=node`            | `FLAME_RUNTIME=deno`              |
+
+The precompiled `.docu/lib` directory is gitignored in monorepo clones and generated automatically on first `flame dev` or `flame build` for non-Bun runtimes.

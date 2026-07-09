@@ -1,7 +1,7 @@
 {
   "$schema": "https://cdn.jsdelivr.net/npm/@docubook/flame/docu.schema.json",
   "meta": {
-    "title": "DocuBook Flame",
+    "title": "Flame - Docs Framework",
     "description": "A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.",
     "baseURL": "https://docubook.pro",
     "favicon": "/docs/assets/images/favicon.ico"
@@ -14,9 +14,9 @@
   },
   "home": {
     "hero": {
-      "tagline": "#DocuBook",
-      "headline": "Flame",
-      "description": "A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.",
+      "tagline": "Runtime-agnostic · React + MDX",
+      "headline": "Fast as Flame 🔥",
+      "description": "A documentation framework that runs on Bun, Node.js, and Deno. Powered by Bun's blazing-fast toolchain — static docs with React + MDX, deploy anywhere.",
       "actions": [
         {
           "text": "Get Started",
@@ -124,6 +124,14 @@
         {
           "title": "Quick Start Guide",
           "href": "/quick-start-guide"
+        },
+        {
+          "title": "Configuration",
+          "href": "/configuration"
+        },
+        {
+          "title": "Runtime Comparison",
+          "href": "/runtime-comparison"
         },
         {
           "title": "Format text",
