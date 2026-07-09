@@ -68,7 +68,8 @@ import {
     TooltipMdx,
     YoutubeMdx,
 } from "@docubook/mdx-content";
-import { ImageMdx, LinkMdx, ButtonMdx, CardMdx } from "@docubook/mdx-content/next";
+// Note: the Next.js adapter (`@docubook/mdx-content/next`) has been removed.
+// Use the base components from `@docubook/mdx-content` instead.
 import { customMdxComponents } from "@/lib/mdx";
 
 const builtInOverrides: MdxComponentMap = {
@@ -110,7 +111,7 @@ export const mdxComponents = createMdxComponents({
 });
 ```
 
-> For Next.js projects, import `Link`, `Button`, `Card`, and `Image` from `@docubook/mdx-content/next` to use Next.js-optimized versions (`next/link`, `next/image`).
+> The Next.js adapter (`@docubook/mdx-content/next`) has been removed. Use the base components from `@docubook/mdx-content`.
 
 ### 3. Use the components map when rendering MDX
 
@@ -135,7 +136,7 @@ const docsService = createMdxContentService({
 | `@docubook/mdx-content`        | All server-safe components + `createMdxComponents` registry    |
 | `@docubook/mdx-content/client` | Client-only components (accordion, tabs, tooltip, mermaid, etc.)        |
 | `@docubook/mdx-content/server` | Server-side components                                         |
-| `@docubook/mdx-content/next`   | Next.js-optimized adapters (`Link`, `Button`, `Card`, `Image`) |
+| ~~`@docubook/mdx-content/next`~~ | Removed — Next.js adapter was deleted. Use base components. |
 | `@docubook/mdx-content/styles.css` | Stylesheet for MDX components (required)                   |
 
 > **Important:** You must import the stylesheet in your app's root layout or global CSS entry point:

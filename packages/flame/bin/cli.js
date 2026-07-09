@@ -9,9 +9,13 @@ import { spawnSync } from "node:child_process";
 const __dirname = import.meta.dirname;
 
 // Runtime detection — override with FLAME_RUNTIME=bun|node|deno for testing.
+// Deno's npm compat layer may expose `Bun` via globals, check execPath first.
 const runtime =
   process.env.FLAME_RUNTIME ||
-  (typeof Bun !== "undefined" ? "bun" : typeof Deno !== "undefined" ? "deno" : "node");
+  (process.execPath.includes("deno") ? "deno" :
+   typeof Bun !== "undefined" ? "bun" :
+   typeof Deno !== "undefined" ? "deno" :
+   "node");
 
 const COMMAND_MAP = {
   bun: {

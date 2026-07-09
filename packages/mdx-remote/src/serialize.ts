@@ -18,13 +18,16 @@ export type SerializeOptions = {
   mdxOptions?: {
     remarkPlugins?: RemarkPlugins;
     rehypePlugins?: RehypePlugins;
-    useDynamicImport?: boolean;
   };
   parseFrontmatter?: boolean;
-  /** @default true */
+  /**
+   * Strip JavaScript expressions from MDX (default: true).
+   * When true, removes all `{expression}` and JSX attribute expression nodes
+   * before compilation. When false, expressions are preserved but a
+   * security sanitizer audits the AST for dangerous patterns.
+   * @default true
+   */
   blockJS?: boolean;
-  /** @default true */
-  blockDangerousJS?: boolean;
 };
 
 export type SerializeResult = {
@@ -37,14 +40,13 @@ function getCompileOptions(
   mdxOptions: SerializeOptions["mdxOptions"] = {},
   rsc = false,
   blockJS = true,
-  blockDangerousJS = true,
 ) {
-  const areImportsEnabled = mdxOptions?.useDynamicImport ?? false;
   const remarkPlugins = [
     ...(mdxOptions?.remarkPlugins ?? []),
-    ...(areImportsEnabled ? [] : [removeImportsExportsPlugin]),
+    removeImportsExportsPlugin,
     ...(blockJS ? [removeJavaScriptExpressions] : []),
-    ...(!blockJS && blockDangerousJS ? [CreateRemoveDangerousCallsPlugin()] : []),
+    // Defense-in-depth: audit remaining AST for dangerous patterns.
+    CreateRemoveDangerousCallsPlugin(),
   ];
 
   return {
@@ -67,7 +69,6 @@ export async function serialize(
     mdxOptions = {},
     parseFrontmatter = false,
     blockJS = true,
-    blockDangerousJS = true,
   }: SerializeOptions = {},
   rsc = false,
 ): Promise<SerializeResult> {
@@ -80,7 +81,7 @@ export async function serialize(
   let compiledSource: string;
   try {
     compiledSource = String(
-      await compile(vfile, getCompileOptions(mdxOptions, rsc, blockJS, blockDangerousJS)),
+      await compile(vfile, getCompileOptions(mdxOptions, rsc, blockJS)),
     );
   } catch (error: any) {
     throw createFormattedMDXError(error, String(vfile));

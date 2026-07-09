@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import * as jsxRuntime from "react/jsx-runtime";
+import * as jsxDevRuntime from "react/jsx-dev-runtime";
 import * as mdx from "@mdx-js/react";
 import type { MDXRemoteSerializeResult, CompileMDXOptions } from "./types.js";
 
@@ -38,9 +39,11 @@ export function MDXRemote({
 
   const Content = useMemo(() => {
     // Non-RSC mode: compiled MDX expects `useMDXComponents` (
-    // from @mdx-js/react) AND the JSX runtime (jsx, jsxs, Fragment).
+    // from @mdx-js/react) AND the JSX runtime.
+    // In React 19, jsx/jsxs and jsxDEV live in separate modules,
+    // so merge both to handle compiled output from any mode.
     const fullScope = {
-      opts: { ...mdx, ...jsxRuntime },
+      opts: { ...mdx, ...jsxRuntime, ...jsxDevRuntime },
       frontmatter,
       ...scope,
     };
