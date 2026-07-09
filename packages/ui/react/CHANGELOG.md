@@ -1,5 +1,11 @@
 # @docubook/ui-react
 
+## 1.0.0
+
+### Major Changes
+
+- Mark `@docubook/ui-react` as stable. The component API (Collapse, Modal, Dropdown, Drawer, Input, Kbd, Navbar, Pagination, Toggle, ThemeController, Breadcrumbs) is feature-complete and production-ready. This is an API-stability signal, not a behavioral change — no breaking changes relative to `0.1.4`.
+
 ## 0.1.4
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 # @docubook/themes-colors
 
-## 0.10.3
+## 1.0.0
 
 ### Patch Changes
 
