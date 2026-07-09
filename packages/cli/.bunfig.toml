@@ -1,7 +1,0 @@
-[install]
-# Use npm registry for bun package manager
-registry = "https://registry.npmjs.org/"
-
-[publish]
-# Publish to npm registry from bun
-registry = "https://registry.npmjs.org/"
