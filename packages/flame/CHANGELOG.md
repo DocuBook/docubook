@@ -1,5 +1,63 @@
 # @docubook/flame
 
+## 1.5.0
+
+### Minor Changes
+
+- [#276](https://github.com/DocuBook/docubook/pull/276) [`5289e7d`](https://github.com/DocuBook/docubook/commit/5289e7d1b41359bf5405043df9cf1129631c4e20) Thanks [@pullfrog](https://github.com/apps/pullfrog)! - Multi-runtime support: flame now runs on Node.js (>=20.11) and Deno in addition to Bun.
+
+  - New `@docubook/runt` package: `RuntimeAdapter` interface with `bunAdapter`, `nodeAdapter` (streaming `http.createServer` bridge), and `denoAdapter`.
+  - flame CLI detects the runtime (`FLAME_RUNTIME` override supported) and routes `dev`/`build`/`preview`/`deploy` to Bun-native or runtime-neutral entries; existing Bun code paths are unchanged.
+  - Runtime-neutral modules: pure `escapeHtml` + shared HTML shell, `child_process`-based git helpers, esbuild client bundling, and `.docu/lib` precompiled JS generated at publish for Node/Deno execution.
+  - `@docubook/core`, `@docubook/mdx-content`, `@docubook/themes-colors`: dists are now bundled with tsup, producing self-contained Node-ESM-compatible output.
+
+### Patch Changes
+
+- [#290](https://github.com/DocuBook/docubook/pull/290) [`401b8e5`](https://github.com/DocuBook/docubook/commit/401b8e5d00245cc3e83814216ea044001e17008d) Thanks [@pullfrog](https://github.com/apps/pullfrog)! - Print a build output summary after a successful `flame build`: lists generated `dist` files with sizes, groups them by extension, and reports the total file count and distribution size. The format is color-free and identical under the Node and Deno runtime-smoke jobs, giving CI logs visibility into produced artifacts.
+
+- [#280](https://github.com/DocuBook/docubook/pull/280) [`6e5ab13`](https://github.com/DocuBook/docubook/commit/6e5ab1363ee27c72fe25ce201525172ac52765fd) Thanks [@pullfrog](https://github.com/apps/pullfrog)! - Lazily compile `.docu/lib/` from `bin/cli.js` when it is missing on Node/Deno, so `FLAME_RUNTIME=node flame dev` works in a fresh monorepo clone without running `compile-lib` manually. `compile-lib.mjs` now stops the esbuild service so it also exits cleanly under Deno.
+
+- [#288](https://github.com/DocuBook/docubook/pull/288) [`5c3bcef`](https://github.com/DocuBook/docubook/commit/5c3bcef195a42bc01558d6112e3d0fb30e930a75) Thanks [@pullfrog](https://github.com/apps/pullfrog)! - Normalize esbuild importer paths before the lucide-react bypass whitelist check to prevent path-form bypass attempts.
+
+  `hydrate.node.ts` matched `args.importer` against string suffixes
+  (`/.docu/components/Lucide.tsx`, `/mdx-content/dist/`) without normalizing
+  first. Unnormalized path forms esbuild might surface (Windows backslashes,
+  `..`/`.` segments, redundant separators) could slip past or fail to match the
+  allowlist. Add a `normalizeImporterPath()` helper (`resolve()` + backslash to
+  forward-slash) in `security.ts` and apply it to `args.importer` before the
+  whitelist check.
+
+- [#286](https://github.com/DocuBook/docubook/pull/286) [`0822f3e`](https://github.com/DocuBook/docubook/commit/0822f3e8e49517b6a9f9627061ffd8115b7a422c) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Reduce client bundle size for Node/Deno runtimes by tree-shaking lucide-react imports.
+
+  Bun's `optimizeImports: ["lucide-react"]` tree-shakes barrel exports automatically.
+  esbuild lacks an equivalent, so `import * as LucideIcons` bundled all ~1000+ icon
+  components (~10 MB). Add an esbuild `onResolve` plugin that intercepts every
+  `lucide-react` import and serves a virtual module re-exporting only the icons
+  actually needed — automatically collected from flame's source tree and dependency
+  dist directories via `scanDirLucideIcons()`, plus icons referenced in the user's
+  `docu.json` (routes context, features, hero actions). This replaces the prior
+  hardcoded `SOURCE_ICONS` list that was fragile to maintain.
+
+  Also extract the `NODE_BUILTINS_RE` regex and `lucideRealEntry` resolver into
+  module-level constants, and use the `entryPath` variable directly instead of
+  recomputing `join(LIB_DIR, "client.ts")`.
+
+- [#285](https://github.com/DocuBook/docubook/pull/285) [`32fce19`](https://github.com/DocuBook/docubook/commit/32fce19393df32cf6262abe1a2f38a22c2791067) Thanks [@pullfrog](https://github.com/apps/pullfrog)! - Reduce the client bundle size: enable ESM code splitting in both bundlers (Bun `hydrate.ts` and esbuild `hydrate.node.ts`) so dynamic imports like `mermaid` ship as separate on-demand chunks instead of inlining into the single entry file; select the entry output by `kind`/`entryPoint` rather than position. Restrict daisyUI to `light`/`dark` themes (via `@plugin "daisyui"`) instead of importing all ~35 built-in themes. Add immutable `Cache-Control` for hashed `/assets/*` in `vercel.json` and emit a `_headers` file from `flame deploy` for Netlify/Cloudflare Pages.
+
+  Fix MDX component borders broken by collision between daisyUI v5's `--border` (border width `1px`) and the project's `--border` (HSL color for `--color-border`). DaisyUI's plugin sets `--border: 1px` on `:root` via `:where(:root)` in every theme block; MDX components use `hsl(var(--border, ...))` for inline border colors, so `--border` resolving to `1px` made `hsl(1px)` invalid and border-color invisible. Rename the project's CSS variable from `--border` → `--border-color` across `globals.css`, `@docubook/themes-colors` theme JSONs, theme fixtures, and all 19 `var(--border)` references in `@docubook/mdx-content` component sources. Also remove `--prefersdark` from the daisyUI plugin config.
+
+  Safelist daisyUI dynamic class variants via `@source inline(...)` in `globals.css` so structural classes used by `@docubook/ui-react` components (collapse, breadcrumbs, modal, drawer, navbar, kbd, toggle, input, menu, label) are emitted by Tailwind v4 even though the ui-react package dist is absent and its source builds class names via template literals (`kbd-${size}`, `toggle-${color}`, etc.) that Tailwind cannot statically detect.
+
+  Extract the duplicated `cleanOldBundles()` function—identical across both the Bun and esbuild hydration files—into the shared `paths.ts` module.
+
+- [#281](https://github.com/DocuBook/docubook/pull/281) [`8cf3362`](https://github.com/DocuBook/docubook/commit/8cf33621de44ec5ba84b8818df1475242325e68f) Thanks [@pullfrog](https://github.com/apps/pullfrog)! - Make plugin `onEnd` JSDoc and guide examples runtime-safe: mark the callbacks `async`, guard `Bun.write` behind a `typeof Bun !== "undefined"` check with a `node:fs/promises` `writeFile` fallback, and document that plugin hooks run on Bun, Node, and Deno.
+
+- Updated dependencies [[`5289e7d`](https://github.com/DocuBook/docubook/commit/5289e7d1b41359bf5405043df9cf1129631c4e20), [`32fce19`](https://github.com/DocuBook/docubook/commit/32fce19393df32cf6262abe1a2f38a22c2791067)]:
+  - @docubook/runt@0.2.0
+  - @docubook/core@1.8.1
+  - @docubook/mdx-content@3.4.2
+  - @docubook/themes-colors@0.10.3
+
 ## 1.4.4
 
 ### Patch Changes
