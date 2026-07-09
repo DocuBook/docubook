@@ -91,6 +91,12 @@ describe("serialize", () => {
     await expect(serialize("# {eval`x`}", { blockJS: false })).rejects.toThrow(/not allowed/i);
   });
 
+  it("throws on prototype-chain constructor access with blockJS=false", async () => {
+    await expect(
+      serialize('# {({}).constructor("alert(1)")()}', { blockJS: false }),
+    ).rejects.toThrow(/\.constructor access is not allowed/i);
+  });
+
   // --- error handling ---
   it("throws formatted error on invalid MDX", async () => {
     // A closing JSX tag without opening triggers compile error.
