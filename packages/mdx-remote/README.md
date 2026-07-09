@@ -64,7 +64,7 @@ title: Hello
 # {frontmatter.title}
 
 World.`,
-    options: { parseFrontmatter: true },
+    options: { parseFrontmatter: true, blockJS: false },
   });
   return <article>{content}</article>;
 }
