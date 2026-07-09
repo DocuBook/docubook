@@ -25,10 +25,4 @@ export default defineConfig([
     entry: { client: "src/client.ts" },
     esbuildOptions: useClientBanner,
   },
-  {
-    ...shared,
-    entry: { "adapters/next/index": "src/adapters/next/index.ts" },
-    external: ["next"],
-    esbuildOptions: useClientBanner,
-  },
 ]);
