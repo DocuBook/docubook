@@ -14,7 +14,7 @@ overrides:
   "@types/react-dom": 19.2.3
   "@sentry/bun": ">=10.0.0"
   read-yaml-file: ">=2.1.0"
-  js-yaml: ">=4.2.0"
+  js-yaml: ">=5.0.0"
   undici: ^7.28.0
 
 importers:
@@ -9436,10 +9436,10 @@ snapshots:
 
   "@types/unist@3.0.3": {}
 
-  "@typescript-eslint/eslint-plugin@8.63.0(@typescript-eslint/parser@8.63.0(eslint@10.6.0(jiti@2.7.0))(typescript@5.9.3))(eslint@10.6.0(jiti@2.7.0))(typescript@5.9.3)":
+  "@typescript-eslint/eslint-plugin@8.63.0(@typescript-eslint/parser@8.63.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@10.6.0(jiti@2.7.0))(typescript@5.9.3)":
     dependencies:
       "@eslint-community/regexpp": 4.12.2
-      "@typescript-eslint/parser": 8.63.0(eslint@10.6.0(jiti@2.7.0))(typescript@5.9.3)
+      "@typescript-eslint/parser": 8.63.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       "@typescript-eslint/scope-manager": 8.63.0
       "@typescript-eslint/type-utils": 8.63.0(eslint@10.6.0(jiti@2.7.0))(typescript@5.9.3)
       "@typescript-eslint/utils": 8.63.0(eslint@10.6.0(jiti@2.7.0))(typescript@5.9.3)
@@ -12825,7 +12825,7 @@ snapshots:
 
   typescript-eslint@8.63.0(eslint@10.6.0(jiti@2.7.0))(typescript@5.9.3):
     dependencies:
-      "@typescript-eslint/eslint-plugin": 8.63.0(@typescript-eslint/parser@8.63.0(eslint@10.6.0(jiti@2.7.0))(typescript@5.9.3))(eslint@10.6.0(jiti@2.7.0))(typescript@5.9.3)
+      "@typescript-eslint/eslint-plugin": 8.63.0(@typescript-eslint/parser@8.63.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@10.6.0(jiti@2.7.0))(typescript@5.9.3)
       "@typescript-eslint/parser": 8.63.0(eslint@10.6.0(jiti@2.7.0))(typescript@5.9.3)
       "@typescript-eslint/typescript-estree": 8.63.0(typescript@5.9.3)
       "@typescript-eslint/utils": 8.63.0(eslint@10.6.0(jiti@2.7.0))(typescript@5.9.3)
