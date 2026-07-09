@@ -1,6 +1,6 @@
 {
   "name": "@docubook/mdx-remote",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Rewrite of next-mdx-remote: runtime MDX compilation and rendering for DocuBook",
   "type": "module",
   "main": "./dist/index.js",
