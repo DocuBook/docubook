@@ -1,18 +1,23 @@
 import type { Node } from "unist";
 
 const BLOCKED_GLOBALS = [
+  // Code execution
   "eval",
   "Function",
   "AsyncFunction",
   "GeneratorFunction",
+  // Module system
   "require",
-  "process",
-  "global",
-  "globalThis",
   "module",
   "exports",
   "__dirname",
   "__filename",
+  // Runtime
+  "process",
+  "global",
+  "globalThis",
+  "Reflect",
+  // File system / network
   "child_process",
   "fs",
   "net",
@@ -20,19 +25,25 @@ const BLOCKED_GLOBALS = [
   "https",
   "vm",
   "worker_threads",
-  "Reflect",
-];
-
-const BUILTIN_CONSTRUCTORS = [
-  "Object", "Array", "String", "Number", "Boolean",
-  "Symbol", "Error", "Date", "RegExp", "Promise",
-  "Proxy", "Reflect", "WeakMap", "WeakSet", "Map", "Set",
+  // Browser-like (available in Node/Deno)
+  "fetch",
+  "setTimeout",
+  "setInterval",
+  "setImmediate",
+  "queueMicrotask",
+  "XMLHttpRequest",
 ];
 
 const BLOCKED_PROPERTIES = [
-  "constructor", "prototype", "__proto__", "eval",
-  "Reflect", "Function", "AsyncFunction",
-  "GeneratorFunction", "require",
+  "constructor",
+  "prototype",
+  "__proto__",
+  "eval",
+  "Reflect",
+  "Function",
+  "AsyncFunction",
+  "GeneratorFunction",
+  "require",
 ];
 
 function walk(
@@ -56,6 +67,7 @@ function walk(
     }
   }
 
+  // Block direct calls to blocked globals: eval(), Function(), fetch(), etc.
   if (
     node.type === "CallExpression" &&
     node.callee?.type === "Identifier" &&
@@ -64,64 +76,35 @@ function walk(
     throw new Error(`Security: ${node.callee.name}() calls are not allowed`);
   }
 
+  // Block dynamic import(): import("node:fs")
+  if (node.type === "ImportExpression") {
+    throw new Error("Security: Dynamic import() is not allowed");
+  }
+
+  // Block tagged template literals on blocked globals: eval`...`
   if (
-    node.type === "CallExpression" &&
-    node.callee?.type === "MemberExpression" &&
-    node.callee.computed &&
-    node.callee.object?.type === "Identifier" &&
-    blockedGlobals.includes(node.callee.object.name)
+    node.type === "TaggedTemplateExpression" &&
+    node.tag?.type === "Identifier" &&
+    blockedGlobals.includes(node.tag.name)
   ) {
     throw new Error(
-      `Security: Function calls on computed properties of '${node.callee.object.name}' are not allowed`,
+      `Security: ${node.tag.name}\`...\` tagged template is not allowed`,
     );
   }
 
+  // Block computed MemberExpression calls on any object identifier
+  // Catches: Object["constructor"](...), Object["con"+"structor"](...), etc.
   if (
     node.type === "CallExpression" &&
     node.callee?.type === "MemberExpression" &&
-    node.callee.computed &&
-    node.callee.object?.type === "Identifier" &&
-    BUILTIN_CONSTRUCTORS.includes(node.callee.object.name)
+    node.callee.computed
   ) {
     throw new Error(
-      `Security: Function calls on computed properties of '${node.callee.object.name}' are not allowed`,
+      "Security: Function calls via computed property access are not allowed",
     );
   }
 
-  if (node.type === "MemberExpression") {
-    const prop = node.property;
-    if (
-      prop?.type === "Identifier" &&
-      !node.computed &&
-      blockedProperties.includes(prop.name)
-    ) {
-      throw new Error(`Security: .${prop.name} access is not allowed`);
-    }
-    if (
-      prop?.type === "Literal" &&
-      blockedProperties.includes(String(prop.value))
-    ) {
-      throw new Error(`Security: ["${prop.value}"] access is not allowed`);
-    }
-    if (
-      node.computed &&
-      node.object?.type === "Identifier" &&
-      blockedGlobals.includes(node.object.name)
-    ) {
-      throw new Error(
-        `Security: Computed property access on '${node.object.name}' is not allowed`,
-      );
-    }
-    if (
-      node.object?.type === "Identifier" &&
-      blockedGlobals.includes(node.object.name)
-    ) {
-      throw new Error(
-        `Security: Access to '${node.object.name}' properties is not allowed`,
-      );
-    }
-  }
-
+  // Block new expressions: new Function(...)
   if (
     node.type === "NewExpression" &&
     node.callee?.type === "Identifier" &&
@@ -135,7 +118,8 @@ function walk(
     const value = node[key];
     if (Array.isArray(value)) {
       value.forEach((child: any) => {
-        if (child && typeof child === "object") walk(child, blockedGlobals, blockedProperties);
+        if (child && typeof child === "object")
+          walk(child, blockedGlobals, blockedProperties);
       });
     } else if (value && typeof value === "object") {
       walk(value, blockedGlobals, blockedProperties);
@@ -148,7 +132,11 @@ export const CreateRemoveDangerousCallsPlugin = (
   blockedProperties?: string[],
 ) => {
   return () => (tree: Node) => {
-    walk(tree, blockedGlobals ?? BLOCKED_GLOBALS, blockedProperties ?? BLOCKED_PROPERTIES);
+    walk(
+      tree,
+      blockedGlobals ?? BLOCKED_GLOBALS,
+      blockedProperties ?? BLOCKED_PROPERTIES,
+    );
     return tree;
   };
 };

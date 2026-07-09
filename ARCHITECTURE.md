@@ -113,7 +113,7 @@ serves `packages/flame/.docu/dist` with `cleanUrls`, and injects security
 headers (CSP, HSTS, X-Frame-Options, and friends).
 
 The CSP applied by the serving layer must include `script-src 'unsafe-eval'`:
-flame pages hydrate MDX islands via `next-mdx-remote`, which evaluates compiled
+flame pages hydrate MDX islands via `@docubook/mdx-remote`, which evaluates compiled
 MDX at runtime. Static HTML itself carries per-page nonces but no CSP meta tag —
 CSP always comes from the serving layer (dev/preview server headers or
 `vercel.json` in production).
@@ -193,5 +193,5 @@ Condensed from the retired ADRs — these commitments are still in force:
 |-----------|--------|------------|
 | No dynamic content — MDX files only, no database/CMS | No user-generated content or real-time updates | Acceptable for documentation |
 | Bun-only code paths duplicated for Node/Deno (entry layer) | Fixes to protected Bun entries may need mirroring in `*.impl.ts` counterparts | Duplication is confined to thin entries + three leaf modules; shared logic lives in neutral modules |
-| `unsafe-eval` in serving CSP | Weakens CSP against XSS | Required by `next-mdx-remote` island hydration; all other CSP directives stay strict |
+| `unsafe-eval` in serving CSP | Weakens CSP against XSS | Required by `@docubook/mdx-remote` island hydration; all other CSP directives stay strict |
 | Single `docu.json` config — no dynamic route generation | Routes cannot come from external APIs | Covers documentation use cases |

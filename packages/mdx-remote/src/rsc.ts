@@ -21,8 +21,10 @@ export async function compileMDX<Frontmatter = Record<string, unknown>>({
     true, // rsc mode
   );
 
+  // jsx/jsxs (production) and jsxDEV (development) are in separate React 19
+  // modules. Merge both so the scope works regardless of compile mode.
   const fullScope = {
-    opts: process.env.NODE_ENV === "production" ? jsxRuntime : jsxDevRuntime,
+    opts: { ...jsxRuntime, ...jsxDevRuntime },
     frontmatter,
     ...scope,
   };

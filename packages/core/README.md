@@ -90,8 +90,8 @@ const tocs = await docsService.getTocsForSlug("getting-started/introduction");
 | `handleCodeExpandableRemark` | Remark plugin that detects `Expandable` meta on code blocks and injects expandable data attributes | transformer function |
 | `handleCodeExpandable` | Rehype plugin that propagates expandable metadata from `<code>` to `<pre>` elements | transformer function |
 | `rehypeMermaid` | Rehype plugin that transforms ` ```mermaid ` fenced code blocks into `<Mermaid chart="...">` elements | transformer function |
-| `serialize` | Re-exported from `next-mdx-remote/serialize` for non-RSC MDX compilation workflows | `MDXRemoteSerializeResult` |
-| `MDXRemote` | Re-exported from `next-mdx-remote` for client-side MDX hydration | React component |
+| `serialize` | Re-exported from `@docubook/mdx-remote/serialize` for non-RSC MDX compilation workflows | `MDXRemoteSerializeResult` |
+| `MDXRemote` | Re-exported from `@docubook/mdx-remote` for client-side MDX hydration | React component |
 | `cn` | Merge class names using `clsx` + `tailwind-merge` | `string` |
 | `parseDate` | Parse `dd-MM-yyyy` or ISO 8601 date strings into a Date object | `Date` |
 | `stringToDate` | Convert a string or Date value to a Date object | `Date` |
@@ -408,7 +408,7 @@ This means app-level users should focus on content and integration. Plugin upgra
 
 - clsx — class name composition for the `cn()` utility
 - tailwind-merge — intelligent Tailwind class merging for the `cn()` utility
-- next-mdx-remote — MDX runtime/compile engine (`serialize`, `MDXRemote`)
+- @docubook/mdx-remote — MDX runtime/compile engine (`serialize`, `MDXRemote`)
 
 The `remark` and `rehype` plugin stack is intentionally owned by this package to avoid dependency drift across apps.
 
@@ -421,11 +421,11 @@ The `remark` and `rehype` plugin stack is intentionally owned by this package to
 
 ## Notes
 
-`@docubook/core` already includes and manages the MDX runtime/compile dependencies (including `next-mdx-remote`) as part of the package contract.
+`@docubook/core` already includes and manages the MDX runtime/compile dependencies (including `@docubook/mdx-remote`) as part of the package contract.
 
 In most integrations, users only need to install `@docubook/core` and use the core APIs.
 
-Only add `next-mdx-remote` directly in your app if your app explicitly imports it in app-level code.
+Only import `@docubook/mdx-remote` directly in your app if your app explicitly needs it in app-level code.
 
 For compile pipeline plugins (especially `remark` and `rehype` plugins), rely on this package and avoid re-declaring them at app level unless you have a specific override requirement.
 
