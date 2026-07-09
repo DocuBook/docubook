@@ -11,7 +11,8 @@
     "version-packages": "changeset version && pnpm install --no-frozen-lockfile",
     "publish-packages": "pnpm build && changeset publish",
     "prepare": "husky",
-    "commit": "czg"
+    "commit": "czg",
+    "test": "turbo test"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.7.0",

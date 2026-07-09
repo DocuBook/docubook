@@ -12,7 +12,7 @@ overrides:
   "@sentry/bun": ">=10.0.0"
   "read-yaml-file": ">=2.1.0"
   "js-yaml": ">=4.2.0"
-  undici: ">=7.28.0"
+  undici: "^7.28.0"
 allowBuilds:
   "@parcel/watcher": true
   bun: true
