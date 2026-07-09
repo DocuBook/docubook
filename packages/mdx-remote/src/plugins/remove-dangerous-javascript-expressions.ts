@@ -104,6 +104,20 @@ function walk(
     );
   }
 
+  // Block non-computed property access to dangerous properties:
+  // obj.constructor, obj.prototype, obj.__proto__
+  if (node.type === "MemberExpression" && !node.computed) {
+    const prop = node.property;
+    if (
+      prop?.type === "Identifier" &&
+      blockedProperties.includes(prop.name)
+    ) {
+      throw new Error(
+        `Security: .${prop.name} access is not allowed`,
+      );
+    }
+  }
+
   // Block new expressions: new Function(...)
   if (
     node.type === "NewExpression" &&
