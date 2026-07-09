@@ -1,13 +1,13 @@
 ---
 title: Welcome
-description: Documentation for @docubook/flame - a Bun-native React + MDX framework for modern documentation sites.
+description: Documentation for @docubook/flame — a runtime-agnostic React + MDX framework for modern documentation sites.
 ---
 
-**@docubook/flame** is the core framework of the DocuBook ecosystem. It is a lightweight, Bun-native runtime for building documentation websites using React 19, MDX, and filesystem-based routing.
+**@docubook/flame** is the core framework of the DocuBook ecosystem. It is a lightweight runtime for building documentation websites using React 19, MDX, and filesystem-based routing — runs on **Bun**, **Node.js**, and **Deno**.
 
 |         Feature          |                    Description                     |
 | ------------------------ | -------------------------------------------------- |
-| **Bun-native**           | Instant startup, native TypeScript, fast builds    |
+| **Runtime-agnostic**     | Bun, Node.js, or Deno — same CLI, same output      |
 | **React 19 SSR**         | Server-side rendering with client hydration        |
 | **Filesystem routing**   | Auto-discover pages from `docs/` folder            |
 | **Plugin system**        | Extend the build pipeline and dev server via hooks |
@@ -16,19 +16,22 @@ description: Documentation for @docubook/flame - a Bun-native React + MDX framew
 | **Static build**         | Pre-render all pages to static HTML for deployment |
 
 <Cards>
-  <Card title="@docubook/core" icon="Cpu">
+  <Card title="@docubook/core" icon="Cpu" horizontal>
     Shared MDX compile pipeline and markdown utilities. Handles compilation, rehype/remark plugin orchestration, and frontmatter parsing used by all DocuBook packages.
   </Card>
-  <Card title="@docubook/ui-react" icon="Component">
-    Reusable React UI components for documentation sites — sidebar, table of contents, navbar, footer, search modal, and MDX content renderers.
-  </Card>
-  <Card title="@docubook/mdx-content" icon="Package">
+  <Card title="@docubook/mdx-content" icon="Package" horizontal>
     Portable MDX components and framework adapters. Pre-built components like cards, tabs, accordions, steps, notes, and code blocks for rich documentation.
   </Card>
-  <Card title="@docubook/themes-colors" icon="Palette">
+  <Card title="@docubook/mdx-remote" icon="Radio" horizontal>
+    Runtime MDX compilation and rendering. A rewrite of next-mdx-remote for server-side MDX evaluation in DocuBook.
+  </Card>
+  <Card title="@docubook/runt" icon="Server" horizontal>
+    Runtime HTTP server adapters — Bun.serve, Node HTTP, and Deno HTTP. The abstraction that makes Flame runtime-agnostic.
+  </Card>
+  <Card title="@docubook/themes-colors" icon="Palette" horizontal>
     Theme color presets and color utilities — hex-to-HSL conversion, CSS variable generation, and 3 built-in presets (Default Blue, Fresh Lime, Coffee).
   </Card>
-  <Card title="@docubook/cli" icon="Terminal">
-    CLI tool for initializing, scaffolding, and deploying DocuBook projects. One command to create a new documentation site.
+  <Card title="@docubook/ui-react" icon="Component" horizontal>
+    React + daisyUI component library for documentation sites — sidebar, table of contents, navbar, footer, search modal, and MDX content renderers.
   </Card>
 </Cards>

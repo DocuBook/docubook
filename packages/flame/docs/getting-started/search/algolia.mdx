@@ -1,110 +1,107 @@
 ---
 title: Algolia
-description: Learn how to integrate Algolia DocSearch into your documentation.
+description: Integrate Algolia DocSearch into your Flame documentation site.
 ---
 
-[Algolia DocSearch](https://docsearch.algolia.com/) provides a fast, relevant search experience for
-documentation sites. It powers the search in this project **(DocuBook)**. Follow this guide to
-integrate it into your documentation.
+[Algolia DocSearch](https://docsearch.algolia.com/) provides a fast, relevant search experience for documentation sites. The search on this site **(DocuBook)** runs on Algolia.
 
-## Enable Algolia Search
+Flame's Algolia integration is via a plugin — configure it once in `docu.json` and the plugin injects the search client into the browser bundle.
 
-To enable Algolia DocSearch, update the `search.type` in your `docu.json` file:
+Algolia is not built into Flame. You add it via a plugin registered in the `plugins` array of `docu.json` — factory options like credentials are passed directly there:
+
+<Note type="info" title="Example configuration — adapt to your plugin">
+  The entry below is an **example** showing how the plugin factory format works.
+  `@docubook/plugin-search-algolia` is a placeholder — replace it with whatever Algolia
+  (or any search) plugin you install. Flame's plugin system only defines the contract;
+  the actual plugin package is provided by you or a third party.
+</Note>
 
 ```json
 {
-  "search": {
-    "type": "algolia"
-  }
+  "plugins": [
+    ["your-algolia-plugin-package", {
+      "appId": "YOUR_APP_ID",
+      "apiKey": "YOUR_SEARCH_ONLY_API_KEY",
+      "indexName": "YOUR_INDEX_NAME",
+      "assistantId": "optional_assistant_id"
+    }]
+  ]
 }
 ```
 
-This will automatically apply Algolia search across all search components in your documentation.
+The plugin format is `[packageName, factoryOptions]`. At build time, Flame loads the package, calls its default export as a factory with your options, and registers the returned plugin instance.
 
-> **Built-in Search**
->
-> To use the built-in search instead, set `"type": "default"` or remove the `search` configuration
-> entirely.
+<Note type="note" title="Is this safe?">
+  Yes. The **search-only API key** only allows querying your index — no writes. The App ID and index name are already visible in browser network requests. Never put your **Admin API Key** here.
+</Note>
 
-## Apply for DocSearch
+## Register for DocSearch
 
-Algolia provides `DocSearch` for open-source projects for free. To apply:
+Algolia provides DocSearch for open-source projects for free.
 
-<div className="pl-4">
 <Steps>
-  <Step title="Step 1: Visit the DocSearch">
-    Visit [DocSearch Application](https://docsearch.algolia.com/apply/ ) to register your
-    application.
+  <Step title="Visit the DocSearch application">
+    Go to [docsearch.algolia.com/apply](https://docsearch.algolia.com/apply/) and submit your documentation URL.
   </Step>
-  <Step title="Step 2: Fill out the form with details about your documentation:">
-    - Your website URL - The selectors for headings and content
+  <Step title="Wait for approval">
+    Algolia reviews your application and sends your credentials:
+    - **Application ID**
+    - **Search-Only API Key**
+    - **Index Name**
+    - (optional) **Assistant ID**
   </Step>
-  <Step title="Step 3: Submit your request. Once approved, Algolia will provide:">
-    - Application ID
-    - Search API Key
-    - Index Name
-    > Store your environment variables securely by creating a .env file
-    >  ```plaintext
-    >    ALGOLIA_DOCSEARCH_APP_ID="your_app_id"
-    >    ALGOLIA_DOCSEARCH_API_KEY="your_api_key"
-    >    ALGOLIA_DOCSEARCH_INDEX_NAME="your_index_name"
-    >    ALGOLIA_DOCSEARCH_ASKAI_ASSISTANT_ID="your_assistant_id" // optional
-    >  ```
+  <Step title="Add credentials to docu.json">
+    Add the plugin entry to `plugins` as shown above. No `.env` file needed.
   </Step>
 </Steps>
-</div>
 
-## Crawler Editor
+## Crawler Setup
 
-Now we will customize the crawler to follow the hierarchy of the docs created by DocuBook :
+After your site is live, configure the Algolia crawler to index your pages. The crawler runs externally on Algolia's infrastructure — no build-time impact on Flame.
 
-<div className="pl-4">
+### Dashboard Setup
+
 <Steps>
-  <Step title="Step 1: Dashboard Algolia">
-    Visit the [Algolia DocSearch dashboard](https://dashboard.algolia.com/)
+  <Step title="Open Algolia Dashboard">
+    Visit [dashboard.algolia.com](https://dashboard.algolia.com/).
   </Step>
-  <Step title="Step 2: Navigate to Data Sources">
-    On the Algolia dashboard page, navigate to the "Data Sources" menu.
+  <Step title="Navigate to Crawler">
+    Go to **Data Sources** → **Crawler** → click your crawler name.
   </Step>
-  <Step title="Step 3: In the Data Sources menu">
-    Please navigate to the "Crawler" tab, where you will see a list of crawlers. Then, click on the name of the crawler you want to customize.
-
-    > make sure to add your domain in the `domains` tab in the crawler settings
-
+  <Step title="Add your domain">
+    In the **Domains** tab, add your production URL.
   </Step>
-  <Step title="Step 4: Editor">
-    On the crawler page, open the `setup` dropdown and select `editor`.
+  <Step title="Open the Editor">
+    Open the **Setup** dropdown → select **Editor**.
   </Step>
 </Steps>
-</div>
 
-copy the entire crawler code below :
+### Crawler Configuration
 
-> Pay attention to the <span className="text-red-500 font-bold">highlighted</span> parts of the crawler syntax below—these are the sections you need to modify.
+Paste the configuration below into the editor. The values you need to change are highlighted.
 
-```javascript:index.js showLineNumbers {2-3,6,13,16-17,66} Expandable
+```javascript:index.js showLineNumbers {2-3,6,13,16-17,62} Expandable
 new Crawler({
-  appId: "5CCY***", // changes your appId
-  apiKey: "01469aacecdb****", // changes crawler apiKey
+  appId: "YOUR_APP_ID",           // ← your App ID
+  apiKey: "YOUR_CRAWLER_API_KEY",  // ← your crawler API key
   indexPrefix: "",
   rateLimit: 8,
-  startUrls: ["https://www.docubook.pro"], // changes your domain
+  startUrls: ["https://your-domain.com"], // ← your domain
   renderJavaScript: true,
   maxDepth: 10,
   maxUrls: 8000,
-  schedule: "every 1 day at 02:00 am", // Recommended daily schedule
+  schedule: "every 1 day at 02:00 am",
   sitemaps: [],
   ignoreCanonicalTo: true,
-  discoveryPatterns: ["https://www.docubook.pro/**"], // changes your domain
+  discoveryPatterns: ["https://your-domain.com/**"], // ← your domain
   actions: [
     {
-      indexName: "docsearch_docubook", // recommendations for index names with the prefix docsearch_
-      pathsToMatch: ["https://www.docubook.pro/**"], // changes your domain
+      indexName: "YOUR_INDEX_NAME", // ← your index name
+      pathsToMatch: ["https://your-domain.com/**"], // ← your domain
       recordExtractor: ({ $, helpers }) => {
-        // Prefer the specific data attribute, fall back to breadcrumb
         const lvl0 =
-          $("[data-search-lvl0='true']").first().text().trim() ||
-          $("nav[aria-label='breadcrumb'] li:nth-child(3)").text().trim() ||
+          // lvl0 = section name from breadcrumb (second item: Docs > Section > Page)
+          $(".breadcrumbs li:nth-child(2)").text().trim() ||
           "Docs";
 
         const layoutAnchors = ["scroll-container", "main-navbar"];
@@ -116,22 +113,19 @@ new Crawler({
                 selectors: "",
                 defaultValue: lvl0,
               },
-              // Limit H1 extraction to the document content area.
-              // This avoids layout anchors like #scroll-container or #main-navbar.
-              lvl1: ["article h1", ".prose h1"],
-              content: ["article p, article li", ".prose p, .prose li"],
-              lvl2: ["article h2", ".prose h2"],
-              lvl3: ["article h3", ".prose h3"],
-              lvl4: ["article h4", ".prose h4"],
-              lvl5: ["article h5", ".prose h5"],
-              lvl6: ["article h6", ".prose h6"],
+              lvl1: [".prose h1"],
+              content: [".prose p, .prose li"],
+              lvl2: [".prose h2"],
+              lvl3: [".prose h3"],
+              lvl4: [".prose h4"],
+              lvl5: [".prose h5"],
+              lvl6: [".prose h6"],
             },
             aggregateContent: true,
             recordVersion: "v3",
           })
           .map((record) => {
             if (!layoutAnchors.includes(record.anchor)) return record;
-
             return {
               ...record,
               anchor: undefined,
@@ -148,15 +142,11 @@ new Crawler({
   ],
   safetyChecks: { beforeIndexPublishing: { maxLostRecordsPercentage: 10 } },
   initialIndexSettings: {
-    "docsearch_docubook": { // recommendations for index names with the prefix docsearch_
+    "YOUR_INDEX_NAME": {
       attributesForFaceting: ["type", "lang"],
       attributesToRetrieve: [
-        "hierarchy",
-        "content",
-        "anchor",
-        "url",
-        "url_without_anchor",
-        "type",
+        "hierarchy", "content", "anchor", "url",
+        "url_without_anchor", "type",
       ],
       attributesToHighlight: ["hierarchy", "content"],
       attributesToSnippet: ["content:10"],
@@ -179,13 +169,8 @@ new Crawler({
         "asc(weight.position)",
       ],
       ranking: [
-        "words",
-        "filters",
-        "typo",
-        "attribute",
-        "proximity",
-        "exact",
-        "custom",
+        "words", "filters", "typo", "attribute",
+        "proximity", "exact", "custom",
       ],
       highlightPreTag: '<span class="algolia-docsearch-suggestion--highlight">',
       highlightPostTag: "</span>",
@@ -202,15 +187,17 @@ new Crawler({
 });
 ```
 
-## Deployment
+### Index Settings
 
-When deploying your DocuBook Flame project, ensure the environment variables are available at build time. Add them to your `.env` file or configure them in your hosting platform:
+Key settings worth noting:
 
-| **key**                              | **value**           |
-| ------------------------------------ | ------------------- |
-| ALGOLIA_DOCSEARCH_APP_ID             | `your_app_id`       |
-| ALGOLIA_DOCSEARCH_API_KEY            | `your_api_key`      |
-| ALGOLIA_DOCSEARCH_INDEX_NAME         | `your_index_name`   |
-| ALGOLIA_DOCSEARCH_ASKAI_ASSISTANT_ID | `your_assistant_id` |
+| Setting | Value | Why |
+|---|---|---|
+| `distinct` | `true` | Deduplicate records by URL — one result per page |
+| `attributeForDistinct` | `"url"` | Group all sections of a page under one result |
+| `renderJavaScript` | `true` | Flame uses JS-rendered content — must be enabled |
+| `schedule` | `every 1 day` | Keeps search results fresh without over-scraping |
 
-For GitHub Pages deployment, use `bun deploy` which builds and generates the GitHub Actions workflow automatically. Environment variables can be configured as repository secrets in your GitHub repository settings.
+## Deploy
+
+Credentials are in `docu.json`, so no `.env` or platform secrets needed. Deploy `.docu/dist/` to any static host — the Algolia plugin handles everything at build time.

@@ -3,7 +3,7 @@ title: Deployment
 description: Deploy your documentation to any static hosting provider and configure clean URLs.
 ---
 
-Flame builds a fully static site — no server runtime is required. `bun run build` writes everything to `.docu/dist/`:
+Flame builds a fully static site — no server runtime is required. `flame build` (or `bun run build` / `npm run build` / `deno task build`) writes everything to `.docu/dist/`:
 
 ```
 .docu/dist/
@@ -20,18 +20,25 @@ Whether the `.html` suffix stays visible in the browser address bar depends on y
 
 ## Provider Overview
 
-|       Provider        | Clean URLs |         Configuration          |
-| --------------------- | ---------- | ------------------------------ |
-| Cloudflare Pages      | Automatic  | None                           |
-| AWS Amplify Hosting   | Automatic  | None                           |
-| Vercel                | Yes        | `vercel.json`                  |
-| Netlify               | Yes        | `netlify.toml` or UI           |
-| Firebase Hosting      | Yes        | `firebase.json`                |
-| Azure Static Web Apps | Yes        | `staticwebapp.config.json`     |
-| Render                | Yes        | Dashboard rewrite rule         |
-| Heroku                | Yes        | Static buildpack + `static.json` |
-| GitHub Pages          | No         | Not supported                  |
-| AWS S3 + CloudFront   | Limited    | CloudFront Function required   |
+|       Provider        | Clean URLs | Auto-deploy on push | Server            | Configuration          |
+| --------------------- | ---------- | ------------------- | ----------------- | ------------------------------ |
+| Cloudflare Pages      | Automatic  | Native GitHub       | Cloudflare infra  | None                           |
+| AWS Amplify Hosting   | Automatic  | Native GitHub       | AWS infra         | None                           |
+| Vercel                | Yes        | Native GitHub       | Vercel edge       | `vercel.json`                  |
+| Netlify               | Yes        | Native GitHub       | Netlify infra     | `netlify.toml` or UI           |
+| Firebase Hosting      | Yes        | GitHub Action       | nginx + CDN       | `firebase.json`                |
+| Azure Static Web Apps | Yes        | Native GitHub       | Azure infra       | `staticwebapp.config.json`     |
+| Render                | Yes        | Native GitHub       | nginx             | Dashboard rewrite rule         |
+| Heroku                | Yes        | Native GitHub       | nginx             | Static buildpack + `static.json` |
+| GitHub Pages          | No         | Native GitHub       | Apache            | Not supported                  |
+| AWS S3 + CloudFront   | Limited    | GitHub Action       | nginx (CloudFront)| CloudFront Function required   |
+
+Column notes:
+
+- **Auto-deploy on push** — "Native GitHub" means the provider has a built-in GitHub integration (e.g. Cloudflare Pages, Vercel, Netlify) that connects to your repo and auto-builds on every push. "GitHub Action" means you need a workflow file (providers supply one via their setup UI).
+- **Server** — the underlying HTTP server that serves your static files. All providers serve `.docu/dist/` directly — no app server required.
+
+For providers with **Native GitHub** or **GitHub Action** support, deployment is fully automated: push to your default branch, and the site updates minutes later. No manual upload or CLI step needed after the initial setup.
 
 ## Zero Configuration
 
@@ -154,7 +161,7 @@ These platforms cannot rewrite URLs — the site still works, but the `.html` su
 
 GitHub Pages serves files at their exact path only: `/docs/page.html` works, `/docs/page` returns a `404`. There is no official rewrite mechanism for static files.
 
-Flame ships a deploy helper for GitHub Pages — `bun run deploy` builds the site, adds a `.nojekyll` file, and generates a `.github/workflows/deploy.yml` workflow if one does not exist. Deployment works out of the box; the `.html` suffix remaining in the address bar is the only limitation.
+Flame ships a deploy helper — `flame deploy` (or `bun run deploy` / `npm run deploy` / `deno task deploy`) builds the site, adds a `.nojekyll` file, and generates a `.github/workflows/deploy.yml` workflow if one does not exist. The generated workflow automatically builds and deploys on every push to the default branch. The `.html` suffix remaining in the address bar is the only limitation — the site itself works perfectly.
 
 Source: [GitHub Pages documentation](https://docs.github.com/en/pages)
 

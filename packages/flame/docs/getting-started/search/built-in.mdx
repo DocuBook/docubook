@@ -42,6 +42,26 @@ Search works out of the box with no configuration. The index is automatically re
 
 To manually regenerate the search index:
 
-```bash
+<Tabs className="pt-3 pb-1">
+<Tab title="Bun">
+
+```shell:bun
 bun .docu/node/search-indexer.ts
 ```
+
+</Tab>
+<Tab title="Node.js">
+
+```shell:bash
+node .docu/lib/search-indexer.js
+```
+
+</Tab>
+<Tab title="Deno">
+
+```shell:bash
+deno run -A .docu/lib/search-indexer.js
+```
+
+</Tab>
+</Tabs>

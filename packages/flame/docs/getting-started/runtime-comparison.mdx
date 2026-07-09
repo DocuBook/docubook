@@ -1,0 +1,110 @@
+---
+title: Runtime Comparison
+description: How Flame runs on Bun, Node.js, and Deno — and what differs between them.
+---
+
+Flame is **runtime-agnostic**: the same CLI, the same output, on Bun, Node.js, or Deno. The runtime is only needed for the build toolchain and dev server — the final output is static HTML that deploys anywhere.
+
+## Runtime Detection
+
+The CLI (`flame`) auto-detects the current runtime by checking `process.execPath` and global objects:
+
+| Priority | Check                        | Runtime |
+| -------- | ---------------------------- | ------- |
+| 1        | `FLAME_RUNTIME` env var      | Forced  |
+| 2        | `process.execPath` includes `deno` | Deno |
+| 3        | `typeof Bun !== "undefined"` | Bun     |
+| 4        | `typeof Deno !== "undefined"` | Deno   |
+| 5        | Fallback                     | Node.js |
+
+Override detection with the `FLAME_RUNTIME` environment variable:
+
+```shell
+FLAME_RUNTIME=bun flame dev     # Force Bun behavior
+FLAME_RUNTIME=node flame dev    # Force Node behavior
+FLAME_RUNTIME=deno flame dev    # Force Deno behavior
+```
+
+This is useful for testing or CI environments where the runtime is ambiguous.
+
+## Command Dispatch
+
+Each command maps to a runtime-specific entry point:
+
+| Command   | Bun                    | Node.js                       | Deno                        |
+| --------- | ---------------------- | ----------------------------- | --------------------------- |
+| `dev`     | `server.ts`            | `server.node.ts`              | `server.deno.ts`            |
+| `build`   | `build.ts`             | `build.node.ts`               | `build.deno.ts`             |
+| `preview` | `preview.ts`           | `preview.node.ts`             | `preview.deno.ts`           |
+| `deploy`  | `deploy.ts`            | `deploy.node.ts`              | `deploy.deno.ts`            |
+| `clean`   | `clean.ts` (shared)    | `clean.ts` (shared)           | `clean.ts` (shared)         |
+
+All runtime-specific entry points delegate to a shared implementation (`build.impl.ts`, `preview.impl.ts`, etc.) — only the HTTP server and client bundler differ per runtime.
+
+## Compile Lib Step
+
+Bun executes TypeScript sources directly. Node.js and Deno cannot load JSX/TSX — they need precompiled JavaScript in `.docu/lib/`.
+
+On first `flame dev` or `flame build` for a non-Bun runtime, the CLI runs **`compile-lib.mjs`** automatically:
+
+```
+.docu/lib/
+├── build.js          # compiled from build.impl.ts
+├── server.node.js    # compiled from server.impl.ts + server.node.ts
+├── hydrate.node.js   # compiled from hydrate.node.ts
+└── ...               # all other .ts sources
+```
+
+In a published npm package, `.docu/lib` is included in the package. In a monorepo clone, it is gitignored and compiled lazily.
+
+To trigger compilation manually:
+
+```shell
+node bin/compile-lib.mjs       # Node.js
+deno run -A bin/compile-lib.mjs  # Deno
+```
+
+## Key Differences
+
+### Dev Server
+
+| Aspect         | Bun                        | Node.js                       | Deno                        |
+| -------------- | -------------------------- | ----------------------------- | --------------------------- |
+| Server         | `Bun.serve`                | `node:http` + `@docubook/runt` | Deno HTTP + `@docubook/runt` |
+| HMR            | Bun's file watcher         | Node `fs.watch`               | Deno `--watch`              |
+| TypeScript     | Native                     | Precompiled (`.docu/lib`)     | Precompiled (`.docu/lib`)   |
+| Startup        | ~50ms                      | ~200ms (includes compile)     | ~300ms (includes compile)   |
+
+### Build
+
+| Aspect         | Bun                        | Node.js / Deno                |
+| -------------- | -------------------------- | ----------------------------- |
+| Entry point    | `build.ts` (TS, direct)    | `build.node.ts` / `build.deno.ts` |
+| Implementation | Bun-specific imports       | Shared `build.impl.ts`        |
+| Client bundle  | Bun bundler (`hydrate.ts`) | esbuild (`hydrate.node.ts`)   |
+| Spawn model    | Direct script execution    | In-process `runBuildCli()`    |
+
+### Deploy
+
+The `deploy` command prepares `.docu/dist` for GitHub Pages:
+
+- **Bun**: spawns `bun run build` as a subprocess, then writes `.nojekyll` + `_headers`.
+- **Node / Deno**: runs the build in-process via `build.impl.runBuildCli()`, then writes `.nojekyll`.
+
+Both generate a `.github/workflows/deploy.yml` if one does not exist. The generated workflow uses the appropriate setup action (`oven-sh/setup-bun` vs `actions/setup-node`).
+
+### Deno-Specific Notes
+
+- Deno's `npm:` specifier compatibility for `react-dom/server` resolves to the browser build (`server.browser.js`), which opens a module-scope `MessageChannel`. After build, Flame calls `process.exit(0)` to force a clean exit.
+- The scaffolded `deno.json` sets `nodeModulesDir: "auto"` for npm compatibility.
+- First run may show a freshness warning. Bypass with `DENO_ALLOW_NEWER=true deno task dev`.
+
+## When Each Runtime Shines
+
+| Runtime | Best for                                                  |
+| ------- | --------------------------------------------------------- |
+| **Bun** | Fastest startup, native TypeScript, tightest integration. |
+| **Node** | Existing Node.js projects, corporate environments.        |
+| **Deno** | Security-first setups, single-binary deployments.         |
+
+All three produce **identical static output**. The choice of runtime does not affect the deployed site.

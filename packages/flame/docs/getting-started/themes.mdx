@@ -75,26 +75,26 @@ Themes are powered by `@docubook/themes-colors`, a separate package that ships:
 
 ### Architecture
 
-```
-docu.json → themes.colors
-    │
-    ├── "default" (preset name)
-    │       ↓
-    │   resolveTheme("default", registry)
-    │       ↓
-    │   generateThemeCss(resolved)
-    │       ↓
-    │   CSS variables injected into bundle
-    │
-    └── { "primary": "#FF5733" } (custom hex)
-            ↓
-        resolveTheme({ primary: "#FF5733" }, registry)
-            ↓
-        generateScale → 24 vars · light + dark
-        generateSyntaxScale → 12 syntax tokens · light + dark
-        generateSyntaxCss → syntax highlighting CSS
-            ↓
-        CSS variables injected into bundle
+```mermaid
+graph TD
+    CONFIG["docu.json<br/><small>themes.colors</small>"]
+    PRESET["Preset name<br/><small>e.g. 'default'</small>"]
+    CUSTOM["Custom hex<br/><small>{ primary: '#FF5733' }</small>"]
+    RESOLVE["resolveTheme()<br/><small>preset lookup or hex → HSL</small>"]
+    SCALE["generateThemeCss()<br/><small>24 CSS vars · light + dark</small>"]
+    SYNTAX_KEYS["generateSyntaxScale()<br/><small>12 syntax tokens</small>"]
+    SYNTAX_CSS["generateSyntaxCss()<br/><small>syntax highlighting CSS</small>"]
+    BUNDLE["CSS variables<br/><small>injected into bundle</small>"]
+
+    CONFIG --> PRESET
+    CONFIG --> CUSTOM
+    PRESET --> RESOLVE
+    CUSTOM --> RESOLVE
+    RESOLVE --> SCALE
+    RESOLVE --> SYNTAX_KEYS
+    SYNTAX_KEYS --> SYNTAX_CSS
+    SCALE --> BUNDLE
+    SYNTAX_CSS --> BUNDLE
 ```
 
 The theme CSS is compiled into the same bundle as Tailwind globals and injected as inline `<style>` for FOUC prevention.
