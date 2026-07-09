@@ -1,8 +1,8 @@
 # @docubook/mdx-remote
 
-## 1.1.0
+## 1.0.0
 
-### Minor Changes
+### Initial Release
 
 - [#293](https://github.com/DocuBook/docubook/pull/293) [`e80009d`](https://github.com/DocuBook/docubook/commit/e80009d03dd7c33e0825ebc5c05def76fd749008) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Rewrite `next-mdx-remote` as `@docubook/mdx-remote` (MPL-2.0)
 
