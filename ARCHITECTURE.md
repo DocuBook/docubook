@@ -30,9 +30,7 @@ HTML + assets — no server needed in production.
 | `@docubook/ui-react` | `packages/ui/react` | Reusable DaisyUI + Tailwind CSS React component library (Collapse, Modal, Dropdown, Drawer, Navbar, Pagination, and more). Consumed by flame. Note the path: `packages/ui/react`, not `packages/ui-react`. |
 | `@docubook/themes-colors` | `packages/themes-colors` | Theme color presets (default, freshlime, coffee) — CSS variables per light/dark mode plus syntax highlighting tokens. Consumed by flame via `docu.json → theme.colors`. |
 | `@docubook/cli` | `packages/cli` | Node.js scaffolding CLI (Commander) — template selection, project init, package manager detection. Downloads templates from GitHub release artifacts. |
-| `nextjs` template | `packages/template/nextjs` | Starter template for Vercel deployment (Next.js App Router). **Deprecated.** |
-| `nextjs-docker` template | `packages/template/nextjs-docker` | Starter template for self-hosted Docker deployment (multi-stage Alpine). **Deprecated.** |
-| `react-router` template | `packages/template/react-router` | React Router SSR starter (never completed — see `packages/template/react-router/plan.md`). **Deprecated.** |
+
 
 ### Monorepo Infrastructure
 

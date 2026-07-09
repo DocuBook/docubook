@@ -126,9 +126,6 @@ deno run -A npm:@docubook/flame init
 deno task dev
 ```
 
-> [!WARNING]
-> The `nextjs-vercel`, `nextjs-docker`, and `react-router` templates are **deprecated** and will no longer be maintained. Use `@docubook/flame` as the recommended starting point going forward.
-
 ## Contributing
 
 <!-- prettier-ignore -->
