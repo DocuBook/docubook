@@ -26,7 +26,6 @@ import { htmlShell } from "./html.shared";
 import { generateSearchIndex } from "./search-indexer";
 import { buildClientBundle, computeInlineThemeCss } from "./hydrate.node";
 import { logger } from "./logger";
-import { generateBuildSummary } from "./build-summary";
 import { initSentry, captureException } from "./sentry";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
@@ -396,13 +395,6 @@ export async function runBuild(): Promise<void> {
   logger.indexDone(indexCount, Math.round(performance.now() - t));
 
   logger.routes();
-  console.log("");
-
-  const buildSummary = await generateBuildSummary(DIST_DIR);
-  if (buildSummary) {
-    console.log(buildSummary);
-    console.log("");
-  }
 
   await writeCache(cache);
 
