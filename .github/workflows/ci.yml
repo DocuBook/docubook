@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: step-security/setup-bun@v1
+      - uses: step-security/setup-bun@v2
         if: matrix.task == 'build' || matrix.task == 'test'
 
       - uses: pnpm/action-setup@v6
