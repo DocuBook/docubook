@@ -92,18 +92,7 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
           });
         },
       },
-      {
-        name: "mdx-jsx-runtime",
-        setup(build) {
-          build.onLoad({ filter: /next-mdx-remote[/\\].*jsx-runtime/ }, () => {
-            const source =
-              nodeEnv === "production"
-                ? `module.exports.jsxRuntime = require("react/jsx-runtime");`
-                : `module.exports.jsxRuntime = require("react/jsx-dev-runtime");`;
-            return { contents: source, loader: "js" };
-          });
-        },
-      },
+
     ],
   });
 

@@ -1,5 +1,5 @@
-import { compileMDX } from "next-mdx-remote/rsc";
-import { serialize } from "next-mdx-remote/serialize";
+import { compileMDX } from "@docubook/mdx-remote/rsc";
+import { serialize } from "@docubook/mdx-remote/serialize";
 import type { Node } from "unist";
 import { visit } from "unist-util-visit";
 import remarkGfm from "remark-gfm";
@@ -18,7 +18,7 @@ import type { Pluggable } from "unified";
 export { serialize };
 
 // Re-export MDXRemote for client-side hydration
-export { MDXRemote } from "next-mdx-remote";
+export { MDXRemote } from "@docubook/mdx-remote";
 
 interface TextNode extends Node {
   type: "text";

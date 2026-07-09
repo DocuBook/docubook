@@ -46,9 +46,9 @@
   "author-url": "https://wildan.dev",
   "license": "MIT",
   "dependencies": {
-    "@11ty/gray-matter": "^2.0.2",
+    "@11ty/gray-matter": "^2.1.0",
     "clsx": "^2.1.1",
-    "next-mdx-remote": "^6.0.0",
+    "@docubook/mdx-remote": "workspace:^",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-code-titles": "^1.2.1",
     "rehype-prism-plus": "^2.0.2",

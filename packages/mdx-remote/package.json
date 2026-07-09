@@ -1,0 +1,55 @@
+{
+  "name": "@docubook/mdx-remote",
+  "version": "1.0.0",
+  "description": "Rewrite of next-mdx-remote: runtime MDX compilation and rendering for DocuBook",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./rsc": {
+      "types": "./dist/rsc.d.ts",
+      "import": "./dist/rsc.js",
+      "default": "./dist/rsc.js"
+    },
+    "./serialize": {
+      "types": "./dist/serialize.d.ts",
+      "import": "./dist/serialize.js",
+      "default": "./dist/serialize.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "license": "MPL-2.0",
+  "dependencies": {
+    "@mdx-js/mdx": "^3.0.1",
+    "@mdx-js/react": "^3.0.1",
+    "unist-util-remove": "^4.0.0",
+    "unist-util-visit": "^5.1.0",
+    "vfile": "^6.0.1",
+    "vfile-matter": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "@types/unist": "^3.0.3",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "unified": "^11.0.0",
+    "react": "^19.0.0"
+  }
+}
