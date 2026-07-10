@@ -408,11 +408,11 @@ describe("server: plugin security header wrapping", () => {
     expect(csp).toContain("frame-ancestors 'none'");
     // unsafe-eval is included because server.ts passes allowEval=true for dev server
     expect(csp).toContain("unsafe-eval");
-    // Nonce is present and valid UUID
-    const nonceMatch = csp!.match(/'nonce-([a-f0-9-]+)'/);
+    // Nonce is present and valid base64
+    const nonceMatch = csp!.match(/'nonce-([A-Za-z0-9+/=]+)'/);
     expect(nonceMatch).not.toBeNull();
     expect(nonceMatch![1]).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+      /^[A-Za-z0-9+/]{22}==$/
     );
   });
 

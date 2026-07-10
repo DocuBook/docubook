@@ -22,6 +22,7 @@ export async function initSentry(): Promise<void> {
   } catch {
     // @sentry/bun not installed — silently skip
     sentry = null;
+    initialized = false;
   }
 }
 
