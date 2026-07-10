@@ -118,11 +118,16 @@ export function wrapPluginResponse(
       securedHeaders.set(key, value);
     }
   }
+  let body = pluginResponse.body;
   const contentType = securedHeaders.get("Content-Type") || "";
   if (contentType.includes("text/html") && !securedHeaders.has("Content-Security-Policy")) {
-    securedHeaders.set("Content-Security-Policy", cspHeader(generateNonce(), allowEval));
+    const nonce = generateNonce();
+    securedHeaders.set("Content-Security-Policy", cspHeader(nonce, allowEval));
+    if (typeof body === "string") {
+      body = injectNonce(body, nonce);
+    }
   }
-  return new Response(pluginResponse.body, {
+  return new Response(body, {
     status: pluginResponse.status,
     statusText: pluginResponse.statusText,
     headers: securedHeaders,
