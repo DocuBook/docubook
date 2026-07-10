@@ -24,9 +24,9 @@ describe("server: security", () => {
   });
 
   describe("generateNonce", () => {
-    it("returns a UUID string", () => {
+    it("returns a base64 string", () => {
       const nonce = generateNonce();
-      expect(nonce).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+      expect(nonce).toMatch(/^[A-Za-z0-9+/]{22}==$/);
     });
 
     it("returns unique values", () => {
