@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { resolve } from "node:path";
 import { realpathSync } from "node:fs";
 
@@ -10,7 +11,7 @@ export const SECURITY_HEADERS: Record<string, string> = {
 };
 
 export function generateNonce(): string {
-  return crypto.randomUUID();
+  return randomBytes(16).toString("base64");
 }
 
 export function cspHeader(nonce: string, allowEval = false): string {
