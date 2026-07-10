@@ -214,11 +214,11 @@ export function generateScale(primary: HslColor): {
   // Dark mode — invert the lightness scale
   const dark: Record<string, string> = {
     background: `${h} ${Math.max(primaryS - 40, 5)}% 11%`,
-    foreground: `${h} ${primaryS - 10}% 93%`,
+    foreground: `${h} ${Math.max(primaryS - 10, 5)}% 93%`,
     card: `${h} ${Math.max(primaryS - 40, 5)}% 14%`,
-    "card-foreground": `${h} ${primaryS - 10}% 93%`,
+    "card-foreground": `${h} ${Math.max(primaryS - 10, 5)}% 93%`,
     popover: `${h} ${Math.max(primaryS - 40, 5)}% 14%`,
-    "popover-foreground": `${h} ${primaryS - 10}% 93%`,
+    "popover-foreground": `${h} ${Math.max(primaryS - 10, 5)}% 93%`,
     primary: `${h} ${primaryS + 10}% 67%`,
     "primary-foreground": `${h} ${Math.max(primaryS - 20, 5)}% 11%`,
     secondary: `${h + 10} ${Math.max(primaryS - 50, 5)}% 18%`,
