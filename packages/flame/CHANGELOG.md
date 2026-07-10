@@ -1,5 +1,21 @@
 # @docubook/flame
 
+## 1.5.2
+
+### Patch Changes
+
+- [#304](https://github.com/DocuBook/docubook/pull/304) [`0dd505a`](https://github.com/DocuBook/docubook/commit/0dd505a917bf547f33338c86f9ba8d8859fbb4ef) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - fix(security): inject nonce into inline script tags in plugin HTML responses
+
+  - Store generated nonce and inject it into inline `<script>` tags via `injectNonce`
+  - Previously only CSP header had the nonce, causing inline scripts (theme toggle, etc.) to be blocked by CSP
+
+- [#302](https://github.com/DocuBook/docubook/pull/302) [`25499c7`](https://github.com/DocuBook/docubook/commit/25499c79c857aaed391990aafb724085ed212f23) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - fix(security): replace randomUUID with randomBytes for stronger CSP nonce
+
+  - Use `crypto.randomBytes(16).toString("base64")` instead of `crypto.randomUUID()`
+  - Provides full 128-bit entropy (vs 122-bit UUID v4) and shorter nonce string
+  - Reset `initialized` flag when `@sentry/bun` dynamic import fails
+  - Update nonce assertions in tests from UUID pattern to base64 pattern
+
 ## 1.5.1
 
 ### Patch Changes
