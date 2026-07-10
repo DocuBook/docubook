@@ -1,5 +1,14 @@
 # @docubook/themes-colors
 
+## 1.0.1
+
+### Patch Changes
+
+- [#299](https://github.com/DocuBook/docubook/pull/299) [`d6f9038`](https://github.com/DocuBook/docubook/commit/d6f9038d73e29e5f89410dd75c0e0de286185b82) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - fix(hex-to-hsl): prevent negative saturation in dark mode color scale
+
+  - Clamp `secondary-foreground` saturation to minimum 5% in dark mode
+  - Add missing `%` unit on `border-color` value in dark mode
+
 ## 1.0.0
 
 ### Patch Changes
