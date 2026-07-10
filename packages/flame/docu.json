@@ -16,7 +16,7 @@
     "hero": {
       "tagline": "Runtime-agnostic · React + MDX",
       "headline": "Fast as Flame 🔥",
-      "description": "A documentation framework that runs on Bun, Node.js, and Deno. Powered by Bun's blazing-fast toolchain — static docs with React + MDX, deploy anywhere.",
+      "description": "The docs framework that runs on Bun, Node.js, and Deno. Powered by Bun's blazing-fast toolchain — generating pure static docs you can deploy anywhere.",
       "actions": [
         {
           "text": "Get Started",
