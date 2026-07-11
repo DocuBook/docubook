@@ -5,6 +5,7 @@ import { ChevronDown } from "lucide-react";
 import Anchor from "./Anchor";
 import type { DocuRoute } from "../node/types";
 import { cn, docsHtmlHref } from "../node/utils";
+import { config as docuConfig } from "../node/client-routes";
 
 interface SublinkProps extends DocuRoute {
   level: number;
@@ -34,7 +35,7 @@ export default function Sublink({
   });
 
   // Shared padding based on nesting level
-  const levelPadding = cn(level === 1 && "pl-2", level === 2 && "pl-4", level >= 3 && "pl-6");
+  const levelPadding = cn(level === 1 && "pl-4", level === 2 && "pl-8", level >= 3 && "pl-12");
   const isActive = currentPathname === fullHref || currentPathname === `${fullHref}.html`;
   const activeRef = useRef<HTMLDivElement>(null);
 
@@ -58,16 +59,49 @@ export default function Sublink({
       </Anchor>
     );
 
+    // Level 0: border handled by Menu.tsx wrapper
+    // Level 1+: border at natural indented position, follows levelPadding
+    if (level >= 1) {
+      // Separator mode: active border overlaps at ul's edge
+      // Each parent section adds its levelPadding to the offset
+      if (docuConfig.sidebar?.context === "separator") {
+        // Calculate accumulated offset from ul's edge to this item's natural position
+        // Base: ul border(2px) + pl-3(12px) = 14px
+        // Each parent section adds: level 1→16px, level 2→32px, level 3+→48px
+        const sectionOffsets: Record<number, number> = { 1: 16, 2: 32 };
+        let overlap = 14;
+        for (let l = 1; l < level; l++) {
+          overlap += sectionOffsets[l] ?? 48;
+        }
+
+        return (
+          <div
+            ref={activeRef}
+            className={cn("border-l-2", isActive ? "border-primary" : "border-transparent")}
+            style={{ marginLeft: `-${overlap}px` }}
+          >
+            <div className={cn("py-1 pl-3", levelPadding)}>{link}</div>
+          </div>
+        );
+      }
+
+      return (
+        <div
+          ref={activeRef}
+          className={cn(
+            "py-1",
+            levelPadding,
+            "border-l-2",
+            isActive ? "border-primary" : "border-base-300"
+          )}
+        >
+          {link}
+        </div>
+      );
+    }
+
     return (
-      <div
-        ref={activeRef}
-        className={cn(
-          "py-1",
-          levelPadding,
-          level >= 2 && "border-l-2",
-          level >= 2 && (isActive ? "border-primary" : "border-base-300")
-        )}
-      >
+      <div ref={activeRef} className={cn("py-1", levelPadding)}>
         {link}
       </div>
     );

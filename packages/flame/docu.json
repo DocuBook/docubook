@@ -48,7 +48,7 @@
         "icon": "Search",
         "title": "Full-Text Search",
         "description": "Built-in search with Algolia integration for easy content discovery.",
-        "link": "/docs/getting-started/search"
+        "link": "/docs/getting-started/search/built-in"
       }
     ]
   },
