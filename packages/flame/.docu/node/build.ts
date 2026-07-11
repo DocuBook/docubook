@@ -25,6 +25,7 @@ import { scanMdxFiles } from "./utils";
 import type { BuildCache, CliArgs } from "./types";
 import { generateNonce } from "./security";
 import type { PageMeta, PageContext } from "./plugin";
+import { buildSeoMeta } from "./seo";
 import DocsPage from "../pages/docs/[[...slug]]";
 import IndexPage from "../pages/index";
 import NotFoundPage from "../pages/404";
@@ -140,11 +141,13 @@ async function renderDocsPage(
 
   const depth = slug ? slug.split("/").length : 1;
   const favicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
+  const seo = buildSeoMeta(docuConfig, frontmatter, slug || "");
   let html = htmlShell({
     title,
     description,
     body,
     favicon,
+    seo,
     css: assetManifest.css,
     js: assetManifest.js,
     nonce,
@@ -335,11 +338,13 @@ async function build() {
 
   const landingPage = React.createElement(IndexPage);
   const landingFavicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
+  const landingSeo = buildSeoMeta(docuConfig, {}, "");
   const landingHtml = htmlShell({
     title: docuConfig.meta?.title || "DocuBook",
     description: docuConfig.meta?.description || "",
     body: renderToString(landingPage),
     favicon: landingFavicon,
+    seo: landingSeo,
     css: assetManifest.css,
     js: assetManifest.js,
     nonce: generateNonce(),
@@ -358,6 +363,7 @@ async function build() {
     description: "",
     body: renderToString(notFoundPage),
     favicon: notFoundFavicon,
+    headExtra: ['<meta name="robots" content="noindex,follow">'],
     css: assetManifest.css,
     js: assetManifest.js,
     nonce: generateNonce(),

@@ -4,7 +4,8 @@
     "title": "Flame - Docs Framework",
     "description": "A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.",
     "baseURL": "https://docubook.pro",
-    "favicon": "/docs/assets/images/favicon.ico"
+    "favicon": "/docs/assets/images/favicon.ico",
+    "ogImage": "/docs/assets/images/og.png"
   },
   "sidebar": {
     "context": "separator"

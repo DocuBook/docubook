@@ -8,6 +8,8 @@
 
 import { escapeHtml } from "./escapeHtml";
 
+import type { SeoMeta } from "./seo";
+
 export interface HtmlShellOptions {
   title: string;
   description: string;
@@ -30,6 +32,8 @@ export interface HtmlShellOptions {
   headExtra?: string[];
   /** HTML strings to inject before `</body>`, after the main script (from plugin `injectBody` hooks). */
   bodyExtra?: string[];
+  /** SEO meta tags derived from config + frontmatter */
+  seo?: SeoMeta;
 }
 
 export function htmlShell(opts: HtmlShellOptions): string {
@@ -55,6 +59,18 @@ export function htmlShell(opts: HtmlShellOptions): string {
   const depthPrefix = depth === 0 ? "" : "../".repeat(depth);
   const assetPrefix = depthPrefix + "assets/";
   const resolvePath = (path: string) => (path.startsWith("/") ? depthPrefix + path.slice(1) : path);
+
+  // Build SEO meta tags (OG, Twitter, canonical)
+  let seoTags = "";
+  if (opts.seo) {
+    const s = opts.seo;
+    const e = escapeHtml;
+    seoTags = `\n  <meta property="og:title" content="${e(title)}" />\n  <meta property="og:description" content="${e(description)}" />\n  <meta property="og:url" content="${e(s.url)}" />\n  <meta property="og:type" content="website" />\n  <meta property="og:site_name" content="${e(s.siteName)}" />\n  <meta name="twitter:card" content="summary_large_image" />\n  <link rel="canonical" href="${e(s.url)}" />`;
+    if (s.image) {
+      seoTags += `\n  <meta property="og:image" content="${e(s.image)}" />`;
+    }
+  }
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -65,6 +81,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
   ${favicon ? `<link rel="icon" type="image/x-icon" href="${escapeHtml(resolvePath(favicon))}">` : ""}${themeStyle}
   <link rel="stylesheet" href="${escapeHtml(assetPrefix + css)}">
   ${csp ? `<meta http-equiv="Content-Security-Policy" content="${escapeHtml(csp)}">` : ""}
+  ${seoTags}
   <script${nonceAttr}>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>${headInjection}
 </head>
 <body>
