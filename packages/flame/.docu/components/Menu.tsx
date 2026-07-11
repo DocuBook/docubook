@@ -36,12 +36,38 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
   if (!currentPath.startsWith("/docs")) return null;
 
   const mode = docuConfig.sidebar?.context || "dropdown";
-
-  // Helper: check if a sublink under a given route matches the current path
-  const isItemActive = (itemHref: string, parentRouteHref: string) => {
-    const fullHref = `/docs${parentRouteHref}${itemHref}`;
-    return currentPath === fullHref || currentPath === `${fullHref}.html`;
+  const navProps = {
+    "aria-label": "Documentation navigation" as const,
+    className: cn("transition-all duration-200", className),
   };
+
+  // Shared nav item with border-left overlap wrapper
+  const renderBorderItem = (item: DocuRoute, parentRouteHref: string, key: string) => {
+    const fullHref = `/docs${parentRouteHref}${item.href}`;
+    const isActive = currentPath === fullHref || currentPath === `${fullHref}.html`;
+    return (
+      <li key={key}>
+        <div
+          className={cn(
+            "-ml-[14px] border-l-2",
+            isActive ? "border-primary" : "border-transparent"
+          )}
+        >
+          <div className="pl-3">
+            <Sublink
+              {...item}
+              href={item.href}
+              level={0}
+              onNavigate={onNavigate}
+              parentHref={`/docs${parentRouteHref}`}
+            />
+          </div>
+        </div>
+      </li>
+    );
+  };
+
+  const sharedUlClasses = "border-base-300 flex flex-col gap-0.5 border-l-2 pb-0.5 pl-3 pt-0.5";
 
   // Separator mode: render all context sections as group headers + nav items
   if (mode === "separator") {
@@ -50,62 +76,24 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
     // No context routes defined — fall back to flat list of all routes
     if (contextRoutes.length === 0) {
       return (
-        <nav
-          aria-label="Documentation navigation"
-          className={cn("transition-all duration-200", className)}
-        >
-          <ul className="flex flex-col gap-0.5 py-4">
-            {menuRoutes.map((route) => (
-              <li key={route.href}>
-                <Sublink
-                  {...route}
-                  href={route.href}
-                  level={0}
-                  onNavigate={onNavigate}
-                  parentHref="/docs"
-                />
-              </li>
-            ))}
+        <nav {...navProps}>
+          <ul className={sharedUlClasses}>
+            {menuRoutes.map((route) => renderBorderItem(route, "", route.href))}
           </ul>
         </nav>
       );
     }
 
     return (
-      <nav
-        aria-label="Documentation navigation"
-        className={cn("transition-all duration-200", className)}
-      >
+      <nav {...navProps}>
         {contextRoutes.map((route, i) => (
           <div key={route.href} className={i > 0 ? "mt-6 lg:mt-8" : ""}>
             <SidebarGroupHeader
               icon={route.context?.icon}
               title={route.context?.title || route.title}
             />
-            <ul className="border-base-300 flex flex-col gap-0.5 border-l-2 pb-0.5 pl-3 pt-0.5">
-              {route.items?.map((item) => {
-                const isActive = isItemActive(item.href, route.href);
-                return (
-                  <li key={item.href}>
-                    <div
-                      className={cn(
-                        "-ml-[14px] border-l-2",
-                        isActive ? "border-primary" : "border-transparent"
-                      )}
-                    >
-                      <div className="pl-3">
-                        <Sublink
-                          {...item}
-                          href={item.href}
-                          level={0}
-                          onNavigate={onNavigate}
-                          parentHref={`/docs${route.href}`}
-                        />
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
+            <ul className={sharedUlClasses}>
+              {route.items?.map((item) => renderBorderItem(item, route.href, item.href))}
             </ul>
           </div>
         ))}
@@ -131,10 +119,7 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
   if (!contextRoute) return null;
 
   return (
-    <nav
-      aria-label="Documentation navigation"
-      className={cn("transition-all duration-200", className)}
-    >
+    <nav {...navProps}>
       <ul className="flex flex-col gap-0.5 py-4">
         <li key={contextRoute.title}>
           <Sublink
