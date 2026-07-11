@@ -9,6 +9,15 @@
   "trailingSlash": false,
   "headers": [
     {
+      "source": "/docs/assets/images/og.png",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000"
+        }
+      ]
+    },
+    {
       "source": "/assets/(.*)",
       "headers": [
         {
