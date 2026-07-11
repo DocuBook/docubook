@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import Anchor from "./Anchor";
 import { cn } from "../node/utils";
+import { config as docuConfig } from "../node/client-routes";
 import {
   Navbar as BaseNavbar,
   Logo as BaseLogo,
@@ -172,7 +173,7 @@ export function NavbarBrand({
 }
 
 export function GitHubLink({ repoUrl }: { repoUrl?: string }) {
-  if (!repoUrl) return null;
+  if (!docuConfig.repo?.edit || !repoUrl) return null;
 
   return (
     <a
