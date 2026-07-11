@@ -9,7 +9,7 @@
   "trailingSlash": false,
   "headers": [
     {
-      "source": "/assets/(.*)",
+      "source": "/(?:docs/)?assets/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
