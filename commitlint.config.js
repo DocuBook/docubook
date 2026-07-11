@@ -30,7 +30,7 @@ const config = {
       fd: "docs: fix typos",
       af: "fix: fix something",
     },
-    scopes: ["docs", "packages", "cli", "core", "mdx-content", "flame", "template"],
+    scopes: ["docs", "packages", "core", "mdx-content", "flame"],
     defaultScope: "empty",
     allowEmptyScopes: true,
     emptyScopesAlias: "empty",
