@@ -186,4 +186,82 @@ describe("htmlShell", () => {
       expect(html).toContain("Foo &amp; Bar");
     });
   });
+
+  describe("SEO meta tags", () => {
+    const SEO_OPTS = {
+      ...MINIMAL_OPTS,
+      seo: {
+        url: "https://docubook.pro/docs/test",
+        siteName: "Flame Docs",
+        image: "https://docubook.pro/og.png",
+      },
+    };
+
+    it("renders og:title from page title", () => {
+      const html = htmlShell(SEO_OPTS);
+      expect(html).toContain('property="og:title"');
+      expect(html).toContain('content="Test"');
+    });
+
+    it("renders og:description from page description", () => {
+      const html = htmlShell(SEO_OPTS);
+      expect(html).toContain('property="og:description"');
+      expect(html).toContain('content="A test page"');
+    });
+
+    it("renders og:url from seo.url", () => {
+      const html = htmlShell(SEO_OPTS);
+      expect(html).toContain('property="og:url"');
+      expect(html).toContain('content="https://docubook.pro/docs/test"');
+    });
+
+    it("renders og:type as website", () => {
+      const html = htmlShell(SEO_OPTS);
+      expect(html).toContain('property="og:type"');
+      expect(html).toContain('content="website"');
+    });
+
+    it("renders og:site_name from seo.siteName", () => {
+      const html = htmlShell(SEO_OPTS);
+      expect(html).toContain('property="og:site_name"');
+      expect(html).toContain('content="Flame Docs"');
+    });
+
+    it("renders og:image when seo.image is set", () => {
+      const html = htmlShell(SEO_OPTS);
+      expect(html).toContain('property="og:image"');
+      expect(html).toContain('content="https://docubook.pro/og.png"');
+    });
+
+    it("renders twitter:card as summary_large_image", () => {
+      const html = htmlShell(SEO_OPTS);
+      expect(html).toContain('name="twitter:card"');
+      expect(html).toContain('content="summary_large_image"');
+    });
+
+    it("renders canonical link", () => {
+      const html = htmlShell(SEO_OPTS);
+      expect(html).toContain('<link rel="canonical"');
+      expect(html).toContain('href="https://docubook.pro/docs/test"');
+    });
+
+    it("omits og:image when seo has no image", () => {
+      const html = htmlShell({
+        ...MINIMAL_OPTS,
+        seo: {
+          url: "https://docubook.pro/docs/test",
+          siteName: "Flame Docs",
+        },
+      });
+      expect(html).not.toContain('property="og:image"');
+    });
+
+    it("omits all seo tags when seo is not provided", () => {
+      const html = htmlShell(MINIMAL_OPTS);
+      expect(html).not.toContain('property="og:title"');
+      expect(html).not.toContain('property="og:url"');
+      expect(html).not.toContain('name="twitter:card"');
+      expect(html).not.toContain('rel="canonical"');
+    });
+  });
 });

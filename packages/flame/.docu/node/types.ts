@@ -20,6 +20,8 @@ export interface DocuMeta {
   description: string;
   baseURL: string;
   favicon?: string;
+  /** Default OG image path (e.g. /docs/assets/images/og.png). Used when page frontmatter has no image. */
+  ogImage?: string;
 }
 
 export interface SocialLink {

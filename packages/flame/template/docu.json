@@ -4,7 +4,8 @@
     "title": "My Docs",
     "description": "Documentation powered by DocuBook Flame",
     "baseURL": "http://localhost:3000",
-    "favicon": "/docs/assets/images/favicon.ico"
+    "favicon": "/docs/assets/images/favicon.ico",
+    "ogImage": "/docs/assets/images/og.png"
   },
   "themes": {
     "colors": "default"

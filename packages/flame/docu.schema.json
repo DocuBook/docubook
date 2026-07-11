@@ -15,7 +15,11 @@
         "title": { "type": "string", "description": "Site title" },
         "description": { "type": "string", "description": "Site description" },
         "baseURL": { "type": "string", "description": "Base URL for the site" },
-        "favicon": { "type": "string", "description": "Path to favicon" }
+        "favicon": { "type": "string", "description": "Path to favicon" },
+        "ogImage": {
+          "type": "string",
+          "description": "Default OG image path (e.g. /docs/assets/images/og.png)"
+        }
       },
       "required": ["title"]
     },
