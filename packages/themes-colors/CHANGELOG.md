@@ -1,5 +1,13 @@
 # @docubook/themes-colors
 
+## 1.0.2
+
+### Patch Changes
+
+- [#305](https://github.com/DocuBook/docubook/pull/305) [`11c7167`](https://github.com/DocuBook/docubook/commit/11c7167ea8a064767bdddc3d53aac1aa1f21575b) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Fix saturation clamping in `generateScale` dark mode
+
+  Three template literals in dark mode (`foreground`, `card-foreground`, `popover-foreground`) used `primaryS - 10` without `Math.max`, producing negative saturation values when `primaryS < 10`. Wrapped all `primaryS - N` expressions with `Math.max` to ensure valid CSS output.
+
 ## 1.0.1
 
 ### Patch Changes
