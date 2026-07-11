@@ -78,7 +78,9 @@ flowchart TD
     Load --> FM["transformFrontmatter"]
     FM --> Compile["compileMdx<br/>remark + rehype plugins"]
     Compile --> Render["renderToString"]
-    Render --> Collect["collectHead / collectBody"]
+    Render --> BuildSeo["buildSeoMeta(config, frontmatter, slug)\nderives OG/Twitter/canonical tags"]
+    BuildSeo --> HtmlShell["htmlShell({ seo, ... })\nrenders meta tags in <head>"]
+    HtmlShell --> Collect["collectHead / collectBody"]
     Collect --> Transform["transformHtml"]
     Transform --> Write["write HTML<br/>(per-page nonce)"]
 
@@ -169,7 +171,17 @@ Condensed from the retired ADRs — these commitments are still in force:
    first `Response` wins). Sequential execution in registration order; no
    plugins means no behavior change. Implementation:
    `packages/flame/.docu/node/plugin.ts`.
-10. **Multi-runtime via duplication at the entry layer, not abstraction of Bun
+11. **SEO meta tags from existing config — zero new deps, zero required config.**
+    `buildSeoMeta()` in `packages/flame/.docu/node/seo.ts` derives
+    `og:title`, `og:description`, `og:url`, `og:type`, `og:site_name`,
+    `twitter:card`, and canonical link from `docuConfig` + per-page frontmatter.
+    `og:image` falls back from `frontmatter.image` → `meta.ogImage` → undefined.
+    Image resolution uses the standard URL constructor (Web API). The 404 page
+    omits OG tags and emits `<meta name="robots" content="noindex,follow">`.
+    Future auto-generated OG images (Satori + resvg) belong in an optional
+    `@docubook/plugin-og-image` plugin using the existing `onEnd` + `transformFrontmatter` hooks.
+
+12. **Multi-runtime via duplication at the entry layer, not abstraction of Bun
     code.** The Bun entry files (`server.ts`, `build.ts`, `preview.ts`,
     `deploy.ts`) delegate to shared `*.impl.ts` files. Node/Deno get parallel
     entries (`*.node.ts` / `*.deno.ts`) that swap only the Bun-coupled leaves:

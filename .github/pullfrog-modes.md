@@ -16,12 +16,12 @@ You are working on the DocuBook monorepo. Follow these guidelines:
 ### Architecture
 
 - **Monorepo**: pnpm workspaces, Turborepo (build/lint/typecheck/test orchestration), Changesets (versioning).
-- **Packages**: `packages/core` (MDX compile), `packages/mdx-content` (React MDX components + framework adapters), `packages/flame` (Bun SSG), `packages/cli` (scaffolding), `packages/ui/react` (DaisyUI components), `packages/themes-colors` (theme presets).
+- **Packages**: `packages/core` (MDX compile), `packages/mdx-content` (React MDX components + framework adapters), `packages/mdx-remote` (runtime MDX compilation, rewrite of next-mdx-remote), `packages/flame` (Bun SSG), `packages/ui/react` (DaisyUI components), `packages/themes-colors` (theme presets).
 - **Production site**: `packages/flame` builds the docs site (docubook.pro), deployed to Vercel as static output.
 
 ### Key Constraints
 
-- **No new dependencies** if stdlib or existing dep suffices. flame uses Bun stdlib (no Express/koa). CLI uses Commander 12.
+- **No new dependencies** if stdlib or existing dep suffices. flame uses Bun stdlib (no Express/koa).
 - **React 19.2** — all packages must stay compatible. Overrides in root `pnpm-workspace.yaml`.
 - **TypeScript** — strict mode. Tests use Vitest 4 + jsdom.
 - **Lint**: ESLint 9 flat config + perfectionist. Prettier 3 + Tailwind plugin. Husky 9 + commitlint enforce conventional commits.
@@ -67,9 +67,11 @@ Theme presets: default (blue, ~210° hue), freshlime (~85°), coffee (~25-35°).
 24 CSS variables per mode (light + dark) + syntax highlighting tokens.
 Consumed by flame via `docu.json → theme.colors`.
 
-#### @docubook/cli
-Node.js CLI (Commander 12). Scaffolds projects from template artifacts on GitHub.
-Package manager auto-detection. Prompt-based template selection.
+#### @docubook/mdx-remote
+Runtime MDX compilation and rendering — rewrite of next-mdx-remote for DocuBook.
+Provides `serialize()`, `MDXRemote`, and RSC exports (`./rsc`, `./serialize`).
+Used by `@docubook/core` as the underlying MDX runtime.
+No framework coupling — works with any React setup.
 
 ### Data Flow
 
@@ -91,7 +93,7 @@ Build pipeline (flame):
 
 ### Testing
 
-- `vitest run` per package. Core tests: pure MDX compilation. mdx-content tests: component rendering with @testing-library/react. flame tests: build pipeline, server, plugin system. CLI tests: prompt handling, template download.
+- `vitest run` per package. Core tests: pure MDX compilation. mdx-content tests: component rendering with @testing-library/react. flame tests: build pipeline, server, plugin system. mdx-remote tests: serialization, RSC exports.
 - Run tests in the package directory: `cd packages/{name} && pnpm test`
 
 ### Build & CI
@@ -119,7 +121,7 @@ You are reviewing a PR / code change in the DocuBook monorepo. Evaluate against 
    - SSG/build/dev server → `@docubook/flame` (Bun-only)
    - DaisyUI components → `@docubook/ui-react`
    - Theme/color utilities → `@docubook/themes-colors`
-   - CLI/tooling → `@docubook/cli`
+   - Runtime MDX compilation → `@docubook/mdx-remote`
    - Template/Adapters → respective template packages
 
 2. **Framework coupling**: flame code must NOT depend on Next.js or vice versa.
@@ -198,7 +200,7 @@ For each affected package, determine:
 | New MDX component | `@docubook/mdx-content` | flame (registry) |
 | New DaisyUI component | `@docubook/ui-react` | flame (registry.ts) |
 | Build pipeline change | `@docubook/flame` (.docu/node/) | — |
-| Config schema change | `@docubook/flame` (types.ts) | cli, docu.schema.json |
+| Config schema change | `@docubook/flame` (types.ts) | docu.schema.json |
 | Plugin hook addition | `@docubook/flame` (plugin.ts) | plugin-builder, build, server |
 | New theme | `@docubook/themes-colors` | flame (theme resolution) |
 | API / adapter | `@docubook/mdx-content/adapters` | template packages |
@@ -240,6 +242,6 @@ Known architectural commitments (do not contradict):
 
 - All code changes on feature branches from `main`.
 - Conventional commits: `type(scope): description` (feat, fix, refactor, chore, docs, test, ci).
-- Changeset required for any public package version change (core, mdx-content, flame, cli, ui-react, themes-colors).
+- Changeset required for any public package version change (core, mdx-content, mdx-remote, flame, ui-react, themes-colors).
 - PR description should link to the plan or issue.
 - Architecture documentation lives in the root `ARCHITECTURE.md`. Update it when changing component inventory, data flow, security model, or key decisions.
