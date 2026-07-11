@@ -5,6 +5,7 @@ const shared: Options = {
   target: "es2020",
   dts: true,
   sourcemap: true,
+  splitting: true,
 };
 
 // Bundling collapses the per-file "use client" directives, so the

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { BuildPluginBuilder } from "../node/plugin-builder";
-import { htmlShell } from "../node/html";
+import { htmlShell } from "../node/html.shared";
 import { createBuilder, pageCtx, htmlOpts, devCtx } from "./helpers";
 import type { Pluggable } from "unified";
 

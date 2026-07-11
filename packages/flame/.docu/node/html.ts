@@ -1,30 +1,5 @@
-import type { SeoMeta } from "./seo";
-
-export interface HtmlShellOptions {
-  title: string;
-  description: string;
-  body: string;
-  favicon: string;
-  css: string;
-  js: string;
-  nonce?: string;
-  /**
-   * Content-Security-Policy value (from `cspHeader()` in security.ts).
-   * When provided, injects `<meta http-equiv="Content-Security-Policy">` in `<head>`.
-   * Essential for static deployment where HTTP headers cannot be set.
-   */
-  csp?: string;
-  extraScripts?: string;
-  themeCss?: string;
-  /** Depth from document root (0=root, 1=subdir, 2=sub/subdir). Used for relative asset paths. */
-  depth?: number;
-  /** HTML strings to inject before `</head>` (from plugin `injectHead` hooks). */
-  headExtra?: string[];
-  /** HTML strings to inject before `</body>`, after the main script (from plugin `injectBody` hooks). */
-  bodyExtra?: string[];
-  /** SEO meta tags derived from config + frontmatter */
-  seo?: SeoMeta;
-}
+import type { HtmlShellOptions } from "./html.shared";
+export type { HtmlShellOptions };
 
 export function htmlShell(opts: HtmlShellOptions): string {
   const {

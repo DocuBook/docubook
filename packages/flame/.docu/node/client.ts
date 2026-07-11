@@ -70,7 +70,11 @@ function hydrateMdxContent() {
     const compiledSource = JSON.parse(sourceEl.textContent || "");
     const components = createMdxComponents();
     createRoot(island).render(
-      React.createElement(MDXRemote, { compiledSource, scope: {}, frontmatter: {}, components })
+      React.createElement(
+        React.Suspense,
+        { fallback: null },
+        React.createElement(MDXRemote, { compiledSource, scope: {}, frontmatter: {}, components })
+      )
     );
   } catch (e) {
     console.error("[mdx-hydrate]", e);

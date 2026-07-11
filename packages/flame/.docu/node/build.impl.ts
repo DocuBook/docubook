@@ -31,7 +31,7 @@ import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
 import { scanMdxFiles } from "./utils";
 import type { BuildCache, CliArgs } from "./types";
-import { generateNonce } from "./security";
+import { generateNonce, cspHeader } from "./security";
 import type { PageMeta, PageContext } from "./plugin";
 import { buildSeoMeta } from "./seo";
 import DocsPage from "../pages/docs/[[...slug]]";
@@ -149,12 +149,14 @@ async function renderDocsPage(
   const depth = slug ? slug.split("/").length : 1;
   const favicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
   const seo = buildSeoMeta(docuConfig, frontmatter, slug || "");
+  const csp = cspHeader(nonce, process.env.NODE_ENV !== "production");
   let html = htmlShell({
     title,
     description,
     body,
     favicon,
     seo,
+    csp,
     css: assetManifest.css,
     js: assetManifest.js,
     nonce,
@@ -349,15 +351,17 @@ export async function runBuild(): Promise<void> {
   const landingPage = React.createElement(IndexPage);
   const landingFavicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
   const landingSeo = buildSeoMeta(docuConfig, docuConfig.meta as Record<string, unknown>, "");
+  const landingNonce = generateNonce();
   const landingHtml = htmlShell({
     title: docuConfig.meta?.title || "DocuBook",
     description: docuConfig.meta?.description || "",
     body: renderToString(landingPage),
     favicon: landingFavicon,
     seo: landingSeo,
+    csp: cspHeader(landingNonce, process.env.NODE_ENV !== "production"),
     css: assetManifest.css,
     js: assetManifest.js,
-    nonce: generateNonce(),
+    nonce: landingNonce,
     themeCss: inlineThemeCss,
   });
   await writeFile(join(DIST_DIR, "index.html"), landingHtml);
@@ -368,15 +372,17 @@ export async function runBuild(): Promise<void> {
     React.createElement(NotFoundPage)
   );
   const notFoundFavicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
+  const notFoundNonce = generateNonce();
   const notFoundHtml = htmlShell({
     title: "404 - Not Found",
     description: "",
     body: renderToString(notFoundPage),
     favicon: notFoundFavicon,
     headExtra: ['<meta name="robots" content="noindex,follow">'],
+    csp: cspHeader(notFoundNonce, process.env.NODE_ENV !== "production"),
     css: assetManifest.css,
     js: assetManifest.js,
-    nonce: generateNonce(),
+    nonce: notFoundNonce,
     themeCss: inlineThemeCss,
   });
   await writeFile(join(DIST_DIR, "404.html"), notFoundHtml);
