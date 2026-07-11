@@ -1,5 +1,28 @@
 # @docubook/flame
 
+## 1.5.3
+
+### Patch Changes
+
+- [#308](https://github.com/DocuBook/docubook/pull/308) [`f3c8244`](https://github.com/DocuBook/docubook/commit/f3c8244c2a9e6c7f2d9e7dc35762ab0ebf256f8c) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Fix sidebar border overlap and content layout centering
+
+  - **Separator mode**: level 1+ leaf items now use `-ml-[14px]` overlap wrapper so the active `border-primary` aligns at the ul's gray border edge, consistent with level 0 items
+  - **Dropdown mode**: level 1+ items get `border-l-2` at their natural indented position with `border-base-300` (inactive) / `border-primary` (active) — no overlap, tree structure visible
+  - **Dynamic overlap offset**: separator mode calculates accumulated offset based on nesting level (14px base + parent section padding per level), ensuring correct overlap at ul's edge for any depth
+  - **Typography**: removed `max-w-[500px]!` constraint so content fills available width
+  - **Content layout**: added centering wrapper (`2xl:mx-auto 2xl:max-w-[1300px]`) inside scroll-container so content + TOC stay centered on screens >1440px without shrinking the container
+  - **Fallback and dropdown modes**: aligned with same `border-base-300` ul + `-ml-[14px]` item structure as separator mode for consistency
+  - **DRY refactor**: extracted `renderBorderItem`, `navProps`, and `sharedUlClasses` in Menu.tsx to eliminate duplicated nav item rendering across modes
+
+- [#309](https://github.com/DocuBook/docubook/pull/309) [`0d76dd7`](https://github.com/DocuBook/docubook/commit/0d76dd77ae21e541be1cae7b680db485287bb41d) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - GitHubLink: respect repo.edit flag to hide GitHub icon when edit is disabled
+
+  `GitHubLink` component previously only checked whether a `repoUrl` prop was provided. When `repo.edit` was set to `false` in `docu.json`, the "Edit this page" link correctly disappeared, but the GitHub icon in the sidebar remained visible because `GitHubLink` was unaware of the edit flag.
+
+  Now `GitHubLink` also checks `docuConfig.repo?.edit`, so both the edit link and GitHub icon are consistently hidden when editing is disabled.
+
+- Updated dependencies [[`11c7167`](https://github.com/DocuBook/docubook/commit/11c7167ea8a064767bdddc3d53aac1aa1f21575b)]:
+  - @docubook/themes-colors@1.0.2
+
 ## 1.5.2
 
 ### Patch Changes
