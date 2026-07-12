@@ -133,7 +133,7 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
   const result = await Bun.build({
     entrypoints: [join(LIB_DIR, "client.ts")],
     outdir: ASSETS_DIR,
-    entrypointNaming: "client-[hash].[ext]",
+    naming: "client-[hash].[ext]",
     target: "browser",
     minify: nodeEnv === "production",
     define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
