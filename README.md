@@ -10,7 +10,7 @@
   DocuBook
 </h1>
 <h3 align="center" style="font-size: 20px;">
-  An open-source alternative to Mintlify or GitBook. Write documentation in MDX with your favourite UI library. The toolchain runs on Bun, Node.js, or Deno — output is flat static HTML, no server required.
+  An open-source alternative to Mintlify or GitBook. Write documentation in MDX with React. The toolchain runs on Bun, Node.js, or Deno — output is flat static HTML, no server required.
 </h3>
 
 [![Flame](https://shieldcn.dev/npm/v/@docubook/flame?label=Flame&variant=secondary)](https://www.npmjs.com/package/@docubook/flame)
