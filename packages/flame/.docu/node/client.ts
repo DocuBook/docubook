@@ -86,3 +86,27 @@ if (document.readyState === "loading") {
 } else {
   mountIslands();
 }
+
+// ── Hash scroll compensation ──────────────────────────────────────
+// After hydration, lazy-loaded content (Mermaid via React.lazy) can
+// shift layout and push the hash target (#section-2) off-screen.
+// Poll with rAF for ~1s and re-scroll if the target is below viewport.
+function scrollToHashOnLoad() {
+  const hash = window.location.hash;
+  if (!hash || hash === "#") return;
+  const id = hash.slice(1);
+  let remaining = 60;
+  function tick() {
+    const el = document.getElementById(id);
+    if (el) {
+      const top = el.getBoundingClientRect().top;
+      if (top > window.innerHeight - 100 || top < 0) {
+        el.scrollIntoView();
+      }
+    }
+    if (--remaining > 0) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+scrollToHashOnLoad();
