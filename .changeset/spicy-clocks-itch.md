@@ -17,6 +17,8 @@
 - Lucide icons tree-shaken via esbuild virtual module — only used icons bundled
 - Mermaid lazy-loaded on client via `React.lazy()` — split from main bundle (-36KB)
 - `mdx-content` registry: Mermaid lazy on client, eager on SSR; tsup `splitting: true` enabled
+- CSS preloaded via `<link rel="preload" as="style">` — browser discovers stylesheet before HTML parsing completes
+- JS modulepreloaded via `<link rel="modulepreload">` — browser downloads and compiles module graph ahead of execution
 - `hydrate.ts` (Bun) and `hydrate.node.ts` (esbuild) aligned: removed dead `splitting` config
 
 ### Security

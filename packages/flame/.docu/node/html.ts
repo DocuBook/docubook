@@ -44,6 +44,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
   <title>${Bun.escapeHTML(title)}</title>
   <meta name="description" content="${Bun.escapeHTML(description)}">
   ${favicon ? `<link rel="icon" type="image/x-icon" href="${Bun.escapeHTML(resolvePath(favicon))}">` : ""}${themeStyle}
+  <link rel="preload" href="${Bun.escapeHTML(assetPrefix + css)}" as="style">
   <link rel="stylesheet" href="${Bun.escapeHTML(assetPrefix + css)}">
   ${csp ? `<meta http-equiv="Content-Security-Policy" content="${Bun.escapeHTML(csp)}">` : ""}
   ${seoTags}
@@ -51,6 +52,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
 </head>
 <body>
   <div id="root">${body}</div>
+  <link rel="modulepreload" href="${Bun.escapeHTML(assetPrefix + js)}">
   <script type="module"${nonceAttr} src="${Bun.escapeHTML(assetPrefix + js)}"></script>${extraScripts ? `\n  ${extraScripts}` : ""}${bodyInjection}
 </body>
 </html>`;
