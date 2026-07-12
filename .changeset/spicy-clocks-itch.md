@@ -13,13 +13,13 @@
 - nginx config includes security headers (`X-Frame-Options`, `HSTS`, etc.) in all location blocks
 
 ### Performance
+- **Single-bundle delivery**: removed `splitting: true` from `Bun.build` and esbuild — mermaid and all deps bundled into one entry file (~4.3 MB resource, ~1 MB gzip transferred). Eliminates chunk waterfall, maximizes compression ratio (mermaid DSL strings are highly repetitive), and ensures instant navigation from cache after first load. Best trade-off for docs sites where users navigate across many pages.
+- `<link rel="modulepreload">` added for JS — browser discovers and compiles the module ahead of `<script>` execution, parallel with HTML/CSS
+- `<link rel="preload" as="style">` added for CSS — stylesheet discovered before HTML parsing completes
+- Mermaid lazy on client via `React.lazy()` + `<Suspense>` + IntersectionObserver; eager import on SSR
+- `mdx-content` registry: Mermaid lazy on client, eager on SSR; tsup `splitting: true` enabled
 - Tailwind CSS build cached by content hash — skips subprocess when `globals.css` unchanged
 - Lucide icons tree-shaken via esbuild virtual module — only used icons bundled
-- Mermaid lazy-loaded on client via `React.lazy()` — split from main bundle (-36KB)
-- `mdx-content` registry: Mermaid lazy on client, eager on SSR; tsup `splitting: true` enabled
-- CSS preloaded via `<link rel="preload" as="style">` — browser discovers stylesheet before HTML parsing completes
-- JS modulepreloaded via `<link rel="modulepreload">` — browser downloads and compiles module graph ahead of execution
-- `hydrate.ts` (Bun) and `hydrate.node.ts` (esbuild) aligned: removed dead `splitting` config
 
 ### Security
 - Stack trace hidden in production error pages
