@@ -10,7 +10,7 @@
   DocuBook
 </h1>
 <h3 align="center" style="font-size: 20px;">
-  An open-source alternative to Mintlify or GitBook. Write documentation in MDX with your favourite UI library. The toolchain runs on Bun, Node.js, or Deno — output is flat static HTML, no server required.
+  An open-source alternative to Mintlify or GitBook. Write documentation in MDX with React. The toolchain runs on Bun, Node.js, or Deno — output is flat static HTML, no server required.
 </h3>
 
 [![Flame](https://shieldcn.dev/npm/v/@docubook/flame?label=Flame&variant=secondary)](https://www.npmjs.com/package/@docubook/flame)
@@ -59,9 +59,6 @@ The runtime is only needed for the build toolchain and local dev server. The out
 | **Bun**  | React      | ✅ Available      | `bun add @docubook/flame`                    |
 | **Node** | React      | ✅ Available      | `npm install @docubook/flame`                |
 | **Deno** | React      | ✅ Available      | `deno run -A npm:@docubook/flame init`       |
-| **Bun**  | Vue        | 🔮 Planned        | —                                            |
-| **Node** | Vue        | 🔮 Planned        | —                                            |
-| **Deno** | Vue        | 🔮 Planned        | —                                            |
 
 ## Prerequisites
 
