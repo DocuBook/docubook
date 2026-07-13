@@ -25,31 +25,23 @@ function mountIsland(
 }
 
 function mountIslands() {
-  mountIsland(
-    "sidebar-island",
-    (el) => {
-      const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
-      return React.createElement(Sidebar, {
-        tocs,
-        title: el.dataset.title || "",
-        repoUrl: el.dataset.repo || "",
-      });
-    },
-    true
-  );
+  mountIsland("sidebar-island", (el) => {
+    const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
+    return React.createElement(Sidebar, {
+      tocs,
+      title: el.dataset.title || "",
+      repoUrl: el.dataset.repo || "",
+    });
+  });
 
-  mountIsland(
-    "mobile-bar-island",
-    (el) => {
-      const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
-      return React.createElement(MobileBar, {
-        tocs,
-        title: el.dataset.title || "",
-        repoUrl: el.dataset.repo || "",
-      });
-    },
-    true
-  );
+  mountIsland("mobile-bar-island", (el) => {
+    const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
+    return React.createElement(MobileBar, {
+      tocs,
+      title: el.dataset.title || "",
+      repoUrl: el.dataset.repo || "",
+    });
+  });
 
   mountIsland("toc-island", (el) => {
     const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
