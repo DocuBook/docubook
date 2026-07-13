@@ -18,9 +18,6 @@ const WORKFLOW_FILE = join(WORKFLOW_DIR, "deploy.yml");
 
 export const HEADERS_FILE = `/assets/*
   Cache-Control: public, max-age=31536000, immutable
-
-/assets/chunks/*
-  Cache-Control: public, max-age=31536000, immutable
 `;
 
 const isDocker = !!process.env.FLAME_DEPLOY_DOCKER;

@@ -50,10 +50,10 @@ describe("deploy Docker — generated file content", () => {
     expect(NGINX_CONF).toContain("try_files $uri $uri.html $uri/ =404");
   });
 
-  it("_headers has 1y immutable for /assets/* and /assets/chunks/*", () => {
+  it("_headers has 1y immutable for /assets/*", () => {
     expect(HEADERS_FILE).toContain("/assets/*");
-    expect(HEADERS_FILE).toContain("/assets/chunks/*");
     expect(HEADERS_FILE).toContain("Cache-Control: public, max-age=31536000, immutable");
+    expect(HEADERS_FILE).not.toContain("/assets/chunks/*");
   });
 });
 

@@ -69,12 +69,9 @@ function hydrateMdxContent() {
   try {
     const compiledSource = JSON.parse(sourceEl.textContent || "");
     const components = createMdxComponents();
-    createRoot(island).render(
-      React.createElement(
-        React.Suspense,
-        { fallback: null },
-        React.createElement(MDXRemote, { compiledSource, scope: {}, frontmatter: {}, components })
-      )
+    hydrateRoot(
+      island,
+      React.createElement(MDXRemote, { compiledSource, scope: {}, frontmatter: {}, components })
     );
   } catch (e) {
     console.error("[mdx-hydrate]", e);
@@ -88,7 +85,7 @@ if (document.readyState === "loading") {
 }
 
 // ── Hash scroll compensation ──────────────────────────────────────
-// After hydration, lazy-loaded content (Mermaid via React.lazy) can
+// After hydration, lazy-rendered content (Mermaid via IntersectionObserver) can
 // shift layout and push the hash target (#section-2) off-screen.
 // Poll with rAF for ~1s and re-scroll if the target is below viewport.
 function scrollToHashOnLoad() {

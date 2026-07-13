@@ -1,5 +1,4 @@
 import type { ComponentType } from "react";
-import React from "react";
 import {
   AccordionMdx,
   AccordionsMdx,
@@ -31,13 +30,6 @@ import {
   YoutubeMdx,
   MermaidMdx,
 } from "../components";
-
-// Mermaid (~400KB) is lazy-loaded on client — only fetched on pages with ```mermaid blocks.
-// SSR uses the eager import (React.lazy doesn't work with renderToString).
-const MermaidLazy =
-  typeof window !== "undefined"
-    ? React.lazy(() => import("../components/MermaidMdx").then((m) => ({ default: m.MermaidMdx })))
-    : MermaidMdx;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type MdxComponentMap = Record<string, ComponentType<any>>;
@@ -74,7 +66,7 @@ export function createMdxComponents(customComponents: MdxComponentMap = {}): Mdx
     img: ImageMdx,
     Youtube: YoutubeMdx,
     Tooltip: TooltipMdx,
-    Mermaid: MermaidLazy,
+    Mermaid: MermaidMdx,
     ...customComponents,
   };
 }

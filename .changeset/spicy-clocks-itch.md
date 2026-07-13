@@ -16,8 +16,9 @@
 - **Single-bundle delivery**: removed `splitting: true` from `Bun.build` and esbuild — mermaid and all deps bundled into one entry file (~4.3 MB resource, ~1 MB gzip transferred). Eliminates chunk waterfall, maximizes compression ratio (mermaid DSL strings are highly repetitive), and ensures instant navigation from cache after first load. Best trade-off for docs sites where users navigate across many pages.
 - `<link rel="modulepreload">` added for JS — browser discovers and compiles the module ahead of `<script>` execution, parallel with HTML/CSS
 - `<link rel="preload" as="style">` added for CSS — stylesheet discovered before HTML parsing completes
-- Mermaid lazy on client via `React.lazy()` + `<Suspense>` + IntersectionObserver; eager import on SSR
-- `mdx-content` registry: Mermaid lazy on client, eager on SSR; tsup `splitting: true` enabled
+- Mermaid bundled eagerly in the single bundle; client-side lazy rendering deferred via IntersectionObserver (no `React.lazy`/`<Suspense>`, preventing content flash and bundler contradiction)
+- `mdx-content` registry: eager `MermaidMdx` import; tsup `splitting` removed to align with flame single-bundle strategy
+- Removed `/assets/chunks/*` `_headers` rule — chunks no longer emitted under single-bundle strategy
 - Tailwind CSS build cached by content hash — skips subprocess when `globals.css` unchanged
 - Lucide icons tree-shaken via esbuild virtual module — only used icons bundled
 
