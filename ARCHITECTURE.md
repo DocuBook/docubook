@@ -96,12 +96,13 @@ Output: landing `index.html`, `404.html`, and pages as flat `docs/<slug>.html`
 files with extensionless internal links (static hosts need `cleanUrls`-style
 rewriting).
 
-The client bundle is built with ESM code splitting (`splitting: true` in both
-the Bun and esbuild bundlers). The entry chunk (`client-[hash].js`) is the only
-file referenced from HTML via a single `<script type="module">`; the browser
-natively follows its `import` statements to shared/dynamic chunks under
-`assets/chunks/`. Heavy dynamically-imported modules (e.g. `mermaid`) ship as
-separate chunks fetched on demand, not inlined into every page's critical path.
+The client bundle is built as a single entry (`splitting` disabled in both the
+Bun and esbuild bundlers). The one output (`client-[hash].js`) is referenced from
+HTML via a single `<script type="module">` with a matching `<link
+rel="modulepreload">`. All modules, including heavy ones like `mermaid`, are
+inlined into the entry so any page is one fetch with zero waterfall — ideal for a
+docs site where users navigate across many pages; client-side lazy rendering is
+deferred via `IntersectionObserver` rather than runtime chunk fetching.
 daisyUI is configured via `@plugin "daisyui"` with only the `light` and `dark`
 themes to avoid emitting all ~35 built-in themes.
 

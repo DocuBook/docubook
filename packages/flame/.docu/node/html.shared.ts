@@ -79,6 +79,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
   ${favicon ? `<link rel="icon" type="image/x-icon" href="${escapeHtml(resolvePath(favicon))}">` : ""}${themeStyle}
+  <link rel="preload" href="${escapeHtml(assetPrefix + css)}" as="style">
   <link rel="stylesheet" href="${escapeHtml(assetPrefix + css)}">
   ${csp ? `<meta http-equiv="Content-Security-Policy" content="${escapeHtml(csp)}">` : ""}
   ${seoTags}
@@ -86,6 +87,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
 </head>
 <body>
   <div id="root">${body}</div>
+  <link rel="modulepreload" href="${escapeHtml(assetPrefix + js)}">
   <script type="module"${nonceAttr} src="${escapeHtml(assetPrefix + js)}"></script>${extraScripts ? `\n  ${extraScripts}` : ""}${bodyInjection}
 </body>
 </html>`;

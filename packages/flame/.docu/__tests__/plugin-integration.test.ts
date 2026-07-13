@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { htmlShell } from "../node/html";
+import { htmlShell } from "../node/html.shared";
 import { createBuilder, createMockPlugin, createFaultyPlugin, pageCtx, htmlOpts } from "./helpers";
 
 // ─── Integration: Loader + Builder together ──────────────

@@ -12,7 +12,6 @@ import {
   ImageMdx,
   KbdMdx,
   LinkMdx,
-  MermaidMdx,
   NoteMdx,
   ReleaseMdx,
   ChangesMdx,
@@ -29,6 +28,7 @@ import {
   TabsMdx,
   TooltipMdx,
   YoutubeMdx,
+  MermaidMdx,
 } from "../components";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

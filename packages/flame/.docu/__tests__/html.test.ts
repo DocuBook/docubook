@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { htmlShell } from "../node/html";
+import { htmlShell } from "../node/html.shared";
 
 const MINIMAL_OPTS = {
   title: "Test",
@@ -116,7 +116,7 @@ describe("htmlShell", () => {
       const html = htmlShell({ ...MINIMAL_OPTS, csp: "default-src 'self'" });
       expect(html).toContain('<meta http-equiv="Content-Security-Policy"');
       expect(html).toContain("default-src");
-      expect(html).toContain("&#39;self&#39;");
+      expect(html).toMatch(/&#(?:39|x27);self&#(?:39|x27);/);
     });
 
     it("omits CSP meta tag when not provided", () => {

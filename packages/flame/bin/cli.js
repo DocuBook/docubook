@@ -12,10 +12,13 @@ const __dirname = import.meta.dirname;
 // Deno's npm compat layer may expose `Bun` via globals, check execPath first.
 const runtime =
   process.env.FLAME_RUNTIME ||
-  (process.execPath.includes("deno") ? "deno" :
-   typeof Bun !== "undefined" ? "bun" :
-   typeof Deno !== "undefined" ? "deno" :
-   "node");
+  (process.execPath.includes("deno")
+    ? "deno"
+    : typeof Bun !== "undefined"
+      ? "bun"
+      : typeof Deno !== "undefined"
+        ? "deno"
+        : "node");
 
 const COMMAND_MAP = {
   bun: {
@@ -48,11 +51,15 @@ if (!COMMAND_MAP) {
 
 const command = process.argv[2];
 
-// Parse --theme flag: set env before importing build script
+// Parse flags
 const themeIndex = process.argv.indexOf("--theme");
 if (themeIndex !== -1 && themeIndex + 1 < process.argv.length) {
   process.env.FLAME_THEME = process.argv[themeIndex + 1];
 }
+const hasDocker = process.argv.includes("--docker");
+const hasSilent = process.argv.includes("--silent");
+if (hasDocker) process.env.FLAME_DEPLOY_DOCKER = "1";
+if (hasSilent) process.env.FLAME_DEPLOY_SILENT = "1";
 
 if (!command || command === "--help" || command === "-h") {
   console.log(`
@@ -71,6 +78,8 @@ if (!command || command === "--help" || command === "-h") {
   Options:
     --help        Show this help message
     --theme <name>  Override theme preset (e.g. freshlime, coffee). Works with dev, build, preview.
+    --docker      Generate Docker deployment files (Dockerfile + nginx.conf). Works with deploy.
+    --silent      Suppress non-essential output. Works with deploy.
 `);
   process.exit(0);
 }
@@ -120,11 +129,15 @@ if (command === "init") {
     }
     writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
 
+    // Runtime detection via shebang (#!/usr/bin/env node) makes typeof Bun
+    // unavailable — check for bun.lock as a reliable Bun indicator.
+    const isBun = existsSync(join(targetDir, "bun.lock"));
+    const pkgManager = runtime === "deno" ? "deno" : isBun ? "bun" : "node";
     const nextSteps = {
       bun: "    bun install\n    bun run dev",
       node: "    npm install\n    npm run dev",
       deno: "    deno task dev\n\n  ⚠️  If you see a freshness error, run:\n    DENO_ALLOW_NEWER=true deno task dev",
-    }[runtime];
+    }[pkgManager];
     console.log(`\n  ✓ Project scaffolded!\n\n  Next steps:\n${nextSteps}\n`);
     process.exit(0);
   } catch (err) {

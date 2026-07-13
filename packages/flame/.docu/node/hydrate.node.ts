@@ -58,10 +58,42 @@ function resolveTailwindBin(): string {
   return join(dirname(pkgPath), binRel);
 }
 
-/** Run Tailwind CLI to produce minified CSS. */
-async function runTailwind(outputCss: string): Promise<void> {
+/** Compute a cache key from globals.css + theme config content. */
+function tailwindCacheKey(): string {
+  const globalsPath = join(STYLES_DIR, "globals.css");
+  const globalsContent = existsSync(globalsPath) ? readFileSync(globalsPath, "utf-8") : "";
+  let themeSuffix = "";
+  try {
+    const themeColors = getThemeConfig();
+    if (themeColors) {
+      themeSuffix = JSON.stringify(themeColors);
+    }
+  } catch {
+    // theme config unavailable — proceed without it
+  }
+  return createHash("md5")
+    .update(globalsContent + themeSuffix)
+    .digest("hex")
+    .slice(0, 16);
+}
+
+/**
+ * Build Tailwind CSS with content-based caching.
+ * If a CSS file for the current input hash already exists, skip the subprocess.
+ * Returns the filename (e.g. "client-abc123.css") and CSS content.
+ */
+async function buildTailwindCss(key: string): Promise<{ file: string; content: string }> {
+  const cachedFile = `client-${key}.css`;
+  const cachedPath = join(ASSETS_DIR, cachedFile);
+
+  if (existsSync(cachedPath)) {
+    const content = readFileSync(cachedPath, "utf-8");
+    return { file: cachedFile, content };
+  }
+
+  const tmpCss = join(ASSETS_DIR, `_tmp-${key}.css`);
   const bin = resolveTailwindBin();
-  const twArgs = ["-i", join(STYLES_DIR, "globals.css"), "-o", outputCss, "--minify"];
+  const twArgs = ["-i", join(STYLES_DIR, "globals.css"), "-o", tmpCss, "--minify"];
   const isDeno = "Deno" in globalThis;
   const args = isDeno ? ["run", "-A", bin, ...twArgs] : [bin, ...twArgs];
   try {
@@ -70,6 +102,31 @@ async function runTailwind(outputCss: string): Promise<void> {
     const stderr = (err as { stderr?: string }).stderr ?? String(err);
     throw new Error(`Tailwind CSS build failed:\n${stderr}`, { cause: err });
   }
+
+  let cssContent = await readFile(tmpCss, "utf-8");
+  await unlink(tmpCss);
+
+  try {
+    const themeColors = getThemeConfig();
+    if (themeColors) {
+      cssContent = buildThemeCss(cssContent, themeColors);
+    }
+  } catch (err) {
+    console.warn(
+      `[flame] Failed to resolve theme config, falling back to globals.css only: ${err instanceof Error ? err.message : String(err)}`
+    );
+  }
+
+  // Use the same input-derived key for lookup and output — if inputs change,
+  // the key changes, cache busting works without a separate content hash.
+  const cssFile = `client-${key}.css`;
+  const outPath = join(ASSETS_DIR, cssFile);
+
+  if (!existsSync(outPath)) {
+    await writeFile(outPath, cssContent);
+  }
+
+  return { file: cssFile, content: cssContent };
 }
 
 const NODE_BUILTINS_RE = new RegExp(
@@ -111,8 +168,10 @@ function scanDirLucideIcons(dir: string, set: Set<string>): void {
         }
       }
     }
-  } catch {
-    /* skip unreadable dirs */
+  } catch (err) {
+    console.warn(
+      `[flame] Failed to scan lucide icons: ${err instanceof Error ? err.message : String(err)}`
+    );
   }
 }
 
@@ -138,7 +197,8 @@ function collectAllLucideIcons(): string[] {
 /** Build the client JS bundle and Tailwind CSS. */
 export async function buildClientBundle(): Promise<{ js: string; css: string }> {
   await mkdir(ASSETS_DIR, { recursive: true });
-  await cleanOldBundles();
+  const twKey = tailwindCacheKey();
+  await cleanOldBundles(new Set([`client-${twKey}.css`]));
 
   const nodeEnv = process.env.NODE_ENV || "development";
   const esbuild = await import("esbuild");
@@ -153,10 +213,8 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
       bundle: true,
       outdir: ASSETS_DIR,
       entryNames: "client-[hash]",
-      chunkNames: "chunks/[name]-[hash]",
       platform: "browser",
       format: "esm",
-      splitting: true,
       minify: nodeEnv === "production",
       define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
       jsx: "automatic",
@@ -185,17 +243,17 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
               if (args.namespace === "lucide-virt") {
                 return { path: getLucideRealEntry(), namespace: "file" };
               }
-              // Files that do dynamic name lookups (namespace import)
-              // need the full barrel — bypass the virtual module.
+              // mdx-content Icon.tsx uses namespace import for arbitrary
+              // user-provided icon names in MDX — keep full barrel there.
               if (args.importer) {
                 const normalized = normalizeImporterPath(args.importer);
-                if (
-                  normalized.endsWith("/.docu/components/Lucide.tsx") ||
-                  normalized.includes("/mdx-content/dist/")
-                ) {
+                if (normalized.includes("/mdx-content/dist/")) {
                   return { path: getLucideRealEntry(), namespace: "file" };
                 }
               }
+              // All other files get tree-shaken via the virtual module.
+              // Lucide.tsx renders only config-defined icons, which are
+              // collected by extractConfigIcons() + collectAllLucideIcons().
               return { path: args.path, namespace: "lucide-virt" };
             });
             build.onLoad({ filter: /.*/, namespace: "lucide-virt" }, () => {
@@ -226,7 +284,6 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
             });
           },
         },
-
       ],
     });
   } finally {
@@ -235,10 +292,7 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
     await esbuild.stop();
   }
 
-  // With splitting enabled esbuild emits the entry plus shared/dynamic chunks.
-  // `entryPoint` is set on the user entry AND on every dynamic-import chunk
-  // (esbuild treats dynamic imports as entry points), so match the resolved
-  // source path instead of grabbing the first truthy `entryPoint`.
+  // The single entry produces one output. Match resolved source path.
   const { outputs } = result.metafile!;
   const jsOutput = Object.keys(outputs).find((p) => {
     const o = outputs[p];
@@ -249,26 +303,7 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
   }
   const jsFile = basename(jsOutput);
 
-  const tmpCss = join(ASSETS_DIR, "_tmp.css");
-  await runTailwind(tmpCss);
-
-  let cssContent = await readFile(tmpCss, "utf-8");
-
-  try {
-    const themeColors = getThemeConfig();
-    if (themeColors) {
-      cssContent = buildThemeCss(cssContent, themeColors);
-    }
-  } catch (err) {
-    console.warn(
-      `[flame] Failed to resolve theme config, falling back to globals.css only: ${err instanceof Error ? err.message : String(err)}`
-    );
-  }
-
-  const cssHash = createHash("md5").update(cssContent).digest("hex").slice(0, 8);
-  const cssFile = `client-${cssHash}.css`;
-  await writeFile(join(ASSETS_DIR, cssFile), cssContent);
-  await unlink(tmpCss);
+  const { file: cssFile } = await buildTailwindCss(twKey);
 
   await writeFile(join(ASSETS_DIR, "manifest.json"), JSON.stringify({ js: jsFile, css: cssFile }));
 

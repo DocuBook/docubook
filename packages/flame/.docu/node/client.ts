@@ -25,6 +25,8 @@ function mountIsland(
 }
 
 function mountIslands() {
+  // forceCreate: SSR sidebar renders <Menu> only; client renders full <Sidebar>
+  // (DesktopSidebar + MobileBar) — structure mismatch forces full createRoot.
   mountIsland(
     "sidebar-island",
     (el) => {
@@ -38,18 +40,16 @@ function mountIslands() {
     true
   );
 
-  mountIsland(
-    "mobile-bar-island",
-    (el) => {
-      const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
-      return React.createElement(MobileBar, {
-        tocs,
-        title: el.dataset.title || "",
-        repoUrl: el.dataset.repo || "",
-      });
-    },
-    true
-  );
+  // mobile-bar-island SSR div is empty (data attributes only),
+  // so hydrateRoot child check falls through to createRoot automatically.
+  mountIsland("mobile-bar-island", (el) => {
+    const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
+    return React.createElement(MobileBar, {
+      tocs,
+      title: el.dataset.title || "",
+      repoUrl: el.dataset.repo || "",
+    });
+  });
 
   mountIsland("toc-island", (el) => {
     const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
@@ -69,7 +69,8 @@ function hydrateMdxContent() {
   try {
     const compiledSource = JSON.parse(sourceEl.textContent || "");
     const components = createMdxComponents();
-    createRoot(island).render(
+    hydrateRoot(
+      island,
       React.createElement(MDXRemote, { compiledSource, scope: {}, frontmatter: {}, components })
     );
   } catch (e) {
@@ -82,3 +83,27 @@ if (document.readyState === "loading") {
 } else {
   mountIslands();
 }
+
+// ── Hash scroll compensation ──────────────────────────────────────
+// After hydration, lazy-rendered content (Mermaid via IntersectionObserver) can
+// shift layout and push the hash target (#section-2) off-screen.
+// Poll with rAF for ~1s and re-scroll if the target is below viewport.
+function scrollToHashOnLoad() {
+  const hash = window.location.hash;
+  if (!hash || hash === "#") return;
+  const id = hash.slice(1);
+  const deadline = performance.now() + 1000;
+  function tick() {
+    const el = document.getElementById(id);
+    if (el) {
+      const top = el.getBoundingClientRect().top;
+      if (top <= window.innerHeight - 100 && top >= 0) return; // already in view
+      el.scrollIntoView();
+      return; // scrolled once, done
+    }
+    if (performance.now() < deadline) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+scrollToHashOnLoad();

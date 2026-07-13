@@ -24,7 +24,7 @@ import {
   cspHeader,
 } from "../node/security";
 import { getContentType, stripDocsHtmlSuffix } from "../node/utils";
-import { errorHtml, hmrScript, htmlShell } from "../node/html";
+import { errorHtml, hmrScript, htmlShell } from "../node/html.shared";
 
 // ─── Helpers ────────────────────────────────────────────
 

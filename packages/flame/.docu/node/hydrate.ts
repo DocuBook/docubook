@@ -1,5 +1,7 @@
 import { join } from "node:path";
 import { mkdir, unlink } from "node:fs/promises";
+import { existsSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { resolveTheme, generateThemeCss, presetRegistry } from "@docubook/themes-colors";
 import { ASSETS_DIR, cleanOldBundles, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
 import { resolveRoutes } from "./fs-scanner";
@@ -55,63 +57,34 @@ export function computeInlineThemeCss(): string | undefined {
   return undefined;
 }
 
-export async function buildClientBundle(): Promise<{ js: string; css: string }> {
-  await mkdir(ASSETS_DIR, { recursive: true });
-  await cleanOldBundles();
+/** Compute Tailwind cache key from globals.css + theme config. */
+function twCacheKey(): string {
+  const globalsPath = join(STYLES_DIR, "globals.css");
+  const globals = existsSync(globalsPath) ? readFileSync(globalsPath, "utf-8") : "";
+  let themeSuffix = "";
+  try {
+    const themeColors = getThemeConfig();
+    if (themeColors) themeSuffix = JSON.stringify(themeColors);
+  } catch {
+    // theme config unavailable — proceed without
+  }
+  return createHash("md5")
+    .update(globals + themeSuffix)
+    .digest("hex")
+    .slice(0, 16);
+}
 
-  const nodeEnv = process.env.NODE_ENV || "development";
-  const result = await Bun.build({
-    entrypoints: [join(LIB_DIR, "client.ts")],
-    outdir: ASSETS_DIR,
-    format: "esm",
-    splitting: true,
-    naming: {
-      entry: "client-[hash].[ext]",
-      chunk: "chunks/[name]-[hash].[ext]",
-      asset: "[name]-[hash].[ext]",
-    },
-    target: "browser",
-    minify: nodeEnv === "production",
-    optimizeImports: ["lucide-react"],
-    define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
-    plugins: [
-      {
-        name: "docu-config",
-        setup(build) {
-          build.onResolve({ filter: /docu\.json$/ }, (args) => ({
-            path: args.path,
-            namespace: "docu-config",
-          }));
-          build.onLoad({ filter: /.*/, namespace: "docu-config" }, () => {
-            const config = loadDocuConfig();
-            const resolved = {
-              ...config,
-              routes: resolveRoutes(config.routes as DocuRoute[] | undefined),
-            };
-            return { contents: JSON.stringify(resolved), loader: "json" };
-          });
-        },
-      },
+/** Run Tailwind CLI, caching by content hash. */
+async function buildTailwindCss(key: string): Promise<{ file: string; content: string }> {
+  const cachedFile = `client-${key}.css`;
+  const cachedPath = join(ASSETS_DIR, cachedFile);
 
-    ],
-  });
-
-  if (!result.success) {
-    for (const log of result.logs) console.error(log);
-    throw new Error("Client bundle failed");
+  if (existsSync(cachedPath)) {
+    const content = await Bun.file(cachedPath).text();
+    return { file: cachedFile, content };
   }
 
-  if (!result.outputs[0]) {
-    throw new Error("Client bundle produced no output files");
-  }
-  // With splitting enabled Bun emits entry + chunk artifacts; select the entry
-  // explicitly rather than by position (chunks may precede it in the array).
-  const entry = result.outputs.find((o) => o.kind === "entry-point");
-  if (!entry) {
-    throw new Error("Client bundle produced no entry-point output");
-  }
-  const jsFile = entry.path.split("/").pop()!;
-  const tmpCss = join(ASSETS_DIR, "_tmp.css");
+  const tmpCss = join(ASSETS_DIR, `_tmp-${key}.css`);
   const proc = Bun.spawn(
     [
       "bun",
@@ -132,22 +105,75 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
   }
 
   let cssContent = await Bun.file(tmpCss).text();
+  await unlink(tmpCss);
 
   try {
     const themeColors = getThemeConfig();
-    if (themeColors) {
-      cssContent = buildThemeCss(cssContent, themeColors);
-    }
+    if (themeColors) cssContent = buildThemeCss(cssContent, themeColors);
   } catch (err) {
     console.warn(
-      `[flame] Failed to resolve theme config, falling back to globals.css only: ${err instanceof Error ? err.message : String(err)}`
+      `[flame] Failed to resolve theme config: ${err instanceof Error ? err.message : String(err)}`
     );
   }
 
-  const cssHash = new Bun.CryptoHasher("md5").update(cssContent).digest("hex").slice(0, 8);
-  const cssFile = `client-${cssHash}.css`;
-  await Bun.write(join(ASSETS_DIR, cssFile), cssContent);
-  await unlink(tmpCss);
+  // Use the same input-derived key for lookup and output — if inputs change,
+  // the key changes, cache busting works without a separate content hash.
+  const cssFile = `client-${key}.css`;
+  const outPath = join(ASSETS_DIR, cssFile);
+  if (!existsSync(outPath)) await Bun.write(outPath, cssContent);
+
+  return { file: cssFile, content: cssContent };
+}
+
+export async function buildClientBundle(): Promise<{ js: string; css: string }> {
+  await mkdir(ASSETS_DIR, { recursive: true });
+  const twKey = twCacheKey();
+  await cleanOldBundles(new Set([`client-${twKey}.css`]));
+
+  const nodeEnv = process.env.NODE_ENV || "development";
+  const result = await Bun.build({
+    entrypoints: [join(LIB_DIR, "client.ts")],
+    outdir: ASSETS_DIR,
+    naming: "client-[hash].[ext]",
+    target: "browser",
+    minify: nodeEnv === "production",
+    define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
+    plugins: [
+      {
+        name: "docu-config",
+        setup(build) {
+          build.onResolve({ filter: /docu\.json$/ }, (args) => ({
+            path: args.path,
+            namespace: "docu-config",
+          }));
+          build.onLoad({ filter: /.*/, namespace: "docu-config" }, () => {
+            const config = loadDocuConfig();
+            const resolved = {
+              ...config,
+              routes: resolveRoutes(config.routes as DocuRoute[] | undefined),
+            };
+            return { contents: JSON.stringify(resolved), loader: "json" };
+          });
+        },
+      },
+    ],
+  });
+
+  if (!result.success) {
+    for (const log of result.logs) console.error(log);
+    throw new Error("Client bundle failed");
+  }
+
+  if (!result.outputs[0]) {
+    throw new Error("Client bundle produced no output files");
+  }
+  const entry = result.outputs.find((o) => o.kind === "entry-point");
+  if (!entry) {
+    throw new Error("Client bundle produced no entry-point output");
+  }
+  const jsFile = entry.path.split("/").pop()!;
+
+  const { file: cssFile } = await buildTailwindCss(twKey);
 
   await Bun.write(join(ASSETS_DIR, "manifest.json"), JSON.stringify({ js: jsFile, css: cssFile }));
 

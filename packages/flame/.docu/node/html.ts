@@ -1,30 +1,5 @@
-import type { SeoMeta } from "./seo";
-
-export interface HtmlShellOptions {
-  title: string;
-  description: string;
-  body: string;
-  favicon: string;
-  css: string;
-  js: string;
-  nonce?: string;
-  /**
-   * Content-Security-Policy value (from `cspHeader()` in security.ts).
-   * When provided, injects `<meta http-equiv="Content-Security-Policy">` in `<head>`.
-   * Essential for static deployment where HTTP headers cannot be set.
-   */
-  csp?: string;
-  extraScripts?: string;
-  themeCss?: string;
-  /** Depth from document root (0=root, 1=subdir, 2=sub/subdir). Used for relative asset paths. */
-  depth?: number;
-  /** HTML strings to inject before `</head>` (from plugin `injectHead` hooks). */
-  headExtra?: string[];
-  /** HTML strings to inject before `</body>`, after the main script (from plugin `injectBody` hooks). */
-  bodyExtra?: string[];
-  /** SEO meta tags derived from config + frontmatter */
-  seo?: SeoMeta;
-}
+import type { HtmlShellOptions } from "./html.shared";
+export type { HtmlShellOptions };
 
 export function htmlShell(opts: HtmlShellOptions): string {
   const {
@@ -69,6 +44,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
   <title>${Bun.escapeHTML(title)}</title>
   <meta name="description" content="${Bun.escapeHTML(description)}">
   ${favicon ? `<link rel="icon" type="image/x-icon" href="${Bun.escapeHTML(resolvePath(favicon))}">` : ""}${themeStyle}
+  <link rel="preload" href="${Bun.escapeHTML(assetPrefix + css)}" as="style">
   <link rel="stylesheet" href="${Bun.escapeHTML(assetPrefix + css)}">
   ${csp ? `<meta http-equiv="Content-Security-Policy" content="${Bun.escapeHTML(csp)}">` : ""}
   ${seoTags}
@@ -76,6 +52,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
 </head>
 <body>
   <div id="root">${body}</div>
+  <link rel="modulepreload" href="${Bun.escapeHTML(assetPrefix + js)}">
   <script type="module"${nonceAttr} src="${Bun.escapeHTML(assetPrefix + js)}"></script>${extraScripts ? `\n  ${extraScripts}` : ""}${bodyInjection}
 </body>
 </html>`;

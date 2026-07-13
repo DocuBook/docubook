@@ -32,11 +32,12 @@ export const DOCU_CONFIG_PATH = join(PROJECT_ROOT, "docu.json");
 // Config singleton
 let _config: DocuConfig | null = null;
 
-/** Clean stale client bundles and split chunks from a previous build. */
-export async function cleanOldBundles() {
+/** Clean stale client bundles from a previous build. */
+export async function cleanOldBundles(preserve?: Set<string>) {
   try {
     const files = await readdir(ASSETS_DIR);
     for (const file of files) {
+      if (preserve?.has(file)) continue;
       if (file.startsWith("client.") || file.startsWith("client-")) {
         await unlink(join(ASSETS_DIR, file));
       }
@@ -46,12 +47,13 @@ export async function cleanOldBundles() {
       console.error("Failed to clean old bundles:", (err as Error).message);
     }
   }
-  // Stale split chunks accumulate across builds (content-hashed names); drop
-  // the whole chunks dir so only the new build's chunks remain.
   try {
     await rm(join(ASSETS_DIR, "chunks"), { recursive: true, force: true });
   } catch (err) {
-    console.error("Failed to clean old chunks:", (err as Error).message);
+    // chunks dir may not exist, or permission error — log to avoid silent failure
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+      console.warn("[flame] Failed to clean chunks dir:", (err as Error).message);
+    }
   }
 }
 

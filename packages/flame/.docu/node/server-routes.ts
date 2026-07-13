@@ -279,7 +279,8 @@ export function serveStatic(pathname: string): Response | null {
 
 export function serverErrorResponse(error: unknown): Response {
   const msg = error instanceof Error ? error.message : "Unknown error";
-  const st = error instanceof Error ? error.stack : undefined;
+  const st =
+    process.env.NODE_ENV !== "production" && error instanceof Error ? error.stack : undefined;
   return new Response(errorHtml(msg, st), {
     status: 500,
     headers: {

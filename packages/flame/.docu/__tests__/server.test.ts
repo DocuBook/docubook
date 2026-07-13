@@ -9,7 +9,7 @@ import {
   injectNonce,
 } from "../node/security";
 import { getContentType } from "../node/utils";
-import { hmrScript } from "../node/html";
+import { hmrScript } from "../node/html.shared";
 import { resolve } from "node:path";
 
 describe("server: security", () => {
@@ -411,9 +411,7 @@ describe("server: plugin security header wrapping", () => {
     // Nonce is present and valid base64
     const nonceMatch = csp!.match(/'nonce-([A-Za-z0-9+/=]+)'/);
     expect(nonceMatch).not.toBeNull();
-    expect(nonceMatch![1]).toMatch(
-      /^[A-Za-z0-9+/]{22}==$/
-    );
+    expect(nonceMatch![1]).toMatch(/^[A-Za-z0-9+/]{22}==$/);
   });
 
   it("does NOT add Content-Security-Policy for non-HTML plugin responses", () => {

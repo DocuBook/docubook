@@ -6,7 +6,7 @@
  */
 import { BuildPluginBuilder } from "../node/plugin-builder";
 import type { DocuBookPlugin } from "../node/plugin";
-import type { HtmlShellOptions } from "../node/html";
+import type { HtmlShellOptions } from "../node/html.shared";
 
 // ─── Minimal DocuConfig ─────────────────────────────────
 
