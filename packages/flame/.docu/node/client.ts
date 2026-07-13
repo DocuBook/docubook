@@ -92,16 +92,16 @@ function scrollToHashOnLoad() {
   const hash = window.location.hash;
   if (!hash || hash === "#") return;
   const id = hash.slice(1);
-  let remaining = 60;
+  const deadline = performance.now() + 1000;
   function tick() {
     const el = document.getElementById(id);
     if (el) {
       const top = el.getBoundingClientRect().top;
-      if (top > window.innerHeight - 100 || top < 0) {
-        el.scrollIntoView();
-      }
+      if (top <= window.innerHeight - 100 && top >= 0) return; // already in view
+      el.scrollIntoView();
+      return; // scrolled once, done
     }
-    if (--remaining > 0) requestAnimationFrame(tick);
+    if (performance.now() < deadline) requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
 }

@@ -53,9 +53,10 @@ export const NGINX_CONF = `server {
   gzip_types text/html text/css application/javascript image/svg+xml;
 
   # Security headers (server-level, inherited by all locations)
+  # HSTS effective when HTTPS is terminated upstream (reverse proxy / LB)
   add_header X-Frame-Options "DENY" always;
   add_header X-Content-Type-Options "nosniff" always;
-  add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+  add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
   add_header Referrer-Policy "strict-origin-when-cross-origin" always;
   add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
 
@@ -64,7 +65,7 @@ export const NGINX_CONF = `server {
     add_header Cache-Control "public, immutable";
     add_header X-Frame-Options "DENY" always;
     add_header X-Content-Type-Options "nosniff" always;
-    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
   }
@@ -74,7 +75,7 @@ export const NGINX_CONF = `server {
     add_header Cache-Control "public";
     add_header X-Frame-Options "DENY" always;
     add_header X-Content-Type-Options "nosniff" always;
-    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
   }

@@ -48,8 +48,11 @@ export async function cleanOldBundles() {
   }
   try {
     await rm(join(ASSETS_DIR, "chunks"), { recursive: true, force: true });
-  } catch {
-    // chunks dir may not exist — ok
+  } catch (err) {
+    // chunks dir may not exist, or permission error — log to avoid silent failure
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+      console.warn("[flame] Failed to clean chunks dir:", (err as Error).message);
+    }
   }
 }
 

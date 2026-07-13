@@ -59,6 +59,7 @@ RUN npm run build
 FROM nginx:alpine
 COPY --from=builder /app/.docu/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+USER nginx
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 `
@@ -78,10 +79,10 @@ CMD ["nginx", "-g", "daemon off;"]
   gzip on;
   gzip_types text/html text/css application/javascript image/svg+xml;
 
-  # Security headers
+  # Security headers (HSTS effective when HTTPS is terminated upstream)
   add_header X-Frame-Options "DENY" always;
   add_header X-Content-Type-Options "nosniff" always;
-  add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+  add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
   add_header Referrer-Policy "strict-origin-when-cross-origin" always;
   add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
 
@@ -90,7 +91,7 @@ CMD ["nginx", "-g", "daemon off;"]
     add_header Cache-Control "public, immutable";
     add_header X-Frame-Options "DENY" always;
     add_header X-Content-Type-Options "nosniff" always;
-    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
   }
@@ -100,7 +101,7 @@ CMD ["nginx", "-g", "daemon off;"]
     add_header Cache-Control "public";
     add_header X-Frame-Options "DENY" always;
     add_header X-Content-Type-Options "nosniff" always;
-    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
   }
@@ -123,6 +124,8 @@ CMD ["nginx", "-g", "daemon off;"]
 .docu/dist
 .docu/lib
 .env
+.env.*
+.npmrc
 *.log
 `
     );

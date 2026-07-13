@@ -117,8 +117,9 @@ async function buildTailwindCss(): Promise<{ file: string; content: string }> {
     );
   }
 
-  const finalHash = new Bun.CryptoHasher("md5").update(cssContent).digest("hex").slice(0, 8);
-  const cssFile = `client-${finalHash}.css`;
+  // Use the same input-derived key for lookup and output — if inputs change,
+  // the key changes, cache busting works without a separate content hash.
+  const cssFile = `client-${key}.css`;
   const outPath = join(ASSETS_DIR, cssFile);
   if (!existsSync(outPath)) await Bun.write(outPath, cssContent);
 
