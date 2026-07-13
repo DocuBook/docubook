@@ -18,7 +18,7 @@
 - `<link rel="preload" as="style">` added for CSS — stylesheet discovered before HTML parsing completes
 - Mermaid bundled eagerly in the single bundle; client-side lazy rendering deferred via IntersectionObserver (no `React.lazy`/`<Suspense>`, preventing content flash and bundler contradiction)
 - `mdx-content` registry: eager `MermaidMdx` import; tsup `splitting` removed to align with flame single-bundle strategy
-- **Island hydration**: Sidebar and MobileBar islands now hydrate via `hydrateRoot` instead of full `createRoot` + DOM rebuild. SSR HTML reused — eliminates layout shift and flash on first load.
+- **Island hydration**: `toc-island` and `mdx-content-island` now hydrate via `hydrateRoot` (SSR matches client render). `sidebar-island` remains `createRoot` — SSR renders `<Menu>` only, client renders `<Sidebar>` (different structure), so hydration would mismatch. `mobile-bar-island` SSR div is empty, so `childElementCount` fallback routes to `createRoot` automatically.
 - Removed `/assets/chunks/*` `_headers` rule — chunks no longer emitted under single-bundle strategy
 - Tailwind CSS build cached by content hash — skips subprocess when `globals.css` unchanged
 - Lucide icons tree-shaken via esbuild virtual module — only used icons bundled

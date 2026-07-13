@@ -25,15 +25,23 @@ function mountIsland(
 }
 
 function mountIslands() {
-  mountIsland("sidebar-island", (el) => {
-    const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
-    return React.createElement(Sidebar, {
-      tocs,
-      title: el.dataset.title || "",
-      repoUrl: el.dataset.repo || "",
-    });
-  });
+  // forceCreate: SSR sidebar renders <Menu> only; client renders full <Sidebar>
+  // (DesktopSidebar + MobileBar) — structure mismatch forces full createRoot.
+  mountIsland(
+    "sidebar-island",
+    (el) => {
+      const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
+      return React.createElement(Sidebar, {
+        tocs,
+        title: el.dataset.title || "",
+        repoUrl: el.dataset.repo || "",
+      });
+    },
+    true
+  );
 
+  // mobile-bar-island SSR div is empty (data attributes only),
+  // so hydrateRoot child check falls through to createRoot automatically.
   mountIsland("mobile-bar-island", (el) => {
     const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
     return React.createElement(MobileBar, {
