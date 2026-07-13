@@ -16,7 +16,12 @@ import { DIST_DIR, PROJECT_ROOT } from "./paths";
 const WORKFLOW_DIR = join(PROJECT_ROOT, ".github/workflows");
 const WORKFLOW_FILE = join(WORKFLOW_DIR, "deploy.yml");
 
-export const HEADERS_FILE = `/assets/*
+export const HEADERS_FILE = `/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/assets/*
   Cache-Control: public, max-age=31536000, immutable
 `;
 

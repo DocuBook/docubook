@@ -21,7 +21,7 @@ describe("deploy Docker — generated file content", () => {
     expect(NGINX_CONF).toContain('add_header X-Frame-Options "DENY" always');
     expect(NGINX_CONF).toContain('add_header X-Content-Type-Options "nosniff" always');
     expect(NGINX_CONF).toContain(
-      'add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always'
+      'add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always'
     );
     expect(NGINX_CONF).toContain(
       'add_header Referrer-Policy "strict-origin-when-cross-origin" always'

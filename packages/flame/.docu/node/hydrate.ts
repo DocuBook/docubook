@@ -75,8 +75,7 @@ function twCacheKey(): string {
 }
 
 /** Run Tailwind CLI, caching by content hash. */
-async function buildTailwindCss(): Promise<{ file: string; content: string }> {
-  const key = twCacheKey();
+async function buildTailwindCss(key: string): Promise<{ file: string; content: string }> {
   const cachedFile = `client-${key}.css`;
   const cachedPath = join(ASSETS_DIR, cachedFile);
 
@@ -128,7 +127,8 @@ async function buildTailwindCss(): Promise<{ file: string; content: string }> {
 
 export async function buildClientBundle(): Promise<{ js: string; css: string }> {
   await mkdir(ASSETS_DIR, { recursive: true });
-  await cleanOldBundles();
+  const twKey = twCacheKey();
+  await cleanOldBundles(new Set([`client-${twKey}.css`]));
 
   const nodeEnv = process.env.NODE_ENV || "development";
   const result = await Bun.build({
@@ -173,7 +173,7 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
   }
   const jsFile = entry.path.split("/").pop()!;
 
-  const { file: cssFile } = await buildTailwindCss();
+  const { file: cssFile } = await buildTailwindCss(twKey);
 
   await Bun.write(join(ASSETS_DIR, "manifest.json"), JSON.stringify({ js: jsFile, css: cssFile }));
 

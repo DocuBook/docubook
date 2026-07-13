@@ -33,10 +33,11 @@ export const DOCU_CONFIG_PATH = join(PROJECT_ROOT, "docu.json");
 let _config: DocuConfig | null = null;
 
 /** Clean stale client bundles from a previous build. */
-export async function cleanOldBundles() {
+export async function cleanOldBundles(preserve?: Set<string>) {
   try {
     const files = await readdir(ASSETS_DIR);
     for (const file of files) {
+      if (preserve?.has(file)) continue;
       if (file.startsWith("client.") || file.startsWith("client-")) {
         await unlink(join(ASSETS_DIR, file));
       }

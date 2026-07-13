@@ -82,8 +82,7 @@ function tailwindCacheKey(): string {
  * If a CSS file for the current input hash already exists, skip the subprocess.
  * Returns the filename (e.g. "client-abc123.css") and CSS content.
  */
-async function buildTailwindCss(): Promise<{ file: string; content: string }> {
-  const key = tailwindCacheKey();
+async function buildTailwindCss(key: string): Promise<{ file: string; content: string }> {
   const cachedFile = `client-${key}.css`;
   const cachedPath = join(ASSETS_DIR, cachedFile);
 
@@ -118,9 +117,9 @@ async function buildTailwindCss(): Promise<{ file: string; content: string }> {
     );
   }
 
-  // Final content-hash matches the output filename
-  const finalHash = createHash("md5").update(cssContent).digest("hex").slice(0, 8);
-  const cssFile = `client-${finalHash}.css`;
+  // Use the same input-derived key for lookup and output — if inputs change,
+  // the key changes, cache busting works without a separate content hash.
+  const cssFile = `client-${key}.css`;
   const outPath = join(ASSETS_DIR, cssFile);
 
   if (!existsSync(outPath)) {
@@ -198,7 +197,8 @@ function collectAllLucideIcons(): string[] {
 /** Build the client JS bundle and Tailwind CSS. */
 export async function buildClientBundle(): Promise<{ js: string; css: string }> {
   await mkdir(ASSETS_DIR, { recursive: true });
-  await cleanOldBundles();
+  const twKey = tailwindCacheKey();
+  await cleanOldBundles(new Set([`client-${twKey}.css`]));
 
   const nodeEnv = process.env.NODE_ENV || "development";
   const esbuild = await import("esbuild");
@@ -303,7 +303,7 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
   }
   const jsFile = basename(jsOutput);
 
-  const { file: cssFile } = await buildTailwindCss();
+  const { file: cssFile } = await buildTailwindCss(twKey);
 
   await writeFile(join(ASSETS_DIR, "manifest.json"), JSON.stringify({ js: jsFile, css: cssFile }));
 
