@@ -1,5 +1,17 @@
 # @docubook/flame
 
+## 1.6.3
+
+### Patch Changes
+
+- [#322](https://github.com/DocuBook/docubook/pull/322) [`4ac1ded`](https://github.com/DocuBook/docubook/commit/4ac1ded71edc15c74e6c743df04ea7bfeb744ad4) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Remove `USER nginx` from Dockerfile template to prevent container crash
+
+  The `USER nginx` directive causes nginx to fail creating cache directories
+  (`/var/cache/nginx/client_temp`) with permission denied, killing the
+  container immediately. Since the container only serves static HTML, no
+  cache directories are needed — removing the directive lets the container
+  run as root (default) while nginx worker processes still run as `nginx`.
+
 ## 1.6.2
 
 ### Patch Changes
