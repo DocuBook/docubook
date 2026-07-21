@@ -40,9 +40,10 @@ vi.mock("@docubook/mdx-content", () => ({
   createMdxComponents: () => ({}),
 }));
 
-vi.mock("../node/utils", () => ({
+vi.mock("../node/git", () => ({
   getGitLastModified: vi.fn(() => null),
   getGitLastModifiedBatch: vi.fn(() => new Map()),
+  getFilesystemMtime: vi.fn(() => "2026-01-01T00:00:00.000Z"),
 }));
 
 // Import after mocks
