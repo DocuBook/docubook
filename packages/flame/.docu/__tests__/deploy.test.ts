@@ -1,5 +1,9 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { NGINX_CONF, DOCKERFILE_BUN, DOCKERIGNORE, HEADERS_FILE } from "../node/deploy";
+import { detectPkgManager } from "../node/deploy.shared";
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 
 describe("deploy Docker — generated file content", () => {
   it("Dockerfile uses oven/bun:1 for Bun path", () => {
@@ -54,6 +58,88 @@ describe("deploy Docker — generated file content", () => {
     expect(HEADERS_FILE).toContain("/assets/*");
     expect(HEADERS_FILE).toContain("Cache-Control: public, max-age=31536000, immutable");
     expect(HEADERS_FILE).not.toContain("/assets/chunks/*");
+  });
+});
+
+describe("detectPkgManager — lockfile detection", () => {
+  let tmpDir: string;
+  const files: string[] = [];
+
+  beforeEach(async () => {
+    tmpDir = join(tmpdir(), `deploy-test-${Date.now()}`);
+    await mkdir(tmpDir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    const { rm } = await import("node:fs/promises");
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  async function touch(name: string) {
+    await writeFile(join(tmpDir, name), "");
+    files.push(name);
+  }
+
+  it("detects bun.lock", async () => {
+    await touch("bun.lock");
+    await touch("package.json");
+    const pm = detectPkgManager(tmpDir);
+    expect(pm.runCmd).toBe("bun");
+    expect(pm.lockFile).toBe("bun.lock");
+    expect(pm.baseImage).toBe("oven/bun:1");
+    expect(pm.installCmd).toBe("bun install --frozen-lockfile");
+    expect(pm.cache).toBe("");
+    expect(pm.setupAction).toBe("bun");
+  });
+
+  it("detects pnpm-lock.yaml", async () => {
+    await touch("pnpm-lock.yaml");
+    await touch("package.json");
+    const pm = detectPkgManager(tmpDir);
+    expect(pm.runCmd).toBe("pnpm");
+    expect(pm.lockFile).toBe("pnpm-lock.yaml");
+    expect(pm.baseImage).toBe("node:22-alpine");
+    expect(pm.installCmd).toContain("pnpm install --frozen-lockfile");
+    expect(pm.cache).toBe("pnpm");
+    expect(pm.setupAction).toBe("pnpm");
+  });
+
+  it("detects yarn.lock", async () => {
+    await touch("yarn.lock");
+    await touch("package.json");
+    const pm = detectPkgManager(tmpDir);
+    expect(pm.runCmd).toBe("yarn");
+    expect(pm.lockFile).toBe("yarn.lock");
+    expect(pm.baseImage).toBe("node:22-alpine");
+    expect(pm.installCmd).toBe("yarn install --frozen-lockfile");
+    expect(pm.cache).toBe("yarn");
+    expect(pm.setupAction).toBe("node");
+  });
+
+  it("defaults to npm when no lockfile found", async () => {
+    await touch("package.json");
+    const pm = detectPkgManager(tmpDir);
+    expect(pm.runCmd).toBe("npm");
+    expect(pm.lockFile).toBe("package-lock.json");
+    expect(pm.installCmd).toBe("npm ci");
+    expect(pm.cache).toBe("npm");
+    expect(pm.setupAction).toBe("node");
+  });
+
+  it("prefers bun over pnpm when both exist", async () => {
+    await touch("bun.lock");
+    await touch("pnpm-lock.yaml");
+    await touch("package.json");
+    const pm = detectPkgManager(tmpDir);
+    expect(pm.runCmd).toBe("bun");
+  });
+
+  it("prefers pnpm over yarn when both exist", async () => {
+    await touch("pnpm-lock.yaml");
+    await touch("yarn.lock");
+    await touch("package.json");
+    const pm = detectPkgManager(tmpDir);
+    expect(pm.runCmd).toBe("pnpm");
   });
 });
 
