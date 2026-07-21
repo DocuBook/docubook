@@ -5,6 +5,7 @@
  */
 
 import { execFile } from "node:child_process";
+import { stat } from "node:fs/promises";
 
 function runGit(args: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -30,6 +31,19 @@ export async function getGitLastModified(filePath: string): Promise<string | nul
     const text = await runGit(["log", "-1", "--format=%cI", "--", cleanPath]);
     const date = text.trim();
     return date || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fallback to filesystem mtime when git is unavailable (shallow clone, no .git, etc.).
+ * Returns ISO 8601 date string or null.
+ */
+export async function getFilesystemMtime(filePath: string): Promise<string | null> {
+  try {
+    const stats = await stat(filePath);
+    return stats.mtime.toISOString();
   } catch {
     return null;
   }

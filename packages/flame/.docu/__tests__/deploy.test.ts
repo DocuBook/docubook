@@ -18,7 +18,7 @@ describe("deploy Docker — generated file content", () => {
     expect(DOCKERIGNORE).toContain(".env");
     expect(DOCKERIGNORE).toContain("*.log");
     expect(DOCKERIGNORE).toContain("node_modules");
-    expect(DOCKERIGNORE).toContain(".git");
+    expect(DOCKERIGNORE).not.toContain(".git");
   });
 
   it("NGINX_CONF includes all security headers at server level", () => {

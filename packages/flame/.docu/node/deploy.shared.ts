@@ -62,7 +62,6 @@ export const NGINX_CONF = `server {
 `;
 
 export const DOCKERIGNORE = `node_modules
-.git
 *.DS_Store
 .docu/dist
 .docu/lib
