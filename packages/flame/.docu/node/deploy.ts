@@ -11,9 +11,9 @@ import { mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { DIST_DIR, PROJECT_ROOT } from "./paths";
-import { HEADERS_FILE } from "./deploy.shared";
+import { HEADERS_FILE, NGINX_CONF, DOCKERIGNORE } from "./deploy.shared";
 
-export { HEADERS_FILE };
+export { HEADERS_FILE, NGINX_CONF, DOCKERIGNORE };
 
 const WORKFLOW_DIR = join(PROJECT_ROOT, ".github/workflows");
 const WORKFLOW_FILE = join(WORKFLOW_DIR, "deploy.yml");
@@ -43,49 +43,6 @@ async function runBuild() {
   }
 }
 
-export const NGINX_CONF = `server {
-  listen 80;
-  server_name _;
-  root /usr/share/nginx/html;
-  index index.html;
-
-  gzip on;
-  gzip_types text/html text/css application/javascript image/svg+xml;
-
-  # Security headers (server-level, inherited by all locations)
-  # HSTS effective when HTTPS is terminated upstream (reverse proxy / LB)
-  add_header X-Frame-Options "DENY" always;
-  add_header X-Content-Type-Options "nosniff" always;
-  add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
-  add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-  add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
-
-  location /assets/ {
-    expires 1y;
-    add_header Cache-Control "public, immutable";
-    add_header X-Frame-Options "DENY" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
-  }
-
-  location /docs/assets/ {
-    expires 7d;
-    add_header Cache-Control "public";
-    add_header X-Frame-Options "DENY" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
-  }
-
-  location / {
-    try_files $uri $uri.html $uri/ =404;
-  }
-}
-`;
-
 export const DOCKERFILE_BUN = `FROM oven/bun:1 AS builder
 WORKDIR /app
 COPY package.json bun.lock ./
@@ -99,17 +56,6 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 USER nginx
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
-`;
-
-export const DOCKERIGNORE = `node_modules
-.git
-*.DS_Store
-.docu/dist
-.docu/lib
-.env
-.env.*
-.npmrc
-*.log
 `;
 
 async function writeDockerFiles() {
@@ -182,7 +128,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
