@@ -142,17 +142,28 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
       {
         name: "docu-config",
         setup(build) {
-          build.onResolve({ filter: /docu\.json$/ }, (args) => ({
+          // Inline docu.json imports for the browser bundle —
+          // resolves the config once at build time instead of baking in a
+          // relative path that breaks when the package is installed from npm.
+          build.onResolve({ filter: /client-routes\.ts$/ }, (args) => ({
             path: args.path,
-            namespace: "docu-config",
+            namespace: "client-routes",
           }));
-          build.onLoad({ filter: /.*/, namespace: "docu-config" }, () => {
+          build.onLoad({ filter: /.*/, namespace: "client-routes" }, () => {
             const config = loadDocuConfig();
             const resolved = {
               ...config,
               routes: resolveRoutes(config.routes as DocuRoute[] | undefined),
             };
-            return { contents: JSON.stringify(resolved), loader: "json" };
+            return {
+              contents: [
+                `import type { DocuRoute, DocuConfig } from "./types";`,
+                `const docuConfig = ${JSON.stringify(resolved)};`,
+                `export const routes = docuConfig.routes || [];`,
+                `export const config = docuConfig;`,
+              ].join("\n"),
+              loader: "ts",
+            };
           });
         },
       },
