@@ -77,10 +77,15 @@ export function detectPkgManager(dir: string): {
   cache: string;
   setupAction: string;
 } {
-  if (existsSync(join(dir, "bun.lock"))) {
+  const bunLockFile = existsSync(join(dir, "bun.lock"))
+    ? "bun.lock"
+    : existsSync(join(dir, "bun.lockb"))
+      ? "bun.lockb"
+      : null;
+  if (bunLockFile) {
     return {
       baseImage: "oven/bun:1",
-      lockFile: "bun.lock",
+      lockFile: bunLockFile,
       installCmd: "bun install --frozen-lockfile",
       runCmd: "bun",
       cache: "",
