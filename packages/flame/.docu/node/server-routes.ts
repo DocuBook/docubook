@@ -45,7 +45,8 @@ function createHtmlResponse(
     themeCss: state.inlineThemeCss,
     depth,
   });
-  return htmlResponse(html, nonce, status, process.env.NODE_ENV !== "production");
+  // ponytail: unsafe-eval required by mdx-remote hydration — see build.impl.ts
+  return htmlResponse(html, nonce, status, true);
 }
 
 async function getDocsForSlug(
@@ -183,7 +184,8 @@ async function renderDocsServerPage(
       depth,
     });
     html = await state.builder.runTransformHtmlChain(html, ctx);
-    return htmlResponse(html, nonce, 200, process.env.NODE_ENV !== "production");
+    // ponytail: unsafe-eval required by mdx-remote hydration — see build.impl.ts
+    return htmlResponse(html, nonce, 200, true);
   }
 
   return createHtmlResponse(title, description, body, 200, state, depth);
