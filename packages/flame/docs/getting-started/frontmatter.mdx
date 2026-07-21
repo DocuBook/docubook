@@ -23,7 +23,7 @@ Below is a table of available frontmatter fields for documentation pages:
 | title       | string       | Yes      | The page title, displayed in the header and metadata. |
 | description | string       | Yes      | A short description of the page, used for SEO and previews. |
 | image       | string (URL) | No       | Per-page OG image (`og:image`) for social sharing. Falls back to `meta.ogImage` in `docu.json`. See examples below for accepted path formats. |
-| date        | string       | No       | Publication date in `YYYY-MM-DD` format (e.g. `2026-06-10`). If omitted, the file's last modified time is used automatically. |
+| date        | string       | No       | Publication date in `YYYY-MM-DD` format (e.g. `2026-06-10`). If omitted, resolves from: `git log` → filesystem `mtime` → hidden. |
 
 ### Image path examples
 
