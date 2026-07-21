@@ -6,8 +6,8 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 describe("deploy Docker — generated file content", () => {
-  it("Dockerfile uses oven/bun:1 for Bun path", () => {
-    expect(DOCKERFILE_BUN).toContain("oven/bun:1");
+  it("Dockerfile uses oven/bun:1-debian for Bun path", () => {
+    expect(DOCKERFILE_BUN).toContain("oven/bun:1-debian");
     expect(DOCKERFILE_BUN).toContain("nginx:alpine");
     expect(DOCKERFILE_BUN).toContain("bun.lock");
   });
@@ -93,7 +93,7 @@ describe("detectPkgManager — lockfile detection", () => {
     const pm = detectPkgManager(tmpDir);
     expect(pm.runCmd).toBe("bun");
     expect(pm.lockFile).toBe("bun.lock");
-    expect(pm.baseImage).toBe("oven/bun:1");
+    expect(pm.baseImage).toBe("oven/bun:1-debian");
     expect(pm.installCmd).toBe("bun install --frozen-lockfile");
     expect(pm.cache).toBe("");
     expect(pm.setupAction).toBe("bun");
@@ -105,7 +105,7 @@ describe("detectPkgManager — lockfile detection", () => {
     const pm = detectPkgManager(tmpDir);
     expect(pm.runCmd).toBe("bun");
     expect(pm.lockFile).toBe("bun.lockb");
-    expect(pm.baseImage).toBe("oven/bun:1");
+    expect(pm.baseImage).toBe("oven/bun:1-debian");
     expect(pm.installCmd).toBe("bun install --frozen-lockfile");
     expect(pm.cache).toBe("");
     expect(pm.setupAction).toBe("bun");
