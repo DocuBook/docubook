@@ -3,17 +3,11 @@ title: Algolia
 description: Integrate Algolia DocSearch into your Flame documentation site.
 ---
 
-[Algolia DocSearch](https://docsearch.algolia.com/) provides a fast, relevant search experience for documentation sites. The search on this site **(DocuBook)** runs on Algolia.
-
-Flame's Algolia integration is via a plugin — configure it once in `docu.json` and the plugin injects the search client into the browser bundle.
-
-Algolia is not built into Flame. You add it via a plugin registered in the `plugins` array of `docu.json` — factory options like credentials are passed directly there:
+[Algolia DocSearch](https://docsearch.algolia.com/) provides a fast, relevant search experience for documentation sites. Flame does not include Algolia by default — add it via a plugin registered in the `plugins` array of `docu.json`:
 
 <Note type="info" title="Example configuration — adapt to your plugin">
-  The entry below is an **example** showing how the plugin factory format works.
-  `@docubook/plugin-search-algolia` is a placeholder — replace it with whatever Algolia
-  (or any search) plugin you install. Flame's plugin system only defines the contract;
-  the actual plugin package is provided by you or a third party.
+  The entry below is an **example**. `@docubook/plugin-search-algolia` is a placeholder —
+  replace it with whatever Algolia search plugin you install.
 </Note>
 
 ```json

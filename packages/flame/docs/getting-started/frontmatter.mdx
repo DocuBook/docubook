@@ -22,8 +22,30 @@ Below is a table of available frontmatter fields for documentation pages:
 | ----------- | ------------ | -------- | --------------------------------------------------------------------------------------------------------------------------- |
 | title       | string       | Yes      | The page title, displayed in the header and metadata. |
 | description | string       | Yes      | A short description of the page, used for SEO and previews. |
-| image       | string (URL) | No       | URL for the Open Graph image (`og:image`), used when sharing the page on social media. |
+| image       | string (URL) | No       | Per-page OG image (`og:image`) for social sharing. Falls back to `meta.ogImage` in `docu.json`. See examples below for accepted path formats. |
 | date        | string       | No       | Publication date in `YYYY-MM-DD` format (e.g. `2026-06-10`). If omitted, the file's last modified time is used automatically. |
+
+### Image path examples
+
+```yaml
+# Absolute URL — always works, no resolution needed
+image: https://example.com/images/og.png
+
+# Root-relative — resolves against meta.baseURL
+# e.g. baseURL=https://docs.example.com → https://docs.example.com/assets/og.png
+image: /assets/og.png
+
+# Relative to /docs/ — resolves against baseURL + /docs/
+# e.g. baseURL=https://docs.example.com → https://docs.example.com/docs/images/card.png
+image: ./images/card.png
+
+# ❌ Wrong — bare filename does NOT auto-resolve to docs/assets/images/
+# Would resolve to /docs/page-content-1.png, not /docs/assets/images/page-content-1.png
+# image: page-content-1.png
+
+# ✅ Correct path for files inside docs/assets/images/
+image: ./assets/images/page-content-1.png
+```
 
 <Note type="note">
 The `date` field is optional. When omitted, the file's last git modified time takes precedence, falling back to the filesystem mtime.

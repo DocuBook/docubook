@@ -13,6 +13,19 @@ npm run deploy       # or: bun run deploy / deno task deploy
 
 This builds the site, adds `.nojekyll`, and generates a GitHub Actions workflow on first run.
 
+## Docker (self-hosted / VPS)
+
+```bash
+npm run deploy -- --docker   # or: bun run deploy -- --docker / deno task deploy -- --docker
+```
+
+Generates `Dockerfile` + `nginx.conf` + `.dockerignore` for Docker-based deployments. After generation, build and run:
+
+```bash
+docker build -t my-docs .
+docker run -p 80:80 my-docs
+```
+
 ## Manual
 
 ```bash

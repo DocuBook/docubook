@@ -7,7 +7,7 @@ DocuBook Flame includes a built-in full-text search that works entirely client-s
 
 ## How It Works
 
-1. **Build-time indexing** — During `bun build`, all MDX files are scanned and a `search-index.json` is generated
+1. **Build-time indexing** — During `flame build`, all MDX files are scanned and a `search-index.json` is generated
 2. **Hierarchy-based records** — Each page produces multiple records: title (lvl1), headings (lvl2–lvl6), and content paragraphs
 3. **Client-side search** — The index is fetched on first modal open and cached in memory
 
@@ -39,29 +39,3 @@ The indexer extracts the following from each MDX file:
 ## Configuration
 
 Search works out of the box with no configuration. The index is automatically regenerated on every build.
-
-To manually regenerate the search index:
-
-<Tabs className="pt-3 pb-1">
-<Tab title="Bun">
-
-```shell:bun
-bun .docu/node/search-indexer.ts
-```
-
-</Tab>
-<Tab title="Node.js">
-
-```shell:bash
-node .docu/lib/search-indexer.js
-```
-
-</Tab>
-<Tab title="Deno">
-
-```shell:bash
-deno run -A .docu/lib/search-indexer.js
-```
-
-</Tab>
-</Tabs>
