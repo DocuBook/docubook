@@ -61,6 +61,16 @@ const hasSilent = process.argv.includes("--silent");
 if (hasDocker) process.env.FLAME_DEPLOY_DOCKER = "1";
 if (hasSilent) process.env.FLAME_DEPLOY_SILENT = "1";
 
+// Production mode for build/preview/deploy — ensures minified client bundle
+// on all platforms (Coolify, Vercel, etc.) without requiring the user to
+// set NODE_ENV manually.
+if (
+  (command === "build" || command === "preview" || command === "deploy") &&
+  !process.env.NODE_ENV
+) {
+  process.env.NODE_ENV = "production";
+}
+
 if (!command || command === "--help" || command === "-h") {
   console.log(`
   @docubook/flame — A blazing-fast React + MDX framework for modern documentation experiences. Runs on Bun, Node.js, and Deno.
@@ -116,9 +126,9 @@ if (command === "init") {
       const flameCmd = "deno run -A npm:@docubook/flame";
       pkg.scripts = {
         dev: `${flameCmd} dev`,
-        build: `${flameCmd} build`,
-        preview: `${flameCmd} preview`,
-        deploy: `${flameCmd} deploy`,
+        build: `NODE_ENV=production ${flameCmd} build`,
+        preview: `NODE_ENV=production ${flameCmd} preview`,
+        deploy: `NODE_ENV=production ${flameCmd} deploy`,
       };
 
       // Generate deno.json with nodeModulesDir for npm compat.

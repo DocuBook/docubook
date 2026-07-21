@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "flame dev",
-    "build": "flame build",
+    "build": "NODE_ENV=production flame build",
     "preview": "flame preview",
     "deploy": "flame deploy"
   },
