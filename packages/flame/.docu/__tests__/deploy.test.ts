@@ -33,6 +33,7 @@ describe("deploy Docker — generated file content", () => {
     expect(NGINX_CONF).toContain(
       'add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always'
     );
+    expect(NGINX_CONF).toContain('add_header Content-Security-Policy "default-src');
   });
 
   it("NGINX_CONF /assets/ uses 1y immutable cache", () => {
@@ -58,6 +59,12 @@ describe("deploy Docker — generated file content", () => {
     expect(HEADERS_FILE).toContain("/assets/*");
     expect(HEADERS_FILE).toContain("Cache-Control: public, max-age=31536000, immutable");
     expect(HEADERS_FILE).not.toContain("/assets/chunks/*");
+  });
+
+  it("_headers includes CSP and security headers", () => {
+    expect(HEADERS_FILE).toContain("Content-Security-Policy: default-src");
+    expect(HEADERS_FILE).toContain("Strict-Transport-Security:");
+    expect(HEADERS_FILE).toContain("Permissions-Policy:");
   });
 });
 
