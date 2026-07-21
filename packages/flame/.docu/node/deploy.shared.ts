@@ -87,7 +87,7 @@ export function detectPkgManager(dir: string): {
       : null;
   if (bunLockFile) {
     return {
-      baseImage: "oven/bun:1",
+      baseImage: "oven/bun:1-debian",
       lockFile: bunLockFile,
       installCmd: "bun install --frozen-lockfile",
       runCmd: "bun",
@@ -169,6 +169,7 @@ async function writeDockerFiles() {
     await writeFile(
       join(dockerDir, "Dockerfile"),
       `FROM ${pm.baseImage} AS builder
+ENV NODE_ENV=production
 WORKDIR /app
 COPY package.json ${pm.lockFile} ./
 RUN ${pm.installCmd}
