@@ -80,9 +80,12 @@ Source: [Vercel — cleanUrls](https://vercel.com/docs/project-configuration/ver
 
 <Note type="info" title="Last updated dates on Vercel">
   Vercel uses a shallow git clone (`--depth=1`) by default, which prevents Flame from
-  reading the last modified date for each page via `git log`. Set the environment variable
-  `VERCEL_DEEP_CLONE=true` in your Vercel project dashboard (Settings → Environment
-  Variables) to enable full git history and correct dates.
+  reading the last modified date for each page via `git log`. Add the following environment
+  variable in your Vercel project dashboard (Settings → Environment Variables):
+
+  | Key | Value |
+  | --- | ----- |
+  | `VERCEL_DEEP_CLONE` | `true` |
 </Note>
 
 ### Netlify
