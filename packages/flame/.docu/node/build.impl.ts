@@ -149,7 +149,10 @@ async function renderDocsPage(
   const depth = slug ? slug.split("/").length : 1;
   const favicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
   const seo = buildSeoMeta(docuConfig, frontmatter, slug || "");
-  const csp = cspHeader(nonce, process.env.NODE_ENV !== "production");
+  // ponytail: @docubook/mdx-remote uses new Function(compiledSource) for
+  // client-side MDX hydration, which requires 'unsafe-eval' in CSP.
+  // Remove this (set allowEval=false) once mdx-remote drops new Function.
+  const csp = cspHeader(nonce, true);
   let html = htmlShell({
     title,
     description,
@@ -358,7 +361,8 @@ export async function runBuild(): Promise<void> {
     body: renderToString(landingPage),
     favicon: landingFavicon,
     seo: landingSeo,
-    csp: cspHeader(landingNonce, process.env.NODE_ENV !== "production"),
+    // ponytail: unsafe-eval required by mdx-remote hydration — see above.
+    csp: cspHeader(landingNonce, true),
     css: assetManifest.css,
     js: assetManifest.js,
     nonce: landingNonce,
@@ -379,7 +383,8 @@ export async function runBuild(): Promise<void> {
     body: renderToString(notFoundPage),
     favicon: notFoundFavicon,
     headExtra: ['<meta name="robots" content="noindex,follow">'],
-    csp: cspHeader(notFoundNonce, process.env.NODE_ENV !== "production"),
+    // ponytail: unsafe-eval required by mdx-remote hydration — see above.
+    csp: cspHeader(notFoundNonce, true),
     css: assetManifest.css,
     js: assetManifest.js,
     nonce: notFoundNonce,
