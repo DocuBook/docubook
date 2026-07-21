@@ -1,5 +1,7 @@
 import type { DocuRoute, DocuConfig } from "./types";
-import docuConfig from "../../docu.json" with { type: "json" };
+import { loadDocuConfig } from "./paths";
+import { resolveRoutes } from "./fs-scanner";
 
-export const routes: DocuRoute[] = docuConfig.routes || [];
+const docuConfig = loadDocuConfig();
+export const routes: DocuRoute[] = resolveRoutes(docuConfig.routes || []);
 export const config = docuConfig as unknown as DocuConfig;
