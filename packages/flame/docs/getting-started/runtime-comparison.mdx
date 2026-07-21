@@ -86,12 +86,12 @@ deno run -A bin/compile-lib.mjs  # Deno
 
 ### Deploy
 
-The `deploy` command prepares `.docu/dist` for GitHub Pages:
+The `deploy` command prepares `.docu/dist/` for deployment:
 
-- **Bun**: spawns `bun run build` as a subprocess, then writes `.nojekyll` + `_headers`.
-- **Node / Deno**: runs the build in-process via `build.impl.runBuildCli()`, then writes `.nojekyll`.
+- **Default** (`flame deploy`): generates `.github/workflows/deploy.yml` for GitHub Pages, writes `.nojekyll` + `_headers`.
+- **Docker** (`flame deploy --docker`): generates `Dockerfile` + `nginx.conf` + `.dockerignore`.
 
-Both generate a `.github/workflows/deploy.yml` if one does not exist. The generated workflow uses the appropriate setup action (`oven-sh/setup-bun` vs `actions/setup-node`).
+The generated GitHub Actions workflow uses the appropriate setup action (`oven-sh/setup-bun` vs `actions/setup-node`).
 
 ### Deno-Specific Notes
 

@@ -30,6 +30,7 @@ Whether the `.html` suffix stays visible in the browser address bar depends on y
 | Azure Static Web Apps | Yes        | Native GitHub       | Azure infra       | `staticwebapp.config.json`     |
 | Render                | Yes        | Native GitHub       | nginx             | Dashboard rewrite rule         |
 | Heroku                | Yes        | Native GitHub       | nginx             | Static buildpack + `static.json` |
+| **Docker**            | **Yes**    | **Any CI/CD**       | **nginx**         | **`flame deploy --docker`**    |
 | GitHub Pages          | No         | Native GitHub       | Apache            | Not supported                  |
 | AWS S3 + CloudFront   | Limited    | GitHub Action       | nginx (CloudFront)| CloudFront Function required   |
 
@@ -164,6 +165,19 @@ GitHub Pages serves files at their exact path only: `/docs/page.html` works, `/d
 Flame ships a deploy helper — `flame deploy` (or `bun run deploy` / `npm run deploy` / `deno task deploy`) builds the site, adds a `.nojekyll` file, and generates a `.github/workflows/deploy.yml` workflow if one does not exist. The generated workflow automatically builds and deploys on every push to the default branch. The `.html` suffix remaining in the address bar is the only limitation — the site itself works perfectly.
 
 Source: [GitHub Pages documentation](https://docs.github.com/en/pages)
+
+### Docker
+
+```shell
+flame deploy --docker
+```
+
+Generates `Dockerfile` + `nginx.conf` + `.dockerignore`. Build and run:
+
+```shell
+docker build -t my-docs .
+docker run -p 80:80 my-docs
+```
 
 ### AWS S3 + CloudFront
 

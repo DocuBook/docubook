@@ -58,10 +58,11 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 flame dev        # Start development server with HMR
 flame build      # Build for production
 flame preview    # Preview production build
-flame deploy     # Build + prepare for GitHub Pages
-flame init       # Scaffold a new project
-flame clean      # Clean build artifacts
-flame --help     # Show all commands
+flame deploy              # Build + prepare for GitHub Pages
+flame deploy --docker     # Build + generate Docker files
+flame init              # Scaffold a new project
+flame clean             # Clean build artifacts
+flame --help            # Show all commands
 ```
 
 The CLI auto-detects your runtime and dispatches to the correct server implementation automatically — `flame dev` uses Bun.serve on Bun, Node HTTP on Node.js, and Deno HTTP on Deno. Override detection with the `FLAME_RUNTIME` environment variable:
@@ -77,9 +78,9 @@ Scaffolded projects have these scripts in `package.json`:
 {
   "scripts": {
     "dev": "flame dev",
-    "build": "flame build",
-    "preview": "flame preview",
-    "deploy": "flame deploy"
+    "build": "NODE_ENV=production flame build",
+    "preview": "NODE_ENV=production flame preview",
+    "deploy": "NODE_ENV=production flame deploy"
   }
 }
 ```
