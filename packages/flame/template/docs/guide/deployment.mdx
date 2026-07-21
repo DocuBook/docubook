@@ -16,10 +16,10 @@ This builds the site, adds `.nojekyll`, and generates a GitHub Actions workflow 
 ## Docker (self-hosted / VPS)
 
 ```bash
-npm run deploy -- --docker   # or: bun run deploy -- --docker / deno task deploy -- --docker
+flame deploy --docker
 ```
 
-Generates `Dockerfile` + `nginx.conf` + `.dockerignore` for Docker-based deployments. After generation, build and run:
+Generates `Dockerfile` + `nginx.conf` + `.dockerignore`. Build and run:
 
 ```bash
 docker build -t my-docs .

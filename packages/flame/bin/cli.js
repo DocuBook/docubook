@@ -127,8 +127,8 @@ if (command === "init") {
       pkg.scripts = {
         dev: `${flameCmd} dev`,
         build: `NODE_ENV=production ${flameCmd} build`,
-        preview: `NODE_ENV=production ${flameCmd} preview`,
-        deploy: `NODE_ENV=production ${flameCmd} deploy`,
+        preview: `${flameCmd} preview`,
+        deploy: `${flameCmd} deploy`,
       };
 
       // Generate deno.json with nodeModulesDir for npm compat.

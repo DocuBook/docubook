@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "flame dev",
     "build": "NODE_ENV=production flame build",
-    "preview": "NODE_ENV=production flame preview",
-    "deploy": "NODE_ENV=production flame deploy"
+    "preview": "flame preview",
+    "deploy": "flame deploy"
   },
   "dependencies": {
     "@docubook/flame": "latest"
