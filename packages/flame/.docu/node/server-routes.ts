@@ -45,7 +45,7 @@ function createHtmlResponse(
     themeCss: state.inlineThemeCss,
     depth,
   });
-  /** ponytail: unsafe-eval required by mdx-remote hydration — see build.impl.ts */
+  /** unsafe-eval required by mdx-remote hydration — see build.impl.ts */
   return htmlResponse(html, nonce, status, true);
 }
 
@@ -184,7 +184,7 @@ async function renderDocsServerPage(
       depth,
     });
     html = await state.builder.runTransformHtmlChain(html, ctx);
-    /** ponytail: unsafe-eval required by mdx-remote hydration — see build.impl.ts */
+    /** unsafe-eval required by mdx-remote hydration — see build.impl.ts */
     return htmlResponse(html, nonce, 200, true);
   }
 

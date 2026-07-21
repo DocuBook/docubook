@@ -150,7 +150,7 @@ async function renderDocsPage(
   const favicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
   const seo = buildSeoMeta(docuConfig, frontmatter, slug || "");
   /**
-   * ponytail: @docubook/mdx-remote uses new Function(compiledSource) for
+   * @docubook/mdx-remote uses new Function(compiledSource) for
    * client-side MDX hydration. Keep allowEval=true until mdx-remote drops new Function.
    */
   const csp = cspHeader(nonce, true);
@@ -362,7 +362,7 @@ export async function runBuild(): Promise<void> {
     body: renderToString(landingPage),
     favicon: landingFavicon,
     seo: landingSeo,
-    /** ponytail: unsafe-eval required by mdx-remote hydration — see above. */
+    /** unsafe-eval required by mdx-remote hydration — see above. */
     csp: cspHeader(landingNonce, true),
     css: assetManifest.css,
     js: assetManifest.js,
@@ -384,7 +384,7 @@ export async function runBuild(): Promise<void> {
     body: renderToString(notFoundPage),
     favicon: notFoundFavicon,
     headExtra: ['<meta name="robots" content="noindex,follow">'],
-    /** ponytail: unsafe-eval required by mdx-remote hydration — see above. */
+    /** unsafe-eval required by mdx-remote hydration — see above. */
     csp: cspHeader(notFoundNonce, true),
     css: assetManifest.css,
     js: assetManifest.js,
