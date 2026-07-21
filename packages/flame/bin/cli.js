@@ -126,9 +126,9 @@ if (command === "init") {
       const flameCmd = "deno run -A npm:@docubook/flame";
       pkg.scripts = {
         dev: `${flameCmd} dev`,
-        build: `NODE_ENV=production ${flameCmd} build`,
-        preview: `NODE_ENV=production ${flameCmd} preview`,
-        deploy: `NODE_ENV=production ${flameCmd} deploy`,
+        build: `${flameCmd} build`,
+        preview: `${flameCmd} preview`,
+        deploy: `${flameCmd} deploy`,
       };
 
       // Generate deno.json with nodeModulesDir for npm compat.
