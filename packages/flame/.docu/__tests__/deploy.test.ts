@@ -92,6 +92,26 @@ describe("detectPkgManager — lockfile detection", () => {
     expect(pm.setupAction).toBe("bun");
   });
 
+  it("detects bun.lockb (legacy binary lockfile)", async () => {
+    await touch("bun.lockb");
+    await touch("package.json");
+    const pm = detectPkgManager(tmpDir);
+    expect(pm.runCmd).toBe("bun");
+    expect(pm.lockFile).toBe("bun.lockb");
+    expect(pm.baseImage).toBe("oven/bun:1");
+    expect(pm.installCmd).toBe("bun install --frozen-lockfile");
+    expect(pm.cache).toBe("");
+    expect(pm.setupAction).toBe("bun");
+  });
+
+  it("prefers bun.lock over bun.lockb when both exist", async () => {
+    await touch("bun.lock");
+    await touch("bun.lockb");
+    await touch("package.json");
+    const pm = detectPkgManager(tmpDir);
+    expect(pm.lockFile).toBe("bun.lock");
+  });
+
   it("detects pnpm-lock.yaml", async () => {
     await touch("pnpm-lock.yaml");
     await touch("package.json");
