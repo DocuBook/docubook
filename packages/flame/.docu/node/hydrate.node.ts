@@ -270,10 +270,9 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
         {
           name: "docu-config",
           setup(build) {
-            // Inline client-routes.ts for the browser bundle —
-            // resolves the config once at build time instead of baking in a
-            // relative path that breaks when the package is installed from npm.
-            build.onResolve({ filter: /client-routes\.ts$/ }, (args) => ({
+            // Components import as "../node/client-routes" (no .ts extension),
+            // so filter matches the path tail without requiring the extension.
+            build.onResolve({ filter: /client-routes$/ }, (args) => ({
               path: args.path,
               namespace: "client-routes",
             }));

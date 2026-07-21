@@ -35,30 +35,6 @@ await build({
   packages: "external",
   jsx: "automatic",
   logLevel: "info",
-  plugins: [
-    {
-      // The SSR component graph imports `docu.json` statically
-      // (client-routes.ts). At runtime that must be the USER's project
-      // config, so replace the import with a cwd-relative read instead of
-      // baking the monorepo's docu.json into the published bundle.
-      name: "docu-config-runtime",
-      setup(build) {
-        build.onResolve({ filter: /docu\.json$/ }, (args) => ({
-          path: args.path,
-          namespace: "docu-config-runtime",
-        }));
-        build.onLoad({ filter: /.*/, namespace: "docu-config-runtime" }, () => ({
-          contents: [
-            `import { readFileSync } from "node:fs";`,
-            `import { join } from "node:path";`,
-            `const config = JSON.parse(readFileSync(join(process.cwd(), "docu.json"), "utf-8"));`,
-            `export default config;`,
-          ].join("\n"),
-          loader: "js",
-        }));
-      },
-    },
-  ],
 });
 
 // esbuild's service process keeps Deno's event loop alive after one-shot
