@@ -13,6 +13,7 @@ overrides:
   "read-yaml-file": "^2.1.0"
   undici: "^7.28.0"
   fast-uri: "^4.1.1"
+  dompurify: "^3.4.12"
 allowBuilds:
   "@parcel/watcher": true
   bun: true
