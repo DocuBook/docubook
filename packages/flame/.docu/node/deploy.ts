@@ -25,6 +25,7 @@ const DOCKER_WORKFLOW_FILE = join(WORKFLOW_DIR, "deploy-docker.yml");
 
 const isDocker = !!process.env.FLAME_DEPLOY_DOCKER;
 const isSilent = !!process.env.FLAME_DEPLOY_SILENT;
+const isCi = !!process.env.FLAME_DEPLOY_CI;
 
 /** Logger that no-ops all non-error output in silent mode. */
 const log = isSilent
@@ -143,7 +144,7 @@ async function deploy() {
 
   if (isDocker) {
     await writeDockerFiles();
-    await writeDockerWorkflow();
+    if (isCi) await writeDockerWorkflow();
   } else {
     await writeGhaWorkflow();
   }
@@ -151,8 +152,13 @@ async function deploy() {
   log.ok();
   log.out("   Output: .docu/dist/");
   if (isDocker) {
-    log.out("   Push to GitHub — CI will build & push Docker image to GHCR");
-    log.out("   Then pull latest image on your hosting platform (Coolify, etc.)");
+    log.out("   Build locally: docker build -t my-docs . && docker run -p 80:80 my-docs");
+    if (isCi) {
+      log.out("   Push to GitHub — CI will build & push Docker image to GHCR");
+      log.out("   Then pull latest image on your hosting platform (Coolify, etc.)");
+    } else {
+      log.out("   For Coolify: connect repo, set build pack to Dockerfile");
+    }
   } else {
     log.out("   Push to GitHub and enable Pages (Settings → Pages → Source: GitHub Actions)");
   }
