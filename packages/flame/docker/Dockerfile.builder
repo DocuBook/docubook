@@ -7,6 +7,9 @@ LABEL org.opencontainers.image.licenses="MIT"
 
 ARG FLAME_VERSION=latest
 
+# Set NODE_ENV so Bun picks the production JSX transform
+ENV NODE_ENV=production
+
 # Install flame CLI globally (available as `flame` from any WORKDIR)
 RUN bun install -g @docubook/flame@${FLAME_VERSION} && \
     flame --help > /dev/null 2>&1

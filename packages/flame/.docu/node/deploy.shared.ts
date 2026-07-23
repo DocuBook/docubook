@@ -172,6 +172,7 @@ async function writeDockerFiles() {
     await writeFile(
       join(dockerDir, "Dockerfile"),
       `FROM ghcr.io/docubook/flame-builder:${FLAME_MAJOR} AS builder
+ENV NODE_ENV=production
 WORKDIR /app
 COPY . .
 RUN flame build
