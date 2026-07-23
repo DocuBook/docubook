@@ -68,7 +68,7 @@ function twCacheKey(): string {
   } catch {
     // theme config unavailable — proceed without
   }
-  return createHash("md5")
+  return createHash("sha256")
     .update(globals + themeSuffix)
     .digest("hex")
     .slice(0, 16);

@@ -71,7 +71,7 @@ function tailwindCacheKey(): string {
   } catch {
     // theme config unavailable — proceed without it
   }
-  return createHash("md5")
+  return createHash("sha256")
     .update(globalsContent + themeSuffix)
     .digest("hex")
     .slice(0, 16);
