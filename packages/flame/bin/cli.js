@@ -58,8 +58,10 @@ if (themeIndex !== -1 && themeIndex + 1 < process.argv.length) {
 }
 const hasDocker = process.argv.includes("--docker");
 const hasSilent = process.argv.includes("--silent");
+const hasCi = process.argv.includes("--ci");
 if (hasDocker) process.env.FLAME_DEPLOY_DOCKER = "1";
 if (hasSilent) process.env.FLAME_DEPLOY_SILENT = "1";
+if (hasCi) process.env.FLAME_DEPLOY_CI = "1";
 
 // Production mode for build/preview/deploy — ensures minified client bundle
 // on all platforms (Coolify, Vercel, etc.) without requiring the user to
@@ -88,7 +90,8 @@ if (!command || command === "--help" || command === "-h") {
   Options:
     --help        Show this help message
     --theme <name>  Override theme preset (e.g. freshlime, coffee). Works with dev, build, preview.
-    --docker      Generate Docker deployment files (Dockerfile + nginx.conf). Works with deploy.
+    --docker      Generate Docker deployment files (Dockerfile + nginx.conf + .dockerignore). Works with deploy.
+    --ci          Generate CI workflow (.github/workflows/deploy-docker.yml) for auto build & push to GHCR. Use with --docker.
     --silent      Suppress non-essential output. Works with deploy.
 `);
   process.exit(0);
