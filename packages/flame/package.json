@@ -1,6 +1,6 @@
 {
   "name": "@docubook/flame",
-  "version": "1.6.6",
+  "version": "1.7.0",
   "description": "A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.",
   "type": "module",
   "bin": {
