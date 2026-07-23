@@ -6,10 +6,10 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 describe("deploy Docker — generated file content", () => {
-  it("Dockerfile uses oven/bun:1-debian for Bun path", () => {
-    expect(DOCKERFILE_BUN).toContain("oven/bun:1-debian");
+  it("Dockerfile uses ghcr.io/docubook/flame-builder:MAJOR tag", () => {
+    expect(DOCKERFILE_BUN).toMatch(/ghcr\.io\/docubook\/flame-builder:[0-9]+ AS builder/);
     expect(DOCKERFILE_BUN).toContain("nginx:alpine");
-    expect(DOCKERFILE_BUN).toContain("bun.lock");
+    expect(DOCKERFILE_BUN).toContain("flame build");
   });
 
   it(".dockerignore excludes build artifacts and secrets", () => {
