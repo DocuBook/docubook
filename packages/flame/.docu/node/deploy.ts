@@ -8,15 +8,20 @@
  */
 
 import { mkdir } from "node:fs/promises";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
-import { DIST_DIR, PROJECT_ROOT } from "./paths";
+import { existsSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { DIST_DIR, PROJECT_ROOT, FRAMEWORK_ROOT } from "./paths";
 import { HEADERS_FILE, NGINX_CONF, DOCKERIGNORE } from "./deploy.shared";
+
+const FLAME_PKG = JSON.parse(readFileSync(resolve(FRAMEWORK_ROOT, "package.json"), "utf-8"));
+const FLAME_VERSION = FLAME_PKG.version;
+const FLAME_MAJOR = FLAME_VERSION.split(".")[0];
 
 export { HEADERS_FILE, NGINX_CONF, DOCKERIGNORE };
 
 const WORKFLOW_DIR = join(PROJECT_ROOT, ".github/workflows");
 const WORKFLOW_FILE = join(WORKFLOW_DIR, "deploy.yml");
+const DOCKER_WORKFLOW_FILE = join(WORKFLOW_DIR, "deploy-docker.yml");
 
 const isDocker = !!process.env.FLAME_DEPLOY_DOCKER;
 const isSilent = !!process.env.FLAME_DEPLOY_SILENT;
@@ -43,13 +48,10 @@ async function runBuild() {
   }
 }
 
-export const DOCKERFILE_BUN = `FROM oven/bun:1-debian AS builder
-ENV NODE_ENV=production
+export const DOCKERFILE_BUN = `FROM ghcr.io/docubook/flame-builder:${FLAME_MAJOR} AS builder
 WORKDIR /app
-COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
 COPY . .
-RUN bun run build
+RUN flame build
 
 FROM nginx:alpine
 COPY --from=builder /app/.docu/dist /usr/share/nginx/html
@@ -85,6 +87,52 @@ async function writeGhaWorkflow() {
   }
 }
 
+function generateDockerWorkflowYml(): string {
+  const imageName = "ghcr.io/${{ github.repository }}";
+  return [
+    `name: Build & Push Docker Image`,
+    "",
+    "on:",
+    "  push:",
+    "    branches: [main]",
+    "  workflow_dispatch:",
+    "",
+    "permissions:",
+    "  contents: read",
+    "  packages: write",
+    "",
+    "jobs:",
+    "  build:",
+    "    runs-on: ubuntu-latest",
+    "    steps:",
+    "      - uses: actions/checkout@v4",
+    "        with:",
+    "          fetch-depth: 0",
+    "",
+    "      - name: Log in to GHCR",
+    "        uses: docker/login-action@v3",
+    "        with:",
+    "          registry: ghcr.io",
+    "          username: ${{ github.actor }}",
+    "          password: ${{ secrets.GITHUB_TOKEN }}",
+    "",
+    "      - name: Build & push",
+    "        uses: docker/build-push-action@v5",
+    "        with:",
+    "          context: .",
+    `          tags: ${imageName}:latest`,
+    "          push: true",
+  ].join("\n");
+}
+
+async function writeDockerWorkflow() {
+  if (!existsSync(DOCKER_WORKFLOW_FILE)) {
+    await mkdir(WORKFLOW_DIR, { recursive: true });
+    await Bun.write(DOCKER_WORKFLOW_FILE, generateDockerWorkflowYml());
+    log.created("📄 Created .github/workflows/deploy-docker.yml");
+  }
+}
+
 async function deploy() {
   log.info("📦 Building for production...\n");
   await runBuild();
@@ -95,6 +143,7 @@ async function deploy() {
 
   if (isDocker) {
     await writeDockerFiles();
+    await writeDockerWorkflow();
   } else {
     await writeGhaWorkflow();
   }
@@ -102,7 +151,8 @@ async function deploy() {
   log.ok();
   log.out("   Output: .docu/dist/");
   if (isDocker) {
-    log.out("   Run: docker build -t my-docs . && docker run -p 80:80 my-docs");
+    log.out("   Push to GitHub — CI will build & push Docker image to GHCR");
+    log.out("   Then pull latest image on your hosting platform (Coolify, etc.)");
   } else {
     log.out("   Push to GitHub and enable Pages (Settings → Pages → Source: GitHub Actions)");
   }

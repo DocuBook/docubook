@@ -9,9 +9,13 @@
  */
 
 import { writeFile, mkdir } from "node:fs/promises";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
-import { DIST_DIR, PROJECT_ROOT } from "./paths";
+import { existsSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { DIST_DIR, PROJECT_ROOT, FRAMEWORK_ROOT } from "./paths";
+
+const FLAME_MAJOR = JSON.parse(
+  readFileSync(resolve(FRAMEWORK_ROOT, "package.json"), "utf-8")
+).version.split(".")[0];
 
 const WORKFLOW_DIR = join(PROJECT_ROOT, ".github/workflows");
 const WORKFLOW_FILE = join(WORKFLOW_DIR, "deploy.yml");
@@ -162,18 +166,14 @@ async function runBuild() {
 
 async function writeDockerFiles() {
   const dockerDir = PROJECT_ROOT;
-  const pm = detectPkgManager(dockerDir);
 
   if (!existsSync(join(dockerDir, "Dockerfile"))) {
     await writeFile(
       join(dockerDir, "Dockerfile"),
-      `FROM ${pm.baseImage} AS builder
-ENV NODE_ENV=production
+      `FROM ghcr.io/docubook/flame-builder:${FLAME_MAJOR} AS builder
 WORKDIR /app
-COPY package.json ${pm.lockFile} ./
-RUN ${pm.installCmd}
 COPY . .
-RUN ${pm.runCmd} run build
+RUN flame build
 
 FROM nginx:alpine
 COPY --from=builder /app/.docu/dist /usr/share/nginx/html
@@ -279,11 +279,59 @@ function generateWorkflowYml(): string {
   ].join("\n");
 }
 
+function generateDockerWorkflowYml(): string {
+  const imageName = "ghcr.io/${{ github.repository }}";
+  return [
+    `name: Build & Push Docker Image`,
+    "",
+    "on:",
+    "  push:",
+    "    branches: [main]",
+    "  workflow_dispatch:",
+    "",
+    "permissions:",
+    "  contents: read",
+    "  packages: write",
+    "",
+    "jobs:",
+    "  build:",
+    "    runs-on: ubuntu-latest",
+    "    steps:",
+    "      - uses: actions/checkout@v4",
+    "        with:",
+    "          fetch-depth: 0",
+    "",
+    "      - name: Log in to GHCR",
+    "        uses: docker/login-action@v3",
+    "        with:",
+    "          registry: ghcr.io",
+    "          username: ${{ github.actor }}",
+    "          password: ${{ secrets.GITHUB_TOKEN }}",
+    "",
+    "      - name: Build & push",
+    "        uses: docker/build-push-action@v5",
+    "        with:",
+    "          context: .",
+    `          tags: ${imageName}:latest`,
+    "          push: true",
+  ].join("\n");
+}
+
 async function writeGhaWorkflow() {
   if (!existsSync(WORKFLOW_FILE)) {
     await mkdir(WORKFLOW_DIR, { recursive: true });
     await writeFile(WORKFLOW_FILE, generateWorkflowYml());
     log.created("📄 Created .github/workflows/deploy.yml");
+  }
+}
+
+const DOCKER_WORKFLOW_FILE = join(WORKFLOW_DIR, "deploy-docker.yml");
+
+async function writeDockerWorkflow() {
+  if (!existsSync(DOCKER_WORKFLOW_FILE)) {
+    await mkdir(WORKFLOW_DIR, { recursive: true });
+    await writeFile(DOCKER_WORKFLOW_FILE, generateDockerWorkflowYml());
+    log.created("📄 Created .github/workflows/deploy-docker.yml");
   }
 }
 
@@ -297,6 +345,7 @@ export async function runDeploy(): Promise<void> {
 
   if (isDocker) {
     await writeDockerFiles();
+    await writeDockerWorkflow();
   } else {
     await writeGhaWorkflow();
   }
@@ -304,7 +353,8 @@ export async function runDeploy(): Promise<void> {
   log.ok();
   log.out("   Output: .docu/dist/");
   if (isDocker) {
-    log.out("   Run: docker build -t my-docs . && docker run -p 80:80 my-docs");
+    log.out("   Push to GitHub — CI will build & push Docker image to GHCR");
+    log.out("   Then pull latest image on your hosting platform (Coolify, etc.)");
   } else {
     log.out("   Push to GitHub and enable Pages (Settings → Pages → Source: GitHub Actions)");
   }

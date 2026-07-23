@@ -1,0 +1,51 @@
+name: Publish Flame Builder Docker Image
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Flame version (e.g. 1.6.6) — empty = from packages/flame/package.json"
+        required: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Derive version
+        id: version
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [ -z "$VERSION" ]; then
+            VERSION=$(jq -r '.version' packages/flame/package.json)
+          fi
+          MAJOR="$(echo "$VERSION" | cut -d. -f1)"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "major=$MAJOR" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: packages/flame/docker/Dockerfile.builder
+          build-args: |
+            FLAME_VERSION=${{ steps.version.outputs.version }}
+          tags: |
+            ghcr.io/docubook/flame-builder:${{ steps.version.outputs.version }}
+            ghcr.io/docubook/flame-builder:${{ steps.version.outputs.major }}
+            ghcr.io/docubook/flame-builder:latest
+          push: true
