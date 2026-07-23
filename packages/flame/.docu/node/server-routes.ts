@@ -246,7 +246,7 @@ export function serveStatic(pathname: string): Response | null {
   } catch {
     return null;
   }
-  if (!isPathSafe(decoded, DIST_DIR)) return null;
+  if (!isPathSafe(pathname, DIST_DIR)) return null;
   const assetPath = resolve(DIST_DIR, decoded.slice(1));
   try {
     const s = statSync(assetPath);
