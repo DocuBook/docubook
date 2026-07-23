@@ -1,5 +1,13 @@
 # @docubook/flame
 
+## 1.7.1
+
+### Patch Changes
+
+- [#337](https://github.com/DocuBook/docubook/pull/337) [`5c0a510`](https://github.com/DocuBook/docubook/commit/5c0a510a5aaa574015ef562a637243c04ec2d74b) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Use SHA256 instead of MD5 for Tailwind cache key in hydrate
+
+  - `hydrate.ts` / `hydrate.node.ts`: MD5 → SHA256 for content-addressable cache key (consistency with build path)
+
 ## 1.7.0
 
 ### Minor Changes
