@@ -30,8 +30,8 @@ Whether the `.html` suffix stays visible in the browser address bar depends on y
 | Azure Static Web Apps | Yes        | Native GitHub       | Azure infra       | `staticwebapp.config.json`     |
 | Render                | Yes        | Native GitHub       | nginx             | Dashboard rewrite rule         |
 | Heroku                | Yes        | Native GitHub       | nginx             | Static buildpack + `static.json` |
-| **Docker**            | **Yes**    | **Any CI/CD**       | **nginx**         | **`flame deploy --docker`**    |
-| GitHub Pages          | No         | Native GitHub       | Apache            | Not supported                  |
+| **Docker**            | **Yes**    | **GitHub Action**       | **nginx**         | **`flame deploy --docker`** or `--docker --ci` |
+| GitHub Pages          | No         | Native GitHub       | Apache            | `flame deploy` (no flag)                  |
 | AWS S3 + CloudFront   | Limited    | GitHub Action       | nginx (CloudFront)| CloudFront Function required   |
 
 Column notes:
@@ -178,16 +178,72 @@ Source: [GitHub Pages documentation](https://docs.github.com/en/pages)
 
 ### Docker
 
+Flame supports Docker deployment for any platform that runs Docker images — Coolify, Fly.io, Railway, VPS, or container hosting.
+
 ```shell
 flame deploy --docker
 ```
 
-Generates `Dockerfile` + `nginx.conf` + `.dockerignore`. Build and run:
+Generates:
+- `Dockerfile` — multi-stage build using `ghcr.io/docubook/flame-builder:MAJOR`
+- `nginx.conf` — security headers, cache tiers, `try_files $uri $uri.html`
+- `.dockerignore` — optimized for build speed
+
+The generated Dockerfile uses a **major version tag** (`:1`, `:2`, etc.). This means:
+- **Patch and minor updates** (1.6.6 → 1.7.0) are automatic — rebuild pulls the latest 1.x base image
+- **Major upgrades** (1.x → 2.x) require explicitly editing the tag in `Dockerfile`
+
+#### Build locally
 
 ```shell
+cd my-project/
+flame deploy --docker
+
 docker build -t my-docs .
 docker run -p 80:80 my-docs
 ```
+
+#### Auto-build on push (with CI)
+
+```shell
+flame deploy --docker --ci
+```
+
+Also generates `.github/workflows/deploy-docker.yml` — a CI workflow that automatically builds and pushes the Docker image to GitHub Container Registry on every `git push`:
+
+```yaml
+# .github/workflows/deploy-docker.yml
+name: Build & Push Docker Image
+on:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+      - uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest
+```
+
+The image is pushed to `ghcr.io/your-org/your-repo:latest`. Your hosting platform (Coolify, Fly.io, etc.) can then pull the latest image.
+
+#### Platform guide
+
+| Platform | Build pack | Deploy method |
+|----------|-----------|--------------|
+| Coolify | Dockerfile | Connect repo, set build pack to Dockerfile. Or pull pre-built image from GHCR. |
+| Fly.io | Dockerfile | `fly deploy` — auto-detects Dockerfile in repo. |
+| Railway | Dockerfile | Auto-detects Dockerfile, deploys on push. |
+| VPS | docker-compose / docker run | `docker pull` + `docker run` |
+| Any Docker host | Dockerfile | `docker build` + `docker run`
 
 ### AWS S3 + CloudFront
 
