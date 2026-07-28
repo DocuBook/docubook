@@ -262,9 +262,16 @@ describe("MermaidMdx", () => {
   });
 
   describe("pan/zoom controls", () => {
-    async function renderWithControls() {
+    async function renderAndEnterFullscreen() {
       mockParse.mockResolvedValueOnce(undefined);
       const result = render(<MermaidMdx chart="graph TD; A-->B;" />);
+      await vi.waitFor(() => {
+        expect(
+          result.container.querySelector('button[aria-label="Enter full screen"]')
+        ).not.toBeNull();
+      });
+      // Enter fullscreen to show all pan/zoom controls
+      fireEvent.click(result.container.querySelector('button[aria-label="Enter full screen"]')!);
       await vi.waitFor(() => {
         expect(
           result.container.querySelector('[aria-label="Pan and zoom controls"]')
@@ -273,9 +280,30 @@ describe("MermaidMdx", () => {
       return result;
     }
 
-    it("shows all controls after the diagram renders", async () => {
-      const { container } = await renderWithControls();
+    it("shows only fullscreen button after render, full controls in fullscreen", async () => {
+      mockParse.mockResolvedValueOnce(undefined);
+      const { container } = render(<MermaidMdx chart="graph TD; A-->B;" />);
+
+      await vi.waitFor(() => {
+        expect(
+          container.querySelector('button[aria-label="Enter full screen"]')
+        ).not.toBeNull();
+      });
+
+      // Outside fullscreen: only the fullscreen button, no pan/zoom grid
+      expect(container.querySelector('[aria-label="Pan and zoom controls"]')).toBeNull();
+      expect(container.querySelector('button[aria-label="Pan up"]')).toBeNull();
+
+      // Enter fullscreen — all controls appear
+      fireEvent.click(container.querySelector('button[aria-label="Enter full screen"]')!);
+      await vi.waitFor(() => {
+        expect(
+          container.querySelector('[aria-label="Pan and zoom controls"]')
+        ).not.toBeNull();
+      });
+
       const labels = [
+        "Exit full screen",
         "Pan up",
         "Pan down",
         "Pan left",
@@ -283,24 +311,14 @@ describe("MermaidMdx", () => {
         "Zoom in",
         "Zoom out",
         "Reset view",
-        "Enter full screen",
       ];
       for (const label of labels) {
         expect(container.querySelector(`button[aria-label="${label}"]`)).not.toBeNull();
       }
     });
 
-    it("does not show controls when panZoom is false", async () => {
-      mockParse.mockResolvedValueOnce(undefined);
-      const { container } = render(<MermaidMdx chart="graph TD; A-->B;" panZoom={false} />);
-      await vi.waitFor(() => {
-        expect(mockRun).toHaveBeenCalled();
-      });
-      expect(container.querySelector('[aria-label="Pan and zoom controls"]')).toBeNull();
-    });
-
     it("zoom, pan, and reset buttons update the transform", async () => {
-      const { container } = await renderWithControls();
+      const { container } = await renderAndEnterFullscreen();
       const layer = container.querySelector("pre.mermaid")?.parentElement as HTMLElement;
 
       fireEvent.click(container.querySelector('button[aria-label="Zoom in"]')!);
@@ -314,7 +332,7 @@ describe("MermaidMdx", () => {
     });
 
     it("clamps zoom at the maximum scale", async () => {
-      const { container } = await renderWithControls();
+      const { container } = await renderAndEnterFullscreen();
       const layer = container.querySelector("pre.mermaid")?.parentElement as HTMLElement;
       const zoomIn = container.querySelector('button[aria-label="Zoom in"]')!;
 
@@ -322,8 +340,8 @@ describe("MermaidMdx", () => {
       expect(layer.style.transform).toBe("translate(0px, 0px) scale(4)");
     });
 
-    it("pans with arrow keys on the focused container", async () => {
-      const { container } = await renderWithControls();
+    it("pans with arrow keys in fullscreen mode", async () => {
+      const { container } = await renderAndEnterFullscreen();
       const viewport = container.querySelector('[tabindex="0"]') as HTMLElement;
       const layer = container.querySelector("pre.mermaid")?.parentElement as HTMLElement;
 
@@ -337,8 +355,8 @@ describe("MermaidMdx", () => {
       expect(layer.style.transform).toBe("translate(0px, 0px) scale(1)");
     });
 
-    it("ignores key presses with modifier keys (browser shortcuts)", async () => {
-      const { container } = await renderWithControls();
+    it("ignores key presses with modifier keys in fullscreen", async () => {
+      const { container } = await renderAndEnterFullscreen();
       const viewport = container.querySelector('[tabindex="0"]') as HTMLElement;
       const layer = container.querySelector("pre.mermaid")?.parentElement as HTMLElement;
 
@@ -348,19 +366,78 @@ describe("MermaidMdx", () => {
       expect(layer.style.transform).toBe("translate(0px, 0px) scale(1)");
     });
 
-    it("toggles the fullscreen lightbox via button and Escape", async () => {
-      const { container } = await renderWithControls();
+    it("zooms with mouse wheel in fullscreen mode", async () => {
+      const { container } = await renderAndEnterFullscreen();
+      const viewport = container.querySelector('[tabindex="0"]') as HTMLElement;
+      const layer = container.querySelector("pre.mermaid")?.parentElement as HTMLElement;
+
+      // Scroll up (negative delta) — zoom in
+      fireEvent.wheel(viewport, { deltaY: -100 });
+      expect(layer.style.transform).toBe("translate(0px, 0px) scale(1.2)");
+
+      // Scroll down (positive delta) — zoom out
+      fireEvent.wheel(viewport, { deltaY: 100 });
+      expect(layer.style.transform).toBe("translate(0px, 0px) scale(1)");
+    });
+
+    it("clamps zoom at minimum scale when scrolling out", async () => {
+      const { container } = await renderAndEnterFullscreen();
+      const viewport = container.querySelector('[tabindex="0"]') as HTMLElement;
+      const layer = container.querySelector("pre.mermaid")?.parentElement as HTMLElement;
+
+      for (let i = 0; i < 20; i++) fireEvent.wheel(viewport, { deltaY: 100 });
+      expect(layer.style.transform).toBe("translate(0px, 0px) scale(0.4)");
+    });
+
+    it("pans with mouse drag in fullscreen mode", async () => {
+      const { container } = await renderAndEnterFullscreen();
+      const viewport = container.querySelector('[tabindex="0"]') as HTMLElement;
+      const layer = container.querySelector("pre.mermaid")?.parentElement as HTMLElement;
+
+      // mousedown at (100, 100) then drag to (150, 120) = delta (+50, +20)
+      fireEvent.mouseDown(viewport, { clientX: 100, clientY: 100 });
+      fireEvent.mouseMove(viewport, { clientX: 150, clientY: 120 });
+      expect(layer.style.transform).toBe("translate(50px, 20px) scale(1)");
+
+      // Continue dragging to (180, 130) = additional delta (+30, +10)
+      fireEvent.mouseMove(viewport, { clientX: 180, clientY: 130 });
+      expect(layer.style.transform).toBe("translate(80px, 30px) scale(1)");
+
+      // mouseUp stops dragging; subsequent mousemove does nothing
+      fireEvent.mouseUp(viewport);
+      fireEvent.mouseMove(viewport, { clientX: 200, clientY: 150 });
+      expect(layer.style.transform).toBe("translate(80px, 30px) scale(1)");
+    });
+
+    it("toggles fullscreen via button, Enter key, and Escape", async () => {
+      mockParse.mockResolvedValueOnce(undefined);
+      const { container } = render(<MermaidMdx chart="graph TD; A-->B;" />);
+
+      await vi.waitFor(() => {
+        expect(
+          container.querySelector('button[aria-label="Enter full screen"]')
+        ).not.toBeNull();
+      });
+
       const viewport = container.querySelector('[tabindex="0"]') as HTMLElement;
 
+      // Enter via button click
       fireEvent.click(container.querySelector('button[aria-label="Enter full screen"]')!);
       expect(viewport.style.position).toBe("fixed");
       expect(document.body.style.overflow).toBe("hidden");
       expect(container.querySelector('button[aria-label="Exit full screen"]')).not.toBeNull();
+      expect(container.querySelector('[aria-label="Pan and zoom controls"]')).not.toBeNull();
 
+      // Exit via Escape
       fireEvent.keyDown(viewport, { key: "Escape" });
       expect(viewport.style.position).toBe("relative");
       expect(document.body.style.overflow).toBe("");
       expect(container.querySelector('button[aria-label="Enter full screen"]')).not.toBeNull();
+      expect(container.querySelector('[aria-label="Pan and zoom controls"]')).toBeNull();
+
+      // Enter via keyboard (Enter key) in non-fullscreen
+      fireEvent.keyDown(viewport, { key: "Enter" });
+      expect(viewport.style.position).toBe("fixed");
     });
   });
 });
