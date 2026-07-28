@@ -1,5 +1,19 @@
 # @docubook/mdx-content
 
+## 3.4.6
+
+### Patch Changes
+
+- [#340](https://github.com/DocuBook/docubook/pull/340) [`60e4fe5`](https://github.com/DocuBook/docubook/commit/60e4fe53450db7d2bbe28805b5161247c431b461) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - feat(mdx-content): improve mermaid viewing UX with contextual fullscreen controls
+
+  - Remove `panZoom` prop — fullscreen button always shown when diagram renders
+  - Show only fullscreen button in normal view (cleaner UI, no clutter)
+  - Full pan/zoom controls (pan arrows, zoom +/- , reset) appear only in fullscreen
+  - Add scroll-wheel zoom in fullscreen mode
+  - Add click-and-drag to pan in fullscreen mode
+  - Disable transform transition during drag for responsive feel
+  - Enter key toggles fullscreen when diagram is focused
+
 ## 3.4.5
 
 ### Patch Changes
