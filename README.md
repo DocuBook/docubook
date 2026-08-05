@@ -1,22 +1,15 @@
 <p align="center">
-  <img
-    src="packages/flame/docs/assets/images/docu.svg"
-    alt="DocuBook Logo"
-    width="100"
-    height="100"
-  />
+  <img alt="DocuBook" src="https://shieldcn.dev/header/dots.svg?title=DocuBook&amp;subtitle=DocuBook+is+a+modern+documentation+platform+for+building%2C+deploying%2C+and+managing+your+docs+with+ease.&amp;logo=lu%3AZap&amp;mode=dark" />
 </p>
-<h1 align="center" style="font-size: 32px;">
-  DocuBook
-</h1>
-<h3 align="center" style="font-size: 20px;">
-  An open-source alternative to Mintlify or GitBook. Write documentation in MDX with React. The toolchain runs on Bun, Node.js, or Deno — output is flat static HTML, no server required.
-</h3>
 
-[![Flame](https://shieldcn.dev/npm/v/@docubook/flame?label=Flame&variant=secondary)](https://www.npmjs.com/package/@docubook/flame)
-[![Downloads](https://shieldcn.dev/npm/dt/@docubook/flame?label=Downloads&variant=secondary)](https://www.npmjs.com/package/@docubook/flame)
-[![CI](https://shieldcn.dev/github/ci/DocuBook/docubook.svg?variant=secondary)](https://github.com/DocuBook/docubook/actions/workflows/ci.yml)
-[![License](https://shieldcn.dev/github/license/DocuBook/docubook.svg?variant=secondary)](https://github.com/DocuBook/docubook/blob/main/LICENSE)
+<p align="center">
+  <a href="https://github.com/DocuBook/docubook/releases"><img alt="version" src="https://shieldcn.dev/npm/v/@docubook/flame.svg?split=true&amp;label=release" /></a>
+  <a href="https://github.com/DocuBook/docubook/actions"><img alt="CI" src="https://shieldcn.dev/github/DocuBook/docubook/ci.svg?split=true" /></a>
+  <a href="https://www.npmjs.com/package/@docubook/flame"><img alt="badge" src="https://shieldcn.dev/npm/dt/@docubook/flame.svg" /></a>
+</p>
+
+> An open-source alternative to Mintlify or GitBook. Write documentation in MDX with React.
+> The toolchain runs on Bun, Node.js, or Deno — output is flat static HTML, no server required.
 
 ## Architecture
 
