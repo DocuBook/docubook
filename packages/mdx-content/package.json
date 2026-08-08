@@ -53,7 +53,7 @@
   "author-url": "https://wildan.dev",
   "license": "MIT",
   "dependencies": {
-    "mermaid": "^11.16.0"
+    "mermaid": "^11.16.1"
   },
   "peerDependencies": {
     "@docubook/core": "workspace:^",
