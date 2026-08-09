@@ -20,6 +20,19 @@ export default [
   ...tsPlugin.configs["flat/recommended"],
 
   {
+    // CLI entry points and this config are plain JS, but the editor language
+    // server still parses them with the TypeScript parser — give them an
+    // explicit tsconfigRootDir so it never falls back to inference (which
+    // throws when multiple candidate roots are present).
+    files: ["bin/**/*.js", "bin/**/*.mjs", "eslint.config.js"],
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+      },
+    },
+  },
+
+  {
     files: [".docu/**/*.ts", ".docu/**/*.tsx"],
     languageOptions: {
       parserOptions: {

@@ -28,6 +28,17 @@ export default [
     },
   },
   {
+    // The editor language server parses plain JS files with the TypeScript
+    // parser too — give this config file an explicit root so it never falls
+    // back to inference (which throws when multiple candidate roots exist).
+    files: ["eslint.config.js"],
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+      },
+    },
+  },
+  {
     files: ["packages/cli/**/*.js"],
     languageOptions: {
       globals: {
@@ -46,6 +57,14 @@ export default [
     },
   },
   {
-    ignores: ["**/dist/**", "**/node_modules/**", "**/.turbo/**", "**/*.config.*"],
+    // Lint this config file itself; other config files (*.config.*) stay
+    // ignored so they are not parsed against a tsconfig project.
+    ignores: [
+      "**/dist/**",
+      "**/node_modules/**",
+      "**/.turbo/**",
+      "**/*.config.*",
+      "!eslint.config.js",
+    ],
   },
 ];
