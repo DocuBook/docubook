@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { readFileSync, statSync } from "node:fs";
 import React, { type ReactNode } from "react";
 import { renderToString } from "react-dom/server";
-import { compileMdx } from "./mdx";
+import { compileMdx, frontmatterField } from "./mdx";
 import { getContentType } from "./utils";
 import { DOCS_DIR, DIST_DIR, PROJECT_ROOT } from "./paths";
 import { BuildPluginBuilder } from "./plugin-builder";
@@ -129,12 +129,8 @@ async function renderDocsServerPage(
   pathname: string,
   state: ServerState
 ): Promise<Response> {
-  const title =
-    (typeof doc.frontmatter.title === "string" ? doc.frontmatter.title : "") ||
-    slug.join("/") ||
-    "Docs";
-  const description =
-    typeof doc.frontmatter.description === "string" ? doc.frontmatter.description : "";
+  const title = frontmatterField(doc.frontmatter, "title") || slug.join("/") || "Docs";
+  const description = frontmatterField(doc.frontmatter, "description");
 
   const page = React.createElement(
     DocsLayout,
@@ -143,7 +139,7 @@ async function renderDocsServerPage(
       slug,
       title,
       description,
-      date: doc.frontmatter.date as string | undefined,
+      date: frontmatterField(doc.frontmatter, "date") || undefined,
       content: doc.content,
       tocs: doc.tocs,
       filePath: doc.filePath,

@@ -56,13 +56,30 @@ This major release also ships breaking changes:
   always suggesting `npm install`. Previously, installing with pnpm or bun and
   running `flame init` still printed `npm install` / `npm run dev`.
 
-- **`@docubook/core` — optional zod frontmatter validation.** `parseMdxFile`
-  and `createMdxContentService` now accept a `frontmatterSchema` option
-  (`z.ZodType`). When provided, frontmatter is validated right after
-  gray-matter parsing and before `frontmatterEnricher` runs. Validation failure
-  throws with a Zod error. Docs recommend `z.coerce.*` for string fields since
-  YAML coerces unquoted values (`date: 2026-06-10` → Date, `3.5` → number).
+- **`@docubook/core` — optional zod frontmatter validation.** `parseMdxFile`,
+  `createMdxContentService`, and `extractFrontmatterWithContent` now accept a
+  `frontmatterSchema` option (`z.ZodType`). When provided, frontmatter is
+  validated right after gray-matter parsing and before `frontmatterEnricher`
+  runs. Validation failure throws with a Zod error. Supports nested objects;
+  docs recommend `z.coerce.*` for string fields since YAML coerces unquoted
+  values (`date: 2026-06-10` → Date, `3.5` → number). No double parsing —
+  gray-matter runs once, `serialize()` keeps `parseFrontmatter: false`.
   New dependency: `zod@^4`.
+
+- **`@docubook/flame` — single-source frontmatter contract.** `compileMdx`
+  now validates frontmatter against a default `frontmatterSchema`
+  (`title`, `description`, `image`, `date` — all `z.coerce.string().optional()`)
+  defined once in `mdx.ts`; the `Frontmatter` type and `MdxResult.frontmatter`
+  derive from it via `z.infer`. Adding a frontmatter property is now a
+  one-line change in the schema — types, validation, and consumers follow.
+  Previously `date` could arrive as a YAML Date object; coercion now
+  guarantees strings. Custom schemas can override the default per call.
+
+- **`@docubook/flame` — `frontmatterField` helper.** Replaces the repeated
+  `typeof frontmatter.x === "string" ? ... : ""` checks in `build.ts`,
+  `build.impl.ts`, `server-routes.ts`, `seo.ts`, and `search-indexer.ts`.
+  The helper reads a string field safely from the plugin-transform-widened
+  `Record<string, unknown>` frontmatter, returning `""` when missing.
 
 - **`@docubook/core` — dependency updates.** `@11ty/gray-matter` bumped
   `2.1.0` → `3.0.0` (js-yaml v5, verified CJS-compatible via tests),

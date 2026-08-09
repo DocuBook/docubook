@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { join, dirname } from "node:path";
 import React from "react";
 import { renderToString } from "react-dom/server";
-import { compileMdx, getGitLastModifiedBatch } from "./mdx";
+import { compileMdx, frontmatterField, getGitLastModifiedBatch } from "./mdx";
 import {
   DOCS_DIR,
   DIST_DIR,
@@ -113,8 +113,8 @@ async function renderDocsPage(
     });
   }
 
-  const title = (typeof frontmatter.title === "string" ? frontmatter.title : "") || slug || "Docs";
-  const description = typeof frontmatter.description === "string" ? frontmatter.description : "";
+  const title = frontmatterField(frontmatter, "title") || slug || "Docs";
+  const description = frontmatterField(frontmatter, "description");
   const slugParts = slug ? slug.split("/") : [];
 
   const page = React.createElement(
@@ -124,7 +124,7 @@ async function renderDocsPage(
       slug: slugParts,
       title,
       description,
-      date: (frontmatter.date as string) || undefined,
+      date: frontmatterField(frontmatter, "date") || undefined,
       content: result.content,
       tocs: result.tocs,
       filePath,

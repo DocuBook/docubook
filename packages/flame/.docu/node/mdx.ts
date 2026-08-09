@@ -1,5 +1,6 @@
 import React from "react";
 import type { Pluggable } from "unified";
+import { z, type ZodType } from "zod";
 import {
   serialize,
   extractTocsFromRawMdx,
@@ -106,9 +107,41 @@ export { getGitLastModifiedBatch };
 export interface MdxResult {
   content: React.ReactElement;
   compiledSource: string;
-  frontmatter: { title?: string; description?: string; date?: string };
+  frontmatter: Frontmatter;
   tocs: ReturnType<typeof extractTocsFromRawMdx>;
 }
+
+/**
+ * DocuBook frontmatter contract — single source of truth for frontmatter
+ * fields. Add new properties here; types and validation derive from it.
+ * YAML coerces unquoted values, so string fields use `z.coerce.*`.
+ */
+export const frontmatterSchema = z.object({
+  title: z.coerce.string().optional(),
+  description: z.coerce.string().optional(),
+  image: z.coerce.string().optional(),
+  date: z.coerce.string().optional(),
+});
+
+export type Frontmatter = z.infer<typeof frontmatterSchema>;
+
+/**
+ * Read a string field from frontmatter after the plugin transform chain
+ * (which widens the type to `Record<string, unknown>`). Returns "" when
+ * missing or not a string.
+ */
+export function frontmatterField(
+  frontmatter: Record<string, unknown>,
+  key: string
+): string {
+  return typeof frontmatter[key] === "string" ? (frontmatter[key] as string) : "";
+}
+
+/**
+ * Zod schema validating frontmatter after extraction.
+ * Must satisfy the frontmatter contract (defaults to `frontmatterSchema`).
+ */
+export type FrontmatterSchema = ZodType<Frontmatter>;
 
 /**
  * Compile MDX/MD content into a React element and compiled source.
@@ -118,20 +151,21 @@ export interface MdxResult {
  * @param gitDates - Optional pre-fetched git last-modified map
  * @param remarkPlugins - Additional remark plugins (merged after defaults, optional)
  * @param rehypePlugins - Additional rehype plugins (merged after defaults, optional)
+ * @param frontmatterSchema - Custom schema overriding the default contract
  */
 export async function compileMdx(
   rawMdx: string,
   filePath: string,
   gitDates?: Map<string, string>,
   remarkPlugins?: Pluggable[],
-  rehypePlugins?: Pluggable[]
+  rehypePlugins?: Pluggable[],
+  frontmatterSchema?: FrontmatterSchema
 ): Promise<MdxResult> {
   const tocs = extractTocsFromRawMdx(rawMdx);
-  const { frontmatter, strippedContent } = extractFrontmatterWithContent<{
-    title?: string;
-    description?: string;
-    date?: string;
-  }>(rawMdx);
+  const { frontmatter, strippedContent } = extractFrontmatterWithContent<Frontmatter>(
+    rawMdx,
+    frontmatterSchema
+  );
 
   const defaultRemark = createDefaultRemarkPlugins();
   const defaultRehype = createDefaultRehypePlugins();
