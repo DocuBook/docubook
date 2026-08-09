@@ -28,6 +28,20 @@ This major release also ships breaking changes:
   contrast. The default theme's light-mode primary button text also switches
   from white to near-black.
 
+- **`@docubook/themes-colors` — light-mode white background + WCAG AA text.**
+  All preset themes (`default`, `coffee`, `freshlime`) and `generateScale()`
+  now emit pure white `background` (`0 0% 100%`). `muted-foreground` lightness
+  reduced from `50%`→`38%` (4:1→5:1) for WCAG AA (4.5:1). `base-content`,
+  `base-200`, `base-300` converted from HSL to valid oklch format — previously
+  HSL values were emitted into `oklch()`-wrapped CSS variables in the
+  `@theme` block, producing near-white text on white backgrounds (effectively
+  invisible). `base-200`/`base-300` now carry the theme's oklch hue.
+
+- **`@docubook/flame` — globals.css synced with default theme.** Light-mode
+  `:root` variables now match the updated `default.json` preset: pure white
+  `--background`, `--muted-foreground` at WCAG AA, `--base-content` in valid
+  oklch, and `--*-foreground` tokens use light text for colored surfaces.
+
 - **`@docubook/flame` — theme-aware text on colored buttons.** The default
   stylesheet now maps daisyUI's `--color-*-content` variables to the theme's
   adaptive `-foreground` tokens, so daisyUI buttons (and `text-primary-content`

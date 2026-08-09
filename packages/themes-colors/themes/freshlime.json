@@ -11,7 +11,7 @@
     "secondary": "85 40% 90%",
     "secondary-foreground": "85 30% 10%",
     "muted": "85 30% 92%",
-    "muted-foreground": "85 15% 45%",
+    "muted-foreground": "85 15% 36%",
     "accent": "85 60% 40%",
     "accent-foreground": "85 0% 10%",
     "destructive": "0 85% 60%",
@@ -21,9 +21,9 @@
     "ring": "85 70% 45%",
     "radius": "0.5rem",
     "base-100": "100% 0 0",
-    "base-200": "98% 0 2",
-    "base-300": "95% 0 4",
-    "base-content": "95 70% 11%"
+    "base-200": "97% 0.002 140",
+    "base-300": "92% 0.004 140",
+    "base-content": "22% 0.06 140"
   },
   "dark": {
     "background": "85 20% 8%",

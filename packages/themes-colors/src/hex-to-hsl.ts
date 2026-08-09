@@ -225,32 +225,6 @@ export function generateScale(primary: HslColor): {
     hslToString(getContrastingForeground(background));
 
   // Light mode — scale lightness around the primary
-  const root: Record<string, string> = {
-    background: `${h} ${Math.max(primaryS - 40, 5)}% 98%`,
-    foreground: `${h} ${Math.max(primaryS - 20, 10)}% 15%`,
-    card: `${h} ${Math.max(primaryS - 40, 5)}% 100%`,
-    "card-foreground": `${h} ${Math.max(primaryS - 20, 10)}% 15%`,
-    popover: `${h} ${Math.max(primaryS - 40, 5)}% 100%`,
-    "popover-foreground": `${h} ${Math.max(primaryS - 20, 10)}% 15%`,
-    primary: hslToString(primary),
-    "primary-foreground": foregroundFor(primary),
-    secondary: `${h} ${Math.max(primaryS - 40, 5)}% 90%`,
-    "secondary-foreground": `${h} ${Math.max(primaryS - 20, 10)}% 15%`,
-    muted: `${h} ${Math.max(primaryS - 50, 5)}% 92%`,
-    "muted-foreground": `${h} ${Math.max(primaryS - 50, 5)}% 50%`,
-    accent: `${Math.min(h + 15, 360)} ${primaryS}% 40%`,
-    "accent-foreground": foregroundFor({ h: Math.min(h + 15, 360), s: primaryS, l: 40 }),
-    destructive: `0 85% 60%`,
-    "destructive-foreground": foregroundFor({ h: 0, s: 85, l: 60 }),
-    "border-color": `${h} ${Math.max(primaryS - 50, 5)}% 85%`,
-    input: `${h} ${Math.max(primaryS - 50, 5)}% 85%`,
-    ring: hslToString(primary),
-    radius: "0.5rem",
-    "base-100": `100% 0 0`,
-    "base-200": `98% 0 2`,
-    "base-300": `95% 0 4`,
-    "base-content": `${h + 10} ${primaryS}% 11%`,
-  };
 
   // Compute accurate oklch hue via HSL → RGB → OKLch pipeline
   function getOklchHue(): number {
@@ -261,7 +235,33 @@ export function generateScale(primary: HslColor): {
   }
   const oklchHue = getOklchHue();
 
-  // Dark mode — invert the lightness scale
+  const root: Record<string, string> = {
+    background: `0 0% 100%`,
+    foreground: `${h} ${Math.max(primaryS - 20, 10)}% 15%`,
+    card: `${h} ${Math.max(primaryS - 40, 5)}% 100%`,
+    "card-foreground": `${h} ${Math.max(primaryS - 20, 10)}% 15%`,
+    popover: `${h} ${Math.max(primaryS - 40, 5)}% 100%`,
+    "popover-foreground": `${h} ${Math.max(primaryS - 20, 10)}% 15%`,
+    primary: hslToString(primary),
+    "primary-foreground": foregroundFor(primary),
+    secondary: `${h} ${Math.max(primaryS - 40, 5)}% 90%`,
+    "secondary-foreground": `${h} ${Math.max(primaryS - 20, 10)}% 15%`,
+    muted: `${h} ${Math.max(primaryS - 50, 5)}% 92%`,
+    "muted-foreground": `${h} ${Math.max(primaryS - 50, 5)}% 38%`,
+    accent: `${Math.min(h + 15, 360)} ${primaryS}% 40%`,
+    "accent-foreground": foregroundFor({ h: Math.min(h + 15, 360), s: primaryS, l: 40 }),
+    destructive: `0 85% 60%`,
+    "destructive-foreground": foregroundFor({ h: 0, s: 85, l: 60 }),
+    "border-color": `${h} ${Math.max(primaryS - 50, 5)}% 85%`,
+    input: `${h} ${Math.max(primaryS - 50, 5)}% 85%`,
+    ring: hslToString(primary),
+    radius: "0.5rem",
+    "base-100": `100% 0 0`,
+    "base-200": `97% 0.002 ${oklchHue}`,
+    "base-300": `92% 0.004 ${oklchHue}`,
+    "base-content": `22% 0.03 ${oklchHue}`,
+  };
+
   const dark: Record<string, string> = {
     background: `${h} ${Math.max(primaryS - 40, 5)}% 11%`,
     foreground: `${h} ${Math.max(primaryS - 10, 5)}% 93%`,

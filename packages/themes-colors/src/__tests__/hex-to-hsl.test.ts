@@ -218,7 +218,7 @@ describe("generateScale", () => {
 
   it("handles low saturation primary", () => {
     const scale = generateScale({ h: 210, s: 5, l: 50 });
-    expect(scale.root.background).toMatch(/^210 5%/);
+    expect(scale.root.background).toBe("0 0% 100%");
   });
 
   it("handles high saturation primary", () => {
