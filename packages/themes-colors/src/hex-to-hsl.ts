@@ -110,6 +110,48 @@ export function hslToRgb(hsl: HslColor): RgbColor {
 }
 
 /**
+ * Calculate the WCAG 2.x relative luminance of an sRGB color.
+ * https://www.w3.org/TR/WCAG21/#dfn-relative-luminance
+ */
+export function relativeLuminance(rgb: RgbColor): number {
+  const toLinear = (v: number): number => {
+    const c = v / 255;
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+
+  return 0.2126 * toLinear(rgb.r) + 0.7152 * toLinear(rgb.g) + 0.0722 * toLinear(rgb.b);
+}
+
+/**
+ * Calculate the WCAG 2.x contrast ratio between two sRGB colors.
+ * Returns a value between 1 and 21.
+ */
+export function contrastRatio(a: RgbColor, b: RgbColor): number {
+  const la = relativeLuminance(a);
+  const lb = relativeLuminance(b);
+  const lighter = Math.max(la, lb);
+  const darker = Math.min(la, lb);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+/**
+ * Pick the more readable foreground color for a given background: near-black
+ * for light backgrounds, white for dark backgrounds.
+ *
+ * The choice is driven by the WCAG contrast ratio rather than a naive
+ * lightness threshold, so vivid mid-tones resolve to the right candidate.
+ */
+export function getContrastingForeground(background: HslColor): HslColor {
+  const bg = hslToRgb(background);
+  const white: RgbColor = { r: 255, g: 255, b: 255 };
+  const black: RgbColor = { r: 0, g: 0, b: 0 };
+
+  return contrastRatio(bg, black) > contrastRatio(bg, white)
+    ? { h: background.h, s: 0, l: 10 }
+    : { h: 0, s: 0, l: 100 };
+}
+
+/**
  * Convert an sRGB color to OKLch using proper color space math.
  *
  * Pipeline: sRGB (non-linear) → linear sRGB → LMS → OKLab → OKLch
@@ -164,6 +206,10 @@ export function hexToOklch(hex: string): OklchColor {
  * Generate a full variable palette from a primary HSL color.
  * Lightness is scaled for semantic roles (background lighter, foreground darker, etc.)
  *
+ * Foreground colors on colored surfaces are derived from the WCAG contrast
+ * ratio of their background (near-black or white), so text stays readable
+ * even for bright buttons in dark mode.
+ *
  * NOTE: This is a simple automatic scaling. For best results, users should
  * provide explicit color values for each semantic role.
  */
@@ -174,6 +220,10 @@ export function generateScale(primary: HslColor): {
   const h = primary.h;
   const primaryS = primary.s;
 
+  // Format a readable foreground (near-black or white) for a colored surface
+  const foregroundFor = (background: HslColor): string =>
+    hslToString(getContrastingForeground(background));
+
   // Light mode — scale lightness around the primary
   const root: Record<string, string> = {
     background: `${h} ${Math.max(primaryS - 40, 5)}% 98%`,
@@ -183,15 +233,15 @@ export function generateScale(primary: HslColor): {
     popover: `${h} ${Math.max(primaryS - 40, 5)}% 100%`,
     "popover-foreground": `${h} ${Math.max(primaryS - 20, 10)}% 15%`,
     primary: hslToString(primary),
-    "primary-foreground": `${h} ${primaryS}% 100%`,
+    "primary-foreground": foregroundFor(primary),
     secondary: `${h} ${Math.max(primaryS - 40, 5)}% 90%`,
     "secondary-foreground": `${h} ${Math.max(primaryS - 20, 10)}% 15%`,
     muted: `${h} ${Math.max(primaryS - 50, 5)}% 92%`,
     "muted-foreground": `${h} ${Math.max(primaryS - 50, 5)}% 50%`,
     accent: `${Math.min(h + 15, 360)} ${primaryS}% 40%`,
-    "accent-foreground": `${h} ${primaryS}% 100%`,
+    "accent-foreground": foregroundFor({ h: Math.min(h + 15, 360), s: primaryS, l: 40 }),
     destructive: `0 85% 60%`,
-    "destructive-foreground": `0 0% 100%`,
+    "destructive-foreground": foregroundFor({ h: 0, s: 85, l: 60 }),
     "border-color": `${h} ${Math.max(primaryS - 50, 5)}% 85%`,
     input: `${h} ${Math.max(primaryS - 50, 5)}% 85%`,
     ring: hslToString(primary),
@@ -220,15 +270,15 @@ export function generateScale(primary: HslColor): {
     popover: `${h} ${Math.max(primaryS - 40, 5)}% 14%`,
     "popover-foreground": `${h} ${Math.max(primaryS - 10, 5)}% 93%`,
     primary: `${h} ${primaryS + 10}% 67%`,
-    "primary-foreground": `${h} ${Math.max(primaryS - 20, 5)}% 11%`,
+    "primary-foreground": foregroundFor({ h, s: primaryS + 10, l: 67 }),
     secondary: `${h + 10} ${Math.max(primaryS - 50, 5)}% 18%`,
     "secondary-foreground": `${h} ${Math.max(primaryS - 20, 5)}% 90%`,
     muted: `${h + 10} ${Math.max(primaryS - 55, 5)}% 20%`,
     "muted-foreground": `${h} ${Math.max(primaryS - 55, 5)}% 58%`,
     accent: `${Math.min(h + 15, 360)} ${primaryS}% 62%`,
-    "accent-foreground": `0 0% 100%`,
+    "accent-foreground": foregroundFor({ h: Math.min(h + 15, 360), s: primaryS, l: 62 }),
     destructive: `0 80% 65%`,
-    "destructive-foreground": `0 0% 100%`,
+    "destructive-foreground": foregroundFor({ h: 0, s: 80, l: 65 }),
     "border-color": `${h + 10} ${Math.max(primaryS - 55, 5)}% 28%`,
     input: `${h + 10} ${Math.max(primaryS - 55, 5)}% 28%`,
     ring: `${h} ${primaryS + 10}% 67%`,
