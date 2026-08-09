@@ -34,8 +34,8 @@ function renderActionButtonIcon(iconName: string | undefined, className?: string
 
 function ActionButton({ action }: ActionButtonProps) {
   const themeClasses = {
-    primary: "bg-primary text-primary-content hover:bg-primary/90",
-    secondary: "bg-secondary text-secondary-content hover:bg-secondary/90",
+    primary: "bg-primary text-primary-foreground hover:bg-primary/90",
+    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
     ghost: "bg-transparent text-muted-foreground border border-base-300 hover:bg-base-200",
   };
 

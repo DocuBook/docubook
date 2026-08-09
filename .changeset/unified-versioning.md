@@ -28,5 +28,13 @@ This major release also ships breaking changes:
   contrast. The default theme's light-mode primary button text also switches
   from white to near-black.
 
+- **`@docubook/flame` — theme-aware text on colored buttons.** The default
+  stylesheet now maps daisyUI's `--color-*-content` variables to the theme's
+  adaptive `-foreground` tokens, so daisyUI buttons (and `text-primary-content`
+  style utilities) follow the theme instead of falling back to white text in
+  dark mode. Docs components (hero actions, theme toggle, search KBD) also
+  switched from hardcoded light text (`text-foreground`/`text-base-300`) to
+  `text-primary-foreground` / `text-secondary-foreground`.
+
 > **TODO (before merge):** additional breaking changes to be listed here —
 > removed APIs, behavior changes, migration guidance, etc.
