@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { z } from "zod";
 import path from "node:path";
 import {
   readMdxFileBySlug,
@@ -129,5 +130,43 @@ describe("createMdxContentService", () => {
     });
     const parsed = await enrichedService.getParsedForSlug("getting-started");
     expect(parsed.frontmatter.enriched).toBe(true);
+  });
+
+  it("validates frontmatter with zod schema", async () => {
+    const schema = z.object({
+      title: z.coerce.string().min(1),
+      description: z.coerce.string().default(""),
+      date: z.coerce.string().optional(),
+    });
+    const service = createMdxContentService<z.infer<typeof schema>>({
+      readOptions: { rootDir: FIXTURES_ROOT },
+      frontmatterSchema: schema,
+    });
+    const parsed = await service.getParsedForSlug("getting-started");
+    expect(parsed.frontmatter.title).toBe("Getting Started");
+    expect(typeof parsed.frontmatter.description).toBe("string");
+  });
+
+  it("throws on frontmatter that fails schema validation", async () => {
+    const schema = z.object({
+      title: z.coerce.string().min(1),
+      requiredField: z.string(), // missing in fixture
+    });
+    const service = createMdxContentService<z.infer<typeof schema>>({
+      readOptions: { rootDir: FIXTURES_ROOT },
+      frontmatterSchema: schema,
+    });
+    await expect(service.getParsedForSlug("getting-started")).rejects.toThrow();
+  });
+
+  it("coerces unquoted YAML values to strings", async () => {
+    const schema = z.object({
+      title: z.coerce.string(),
+      version: z.coerce.string().optional(),
+    });
+    // Simulate YAML coercion: `3.5` parses as number, `2026-06-10` as Date
+    const frontmatter = { title: "Intro", version: 3.5 } as unknown;
+    const result = schema.parse(frontmatter);
+    expect(result.version).toBe("3.5");
   });
 });

@@ -1,5 +1,6 @@
 import path from "node:path";
 import { promises as fs } from "node:fs";
+import type { ZodType } from "zod";
 import { extractFrontmatterWithContent, extractTocsFromRawMdx } from "./extract";
 import { parseMdx, type ParseMdxOptions } from "./compile";
 import type { MdxCompileResult, TocItem } from "./types";
@@ -83,13 +84,19 @@ export async function readMdxFileBySlug(
   throw new Error("Could not find mdx file for the requested slug.");
 }
 
-type ParseMdxFileOptions<T extends TocItem> = {
+type ParseMdxFileOptions<T extends TocItem, F = unknown> = {
   tocsExtractor?: (rawMdx: string) => T[];
+  /**
+   * Zod schema validating frontmatter after gray-matter parsing.
+   * YAML coerces unquoted values (e.g. `date: 2026-06-10` → Date, `3.5` → number),
+   * so use `z.coerce.*` for fields that must remain strings.
+   */
+  frontmatterSchema?: ZodType<F>;
 };
 
 export function parseMdxFile<Frontmatter, T extends TocItem = TocItem>(
   raw: ReadMdxFileResult,
-  options: ParseMdxFileOptions<T> = {}
+  options: ParseMdxFileOptions<T, Frontmatter> = {}
 ): ParsedMdxFile<Frontmatter, T> {
   const tocsExtractor = options.tocsExtractor ?? ((mdx) => extractTocsFromRawMdx(mdx) as T[]);
   // Extract frontmatter and stripped content in one gray-matter call.
@@ -99,7 +106,9 @@ export function parseMdxFile<Frontmatter, T extends TocItem = TocItem>(
   return {
     content: strippedContent,
     filePath: raw.filePath,
-    frontmatter,
+    frontmatter: options.frontmatterSchema
+      ? options.frontmatterSchema.parse(frontmatter)
+      : frontmatter,
     tocs: tocsExtractor(raw.content),
   };
 }
@@ -129,6 +138,11 @@ export type CreateMdxContentServiceOptions<Frontmatter, T extends TocItem = TocI
   tocsExtractor?: (rawMdx: string) => T[];
   cacheFn?: CacheFn;
   /**
+   * Zod schema validating frontmatter after gray-matter parsing.
+   * Runs before `frontmatterEnricher`, so enrichment sees validated data.
+   */
+  frontmatterSchema?: ZodType<Frontmatter>;
+  /**
    * Optional hook to enrich or transform frontmatter after parsing.
    * Called with the parsed frontmatter and the absolute file path.
    * Runs at build time during static generation — ideal for injecting
@@ -148,7 +162,10 @@ export function createMdxContentService<Frontmatter, T extends TocItem = TocItem
 
   const getParsedForSlug = cacheFn(async (slug: string): Promise<ParsedMdxFile<Frontmatter, T>> => {
     const raw = await readMdxFileBySlug(slug, options.readOptions);
-    const parsed = parseMdxFile<Frontmatter, T>(raw, { tocsExtractor: options.tocsExtractor });
+    const parsed = parseMdxFile<Frontmatter, T>(raw, {
+      tocsExtractor: options.tocsExtractor,
+      frontmatterSchema: options.frontmatterSchema,
+    });
     if (options.frontmatterEnricher && raw.absoluteFilePath) {
       parsed.frontmatter = await options.frontmatterEnricher(
         parsed.frontmatter,

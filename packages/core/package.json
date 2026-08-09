@@ -46,20 +46,21 @@
   "author-url": "https://wildan.dev",
   "license": "MIT",
   "dependencies": {
-    "@11ty/gray-matter": "^2.1.0",
-    "clsx": "^2.1.1",
+    "@11ty/gray-matter": "^3.0.0",
     "@docubook/mdx-remote": "workspace:^",
+    "clsx": "^2.1.1",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-code-titles": "^1.2.1",
     "rehype-prism-plus": "^2.0.2",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.6.0",
-    "unist-util-visit": "^5.1.0"
+    "unist-util-visit": "^5.1.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^20.19.37",
-    "@types/react": "19.2.17",
+    "@types/node": "^20.19.43",
+    "@types/react": "19.2.18",
     "@types/unist": "^3.0.3",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",

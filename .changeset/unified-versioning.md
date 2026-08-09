@@ -56,5 +56,24 @@ This major release also ships breaking changes:
   always suggesting `npm install`. Previously, installing with pnpm or bun and
   running `flame init` still printed `npm install` / `npm run dev`.
 
+- **`@docubook/core` — optional zod frontmatter validation.** `parseMdxFile`
+  and `createMdxContentService` now accept a `frontmatterSchema` option
+  (`z.ZodType`). When provided, frontmatter is validated right after
+  gray-matter parsing and before `frontmatterEnricher` runs. Validation failure
+  throws with a Zod error. Docs recommend `z.coerce.*` for string fields since
+  YAML coerces unquoted values (`date: 2026-06-10` → Date, `3.5` → number).
+  New dependency: `zod@^4`.
+
+- **`@docubook/core` — dependency updates.** `@11ty/gray-matter` bumped
+  `2.1.0` → `3.0.0` (js-yaml v5, verified CJS-compatible via tests),
+  `@types/node` and `@types/react` patch bumps. `typescript` intentionally
+  stays at `^5.9.3` — TS 7 is a native Go port (platform-specific packages)
+  and the monorepo pins 5.9.3 uniformly across all 7 packages; upgrading it
+  is a coordinated, separate effort.
+
+- **`@docubook/core` — README rewritten for DRY.** Removed duplicated usage
+  recipes and example blocks. README now documents the 3-stage pipeline
+  (EXTRACT → PARSE → COMPILE), the full API table, and managed dependencies.
+
 > **TODO (before merge):** additional breaking changes to be listed here —
 > removed APIs, behavior changes, migration guidance, etc.
