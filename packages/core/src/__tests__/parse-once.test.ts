@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { z } from "zod";
 import { extractFrontmatterWithContent } from "../extract";
 import { serialize } from "../compile";
