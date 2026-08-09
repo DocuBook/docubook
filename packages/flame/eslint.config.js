@@ -1,15 +1,31 @@
 import eslint from "@eslint/js";
+import tsPlugin from "@typescript-eslint/eslint-plugin";
 import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
 import perfectionist from "eslint-plugin-perfectionist";
-import tseslint from "typescript-eslint";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
-export default tseslint.config(
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// NOTE: We reference the plugin's flat configs directly instead of
+// `tseslint.configs.recommended`. That helper registers candidate
+// `tsconfigRootDir` values in module-global state, which makes the ESLint
+// language server throw "No tsconfigRootDir was set, and multiple candidate
+// TSConfigRootDirs are present". Combined with the explicit
+// `parserOptions.tsconfigRootDir` below, .docu files always parse with a
+// known root regardless of editor LSP behavior.
+export default [
   eslint.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...tsPlugin.configs["flat/recommended"],
 
   {
     files: [".docu/**/*.ts", ".docu/**/*.tsx"],
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+      },
+    },
     plugins: {
       react: pluginReact,
       "react-hooks": pluginReactHooks,
@@ -66,5 +82,5 @@ export default tseslint.config(
       ".docu/build-cache.json",
       "tailwind.config.ts",
     ],
-  }
-);
+  },
+];
