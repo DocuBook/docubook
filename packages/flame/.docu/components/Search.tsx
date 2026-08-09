@@ -187,7 +187,7 @@ export default function Search({ className }: SearchProps) {
             </div>
           </div>
 
-          <div className="max-h-[400px] overflow-y-auto px-3 py-2">
+          <div className="max-h-100 overflow-y-auto px-3 py-2">
             {query.trim().length >= 2 && results.length === 0 && (
               <p className="text-base-content/50 py-8 text-center text-sm">
                 No results for &ldquo;<span className="text-primary">{query}</span>&rdquo;
