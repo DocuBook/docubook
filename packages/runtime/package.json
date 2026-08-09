@@ -1,6 +1,6 @@
 {
   "name": "@docubook/runt",
-  "version": "1.0.0",
+  "version": "3.5.0",
   "description": "Runtime HTTP server adapters (Bun, Node.js, Deno) for DocuBook",
   "type": "module",
   "main": "./dist/index.js",
