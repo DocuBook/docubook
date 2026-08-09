@@ -36,5 +36,11 @@ This major release also ships breaking changes:
   switched from hardcoded light text (`text-foreground`/`text-base-300`) to
   `text-primary-foreground` / `text-secondary-foreground`.
 
+- **`@docubook/flame` — `init` respects the package manager.** `flame init`
+  now detects the package manager that invoked it (via `npm_config_user_agent`,
+  falling back to lockfile detection) and prints matching next steps instead of
+  always suggesting `npm install`. Previously, installing with pnpm or bun and
+  running `flame init` still printed `npm install` / `npm run dev`.
+
 > **TODO (before merge):** additional breaking changes to be listed here —
 > removed APIs, behavior changes, migration guidance, etc.
