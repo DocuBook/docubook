@@ -302,6 +302,23 @@ export async function buildClientBundle(
           // client.ts imports `{ mdxModules } from "./mdx-manifest"`.
           name: "mdx-hydrate",
           setup(build) {
+            // Compiled MDX (program format) imports the JSX runtime and the
+            // MDX provider. Virtual modules have no real directory, so esbuild
+            // cannot resolve bare specifiers from them — map them to the
+            // installed real paths explicitly (same pattern as lucide-optimize).
+            const require = createRequire(import.meta.url);
+            const mdxModuleDeps: Record<string, string> = {
+              "react/jsx-runtime": require.resolve("react/jsx-runtime"),
+              "react/jsx-dev-runtime": require.resolve("react/jsx-dev-runtime"),
+              "@mdx-js/react": require.resolve("@mdx-js/react"),
+            };
+            build.onResolve(
+              { filter: /^(react\/jsx-runtime|react\/jsx-dev-runtime|@mdx-js\/react)$/ },
+              (args) => {
+                if (args.namespace !== "mdx-module") return;
+                return { path: mdxModuleDeps[args.path], namespace: "file" };
+              }
+            );
             build.onResolve({ filter: /^mdx-module:/ }, (args) => ({
               path: args.path,
               namespace: "mdx-module",
