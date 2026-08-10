@@ -5,7 +5,6 @@ import {
   postProcess,
   createDefaultRehypePlugins,
   createDefaultRemarkPlugins,
-  parseMdx,
 } from "../compile";
 import type { ElementNode } from "../utils";
 
@@ -97,45 +96,5 @@ describe("createDefaultRemarkPlugins", () => {
     const plugins = createDefaultRemarkPlugins();
     expect(Array.isArray(plugins)).toBe(true);
     expect(plugins.length).toBeGreaterThan(0);
-  });
-});
-
-describe("parseMdx", () => {
-  it("compiles basic MDX with frontmatter", async () => {
-    const mdx = `---
-title: Test
----
-
-## Hello World`;
-    const result = await parseMdx<{ title: string }>(mdx);
-    expect(result.frontmatter.title).toBe("Test");
-    expect(result.content).toBeDefined();
-  });
-
-  it("compiles MDX without frontmatter when disabled", async () => {
-    const mdx = `## Just Content`;
-    const result = await parseMdx(mdx, { parseFrontmatter: false });
-    expect(result.content).toBeDefined();
-  });
-
-  it("compiles code blocks with language", async () => {
-    const mdx = `---
-title: Code
----
-
-\`\`\`typescript
-const x: number = 1
-\`\`\``;
-    const result = await parseMdx<{ title: string }>(mdx);
-    expect(result.frontmatter.title).toBe("Code");
-    expect(result.content).toBeDefined();
-  });
-
-  it("applies GFM (tables)", async () => {
-    const mdx = `| A | B |
-| - | - |
-| 1 | 2 |`;
-    const result = await parseMdx(mdx, { parseFrontmatter: false });
-    expect(result.content).toBeDefined();
   });
 });

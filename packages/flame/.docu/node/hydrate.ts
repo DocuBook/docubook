@@ -125,7 +125,10 @@ async function buildTailwindCss(key: string): Promise<{ file: string; content: s
   return { file: cssFile, content: cssContent };
 }
 
-export async function buildClientBundle(): Promise<{ js: string; css: string }> {
+export async function buildClientBundle(
+  /** slug → compiled MDX ESM module source (program format) for static hydration. */
+  mdxSources: Record<string, string> = {}
+): Promise<{ js: string; css: string }> {
   await mkdir(ASSETS_DIR, { recursive: true });
   const twKey = twCacheKey();
   await cleanOldBundles(new Set([`client-${twKey}.css`]));
@@ -162,6 +165,44 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
                 `export const config = docuConfig;`,
               ].join("\n"),
               loader: "ts",
+            };
+          });
+        },
+      },
+      {
+        // Serves per-page compiled MDX (program format) as real modules so
+        // the client hydrates the content island without `new Function`.
+        // client.ts imports `{ mdxModules } from "./mdx-manifest"`.
+        name: "mdx-hydrate",
+        setup(build) {
+          build.onResolve({ filter: /^mdx-module:/ }, (args) => ({
+            path: args.path,
+            namespace: "mdx-module",
+          }));
+          build.onLoad({ filter: /.*/, namespace: "mdx-module" }, (args) => {
+            const slug = args.path.slice("mdx-module:".length);
+            const contents = mdxSources[slug];
+            if (contents == null) {
+              return { errors: [{ text: `unknown mdx module: ${slug}` }] };
+            }
+            return { contents, loader: "js" };
+          });
+          build.onResolve({ filter: /mdx-manifest$/ }, (args) => ({
+            path: args.path,
+            namespace: "mdx-manifest",
+          }));
+          build.onLoad({ filter: /.*/, namespace: "mdx-manifest" }, () => {
+            const slugs = Object.keys(mdxSources);
+            const imports = slugs
+              .map((slug, i) => {
+                const key = slug.replace(/["\\]/g, "");
+                return `import * as _mdx${i} from "mdx-module:${key}";`;
+              })
+              .join("\n");
+            const map = slugs.map((slug, i) => `${JSON.stringify(slug)}: _mdx${i}`).join(", ");
+            return {
+              contents: `${imports}\nexport const mdxModules = { ${map} };\n`,
+              loader: "js",
             };
           });
         },

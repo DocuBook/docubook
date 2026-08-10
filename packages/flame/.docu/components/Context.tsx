@@ -76,7 +76,7 @@ export function Context({ className }: ContextProps) {
             onClick={() => navigate(contextPath)}
             className={cn(
               "relative flex cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm",
-              "text-left outline-none transition-colors",
+              "text-left transition-colors outline-none",
               isActive
                 ? "bg-primary/20 text-primary"
                 : "hover:bg-base-200 text-base-content/80 hover:text-base-content"

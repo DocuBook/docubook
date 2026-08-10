@@ -276,7 +276,7 @@ function MobileDrawer({
   return (
     <div className="fixed inset-0 z-[100]">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden="true" />
-      <div className="bg-base-100 absolute right-0 top-0 flex h-full w-80 max-w-[85vw] flex-col shadow-xl">
+      <div className="bg-base-100 absolute top-0 right-0 flex h-full w-80 max-w-[85vw] flex-col shadow-xl">
         <div className="border-base-200 flex items-center justify-between border-b px-4 py-3">
           <div className="flex items-center gap-2">
             <GitHubLink repoUrl={repoUrl} />

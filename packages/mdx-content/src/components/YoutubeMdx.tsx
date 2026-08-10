@@ -1,6 +1,6 @@
 type YoutubeMdxProps = {
-    videoId: string;
-    title?: string;
+  videoId: string;
+  title?: string;
 };
 
 export function YoutubeMdx({ videoId, title = "YouTube video" }: YoutubeMdxProps) {

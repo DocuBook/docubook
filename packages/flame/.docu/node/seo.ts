@@ -1,4 +1,5 @@
 import type { DocuConfig } from "./types";
+import { frontmatterField } from "./mdx";
 
 export interface SeoMeta {
   /** Absolute canonical URL */
@@ -27,8 +28,7 @@ export function buildSeoMeta(
   };
 
   // Per-page image from frontmatter, fallback to global default from config
-  const image =
-    (typeof frontmatter.image === "string" && frontmatter.image) || config.meta?.ogImage;
+  const image = frontmatterField(frontmatter, "image") || config.meta?.ogImage;
   if (image) {
     // Resolve using URL constructor — handles absolute, root-relative, and relative paths
     try {

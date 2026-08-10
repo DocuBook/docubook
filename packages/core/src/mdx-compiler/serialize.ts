@@ -1,3 +1,4 @@
+// MPL-2.0 — derived from next-mdx-remote (IBM). See LICENSE-MPL-2.0.
 import { compile } from "@mdx-js/mdx";
 import { VFile } from "vfile";
 import { matter } from "vfile-matter";
@@ -21,6 +22,14 @@ export type SerializeOptions = {
   };
   parseFrontmatter?: boolean;
   /**
+   * MDX compile output shape.
+   * - `"function-body"` (default): JS function body string for `<MDXRemote>`.
+   * - `"program"`: full ESM module source (imports + `export default MDXContent`)
+   *   for static bundling / hydration without `new Function`.
+   * @default "function-body"
+   */
+  outputFormat?: "function-body" | "program";
+  /**
    * Strip JavaScript expressions from MDX (default: true).
    * When true, removes all `{expression}` and JSX attribute expression nodes
    * before compilation. When false, expressions are preserved but a
@@ -40,6 +49,7 @@ function getCompileOptions(
   mdxOptions: SerializeOptions["mdxOptions"] = {},
   rsc = false,
   blockJS = true,
+  outputFormat: NonNullable<SerializeOptions["outputFormat"]> = "function-body"
 ) {
   const remarkPlugins = [
     ...(mdxOptions?.remarkPlugins ?? []),
@@ -53,7 +63,7 @@ function getCompileOptions(
     ...mdxOptions,
     remarkPlugins,
     rehypePlugins: mdxOptions?.rehypePlugins ?? [],
-    outputFormat: "function-body" as const,
+    outputFormat,
     providerImportSource: rsc ? undefined : "@mdx-js/react",
     development: process.env.NODE_ENV !== "production",
   };
@@ -69,8 +79,9 @@ export async function serialize(
     mdxOptions = {},
     parseFrontmatter = false,
     blockJS = true,
+    outputFormat = "function-body",
   }: SerializeOptions = {},
-  rsc = false,
+  rsc = false
 ): Promise<SerializeResult> {
   const vfile = new VFile(source);
 
@@ -81,7 +92,7 @@ export async function serialize(
   let compiledSource: string;
   try {
     compiledSource = String(
-      await compile(vfile, getCompileOptions(mdxOptions, rsc, blockJS)),
+      await compile(vfile, getCompileOptions(mdxOptions, rsc, blockJS, outputFormat))
     );
   } catch (error: any) {
     throw createFormattedMDXError(error, String(vfile));

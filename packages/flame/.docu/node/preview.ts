@@ -57,7 +57,7 @@ const server = Bun.serve({
           headers: {
             "Content-Type": "text/html",
             ...SECURITY_HEADERS,
-            "Content-Security-Policy": cspHeader(nonce, true),
+            "Content-Security-Policy": cspHeader(nonce),
           },
         });
       }
@@ -75,7 +75,7 @@ const server = Bun.serve({
         headers: {
           "Content-Type": "text/html",
           ...SECURITY_HEADERS,
-          "Content-Security-Policy": cspHeader(nonce, true),
+          "Content-Security-Policy": cspHeader(nonce),
         },
       });
     }

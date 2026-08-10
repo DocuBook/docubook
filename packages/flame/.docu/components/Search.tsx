@@ -154,7 +154,7 @@ export default function Search({ className }: SearchProps) {
         boxClassName="w-[calc(100%-2rem)] max-w-[640px] p-0 mx-auto relative z-10"
       >
         <div onKeyDown={handleKeyDown}>
-          <div className="px-4 pb-2 pt-4">
+          <div className="px-4 pt-4 pb-2">
             <div className="border-base-300 flex items-center gap-3 rounded-lg border px-4 py-2.5">
               <SearchIcon className="text-primary h-5 w-5 shrink-0" />
               <input
@@ -163,7 +163,7 @@ export default function Search({ className }: SearchProps) {
                 onChange={handleQueryChange}
                 placeholder="Search documentation..."
                 autoFocus
-                className="placeholder:text-base-content/40 h-8 w-full border-none bg-transparent text-base outline-none ring-0 focus:outline-none focus:ring-0"
+                className="placeholder:text-base-content/40 h-8 w-full border-none bg-transparent text-base ring-0 outline-none focus:ring-0 focus:outline-none"
                 aria-label="Search documentation"
               />
               {query && (
@@ -187,7 +187,7 @@ export default function Search({ className }: SearchProps) {
             </div>
           </div>
 
-          <div className="max-h-[400px] overflow-y-auto px-3 py-2">
+          <div className="max-h-100 overflow-y-auto px-3 py-2">
             {query.trim().length >= 2 && results.length === 0 && (
               <p className="text-base-content/50 py-8 text-center text-sm">
                 No results for &ldquo;<span className="text-primary">{query}</span>&rdquo;
@@ -248,10 +248,10 @@ function SearchTrigger({ onClick }: { onClick: () => void }) {
           <SearchIcon className="h-4 w-4 shrink-0" />
           <span className="flex-1 text-left">Search</span>
           <div className="flex items-center gap-0.5">
-            <Kbd className="bg-primary text-[12px text-base-300 dark:text-foreground rounded-md p-1.5 font-medium">
+            <Kbd className="bg-primary text-primary-foreground rounded-md p-1.5 text-[12px] font-medium">
               <FnKey.Cmd />
             </Kbd>
-            <Kbd className="bg-primary text-base-300 dark:text-foreground rounded-md p-1.5 text-[12px] font-medium">
+            <Kbd className="bg-primary text-primary-foreground rounded-md p-1.5 text-[12px] font-medium">
               K
             </Kbd>
           </div>
@@ -289,7 +289,7 @@ function GroupedResults({
     <div className="flex flex-col gap-1">
       {groups.map((group) => (
         <div key={group.section}>
-          <div className="text-base-content/50 px-2 pb-1 pt-3 text-xs font-semibold">
+          <div className="text-base-content/50 px-2 pt-3 pb-1 text-xs font-semibold">
             {group.section}
           </div>
           {group.items.map(({ result, globalIndex }) => {

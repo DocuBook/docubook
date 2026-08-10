@@ -1,7 +1,6 @@
-export type { TocItem, MdxCompileResult } from "./types";
+export type { TocItem } from "./types";
 export { cn, parseDate, stringToDate, formatDate, formatDate2, toIsoDateOnly } from "./utils";
 export {
-  parseMdx,
   serialize,
   MDXRemote,
   preProcess,
@@ -18,16 +17,9 @@ export {
   extractTocsFromRawMdx,
   sluggify,
 } from "./extract";
-export type { ParseMdxOptions } from "./compile";
-export {
-  readMdxFileBySlug,
-  parseMdxFile,
-  compileParsedMdxFile,
-  createMdxContentService,
-} from "./content";
+export type { MDXRemoteProps } from "./mdx-compiler/index";
 export type {
-  ReadMdxFileResult,
-  ParsedMdxFile,
-  CompiledMdxFile,
-  CreateMdxContentServiceOptions,
-} from "./content";
+  MDXRemoteSerializeResult,
+  SerializeOptions,
+  SerializeResult,
+} from "./mdx-compiler/serialize";

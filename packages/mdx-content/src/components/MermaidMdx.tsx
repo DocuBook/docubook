@@ -309,10 +309,41 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
       }
       onKeyDown={handleKeyDown}
       onWheel={controlsActive ? (e) => zoom(e.deltaY > 0 ? 1 / ZOOM_STEP : ZOOM_STEP) : undefined}
-      onMouseDown={controlsActive ? (e) => { dragRef.current = { dragging: true, lastX: e.clientX, lastY: e.clientY }; setIsPanning(true); } : undefined}
-      onMouseMove={controlsActive ? (e) => { const d = dragRef.current; if (!d.dragging) return; pan(e.clientX - d.lastX, e.clientY - d.lastY); dragRef.current.lastX = e.clientX; dragRef.current.lastY = e.clientY; } : undefined}
-      onMouseUp={controlsActive ? () => { dragRef.current.dragging = false; setIsPanning(false); } : undefined}
-      onMouseLeave={controlsActive ? () => { dragRef.current.dragging = false; setIsPanning(false); } : undefined}
+      onMouseDown={
+        controlsActive
+          ? (e) => {
+              dragRef.current = { dragging: true, lastX: e.clientX, lastY: e.clientY };
+              setIsPanning(true);
+            }
+          : undefined
+      }
+      onMouseMove={
+        controlsActive
+          ? (e) => {
+              const d = dragRef.current;
+              if (!d.dragging) return;
+              pan(e.clientX - d.lastX, e.clientY - d.lastY);
+              dragRef.current.lastX = e.clientX;
+              dragRef.current.lastY = e.clientY;
+            }
+          : undefined
+      }
+      onMouseUp={
+        controlsActive
+          ? () => {
+              dragRef.current.dragging = false;
+              setIsPanning(false);
+            }
+          : undefined
+      }
+      onMouseLeave={
+        controlsActive
+          ? () => {
+              dragRef.current.dragging = false;
+              setIsPanning(false);
+            }
+          : undefined
+      }
       style={{
         ...(fullscreen
           ? {
@@ -363,13 +394,25 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
               gap: 4,
             }}
           >
-            <ControlButton label="Exit full screen" onClick={() => setFullscreen(false)} cell={{ col: 1, row: 1 }}>
+            <ControlButton
+              label="Exit full screen"
+              onClick={() => setFullscreen(false)}
+              cell={{ col: 1, row: 1 }}
+            >
               <path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3" />
             </ControlButton>
-            <ControlButton label="Pan up" onClick={() => pan(0, -PAN_STEP)} cell={{ col: 2, row: 1 }}>
+            <ControlButton
+              label="Pan up"
+              onClick={() => pan(0, -PAN_STEP)}
+              cell={{ col: 2, row: 1 }}
+            >
               <path d="m18 15-6-6-6 6" />
             </ControlButton>
-            <ControlButton label="Zoom in" onClick={() => zoom(ZOOM_STEP)} cell={{ col: 3, row: 1 }}>
+            <ControlButton
+              label="Zoom in"
+              onClick={() => zoom(ZOOM_STEP)}
+              cell={{ col: 3, row: 1 }}
+            >
               <circle cx="11" cy="11" r="7" />
               <path d="m21 21-4-4M8 11h6M11 8v6" />
             </ControlButton>
@@ -409,7 +452,11 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
           </div>
         ) : (
           <div style={{ position: "absolute", bottom: 8, right: 8 }}>
-            <ControlButton label="Enter full screen" onClick={() => setFullscreen(true)} cell={{ col: 1, row: 1 }}>
+            <ControlButton
+              label="Enter full screen"
+              onClick={() => setFullscreen(true)}
+              cell={{ col: 1, row: 1 }}
+            >
               <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" />
             </ControlButton>
           </div>

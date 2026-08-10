@@ -65,7 +65,7 @@ export const DropdownItem = forwardRef<HTMLLIElement, DropdownItemProps>(
     <li
       ref={ref}
       className={cn(
-        "hover:bg-base-200 text-base-content/80 hover:text-base-content relative flex cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm outline-none transition-colors",
+        "hover:bg-base-200 text-base-content/80 hover:text-base-content relative flex cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm transition-colors outline-none",
         className
       )}
       role="menuitem"
@@ -83,7 +83,7 @@ export const DropdownLink = forwardRef<
 >(({ className, children, href, ...props }, ref) => (
   <li
     role="menuitem"
-    className="hover:bg-base-200 text-base-content/80 hover:text-base-content relative flex cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm outline-none transition-colors"
+    className="hover:bg-base-200 text-base-content/80 hover:text-base-content relative flex cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm transition-colors outline-none"
   >
     <a ref={ref} href={href} className={cn("text-inherit no-underline", className)} {...props}>
       {children}

@@ -2,7 +2,15 @@
   "$schema": "https://unpkg.com/@changesets/config@3.1.3/schema.json",
   "changelog": ["@changesets/changelog-github", { "repo": "DocuBook/docubook" }],
   "commit": false,
-  "fixed": [],
+  "fixed": [
+    [
+      "@docubook/core",
+      "@docubook/flame",
+      "@docubook/mdx-content",
+      "@docubook/themes-colors",
+      "@docubook/ui-react"
+    ]
+  ],
   "linked": [],
   "access": "public",
   "baseBranch": "main",

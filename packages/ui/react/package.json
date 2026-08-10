@@ -1,6 +1,6 @@
 {
   "name": "@docubook/ui-react",
-  "version": "1.0.0",
+  "version": "2.0.0-alpha.1",
   "description": "React + DaisyUI component library for documentation sites",
   "type": "module",
   "main": "./dist/index.cjs",

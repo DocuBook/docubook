@@ -61,7 +61,7 @@ export default function IndexPage() {
 
   return (
     <div className="bg-base-100 relative isolate min-h-screen overflow-hidden">
-      <div className="absolute right-4 top-4 z-10" id="theme-island" />
+      <div className="absolute top-4 right-4 z-10" id="theme-island" />
 
       {/* Background gradient blobs */}
       <div

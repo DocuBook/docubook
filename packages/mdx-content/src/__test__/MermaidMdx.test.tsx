@@ -285,9 +285,7 @@ describe("MermaidMdx", () => {
       const { container } = render(<MermaidMdx chart="graph TD; A-->B;" />);
 
       await vi.waitFor(() => {
-        expect(
-          container.querySelector('button[aria-label="Enter full screen"]')
-        ).not.toBeNull();
+        expect(container.querySelector('button[aria-label="Enter full screen"]')).not.toBeNull();
       });
 
       // Outside fullscreen: only the fullscreen button, no pan/zoom grid
@@ -297,9 +295,7 @@ describe("MermaidMdx", () => {
       // Enter fullscreen — all controls appear
       fireEvent.click(container.querySelector('button[aria-label="Enter full screen"]')!);
       await vi.waitFor(() => {
-        expect(
-          container.querySelector('[aria-label="Pan and zoom controls"]')
-        ).not.toBeNull();
+        expect(container.querySelector('[aria-label="Pan and zoom controls"]')).not.toBeNull();
       });
 
       const labels = [
@@ -414,9 +410,7 @@ describe("MermaidMdx", () => {
       const { container } = render(<MermaidMdx chart="graph TD; A-->B;" />);
 
       await vi.waitFor(() => {
-        expect(
-          container.querySelector('button[aria-label="Enter full screen"]')
-        ).not.toBeNull();
+        expect(container.querySelector('button[aria-label="Enter full screen"]')).not.toBeNull();
       });
 
       const viewport = container.querySelector('[tabindex="0"]') as HTMLElement;

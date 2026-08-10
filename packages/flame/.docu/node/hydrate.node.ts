@@ -187,7 +187,6 @@ function collectAllLucideIcons(): string[] {
     join(FRAMEWORK_ROOT, "..", "mdx-content", "dist"),
     join(FRAMEWORK_ROOT, "..", "ui-react", "dist"),
     join(FRAMEWORK_ROOT, "..", "core", "dist"),
-    join(FRAMEWORK_ROOT, "..", "runt", "dist"),
     join(FRAMEWORK_ROOT, "..", "themes-colors", "dist"),
   ];
   for (const d of depDirs) scanDirLucideIcons(resolve(d), icons);
@@ -195,7 +194,10 @@ function collectAllLucideIcons(): string[] {
 }
 
 /** Build the client JS bundle and Tailwind CSS. */
-export async function buildClientBundle(): Promise<{ js: string; css: string }> {
+export async function buildClientBundle(
+  /** slug → compiled MDX ESM module source (program format) for static hydration. */
+  mdxSources: Record<string, string> = {}
+): Promise<{ js: string; css: string }> {
   await mkdir(ASSETS_DIR, { recursive: true });
   const twKey = tailwindCacheKey();
   await cleanOldBundles(new Set([`client-${twKey}.css`]));
@@ -290,6 +292,61 @@ export async function buildClientBundle(): Promise<{ js: string; css: string }> 
                   `export const config = docuConfig;`,
                 ].join("\n"),
                 loader: "ts",
+              };
+            });
+          },
+        },
+        {
+          // Serves per-page compiled MDX (program format) as real modules so
+          // the client hydrates the content island without `new Function`.
+          // client.ts imports `{ mdxModules } from "./mdx-manifest"`.
+          name: "mdx-hydrate",
+          setup(build) {
+            // Compiled MDX (program format) imports the JSX runtime and the
+            // MDX provider. Virtual modules have no real directory, so esbuild
+            // cannot resolve bare specifiers from them — map them to the
+            // installed real paths explicitly (same pattern as lucide-optimize).
+            const require = createRequire(import.meta.url);
+            const mdxModuleDeps: Record<string, string> = {
+              "react/jsx-runtime": require.resolve("react/jsx-runtime"),
+              "react/jsx-dev-runtime": require.resolve("react/jsx-dev-runtime"),
+              "@mdx-js/react": require.resolve("@mdx-js/react"),
+            };
+            build.onResolve(
+              { filter: /^(react\/jsx-runtime|react\/jsx-dev-runtime|@mdx-js\/react)$/ },
+              (args) => {
+                if (args.namespace !== "mdx-module") return;
+                return { path: mdxModuleDeps[args.path], namespace: "file" };
+              }
+            );
+            build.onResolve({ filter: /^mdx-module:/ }, (args) => ({
+              path: args.path,
+              namespace: "mdx-module",
+            }));
+            build.onLoad({ filter: /.*/, namespace: "mdx-module" }, (args) => {
+              const slug = args.path.slice("mdx-module:".length);
+              const contents = mdxSources[slug];
+              if (contents == null) {
+                return { errors: [{ text: `unknown mdx module: ${slug}` }] };
+              }
+              return { contents, loader: "js" };
+            });
+            build.onResolve({ filter: /mdx-manifest$/ }, (args) => ({
+              path: args.path,
+              namespace: "mdx-manifest",
+            }));
+            build.onLoad({ filter: /.*/, namespace: "mdx-manifest" }, () => {
+              const slugs = Object.keys(mdxSources);
+              const imports = slugs
+                .map((slug, i) => {
+                  const key = slug.replace(/["\\]/g, "");
+                  return `import * as _mdx${i} from "mdx-module:${key}";`;
+                })
+                .join("\n");
+              const map = slugs.map((slug, i) => `${JSON.stringify(slug)}: _mdx${i}`).join(", ");
+              return {
+                contents: `${imports}\nexport const mdxModules = { ${map} };\n`,
+                loader: "js",
               };
             });
           },
