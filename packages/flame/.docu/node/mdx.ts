@@ -130,10 +130,7 @@ export type Frontmatter = z.infer<typeof frontmatterSchema>;
  * (which widens the type to `Record<string, unknown>`). Returns "" when
  * missing or not a string.
  */
-export function frontmatterField(
-  frontmatter: Record<string, unknown>,
-  key: string
-): string {
+export function frontmatterField(frontmatter: Record<string, unknown>, key: string): string {
   return typeof frontmatter[key] === "string" ? (frontmatter[key] as string) : "";
 }
 

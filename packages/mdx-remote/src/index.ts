@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import * as jsxRuntime from "react/jsx-runtime";
 import * as jsxDevRuntime from "react/jsx-dev-runtime";
 import * as mdx from "@mdx-js/react";
-import type { MDXRemoteSerializeResult, CompileMDXOptions } from "./types.js";
+import type { MDXRemoteSerializeResult } from "./types.js";
 
 /** Props for the client-side `<MDXRemote>` (accepts pre-serialized result). */
 export type MDXRemoteProps = MDXRemoteSerializeResult & {
@@ -63,7 +63,7 @@ export function MDXRemote({
   const content = React.createElement(
     mdx.MDXProvider,
     { components },
-    React.createElement(Content, null),
+    React.createElement(Content, null)
   );
 
   return lazy ? React.createElement("div", null, content) : content;

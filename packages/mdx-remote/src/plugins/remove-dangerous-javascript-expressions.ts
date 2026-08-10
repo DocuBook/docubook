@@ -46,22 +46,14 @@ const BLOCKED_PROPERTIES = [
   "require",
 ];
 
-function walk(
-  node: any,
-  blockedGlobals: string[],
-  blockedProperties: string[],
-) {
+function walk(node: any, blockedGlobals: string[], blockedProperties: string[]) {
   if (!node || typeof node !== "object") return;
 
   if (node.type === "Identifier" && blockedGlobals.includes(node.name)) {
     const parent = node.parent;
     const isProperty =
-      parent?.type === "MemberExpression" &&
-      parent.property === node &&
-      !parent.computed;
-    const isParam =
-      parent?.type === "FunctionDeclaration" ||
-      parent?.type === "FunctionExpression";
+      parent?.type === "MemberExpression" && parent.property === node && !parent.computed;
+    const isParam = parent?.type === "FunctionDeclaration" || parent?.type === "FunctionExpression";
     if (!isProperty && !isParam) {
       throw new Error(`Security: Access to '${node.name}' is not allowed`);
     }
@@ -87,9 +79,7 @@ function walk(
     node.tag?.type === "Identifier" &&
     blockedGlobals.includes(node.tag.name)
   ) {
-    throw new Error(
-      `Security: ${node.tag.name}\`...\` tagged template is not allowed`,
-    );
+    throw new Error(`Security: ${node.tag.name}\`...\` tagged template is not allowed`);
   }
 
   // Block computed MemberExpression calls on any object identifier
@@ -99,22 +89,15 @@ function walk(
     node.callee?.type === "MemberExpression" &&
     node.callee.computed
   ) {
-    throw new Error(
-      "Security: Function calls via computed property access are not allowed",
-    );
+    throw new Error("Security: Function calls via computed property access are not allowed");
   }
 
   // Block non-computed property access to dangerous properties:
   // obj.constructor, obj.prototype, obj.__proto__
   if (node.type === "MemberExpression" && !node.computed) {
     const prop = node.property;
-    if (
-      prop?.type === "Identifier" &&
-      blockedProperties.includes(prop.name)
-    ) {
-      throw new Error(
-        `Security: .${prop.name} access is not allowed`,
-      );
+    if (prop?.type === "Identifier" && blockedProperties.includes(prop.name)) {
+      throw new Error(`Security: .${prop.name} access is not allowed`);
     }
   }
 
@@ -132,8 +115,7 @@ function walk(
     const value = node[key];
     if (Array.isArray(value)) {
       value.forEach((child: any) => {
-        if (child && typeof child === "object")
-          walk(child, blockedGlobals, blockedProperties);
+        if (child && typeof child === "object") walk(child, blockedGlobals, blockedProperties);
       });
     } else if (value && typeof value === "object") {
       walk(value, blockedGlobals, blockedProperties);
@@ -143,14 +125,10 @@ function walk(
 
 export const CreateRemoveDangerousCallsPlugin = (
   blockedGlobals?: string[],
-  blockedProperties?: string[],
+  blockedProperties?: string[]
 ) => {
   return () => (tree: Node) => {
-    walk(
-      tree,
-      blockedGlobals ?? BLOCKED_GLOBALS,
-      blockedProperties ?? BLOCKED_PROPERTIES,
-    );
+    walk(tree, blockedGlobals ?? BLOCKED_GLOBALS, blockedProperties ?? BLOCKED_PROPERTIES);
     return tree;
   };
 };

@@ -7,7 +7,8 @@ describe("no double parsing", () => {
   it("gray-matter called once, serialize does not re-parse", async () => {
     // 1. extract once
     const raw = `---\ntitle: Intro\nversion: 3.5\n---\n\n## Hello`;
-    const { frontmatter, strippedContent } = extractFrontmatterWithContent<Record<string, unknown>>(raw);
+    const { frontmatter, strippedContent } =
+      extractFrontmatterWithContent<Record<string, unknown>>(raw);
     expect(frontmatter.title).toBe("Intro");
     expect(strippedContent).not.toContain("---");
 
@@ -50,7 +51,10 @@ body`;
         keywords: z.array(z.string()),
       }),
     });
-    const { frontmatter, strippedContent } = extractFrontmatterWithContent<z.infer<typeof schema>>(raw, schema);
+    const { frontmatter, strippedContent } = extractFrontmatterWithContent<z.infer<typeof schema>>(
+      raw,
+      schema
+    );
     expect(frontmatter.author.name).toBe("Wildan");
     expect(frontmatter.author.email).toBe("wildan@dev.com");
     expect(frontmatter.seo.keywords).toEqual(["docs", "mdx"]);
@@ -63,9 +67,7 @@ body`;
       title: z.coerce.string(),
       author: z.object({ name: z.string() }), // required
     });
-    expect(() =>
-      extractFrontmatterWithContent(raw, strictSchema)
-    ).toThrow();
+    expect(() => extractFrontmatterWithContent(raw, strictSchema)).toThrow();
 
     const optionalSchema = z.object({
       title: z.coerce.string(),

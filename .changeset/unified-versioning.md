@@ -88,6 +88,8 @@ This major release also ships breaking changes:
   and the monorepo pins 5.9.3 uniformly across all 7 packages; upgrading it
   is a coordinated, separate effort.
 
+- **`@docubook/monorepo` — dev tooling upgrades.** `eslint` `9.39.5` → `10.8.1`, `@eslint/js` → `10.0.1`, `prettier-plugin-tailwindcss` `0.6.14` → `0.8.1` (47 files reformatted by the plugin bump). `engines.node` raised to `^20.19.0 || ^22.13.0 || >=24` — required by eslint 10. Dropped an unused `CompileMDXOptions` import in `@docubook/mdx-remote` surfaced by the pre-commit lint hook. `typescript` stays at `^5.9.3` — TS 7 (native Go port) is outside the `typescript-eslint` peer range (`>=4.8.4 <6.1.0`); `lint-staged` stays at 16 — v17 requires Node `>=22.22.1`.
+
 - **`@docubook/core` — README rewritten for DRY.** Removed duplicated usage
   recipes and example blocks. README now documents the 3-stage pipeline
   (EXTRACT → PARSE → COMPILE), the full API table, and managed dependencies.

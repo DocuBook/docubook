@@ -39,7 +39,7 @@ export type SerializeResult = {
 function getCompileOptions(
   mdxOptions: SerializeOptions["mdxOptions"] = {},
   rsc = false,
-  blockJS = true,
+  blockJS = true
 ) {
   const remarkPlugins = [
     ...(mdxOptions?.remarkPlugins ?? []),
@@ -64,13 +64,8 @@ function getCompileOptions(
  */
 export async function serialize(
   source: string,
-  {
-    scope = {},
-    mdxOptions = {},
-    parseFrontmatter = false,
-    blockJS = true,
-  }: SerializeOptions = {},
-  rsc = false,
+  { scope = {}, mdxOptions = {}, parseFrontmatter = false, blockJS = true }: SerializeOptions = {},
+  rsc = false
 ): Promise<SerializeResult> {
   const vfile = new VFile(source);
 
@@ -80,9 +75,7 @@ export async function serialize(
 
   let compiledSource: string;
   try {
-    compiledSource = String(
-      await compile(vfile, getCompileOptions(mdxOptions, rsc, blockJS)),
-    );
+    compiledSource = String(await compile(vfile, getCompileOptions(mdxOptions, rsc, blockJS)));
   } catch (error: any) {
     throw createFormattedMDXError(error, String(vfile));
   }

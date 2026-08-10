@@ -71,19 +71,19 @@ describe("serialize", () => {
 
   it("throws on Function() call with blockJS=false", async () => {
     await expect(serialize("# {Function('return 1')()}", { blockJS: false })).rejects.toThrow(
-      /not allowed/i,
+      /not allowed/i
     );
   });
 
   it("throws on dynamic import() with blockJS=false", async () => {
     await expect(serialize("# {import('node:fs')}", { blockJS: false })).rejects.toThrow(
-      /not allowed/i,
+      /not allowed/i
     );
   });
 
   it("throws on new Function() with blockJS=false", async () => {
     await expect(serialize("# {new Function('')}", { blockJS: false })).rejects.toThrow(
-      /not allowed/i,
+      /not allowed/i
     );
   });
 
@@ -93,7 +93,7 @@ describe("serialize", () => {
 
   it("throws on prototype-chain constructor access with blockJS=false", async () => {
     await expect(
-      serialize('# {({}).constructor("alert(1)")()}', { blockJS: false }),
+      serialize('# {({}).constructor("alert(1)")()}', { blockJS: false })
     ).rejects.toThrow(/\.constructor access is not allowed/i);
   });
 
@@ -118,7 +118,9 @@ describe("compileMDX", () => {
   });
 
   it("accepts custom components", async () => {
-    const TestComp = ({ children }: { children?: React.ReactNode }) => <section>{children}</section>;
+    const TestComp = ({ children }: { children?: React.ReactNode }) => (
+      <section>{children}</section>
+    );
     const result = await compileMDX({
       source: "<TestComp>content</TestComp>",
       components: { TestComp },

@@ -18,7 +18,7 @@ export async function compileMDX<Frontmatter = Record<string, unknown>>({
   const { compiledSource, frontmatter, scope } = await serialize(
     source,
     { ...(options ?? {}), parseFrontmatter: options?.parseFrontmatter ?? false },
-    true, // rsc mode
+    true // rsc mode
   );
 
   // jsx/jsxs (production) and jsxDEV (development) are in separate React 19
@@ -45,7 +45,7 @@ export async function compileMDX<Frontmatter = Record<string, unknown>>({
  * Server Component that compiles & renders MDX inline.
  */
 export async function MDXRemote<Frontmatter = Record<string, unknown>>(
-  props: CompileMDXOptions<Frontmatter>,
+  props: CompileMDXOptions<Frontmatter>
 ): Promise<React.ReactElement> {
   const { content } = await compileMDX(props);
   return content;

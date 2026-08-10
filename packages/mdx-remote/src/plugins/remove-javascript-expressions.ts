@@ -8,20 +8,14 @@ import type { Node } from "unist";
 export const removeJavaScriptExpressions = () => {
   return (tree: Node) => {
     visit(tree, (node: Node, index: number | undefined, parent: Node | undefined) => {
-      if (
-        node.type === "mdxFlowExpression" ||
-        node.type === "mdxTextExpression"
-      ) {
+      if (node.type === "mdxFlowExpression" || node.type === "mdxTextExpression") {
         if (parent && typeof index === "number") {
           (parent as any).children.splice(index, 1);
           return [SKIP, index] as const;
         }
       }
 
-      if (
-        node.type === "mdxJsxFlowElement" ||
-        node.type === "mdxJsxTextElement"
-      ) {
+      if (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") {
         const el = node as any;
         if (el.attributes) {
           el.attributes = el.attributes.filter((attr: any) => {

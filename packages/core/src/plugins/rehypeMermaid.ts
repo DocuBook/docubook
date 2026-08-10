@@ -35,8 +35,7 @@ export const rehypeMermaid = () => (tree: Node) => {
     if (!classList.includes("language-mermaid")) return;
 
     const textNode = codeEl.children?.find((child) => (child as TextNode).type === "text") as
-      | TextNode
-      | undefined;
+      TextNode | undefined;
 
     const chart = textNode?.value ?? "";
 

@@ -9,16 +9,22 @@
 @plugin "@tailwindcss/typography";
 @source "../../.docu/components";
 @source "../../.docu/pages";
-@source inline("breadcrumbs collapse collapse-open collapse-close collapse-arrow collapse-plus collapse-title collapse-content");
+@source inline(
+  "breadcrumbs collapse collapse-open collapse-close collapse-arrow collapse-plus collapse-title collapse-content"
+);
 @source inline("modal modal-top modal-middle modal-bottom modal-box modal-backdrop");
 @source inline("drawer drawer-end drawer-toggle drawer-side drawer-overlay drawer-content");
 @source inline("sm:drawer-open md:drawer-open lg:drawer-open xl:drawer-open");
 @source inline("navbar menu menu-horizontal");
 @source inline("kbd kbd-xs kbd-sm kbd-md kbd-lg kbd-xl");
 @source inline("toggle theme-controller toggle-xs toggle-sm toggle-md toggle-lg");
-@source inline("toggle-primary toggle-secondary toggle-accent toggle-neutral toggle-success toggle-warning toggle-info toggle-error");
+@source inline(
+  "toggle-primary toggle-secondary toggle-accent toggle-neutral toggle-success toggle-warning toggle-info toggle-error"
+);
 @source inline("input input-ghost input-xs input-sm input-md input-lg input-xl");
-@source inline("input-primary input-secondary input-accent input-neutral input-success input-warning input-info input-error");
+@source inline(
+  "input-primary input-secondary input-accent input-neutral input-success input-warning input-info input-error"
+);
 @source inline("label");
 
 @custom-variant dark (&:is(.dark *));
@@ -198,7 +204,7 @@
   }
 
   .rehype-code-title {
-    @apply -mb-8 mt-5 w-full px-2 pb-5 text-sm font-medium;
+    @apply mt-5 -mb-8 w-full px-2 pb-5 text-sm font-medium;
   }
 
   .highlight-comp > code {
