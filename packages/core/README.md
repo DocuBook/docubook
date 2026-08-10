@@ -15,25 +15,21 @@ raw MDX string
            │ strippedContent
            ▼
 ┌─────────────────────────────┐
-│ PARSE   (compile.ts)        │  /mdx-remote → compileMDX()
+│ COMPILE  (compile.ts)       │  serialize() → MDX compiled output
 │                             │  remark:  GFM, handleCodeExpandable
 │                             │  rehype:  preProcess → mermaid → codeTitles
 │                             │           → expandable → prism → slug
 │                             │           → autolink-headings → postProcess
 └──────────┬──────────────────┘
-           │ React element tree
+           │ compiledSource (string) / React element
            ▼
-┌─────────────────────────────┐
-│ COMPILE (content.ts)        │  readMdxFileBySlug() → fs lookup
-│                             │  parseMdxFile()      → extract + validate
-│                             │  compileParsedMdxFile() → compileMDX
-│                             │  createMdxContentService() → cached facade
-└──────────┬──────────────────┘
-           ▼
-   { content, frontmatter, tocs, filePath }
+      SSR HTML + static hydration modules
 ```
 
-All three stages are also exposed as standalone functions for partial use.
+Content comes from the local filesystem/repository — there is no runtime
+remote compilation (no database/CMS fetching), so compilation is a pure
+build-time/transform step: `serialize()` turns MDX into a string
+(`function-body` for `<MDXRemote>`, `program` for static hydration modules).
 
 ## API
 
@@ -41,11 +37,8 @@ All three stages are also exposed as standalone functions for partial use.
 
 | Function | Description | Returns |
 | -------- | ----------- | ------- |
-| `parseMdx` | Compile raw MDX string with optional parse options | `MdxCompileResult<Frontmatter>` |
-| `createMdxContentService` | Cached slug-based service: `getParsedForSlug`, `getCompiledForSlug`, `getFrontmatterForSlug`, `getTocsForSlug`. Options: `parseOptions`, `readOptions`, `tocsExtractor`, `cacheFn`, `frontmatterSchema`, `frontmatterEnricher` | service object |
-| `readMdxFileBySlug` | Read `slug.mdx` or `slug/index.mdx` from docs directory | `ReadMdxFileResult` |
-| `parseMdxFile` | Extract frontmatter, TOC, content, filePath from raw file result | `ParsedMdxFile<Frontmatter, TocItem>` |
-| `compileParsedMdxFile` | Compile parsed MDX preserving metadata and TOCs | `CompiledMdxFile<Frontmatter, TocItem>` |
+| `serialize` | Compile MDX string to compiled output. `outputFormat: "function-body" \| "program"` | `SerializeResult` |
+| `MDXRemote` | Client-side renderer for pre-compiled `serialize()` output | React component |
 | `extractFrontmatter` | Parse frontmatter only | `Frontmatter` |
 | `extractFrontmatterWithContent` | Extract frontmatter and stripped content in one pass (avoids double parsing) | `{ frontmatter, strippedContent }` |
 | `extractTocsFromRawMdx` | Extract headings for TOC generation | `TocItem[]` |
@@ -56,20 +49,18 @@ All three stages are also exposed as standalone functions for partial use.
 | `handleCodeTitles` | Move code title metadata to `<pre>` attributes | transformer |
 | `handleCodeExpandableRemark` / `handleCodeExpandable` | Expandable code block remark/rehype plugins | transformer |
 | `rehypeMermaid` | Transform ` ```mermaid ` fenced blocks into `<Mermaid>` elements | transformer |
-| `serialize` | Re-export from `@docubook/mdx-remote/serialize` for non-RSC workflows | `MDXRemoteSerializeResult` |
-| `MDXRemote` | Re-export from `@docubook/mdx-remote` for client hydration | React component |
 | `cn` | Merge class names (`clsx` + `tailwind-merge`) | `string` |
 | `parseDate` / `stringToDate` | Parse `dd-MM-yyyy` or ISO 8601 into `Date` | `Date` |
 | `formatDate` / `formatDate2` / `toIsoDateOnly` | Date formatting helpers | `string` |
 
 ### Frontmatter validation (zod)
 
-Pass `frontmatterSchema` to `parseMdxFile` or `createMdxContentService` to validate
-frontmatter after gray-matter parsing, before `frontmatterEnricher` runs.
+Pass `frontmatterSchema` to `extractFrontmatterWithContent` to validate
+frontmatter right after gray-matter parsing.
 
 ```ts
 import { z } from "zod";
-import { createMdxContentService } from "@docubook/core";
+import { extractFrontmatterWithContent } from "@docubook/core";
 
 const frontmatterSchema = z.object({
   title: z.coerce.string().min(1),
@@ -78,12 +69,7 @@ const frontmatterSchema = z.object({
   date: z.coerce.string().optional(),
 });
 
-const docsService = createMdxContentService<z.infer<typeof frontmatterSchema>>({
-  frontmatterSchema,
-  readOptions: { rootDir: "/path/to/project" },
-});
-
-const doc = await docsService.getCompiledForSlug("getting-started/introduction");
+const { frontmatter, strippedContent } = extractFrontmatterWithContent(rawMdx, frontmatterSchema);
 ```
 
 YAML coerces unquoted values (`date: 2026-06-10` → Date, `3.5` → number), so use
@@ -93,14 +79,18 @@ YAML coerces unquoted values (`date: 2026-06-10` → Date, `3.5` → number), so
 
 | Type | Purpose |
 | ---- | ------- |
-| `MdxCompileResult` | Compiled MDX result shape |
 | `TocItem` | Heading item structure |
-| `ParseMdxOptions` | Options for `parseMdx` |
-| `ReadMdxFileResult` | Return type of `readMdxFileBySlug` |
-| `ParsedMdxFile` | Parsed file structure before compile |
-| `CompiledMdxFile` | Compiled structure with metadata and TOC |
-| `CreateMdxContentServiceOptions` | Service options (includes `frontmatterSchema`, `frontmatterEnricher`) |
-| `ReadMdxBySlugOptions` | `rootDir` / `docsDir` configuration |
+| `SerializeOptions` / `SerializeResult` | Options/result of `serialize()` |
+| `MDXRemoteSerializeResult` | Shape accepted by `<MDXRemote>` |
+| `MDXRemoteProps` | Props of the `<MDXRemote>` component |
+
+## Subpath export: `@docubook/core/serialize`
+
+Standalone MDX compilation (same entry the bundlers use):
+
+```ts
+import { serialize } from "@docubook/core/serialize";
+```
 
 ## Subpath export: `@docubook/core/utils`
 
@@ -118,7 +108,7 @@ author — app-level users should not redeclare them.
 | Category | Packages |
 | -------- | -------- |
 | Frontmatter | `@11ty/gray-matter` |
-| MDX runtime | `@docubook/mdx-remote` (workspace) |
+| MDX runtime | `@mdx-js/mdx`, `@mdx-js/react`, `vfile`, `vfile-matter`, `unist-util-remove` |
 | Remark plugins | `remark-gfm`, `handleCodeExpandable` (internal) |
 | Rehype plugins | `rehype-autolink-headings`, `rehype-code-titles`, `rehype-prism-plus`, `rehype-slug` (internal code plugins) |
 | AST traversal | `unist-util-visit` |
@@ -127,4 +117,5 @@ author — app-level users should not redeclare them.
 
 ## License
 
-MIT
+MIT — the files under `src/mdx-compiler/` are MPL-2.0 (derived from
+next-mdx-remote); see `LICENSE-MPL-2.0`.

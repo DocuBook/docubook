@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { nodeAdapter } from "../node";
-import type { ServerHandle } from "../types";
+import { nodeAdapter } from "../node/runtime";
+import type { ServerHandle } from "../node/runtime";
 
 let handle: ServerHandle | null = null;
 

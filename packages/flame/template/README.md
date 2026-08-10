@@ -11,7 +11,7 @@
 
 ---
 
-> **Lightweight** — 📦 ~132 kB packed. No bloat, just fire.
+> **Lightweight** — 📦 ~239 kB packed (measured via `npm pack --dry-run`). No bloat, just fire.
 
 ---
 ## Quick Start

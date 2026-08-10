@@ -45,7 +45,7 @@ function createHtmlResponse(
     themeCss: state.inlineThemeCss,
     depth,
   });
-  /** unsafe-eval required by mdx-remote hydration — see build.impl.ts */
+  /** Dev-only: serves compiledSource → MDXRemote eval path (no CSP in production). */
   return htmlResponse(html, nonce, status, true);
 }
 
@@ -140,7 +140,8 @@ async function renderDocsServerPage(
       title,
       description,
       date: frontmatterField(doc.frontmatter, "date") || undefined,
-      content: doc.content,
+      // Same root-relative SSR as build — see build.ts.
+      content: renderToString(doc.content),
       tocs: doc.tocs,
       filePath: doc.filePath,
       repoUrl: state.docuConfig.repo?.url,
@@ -180,7 +181,7 @@ async function renderDocsServerPage(
       depth,
     });
     html = await state.builder.runTransformHtmlChain(html, ctx);
-    /** unsafe-eval required by mdx-remote hydration — see build.impl.ts */
+    /** Dev-only: serves compiledSource → MDXRemote eval path (no CSP in production). */
     return htmlResponse(html, nonce, 200, true);
   }
 

@@ -93,13 +93,14 @@ export function extractFrontmatter<Frontmatter>(content: string): Frontmatter {
     return matter(content).data as Frontmatter;
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
-    throw new Error(`Failed to extract frontmatter: ${reason}`);
+    throw new Error(`Failed to extract frontmatter: ${reason}`, { cause: error });
   }
 }
 
 /**
  * Extract frontmatter and return both the parsed data and the content
- * with the frontmatter block stripped. Avoids a second parse by compileMDX.
+ * with the frontmatter block stripped. Avoids a second parse during
+ * compilation.
  *
  * Optionally validates the parsed frontmatter with a Zod schema.
  * YAML coerces unquoted values (e.g. `date: 2026-06-10` → Date, `3.5` → number),
@@ -125,6 +126,6 @@ export function extractFrontmatterWithContent<Frontmatter>(
     };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
-    throw new Error(`Failed to extract frontmatter: ${reason}`);
+    throw new Error(`Failed to extract frontmatter: ${reason}`, { cause: error });
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@docubook/core",
-  "version": "3.5.0",
+  "version": "2.0.0-alpha.1",
   "description": "Shared MDX compile pipeline and markdown utilities for DocuBook",
   "type": "module",
   "main": "./dist/index.js",
@@ -16,15 +16,10 @@
       "import": "./dist/utils.js",
       "default": "./dist/utils.js"
     },
-    "./rsc": {
-      "types": "./dist/mdx-remote/rsc.d.ts",
-      "import": "./dist/mdx-remote/rsc.js",
-      "default": "./dist/mdx-remote/rsc.js"
-    },
     "./serialize": {
-      "types": "./dist/mdx-remote/serialize.d.ts",
-      "import": "./dist/mdx-remote/serialize.js",
-      "default": "./dist/mdx-remote/serialize.js"
+      "types": "./dist/mdx-compiler/serialize.d.ts",
+      "import": "./dist/mdx-compiler/serialize.js",
+      "default": "./dist/mdx-compiler/serialize.js"
     }
   },
   "files": [

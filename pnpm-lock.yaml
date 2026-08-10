@@ -151,15 +151,15 @@ importers:
       "@docubook/mdx-content":
         specifier: workspace:^
         version: link:../mdx-content
-      "@docubook/runt":
-        specifier: workspace:^
-        version: link:../runtime
       "@docubook/themes-colors":
         specifier: workspace:^
         version: link:../themes-colors
       "@docubook/ui-react":
         specifier: workspace:^
         version: link:../ui/react
+      "@mdx-js/react":
+        specifier: ^3.0.1
+        version: 3.1.1(@types/react@19.2.17)(react@19.2.7)
       "@sentry/bun":
         specifier: ">=10.0.0"
         version: 10.69.0(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))
@@ -267,18 +267,6 @@ importers:
       react-icons:
         specifier: ^5.0.0
         version: 5.7.0(react@19.2.7)
-      tsup:
-        specifier: ^8.5.1
-        version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(typescript@5.9.3)(yaml@2.9.0)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
-  packages/runtime:
-    devDependencies:
-      "@types/node":
-        specifier: ^22.0.0
-        version: 22.20.1
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(typescript@5.9.3)(yaml@2.9.0)

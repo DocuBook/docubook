@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { serialize } from "../serialize.js";
-import { compileMDX } from "../rsc.js";
 
 // -------------------------------------------------------------------------
 // serialize
@@ -100,39 +99,6 @@ describe("serialize", () => {
   // --- error handling ---
   it("throws formatted error on invalid MDX", async () => {
     // A closing JSX tag without opening triggers compile error.
-    await expect(serialize("</close>", {})).rejects.toThrow(/mdx-remote/i);
-  });
-});
-
-// -------------------------------------------------------------------------
-// compileMDX (RSC path)
-// -------------------------------------------------------------------------
-describe("compileMDX", () => {
-  it("returns content and frontmatter", async () => {
-    const result = await compileMDX({
-      source: "---\ntitle: Hello\n---\n\n# World",
-      options: { parseFrontmatter: true },
-    });
-    expect(result.content).toBeTruthy();
-    expect(result.frontmatter).toEqual({ title: "Hello" });
-  });
-
-  it("accepts custom components", async () => {
-    const TestComp = ({ children }: { children?: React.ReactNode }) => (
-      <section>{children}</section>
-    );
-    const result = await compileMDX({
-      source: "<TestComp>content</TestComp>",
-      components: { TestComp },
-    });
-    expect(result.content).toBeTruthy();
-  });
-
-  it("supports generic frontmatter type", async () => {
-    const { frontmatter } = await compileMDX<{ title: string }>({
-      source: "---\ntitle: Hello\n---\n\n# Hi",
-      options: { parseFrontmatter: true },
-    });
-    expect(frontmatter.title).toBe("Hello");
+    await expect(serialize("</close>", {})).rejects.toThrow(/\[mdx\] error compiling MDX/i);
   });
 });

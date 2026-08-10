@@ -150,6 +150,53 @@ export type FrontmatterSchema = ZodType<Frontmatter>;
  * @param rehypePlugins - Additional rehype plugins (merged after defaults, optional)
  * @param frontmatterSchema - Custom schema overriding the default contract
  */
+/**
+ * Shared compile core used by `compileMdx` (SSR) and `compileMdxModule`
+ * (static hydration). Strips frontmatter, merges the doc plugin chain
+ * (defaults + .html link fixes + user plugins) and runs `serialize()`.
+ */
+async function serializeWithDocPlugins(
+  rawMdx: string,
+  opts: {
+    outputFormat?: "function-body" | "program";
+    remarkPlugins?: Pluggable[];
+    rehypePlugins?: Pluggable[];
+    frontmatterSchema?: FrontmatterSchema;
+  } = {}
+) {
+  const { strippedContent } = extractFrontmatterWithContent<Frontmatter>(
+    rawMdx,
+    opts.frontmatterSchema
+  );
+
+  const defaultRemark = createDefaultRemarkPlugins();
+  const defaultRehype = createDefaultRehypePlugins();
+
+  // remarkMdxJsxDocsHtmlLinks must run before user plugins so custom remark
+  // transforms see already-fixed hrefs.  rehypeDocsHtmlLinks handles plain
+  // markdown [text](path) → <a> elements in the HAST phase.
+  const finalRemark = [...defaultRemark, remarkMdxJsxDocsHtmlLinks, ...(opts.remarkPlugins ?? [])];
+  const finalRehype = [...defaultRehype, rehypeDocsHtmlLinks, ...(opts.rehypePlugins ?? [])];
+
+  return serialize(strippedContent, {
+    outputFormat: opts.outputFormat,
+    mdxOptions: {
+      rehypePlugins: finalRehype,
+      remarkPlugins: finalRemark,
+    },
+  });
+}
+
+/**
+ * Compile MDX/MD content into a React element and compiled source.
+ *
+ * @param rawMdx - Raw MDX/MD file content
+ * @param filePath - Relative file path for git date lookup
+ * @param gitDates - Optional pre-fetched git last-modified map
+ * @param remarkPlugins - Additional remark plugins (merged after defaults, optional)
+ * @param rehypePlugins - Additional rehype plugins (merged after defaults, optional)
+ * @param frontmatterSchema - Custom schema overriding the default contract
+ */
 export async function compileMdx(
   rawMdx: string,
   filePath: string,
@@ -159,25 +206,11 @@ export async function compileMdx(
   frontmatterSchema?: FrontmatterSchema
 ): Promise<MdxResult> {
   const tocs = extractTocsFromRawMdx(rawMdx);
-  const { frontmatter, strippedContent } = extractFrontmatterWithContent<Frontmatter>(
-    rawMdx,
-    frontmatterSchema
-  );
-
-  const defaultRemark = createDefaultRemarkPlugins();
-  const defaultRehype = createDefaultRehypePlugins();
-
-  // remarkMdxJsxDocsHtmlLinks must run before user plugins so custom remark
-  // transforms see already-fixed hrefs.  rehypeDocsHtmlLinks handles plain
-  // markdown [text](path) → <a> elements in the HAST phase.
-  const finalRemark = [...defaultRemark, remarkMdxJsxDocsHtmlLinks, ...(remarkPlugins ?? [])];
-  const finalRehype = [...defaultRehype, rehypeDocsHtmlLinks, ...(rehypePlugins ?? [])];
-
-  const serialized = await serialize(strippedContent, {
-    mdxOptions: {
-      rehypePlugins: finalRehype,
-      remarkPlugins: finalRemark,
-    },
+  const { frontmatter } = extractFrontmatterWithContent<Frontmatter>(rawMdx, frontmatterSchema);
+  const serialized = await serializeWithDocPlugins(rawMdx, {
+    remarkPlugins,
+    rehypePlugins,
+    frontmatterSchema,
   });
 
   const components = createMdxComponents();
@@ -201,4 +234,23 @@ export async function compileMdx(
     frontmatter: { ...frontmatter, date },
     tocs,
   };
+}
+
+/**
+ * Compile MDX to a real ESM module source (program format) for static
+ * client-side hydration — the browser imports and executes it via the bundler
+ * instead of `new Function(compiledSource)`. Uses the same plugin chain as
+ * `compileMdx` so the hydrated tree matches the SSR output.
+ */
+export async function compileMdxModule(
+  rawMdx: string,
+  remarkPlugins?: Pluggable[],
+  rehypePlugins?: Pluggable[]
+): Promise<string> {
+  const serialized = await serializeWithDocPlugins(rawMdx, {
+    outputFormat: "program",
+    remarkPlugins,
+    rehypePlugins,
+  });
+  return serialized.compiledSource;
 }

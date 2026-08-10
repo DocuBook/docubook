@@ -7,7 +7,6 @@
       "@docubook/core",
       "@docubook/flame",
       "@docubook/mdx-content",
-      "@docubook/runt",
       "@docubook/themes-colors",
       "@docubook/ui-react"
     ]

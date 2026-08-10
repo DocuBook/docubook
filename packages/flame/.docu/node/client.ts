@@ -1,22 +1,37 @@
 import { createRoot, hydrateRoot } from "react-dom/client";
 import React from "react";
+import { MDXProvider } from "@mdx-js/react";
 import { MDXRemote } from "@docubook/core";
 import { createMdxComponents } from "@docubook/mdx-content";
+import { mdxModules } from "./mdx-manifest";
 import Sidebar, { MobileBar } from "../components/Sidebar";
 import Toc from "../components/Toc";
 import { ThemeToggle } from "../components/Theme";
 import { safeParseTocs } from "./parse-tocs";
 import type { TocItem } from "./types";
 
+/**
+ * Island mount mode — deliberate trade-off per island API:
+ *
+ * - `hydrate`: SSR HTML exists and the client renders the identical tree →
+ *   attach React in place (no flash, SSR content preserved).
+ * - `create`: client-only render — the client tree deliberately differs from
+ *   SSR (or SSR output is absent) → full render, discards SSR markup.
+ * - `auto`: hydrate when the SSR container has children, else create.
+ */
+type MountMode = "auto" | "hydrate" | "create";
+
 function mountIsland(
   id: string,
-  render: (el: HTMLElement) => React.ReactElement,
-  forceCreate = false
+  render: (el: HTMLElement) => React.ReactElement | null,
+  mode: MountMode = "auto"
 ) {
   const el = document.getElementById(id);
   if (!el) return;
   const node = render(el);
-  if (!forceCreate && el.childElementCount > 0) {
+  if (node === null) return; // island stays as-is (SSR HTML preserved)
+  const hydrate = mode === "hydrate" || (mode === "auto" && el.childElementCount > 0);
+  if (hydrate) {
     hydrateRoot(el, node);
   } else {
     el.innerHTML = "";
@@ -25,8 +40,9 @@ function mountIsland(
 }
 
 function mountIslands() {
-  // forceCreate: SSR sidebar renders <Menu> only; client renders full <Sidebar>
-  // (DesktopSidebar + MobileBar) — structure mismatch forces full createRoot.
+  // SSR renders <Menu> only; client renders full <Sidebar> (DesktopSidebar +
+  // MobileBar) — structural mismatch makes hydration impossible, so always
+  // createRoot and discard the SSR <Menu> markup.
   mountIsland(
     "sidebar-island",
     (el) => {
@@ -37,11 +53,11 @@ function mountIslands() {
         repoUrl: el.dataset.repo || "",
       });
     },
-    true
+    "create"
   );
 
-  // mobile-bar-island SSR div is empty (data attributes only),
-  // so hydrateRoot child check falls through to createRoot automatically.
+  // SSR div is empty (data attributes only) — childElementCount is 0, so
+  // auto falls through to createRoot.
   mountIsland("mobile-bar-island", (el) => {
     const tocs: TocItem[] = safeParseTocs(el.dataset.tocs);
     return React.createElement(MobileBar, {
@@ -58,24 +74,42 @@ function mountIslands() {
 
   mountIsland("theme-island", () => React.createElement(ThemeToggle));
 
-  hydrateMdxContent();
-}
-
-function hydrateMdxContent() {
-  const island = document.getElementById("mdx-content-island");
-  const sourceEl = document.getElementById("mdx-compiled-source");
-  if (!island || !sourceEl) return;
-
-  try {
-    const compiledSource = JSON.parse(sourceEl.textContent || "");
-    const components = createMdxComponents();
-    hydrateRoot(
-      island,
-      React.createElement(MDXRemote, { compiledSource, scope: {}, frontmatter: {}, components })
-    );
-  } catch (e) {
-    console.error("[mdx-hydrate]", e);
-  }
+  // MDX content: SSR renders the full content HTML; the client rebuilds the
+  // identical tree. Two sources, same tree shape:
+  //  - static build: per-slug compiled ESM module bundled via ./mdx-manifest
+  //    (no new Function) — module and SSR output come from the same plugin
+  //    chain, so hydration matches;
+  //  - dev: legacy per-page compiledSource script → MDXRemote eval.
+  // Hydrate when SSR markup exists, create only when the container is empty.
+  mountIsland(
+    "mdx-content-island",
+    (el) => {
+      const sourceEl = document.getElementById("mdx-compiled-source");
+      if (sourceEl) {
+        try {
+          const compiledSource = JSON.parse(sourceEl.textContent || "");
+          return React.createElement(MDXRemote, {
+            compiledSource,
+            scope: {},
+            frontmatter: {},
+            components: createMdxComponents(),
+          });
+        } catch (e) {
+          console.error("[mdx-hydrate]", e);
+          return null;
+        }
+      }
+      const slug = el.dataset.mdxSlug;
+      const mod = slug ? mdxModules[slug] : undefined;
+      if (!mod) return null;
+      return React.createElement(
+        MDXProvider,
+        { components: createMdxComponents() },
+        React.createElement(mod.default, null)
+      );
+    },
+    "auto"
+  );
 }
 
 if (document.readyState === "loading") {

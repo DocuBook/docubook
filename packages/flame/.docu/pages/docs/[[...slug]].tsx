@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import DocsBreadcrumb from "../../components/Breadcrumb";
 import Pagination from "../../components/Pagination";
@@ -14,10 +13,15 @@ interface DocsPageProps {
   title: string;
   description?: string;
   date?: string;
-  content: ReactNode;
+  /** SSR'd MDX content HTML — rendered as its own root so client hydration
+   * (separate island root) matches useId-based ids. */
+  content: string;
   tocs: TocItem[];
   filePath: string;
   repoUrl?: string;
+  /** Build-time slug keying into the bundled mdxModules manifest (client.ts). */
+  mdxSlug?: string;
+  /** Dev-only pre-compiled source for the legacy MDXRemote eval path. */
   compiledSource?: string;
 }
 
@@ -30,6 +34,7 @@ export default function DocsPage({
   tocs,
   filePath,
   repoUrl,
+  mdxSlug,
   compiledSource,
 }: DocsPageProps) {
   const pathname = slug.join("/");
@@ -60,7 +65,11 @@ export default function DocsPage({
               {description && (
                 <p className="text-muted-foreground -mt-4 text-[16.5px]">{description}</p>
               )}
-              <div id="mdx-content-island">{content}</div>
+              <div
+                id="mdx-content-island"
+                data-mdx-slug={mdxSlug}
+                dangerouslySetInnerHTML={{ __html: content }}
+              />
               {compiledSource && (
                 <script
                   id="mdx-compiled-source"

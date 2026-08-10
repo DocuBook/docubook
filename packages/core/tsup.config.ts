@@ -4,9 +4,8 @@ export default defineConfig({
   entry: [
     "src/index.ts",
     "src/utils.ts",
-    // Runtime MDX compilation entries (were @docubook/mdx-remote subpaths)
-    "src/mdx-remote/rsc.ts",
-    "src/mdx-remote/serialize.ts",
+    // Runtime MDX compilation entry (subpath @docubook/core/serialize)
+    "src/mdx-compiler/serialize.ts",
   ],
   format: "esm",
   target: "node20",
