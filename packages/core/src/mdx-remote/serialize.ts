@@ -1,3 +1,4 @@
+// MPL-2.0 — derived from next-mdx-remote (IBM). See LICENSE-MPL-2.0.
 import { compile } from "@mdx-js/mdx";
 import { VFile } from "vfile";
 import { matter } from "vfile-matter";

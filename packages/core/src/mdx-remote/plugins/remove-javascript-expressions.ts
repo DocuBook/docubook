@@ -1,3 +1,4 @@
+// MPL-2.0 — derived from next-mdx-remote (IBM). See LICENSE-MPL-2.0.
 import { visit, SKIP } from "unist-util-visit";
 import type { Node } from "unist";
 

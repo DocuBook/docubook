@@ -15,7 +15,7 @@ raw MDX string
            │ strippedContent
            ▼
 ┌─────────────────────────────┐
-│ PARSE   (compile.ts)        │  @docubook/mdx-remote → compileMDX()
+│ PARSE   (compile.ts)        │  /mdx-remote → compileMDX()
 │                             │  remark:  GFM, handleCodeExpandable
 │                             │  rehype:  preProcess → mermaid → codeTitles
 │                             │           → expandable → prism → slug

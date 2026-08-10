@@ -1,10 +1,11 @@
+// MPL-2.0 — derived from next-mdx-remote (IBM). See LICENSE-MPL-2.0.
 import type { SerializeOptions, SerializeResult } from "./serialize.js";
 
 /** Shape returned by `serialize()` — ready to pass to `<MDXRemote>`. */
 export type MDXRemoteSerializeResult = SerializeResult;
 
 /** Options for `compileMDX` (RSC path). */
-export type CompileMDXOptions<Frontmatter = Record<string, unknown>> = {
+export type CompileMDXOptions = {
   source: string;
   options?: SerializeOptions;
   components?: Record<string, React.ComponentType<any>>;

@@ -78,9 +78,12 @@ importers:
       "@11ty/gray-matter":
         specifier: ^3.0.0
         version: 3.0.0
-      "@docubook/mdx-remote":
-        specifier: workspace:^
-        version: link:../mdx-remote
+      "@mdx-js/mdx":
+        specifier: ^3.0.1
+        version: 3.1.1
+      "@mdx-js/react":
+        specifier: ^3.0.1
+        version: 3.1.1(@types/react@19.2.17)(react@19.2.7)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -102,9 +105,18 @@ importers:
       tailwind-merge:
         specifier: ^3.6.0
         version: 3.6.0
+      unist-util-remove:
+        specifier: ^4.0.0
+        version: 4.0.0
       unist-util-visit:
         specifier: ^5.1.0
         version: 5.1.0
+      vfile:
+        specifier: ^6.0.1
+        version: 6.0.3
+      vfile-matter:
+        specifier: ^5.0.0
+        version: 5.0.1
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -118,6 +130,9 @@ importers:
       "@types/unist":
         specifier: ^3.0.3
         version: 3.0.3
+      react:
+        specifier: 19.2.7
+        version: 19.2.7
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(typescript@5.9.3)(yaml@2.9.0)
@@ -258,49 +273,6 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
-
-  packages/mdx-remote:
-    dependencies:
-      "@mdx-js/mdx":
-        specifier: ^3.0.1
-        version: 3.1.1
-      "@mdx-js/react":
-        specifier: ^3.0.1
-        version: 3.1.1(@types/react@19.2.17)(react@19.2.7)
-      unist-util-remove:
-        specifier: ^4.0.0
-        version: 4.0.0
-      unist-util-visit:
-        specifier: ^5.1.0
-        version: 5.1.0
-      vfile:
-        specifier: ^6.0.1
-        version: 6.0.3
-      vfile-matter:
-        specifier: ^5.0.0
-        version: 5.0.1
-    devDependencies:
-      "@types/node":
-        specifier: ^20.0.0
-        version: 20.19.43
-      "@types/react":
-        specifier: 19.2.17
-        version: 19.2.17
-      "@types/unist":
-        specifier: ^3.0.3
-        version: 3.0.3
-      react:
-        specifier: 19.2.7
-        version: 19.2.7
-      tsup:
-        specifier: ^8.5.1
-        version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(typescript@5.9.3)(yaml@2.9.0)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-      unified:
-        specifier: ^11.0.0
-        version: 11.0.5
 
   packages/runtime:
     devDependencies:

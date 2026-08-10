@@ -2,7 +2,6 @@
 "@docubook/core": major
 "@docubook/flame": major
 "@docubook/mdx-content": major
-"@docubook/mdx-remote": major
 "@docubook/runt": major
 "@docubook/themes-colors": major
 "@docubook/ui-react": major
@@ -15,6 +14,17 @@ All DocuBook packages now share a single version and are released in lockstep
 package bumps every package to the same version.
 
 This major release also ships breaking changes:
+
+- **`@docubook/mdx-remote` merged into `@docubook/core`.** The former
+  `@docubook/mdx-remote` package (fork of `next-mdx-remote`, MPL-2.0) no
+  longer exists as a separate workspace package — its runtime MDX compilation
+  machinery (`compileMDX`, `serialize`, `MDXRemote`, security remark plugins)
+  now lives in `@docubook/core`. `@docubook/mdx-remote` had a single consumer
+  (`@docubook/core/src/compile.ts`) and lockstep versioning made independent
+  versioning moot. Migration: replace `@docubook/mdx-remote` imports with
+  `@docubook/core` (`/rsc` and `/serialize` subpath exports are preserved).
+  The package is deprecated on npm; `@docubook/core` keeps the MPL-2.0
+  license for the derived files (`LICENSE-MPL-2.0`).
 
 - Aligned all package versions to one shared number (`4.0.0`); individual
   package versions no longer diverge.

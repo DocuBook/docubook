@@ -1,3 +1,4 @@
+// MPL-2.0 — derived from next-mdx-remote (IBM). See LICENSE-MPL-2.0.
 import React from "react";
 import * as jsxRuntime from "react/jsx-runtime";
 import * as jsxDevRuntime from "react/jsx-dev-runtime";
@@ -14,7 +15,7 @@ export async function compileMDX<Frontmatter = Record<string, unknown>>({
   source,
   options,
   components = {},
-}: CompileMDXOptions<Frontmatter>): Promise<CompileMDXResult<Frontmatter>> {
+}: CompileMDXOptions): Promise<CompileMDXResult<Frontmatter>> {
   const { compiledSource, frontmatter, scope } = await serialize(
     source,
     { ...(options ?? {}), parseFrontmatter: options?.parseFrontmatter ?? false },
@@ -44,9 +45,7 @@ export async function compileMDX<Frontmatter = Record<string, unknown>>({
 /**
  * Server Component that compiles & renders MDX inline.
  */
-export async function MDXRemote<Frontmatter = Record<string, unknown>>(
-  props: CompileMDXOptions<Frontmatter>
-): Promise<React.ReactElement> {
+export async function MDXRemote(props: CompileMDXOptions): Promise<React.ReactElement> {
   const { content } = await compileMDX(props);
   return content;
 }

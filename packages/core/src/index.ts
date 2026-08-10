@@ -19,6 +19,17 @@ export {
   sluggify,
 } from "./extract";
 export type { ParseMdxOptions } from "./compile";
+// Runtime MDX compilation (was @docubook/mdx-remote/rsc) — compileMDX for
+// build-time/RSC rendering; subpath exports @docubook/core/rsc and
+// @docubook/core/serialize mirror the former @docubook/mdx-remote entries.
+export { compileMDX } from "./mdx-remote/rsc";
+export type { MDXRemoteProps } from "./mdx-remote/index";
+export type {
+  MDXRemoteSerializeResult,
+  SerializeOptions,
+  SerializeResult,
+} from "./mdx-remote/serialize";
+export type { CompileMDXOptions, CompileMDXResult } from "./mdx-remote/types";
 export {
   readMdxFileBySlug,
   parseMdxFile,
