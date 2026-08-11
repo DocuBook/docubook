@@ -5,46 +5,45 @@ description: A component used to create collapsible content that can be hidden a
 
 ## Basic Usage
 
-```plaintext
-<Accordion title="Click to expand">
-    This is a simple accordion component that can be toggled by clicking the header. The content can include any valid React nodes, including text, components, and markdown.
-</Accordion>
+```md
+:::accordion{title="Click to expand"}
+This is a simple accordion component that can be toggled by clicking the header. The content can include any valid React nodes, including text, components, and markdown.
+:::
 ```
 
 Render as :
 
-<Accordion title="Click to expand">
-  This is a simple accordion component that can be toggled by clicking the header. The content can
-  include any valid React nodes, including text, components, and markdown.
-</Accordion>
+:::accordion{title="Click to expand"}
+This is a simple accordion component that can be toggled by clicking the header. The content can
+include any valid React nodes, including text, components, and markdown.
+:::
 
 ## With Icon
 
-````plaintext
-<Accordion title="Code Block" icon="Code">
-    ```javascript:main.js showLineNumbers {3-4}
-    function isRocketAboutToCrash() {
-        // Check if the rocket is stable
-        if (!isStable()) {
-            NoCrash(); // Prevent the crash
-        }
+```md
+:::accordion{title="Code Block" icon="Code"}
+javascript:main.js showLineNumbers {3-4}
+function isRocketAboutToCrash() {
+    // Check if the rocket is stable
+    if (!isStable()) {
+        NoCrash(); // Prevent the crash
     }
-    ```
-</Accordion>
-````
+}
+:::
+```
 
 Render as :
 
-<Accordion title="Code Block" icon="Code">
-    ```javascript:main.js showLineNumbers {3-4}
-    function isRocketAboutToCrash() {
-        // Check if the rocket is stable
-        if (!isStable()) {
-            NoCrash(); // Prevent the crash
-        }
+:::accordion{title="Code Block" icon="Code"}
+```javascript:main.js showLineNumbers {3-4}
+function isRocketAboutToCrash() {
+    // Check if the rocket is stable
+    if (!isStable()) {
+        NoCrash(); // Prevent the crash
     }
-    ```
-</Accordion>
+}
+```
+:::
 
 ## Props
 

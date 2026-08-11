@@ -1,0 +1,62 @@
+---
+title: Callout
+description: A component used to display different types of messages — tips, info, warnings, or success notifications.
+---
+
+## Preview
+
+:::tip{title="Custom title"}
+Callout content goes here.
+:::
+
+:::info
+This is a general note to convey information to the user.
+:::
+
+:::danger
+This is a danger alert to notify the user of a critical issue.
+:::
+
+:::warning
+This callout uses the default title and icon from its type.
+:::
+
+:::success
+This is a success message to inform the user of successful actions.
+:::
+
+## Usage
+
+Each callout variant is its own directive — the type comes from the name,
+so the only prop you may pass is `title` (optional):
+
+```md
+:::tip{title="Custom title"}
+Callout content goes here.
+:::
+
+:::info
+This is a general note to convey information to the user.
+:::
+
+:::danger
+This is a danger alert to notify the user of a critical issue.
+:::
+
+:::warning
+This callout uses the default title and icon from its type.
+:::
+
+:::success
+This is a success message to inform the user of successful actions.
+:::
+```
+
+## Props
+
+| Prop    | Type   | Default                          | Description                    |
+| ------- | ------ | -------------------------------- | ------------------------------ |
+| `title` | string | fallback to the callout label    | Sets the title of the callout. |
+
+The type is determined by the directive name: `:::tip`, `:::info`, `:::danger`,
+`:::warning`, `:::success`. Icons follow the type automatically.

@@ -2,7 +2,7 @@ import { createRoot, hydrateRoot } from "react-dom/client";
 import React from "react";
 import { MDXProvider } from "@mdx-js/react";
 import { MDXRemote } from "@docubook/core";
-import { createMdxComponents } from "@docubook/mdx-content";
+import { createMdxComponents } from "@docubook/markdown";
 import { mdxModules } from "./mdx-manifest";
 import Sidebar, { MobileBar } from "../components/Sidebar";
 import Toc from "../components/Toc";
@@ -100,7 +100,10 @@ function mountIslands() {
         }
       }
       const slug = el.dataset.mdxSlug;
-      const mod = slug ? mdxModules[slug] : undefined;
+      // The docs root (index.mdx) renders with an empty slug — `mdxSlug != null`
+      // keeps "" addressable (its module is stored under key ""), while a
+      // missing marker stays undefined and skips hydration.
+      const mod = slug != null ? mdxModules[slug] : undefined;
       if (!mod) return null;
       return React.createElement(
         MDXProvider,

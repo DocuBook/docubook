@@ -45,7 +45,7 @@ jobs:
           build-args: |
             FLAME_VERSION=${{ steps.version.outputs.version }}
           tags: |
-            ghcr.io/docubook/flame-builder:${{ steps.version.outputs.version }}
-            ghcr.io/docubook/flame-builder:${{ steps.version.outputs.major }}
-            ghcr.io/docubook/flame-builder:latest
+            ghcr.io/docubook/flame:${{ steps.version.outputs.version }}
+            ghcr.io/docubook/flame:${{ steps.version.outputs.major }}
+            ghcr.io/docubook/flame:latest
           push: true

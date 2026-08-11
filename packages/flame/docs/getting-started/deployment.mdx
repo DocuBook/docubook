@@ -71,22 +71,22 @@ These providers support clean URLs, but you must enable them explicitly.
 
 When `true`, Vercel strips `.html` from all URLs and responds with a `308` redirect for `/page.html` → `/page`.
 
-<Note type="info" title="DocuBook repository">
+:::info title="DocuBook repository"
   The `vercel.json` in the DocuBook repository already sets `"cleanUrls": true` — deployments of this
   documentation site need no extra configuration.
-</Note>
+:::
 
 Source: [Vercel — cleanUrls](https://vercel.com/docs/project-configuration/vercel-json#cleanurls)
 
-<Note type="info" title="Last updated dates on Vercel">
+:::info title="Last updated dates on Vercel"
   Vercel uses a shallow git clone (`--depth=1`) by default, which prevents Flame from
   reading the last modified date for each page via `git log`. Add the following environment
   variable in your Vercel project dashboard (Settings → Environment Variables):
+:::
 
-  | Key | Value |
-  | --- | ----- |
-  | `VERCEL_DEEP_CLONE` | `true` |
-</Note>
+| Key | Value |
+| --- | ----- |
+| `VERCEL_DEEP_CLONE` | `true` |
 
 ### Netlify
 
@@ -156,11 +156,11 @@ Heroku has no native static hosting — use the `heroku-community/static` buildp
 
 `clean_urls: true` configures nginx to serve `/page` from `/page.html`.
 
-<Note type="warning" title="Deprecated buildpack">
+:::warning title="Deprecated buildpack"
   Heroku has deprecated `heroku-buildpack-static` and no longer maintains it. It still works, but
   Heroku recommends the [nginx buildpack](https://github.com/heroku/heroku-buildpack-nginx) for new
   projects.
-</Note>
+:::
 
 Source: [Heroku — static buildpack](https://elements.heroku.com/buildpacks/heroku/heroku-buildpack-static)
 
@@ -191,7 +191,7 @@ flame deploy --docker
 ```
 
 Generates:
-- `Dockerfile` — multi-stage build using `ghcr.io/docubook/flame-builder:MAJOR`
+- `Dockerfile` — multi-stage build using `ghcr.io/docubook/flame:MAJOR`
 - `nginx.conf` — security headers, cache tiers, `try_files $uri $uri.html`
 - `.dockerignore` — optimized for build speed
 

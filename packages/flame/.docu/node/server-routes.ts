@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { resolve } from "node:path";
 import { readFileSync, statSync } from "node:fs";
 import React, { type ReactNode } from "react";
@@ -49,6 +49,16 @@ function createHtmlResponse(
   return htmlResponse(html, nonce, status, true);
 }
 
+// Dev-only memo: compileMdx per request is ~70ms; repeat navigations with
+// an unchanged file (same mtime) reuse the compiled result. The dev server
+// has no other per-page cache — without this every navigation re-parses MDX.
+// ponytail: unbounded Map is fine — docs sites have a handful of pages; cap
+// with an LRU only if a project exceeds thousands of routes.
+const docsCache = new Map<
+  string,
+  { mtimeMs: number; doc: NonNullable<Awaited<ReturnType<typeof getDocsForSlug>>> }
+>();
+
 async function getDocsForSlug(
   slug: string,
   state: ServerState
@@ -92,6 +102,12 @@ async function getDocsForSlug(
 
   const relPath = filePath.replace(PROJECT_ROOT + "/", "");
 
+  const mtimeMs = (await stat(filePath)).mtimeMs;
+  const cached = docsCache.get(relPath);
+  if (cached && cached.mtimeMs === mtimeMs) {
+    return cached.doc;
+  }
+
   let content = raw;
   if (state.builder) {
     const transformed = await state.builder.runOnLoad(relPath, content);
@@ -113,7 +129,7 @@ async function getDocsForSlug(
     });
   }
 
-  return {
+  const doc = {
     content: result.content,
     compiledSource: result.compiledSource,
     frontmatter,
@@ -121,6 +137,8 @@ async function getDocsForSlug(
     filePath: relPath,
     resolvedContent: content,
   };
+  docsCache.set(relPath, { mtimeMs, doc });
+  return doc;
 }
 
 async function renderDocsServerPage(

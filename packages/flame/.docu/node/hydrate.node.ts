@@ -245,11 +245,11 @@ export async function buildClientBundle(
               if (args.namespace === "lucide-virt") {
                 return { path: getLucideRealEntry(), namespace: "file" };
               }
-              // mdx-content Icon.tsx uses namespace import for arbitrary
+              // markdown Icon.tsx uses namespace import for arbitrary
               // user-provided icon names in MDX — keep full barrel there.
               if (args.importer) {
                 const normalized = normalizeImporterPath(args.importer);
-                if (normalized.includes("/mdx-content/dist/")) {
+                if (normalized.includes("/markdown/dist/")) {
                   return { path: getLucideRealEntry(), namespace: "file" };
                 }
               }
@@ -327,7 +327,11 @@ export async function buildClientBundle(
               const slug = args.path.slice("mdx-module:".length);
               const contents = mdxSources[slug];
               if (contents == null) {
-                return { errors: [{ text: `unknown mdx module: ${slug}` }] };
+                return {
+                  errors: [{ text: `unknown mdx module: ${slug}` }],
+                  contents: "",
+                  loader: "js",
+                };
               }
               return { contents, loader: "js" };
             });
@@ -336,7 +340,11 @@ export async function buildClientBundle(
               namespace: "mdx-manifest",
             }));
             build.onLoad({ filter: /.*/, namespace: "mdx-manifest" }, () => {
-              const slugs = Object.keys(mdxSources);
+              // Sort keys: the prePass fills mdxSources via Promise.all, so
+              // insertion order = resolution order (non-deterministic across
+              // processes). Stable key order keeps the bundle hash stable so
+              // the build cache (`assetsChanged`) actually hits.
+              const slugs = Object.keys(mdxSources).sort();
               const imports = slugs
                 .map((slug, i) => {
                   const key = slug.replace(/["\\]/g, "");

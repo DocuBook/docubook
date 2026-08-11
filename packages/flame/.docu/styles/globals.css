@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "@docubook/mdx-content/styles.css";
+@import "@docubook/markdown/styles.css";
 
 @plugin "daisyui" {
   themes:

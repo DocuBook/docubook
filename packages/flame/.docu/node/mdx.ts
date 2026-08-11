@@ -9,7 +9,7 @@ import {
   createDefaultRemarkPlugins,
   MDXRemote,
 } from "@docubook/core";
-import { createMdxComponents } from "@docubook/mdx-content";
+import { createMdxComponents } from "@docubook/markdown";
 import { getGitLastModified, getGitLastModifiedBatch, getFilesystemMtime } from "./git";
 
 /**
@@ -178,8 +178,11 @@ async function serializeWithDocPlugins(
   const finalRemark = [...defaultRemark, remarkMdxJsxDocsHtmlLinks, ...(opts.remarkPlugins ?? [])];
   const finalRehype = [...defaultRehype, rehypeDocsHtmlLinks, ...(opts.rehypePlugins ?? [])];
 
+  // v2 contract: plain markdown + directives only — authored JSX tags are
+  // not parsed (dropped, content kept as text).
   return serialize(strippedContent, {
     outputFormat: opts.outputFormat,
+    format: "md",
     mdxOptions: {
       rehypePlugins: finalRehype,
       remarkPlugins: finalRemark,

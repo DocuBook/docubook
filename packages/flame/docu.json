@@ -15,9 +15,9 @@
   },
   "home": {
     "hero": {
-      "tagline": "Runtime-agnostic · React + MDX",
-      "headline": "Fast as Flame 🔥",
-      "description": "The docs framework that runs on Bun, Node.js, and Deno. Powered by Bun's blazing-fast toolchain — generating pure static docs you can deploy anywhere.",
+      "tagline": "DocuBook Flame - v2.0.0-alpha",
+      "headline": "Compile markdown. Deploy anything.",
+      "description": "No runtime, no server to run, no lock-in. One markdown format, readable by humans and agents alike, compiled to flat static HTML — deploy anywhere.",
       "actions": [
         {
           "text": "Get Started",
@@ -131,12 +131,8 @@
           "href": "/configuration"
         },
         {
-          "title": "Runtime Comparison",
-          "href": "/runtime-comparison"
-        },
-        {
-          "title": "Format text",
-          "href": "/format-text"
+          "title": "Formatting",
+          "href": "/formatting"
         },
         {
           "title": "Frontmatter",
@@ -190,16 +186,16 @@
           "href": "/accordion-group"
         },
         {
-          "title": "Button",
-          "href": "/button"
-        },
-        {
           "title": "Card",
           "href": "/card"
         },
         {
           "title": "Card Group",
           "href": "/card-group"
+        },
+        {
+          "title": "Callout",
+          "href": "/callout"
         },
         {
           "title": "Code Block",
@@ -214,24 +210,12 @@
           "href": "/image"
         },
         {
-          "title": "Keyboard",
-          "href": "/keyboard"
-        },
-        {
           "title": "Link",
           "href": "/link"
         },
         {
           "title": "Mermaid",
           "href": "/mermaid"
-        },
-        {
-          "title": "Note",
-          "href": "/note"
-        },
-        {
-          "title": "Release Note",
-          "href": "/release-note"
         },
         {
           "title": "Stepper",
@@ -252,10 +236,6 @@
         {
           "title": "Youtube",
           "href": "/youtube"
-        },
-        {
-          "title": "Custom",
-          "href": "/custom"
         }
       ]
     }

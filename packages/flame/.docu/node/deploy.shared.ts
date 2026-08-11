@@ -171,7 +171,7 @@ async function writeDockerFiles() {
   if (!existsSync(join(dockerDir, "Dockerfile"))) {
     await writeFile(
       join(dockerDir, "Dockerfile"),
-      `FROM ghcr.io/docubook/flame-builder:${FLAME_MAJOR} AS builder
+      `FROM ghcr.io/docubook/flame:${FLAME_MAJOR} AS builder
 ENV NODE_ENV=production
 WORKDIR /app
 COPY . .

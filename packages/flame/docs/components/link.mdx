@@ -3,15 +3,15 @@ title: Link
 description: A component used to create links that can be used to navigate to other pages.
 ---
 
-In DocuBook, all links written in Markdown are automatically converted to their respective Next.js components. This allows for better optimization and performance in your application.
+In DocuBook, all links written in Markdown are automatically converted to their respective GFM (common markdown) components. This allows for better optimization and performance in your application.
 
 ## Links
 
-When you create a link in your Markdown, it is converted to the Next.js `Link` component. This enables client-side navigation and improves loading times. Here’s an example of how a Markdown link is transformed:
+When you create a link in your Markdown, it is converted to the GFM (common markdown) `Link` component. This enables client-side navigation and improves loading times. Here’s an example of how a Markdown link is transformed:
 
 ### Markdown
 
-```markdown
+```md
 [Visit OpenAI](https://www.openai.com)
 ```
 
@@ -19,15 +19,13 @@ When you create a link in your Markdown, it is converted to the Next.js `Link` c
 
 The above Markdown is converted to:
 
-```jsx
-<Link href="https://www.openai.com" target="_blank" rel="noopener noreferrer">
-  Visit OpenAI
-</Link>
+```md
+[Visit OpenAI](https://www.openai.com)
 ```
 
 ## Benefits
 
-- **Performance Optimization**: Automatic conversion to Next.js components ensures optimized loading of links.
-- **Improved User Experience**: Client-side navigation with Next.js `Link` improves the browsing experience.
+- **Performance Optimization**: Automatic conversion to GFM (common markdown) components ensures optimized loading of links.
+- **Improved User Experience**: Client-side navigation with GFM (common markdown) `Link` improves the browsing experience.
 
 By utilizing these features, you can ensure that your documentation is not only visually appealing but also performs efficiently.

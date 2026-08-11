@@ -30,6 +30,15 @@ export type SerializeOptions = {
    */
   outputFormat?: "function-body" | "program";
   /**
+   * MDX input format.
+   * - `"mdx"` (default): JSX tags are parsed and resolve via the components map.
+   * - `"md"`: plain markdown — authored JSX tags are NOT parsed (dropped,
+   *   content kept as text). Markdown directives (`:::`/`::`/`::::`) still
+   *   work; this is the v2 authoring contract (no JSX tags).
+   * @default "mdx"
+   */
+  format?: "mdx" | "md";
+  /**
    * Strip JavaScript expressions from MDX (default: true).
    * When true, removes all `{expression}` and JSX attribute expression nodes
    * before compilation. When false, expressions are preserved but a
@@ -49,7 +58,8 @@ function getCompileOptions(
   mdxOptions: SerializeOptions["mdxOptions"] = {},
   rsc = false,
   blockJS = true,
-  outputFormat: NonNullable<SerializeOptions["outputFormat"]> = "function-body"
+  outputFormat: NonNullable<SerializeOptions["outputFormat"]> = "function-body",
+  format: NonNullable<SerializeOptions["format"]> = "mdx"
 ) {
   const remarkPlugins = [
     ...(mdxOptions?.remarkPlugins ?? []),
@@ -63,6 +73,7 @@ function getCompileOptions(
     ...mdxOptions,
     remarkPlugins,
     rehypePlugins: mdxOptions?.rehypePlugins ?? [],
+    format,
     outputFormat,
     providerImportSource: rsc ? undefined : "@mdx-js/react",
     development: process.env.NODE_ENV !== "production",
@@ -80,6 +91,7 @@ export async function serialize(
     parseFrontmatter = false,
     blockJS = true,
     outputFormat = "function-body",
+    format = "mdx",
   }: SerializeOptions = {},
   rsc = false
 ): Promise<SerializeResult> {
@@ -92,7 +104,7 @@ export async function serialize(
   let compiledSource: string;
   try {
     compiledSource = String(
-      await compile(vfile, getCompileOptions(mdxOptions, rsc, blockJS, outputFormat))
+      await compile(vfile, getCompileOptions(mdxOptions, rsc, blockJS, outputFormat, format))
     );
   } catch (error: any) {
     throw createFormattedMDXError(error, String(vfile));

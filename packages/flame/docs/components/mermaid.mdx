@@ -128,17 +128,6 @@ Every rendered diagram gets a GFM-style control cluster in the bottom-right corn
 
 The diagram container is keyboard accessible: focus it with <kbd>Tab</kbd>, then press <kbd>Enter</kbd> to open the fullscreen view. Inside fullscreen, pan with arrow keys, zoom with <kbd>+</kbd> / <kbd>-</kbd>, and reset with <kbd>0</kbd>.
 
-## Props
-
-When using the prop-based syntax (`<Mermaid chart="...">`) instead of fenced code blocks:
-
-|    Prop     |  Type   | Default |                   Description                   |
-| ----------- | ------- | ------- | ----------------------------------------------- |
-| `chart`     | string  | —       | Mermaid diagram definition (required)           |
-| `id`        | string  | —       | Custom DOM id (auto-generated if omitted)       |
-| `className` | string  | —       | Additional CSS class on the container element   |
-
-
 ## Output Markdown
 
 Primary syntax — fenced code block:
@@ -152,13 +141,6 @@ graph TD
   D --> B
 ```
 ````
-
-Escape hatch — prop syntax (for programmatic use):
-
-```markdown
-<Mermaid chart="graph TD&#10;  A[Start] --> B{Is it working?}">
-</Mermaid>
-```
 
 ## Notes
 

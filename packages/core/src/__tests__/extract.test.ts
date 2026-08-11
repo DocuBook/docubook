@@ -56,12 +56,6 @@ describe("extractTocsFromRawMdx", () => {
     expect(tocs[0].text).toBe("Outside");
   });
 
-  it("extracts Release component versions", () => {
-    const mdx = `<Release version="1.2.0">\nContent\n</Release>`;
-    const tocs = extractTocsFromRawMdx(mdx);
-    expect(tocs).toEqual([{ level: 2, text: "v1.2.0", href: "#1.2.0" }]);
-  });
-
   it("returns empty array for content without headings", () => {
     const tocs = extractTocsFromRawMdx("Just some text");
     expect(tocs).toEqual([]);

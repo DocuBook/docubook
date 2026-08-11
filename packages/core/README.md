@@ -10,13 +10,13 @@ raw MDX string
      ▼
 ┌─────────────────────────────┐
 │ EXTRACT  (extract.ts)       │  gray-matter → frontmatter
-│                             │  regex line-scan → TOC (headings, <Release>)
+│                             │  regex line-scan → TOC (headings)
 └──────────┬──────────────────┘
            │ strippedContent
            ▼
 ┌─────────────────────────────┐
 │ COMPILE  (compile.ts)       │  serialize() → MDX compiled output
-│                             │  remark:  GFM, handleCodeExpandable
+│                             │  remark:  GFM, expandable, directives
 │                             │  rehype:  preProcess → mermaid → codeTitles
 │                             │           → expandable → prism → slug
 │                             │           → autolink-headings → postProcess
@@ -31,6 +31,33 @@ remote compilation (no database/CMS fetching), so compilation is a pure
 build-time/transform step: `serialize()` turns MDX into a string
 (`function-body` for `<MDXRemote>`, `program` for static hydration modules).
 
+## Markdown directives
+
+The default remark chain parses markdown directives (via `remark-directive`)
+and converts them to MDX components (`remarkDirectiveToMdx`) — so interactive
+components can be authored with markdown-native syntax instead of JSX tags:
+
+```md
+:::card{title="Hi" horizontal}
+Content here
+:::
+
+::::tabs
+:::tab{title="One"}
+A
+:::
+:::tab{title="Two"}
+B
+:::
+::::
+
+::youtube{videoId="abc123"}
+```
+
+Directive names are PascalCased to match the components map
+(`:::file-tree` → `FileTree`); bare attributes (`{horizontal}`) become
+boolean props. Nested containers need a longer outer fence (`::::`).
+
 ## API
 
 ### Runtime functions
@@ -44,7 +71,8 @@ build-time/transform step: `serialize()` turns MDX into a string
 | `extractTocsFromRawMdx` | Extract headings for TOC generation | `TocItem[]` |
 | `sluggify` | Convert heading text into URL-safe slug | `string` |
 | `createDefaultRehypePlugins` | Default rehype plugin stack | `Pluggable[]` |
-| `createDefaultRemarkPlugins` | Default remark plugin stack | `Pluggable[]` |
+| `createDefaultRemarkPlugins` | Default remark stack (GFM, expandable, directives) | `Pluggable[]` |
+| `remarkDirectiveToMdx` | Convert `:::name{attrs}` directives into MDX component elements | transformer |
 | `preProcess` / `postProcess` | Code-block metadata pre/post processing | transformer |
 | `handleCodeTitles` | Move code title metadata to `<pre>` attributes | transformer |
 | `handleCodeExpandableRemark` / `handleCodeExpandable` | Expandable code block remark/rehype plugins | transformer |
@@ -109,7 +137,7 @@ author — app-level users should not redeclare them.
 | -------- | -------- |
 | Frontmatter | `@11ty/gray-matter` |
 | MDX runtime | `@mdx-js/mdx`, `@mdx-js/react`, `vfile`, `vfile-matter`, `unist-util-remove` |
-| Remark plugins | `remark-gfm`, `handleCodeExpandable` (internal) |
+| Remark plugins | `remark-gfm`, `remark-directive`, `handleCodeExpandable` (internal) |
 | Rehype plugins | `rehype-autolink-headings`, `rehype-code-titles`, `rehype-prism-plus`, `rehype-slug` (internal code plugins) |
 | AST traversal | `unist-util-visit` |
 | Utilities | `clsx`, `tailwind-merge` |

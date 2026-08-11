@@ -7,27 +7,28 @@ The `Tabs` component allows you to organize content into multiple sections, enab
 
 ## Preview
 
-<Tabs className="pt-5 pb-1">
-  <Tab title="Java">
-    ```java:HelloWorld.java
-    // HelloWorld.java
-    public class HelloWorld {
-        public static void main(String[] args) {
-            System.out.println("Hello, World!");
-        }
+::::tabs{className="pt-5 pb-1"}
+:::tab{title="Java"}
+```java:HelloWorld.java
+// HelloWorld.java
+public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
     }
-    ```
-  </Tab>
-  <Tab title="TypeScript">
-    ```typescript:helloWorld.ts
-    // helloWorld.ts
-    function helloWorld(): void {
-        console.log("Hello, World!");
-    }
-    helloWorld();
-    ```
-  </Tab>
-</Tabs>
+}
+```
+:::
+
+:::tab{title="TypeScript"}
+```typescript:helloWorld.ts
+// helloWorld.ts
+function helloWorld(): void {
+    console.log("Hello, World!");
+}
+helloWorld();
+```
+:::
+::::
 
 ## Props
 
@@ -37,26 +38,27 @@ The `Tabs` component allows you to organize content into multiple sections, enab
 
 ## Output Markdown
 
-````markdown:mdx
-<Tabs className="pt-5 pb-1">
-  <Tab title="Java">
-    ```java:HelloWorld.java
-    // HelloWorld.java
-    public class HelloWorld {
-        public static void main(String[] args) {
-            System.out.println("Hello, World!");
-        }
+````md
+::::tabs{className="pt-5 pb-1"}
+:::tab{title="Java"}
+```java:HelloWorld.java
+// HelloWorld.java
+public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
     }
-    ```
-  </Tab>
-  <Tab title="TypeScript">
-    ```typescript:helloWorld.ts
-    // helloWorld.ts
-    function helloWorld(): void {
-        console.log("Hello, World!");
-    }
-    helloWorld();
-    ```
-  </Tab>
-</Tabs>
+}
+```
+:::
+
+:::tab{title="TypeScript"}
+```typescript:helloWorld.ts
+// helloWorld.ts
+function helloWorld(): void {
+    console.log("Hello, World!");
+}
+helloWorld();
+```
+:::
+::::
 ````

@@ -76,10 +76,10 @@ try {
 const hmrClients = new Set<ReadableStreamDefaultController>();
 
 const require = createRequire(import.meta.url);
-/** Locate the installed @docubook/mdx-content source dir (workspace link), if any. */
+/** Locate the installed @docubook/markdown source dir (workspace link), if any. */
 function resolveMdxContentSrc(): string | null {
   try {
-    const pkgDir = dirname(require.resolve("@docubook/mdx-content/package.json"));
+    const pkgDir = dirname(require.resolve("@docubook/markdown/package.json"));
     const src = join(pkgDir, "src");
     return existsSync(src) ? src : null;
   } catch {
@@ -103,7 +103,7 @@ const watcher = watch(DOCS_DIR, { recursive: true }, (_event, filename) => {
 });
 
 // Rebuild the client bundle when component sources change (e.g. the
-// @docubook/mdx-content workspace package) so interactive islands pick up
+// @docubook/markdown workspace package) so interactive islands pick up
 // edits, then reload connected clients. MDX edits are handled by the watcher
 // above — no rebuild needed, content recompiles per request.
 let srcHmrTimeout: ReturnType<typeof setTimeout> | null = null;

@@ -127,7 +127,7 @@ async function renderDocsPage(
       date: frontmatterField(frontmatter, "date") || undefined,
       // Render MDX content as its own root: client hydrates the island as a
       // separate root, so SSR must be root-relative too or useId-based ids
-      // (mdx-content components) mismatch during hydration.
+      // (mdx-compiler components) mismatch during hydration.
       content: renderToString(result.content),
       tocs: result.tocs,
       filePath,

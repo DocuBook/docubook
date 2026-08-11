@@ -8,27 +8,27 @@ can be hidden first and then revealed when clicked.
 
 ## Usage
 
-<Accordions>
-<Accordion title="Basic Usage">
-    example of using regular paragraph content inside the accordion component
-</Accordion>
+::::accordions
+:::accordion{title="Basic Usage"}
+example of using regular paragraph content inside the accordion component
+:::
 
-<Accordion title="With icon props" icon="MousePointerClick">
-  This accordion includes a [Lucide Icon](https://lucide.dev/icons/) because the `icon` prop is
-  provided.
-</Accordion>
+:::accordion{title="With icon props" icon="MousePointerClick"}
+This accordion includes a [Lucide Icon](https://lucide.dev/icons/) because the `icon` prop is
+provided.
+:::
 
-<Accordion title="With Code Block">
-    You can put other components inside Accordions.
-```jsx:helloword.jsx
+:::accordion{title="With Code Block"}
+You can put other components inside Accordions.
+```md
 class HelloWorld {
 public static void main(String[] args) {
         System.out.println("Hello, World!");
         }
 }
 ```
-</Accordion>
-</Accordions>
+:::
+::::
 
 ## Props
 
@@ -40,25 +40,22 @@ public static void main(String[] args) {
 
 ## Output Markdown
 
-````plaintext
-<Accordions>
-<Accordion title="Basic Usage">
-    This accordion includes a [Lucide Icon](https://lucide.dev/icons/) because the `icon` prop is provided.
-</Accordion>
-
-<Accordion title="With icon props" icon="MousePointerClick">
-    This accordion includes a Lucide icon because the `icon` prop is provided.
-</Accordion>
-
-<Accordion title="With Code Block">
-    You can put other components inside Accordions.
+```md
+::::accordions
+:::accordion{title="Basic Usage"}
+This accordion includes a [Lucide Icon](https://lucide.dev/icons/) because the `icon` prop is provided.
+:::
+:::accordion{title="With icon props" icon="MousePointerClick"}
+This accordion includes a Lucide icon because the `icon` prop is provided.
+:::
+:::accordion{title="With Code Block"}
+You can put other components inside Accordions.
 ```jsx:helloword.jsx
 class HelloWorld {
 public static void main(String[] args) {
         System.out.println("Hello, World!");
         }
 }
+:::
+::::
 ```
-</Accordion>
-</Accordions>
-````
