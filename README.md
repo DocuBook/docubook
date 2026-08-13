@@ -13,45 +13,20 @@
 
 ## Architecture
 
-DocuBook is a **static site generator for documentation**. The core pipeline compiles MDX into flat `.html` files. The runtime (Bun, Node.js, Deno) is only needed for the build toolchain and local dev server; the final output is pure static HTML + assets — deploy to any CDN or static host.
+DocuBook is a **static site generator for documentation**. Flame compiles markdown into flat `.html` files — pure static output, no server required. Bun, Node.js, or Deno only powers the build toolchain and dev server.
 
 ```mermaid
-flowchart TD
-    A[MDX Content - *.mdx]
-    B["@docubook/core — compile pipeline, rehype/remark plugins"]
-    C["@docubook/mdx-content — portable UI components"]
-    D["@docubook/flame - Frameworks Docs"]
-    RUNT["@docubook/runt — Runtime adapters"]
-    D1["Bun + React - ready to use"]
-    D2["Node + React - ready to use"]
-    D3["Deno + React - ready to use"]
-    E[Browser - *.html]
+sequenceDiagram
+    participant Author as 📝 Author
+    participant Flame as ⚙️ Flame
+    participant Host as 📦 Static host
+    participant Browser as 🌐 Browser
 
-    A -->  B --> C --> D
-    D --> D1 --> E
-    D --> RUNT --> D2 --> E
-    D --> RUNT --> D3 --> E
+    Author->>Flame: writes markdown (.md)
+    Flame->>Host: compiles to flat .html
+    Browser->>Host: requests page
+    Host-->>Browser: serves static HTML
 ```
-
-## Packages
-
-|                                     Package                                      |                                                                    Description                                                                    |
-| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **[@docubook/core](https://www.npmjs.com/package/@docubook/core)**               | Shared MDX compile pipeline, rehype/remark plugins, and markdown utilities.                                                                       |
-| **[@docubook/mdx-content](https://www.npmjs.com/package/@docubook/mdx-content)** | Portable MDX components (Mermaid, CodeBlock, Tabs, etc.) with framework-agnostic adapters.                                                        |
-| **[@docubook/flame](https://www.npmjs.com/package/@docubook/flame)**             | The runtime layer — a React + MDX framework that bridges compiled content to the browser. Runs on Bun, Node.js, and Deno.                         |
-| **[@docubook/runt](https://www.npmjs.com/package/@docubook/runt)**               | Runtime HTTP server adapters (Bun, Node.js, Deno) behind a single `RuntimeAdapter` interface.                                                     |
-| **[@docubook/mdx-remote](https://www.npmjs.com/package/@docubook/mdx-remote)**   | Runtime MDX compilation and rendering — a rewrite of next-mdx-remote for DocuBook.                                                                |
-
-## Runtimes
-
-The runtime is only needed for the build toolchain and local dev server. The output is flat static HTML — deploy to any CDN or static host (Vercel, Netlify, Cloudflare Pages, GitHub Pages, S3, etc.).
-
-| Runtime  | UI Library |      Status      |                    Recipe                    |
-| -------- | ---------- | ---------------- | -------------------------------------------- |
-| **Bun**  | React      | ✅ Available      | `bun add @docubook/flame`                    |
-| **Node** | React      | ✅ Available      | `npm install @docubook/flame`                |
-| **Deno** | React      | ✅ Available      | `deno run -A npm:@docubook/flame init`       |
 
 ## Prerequisites
 
@@ -90,10 +65,15 @@ deno --version
 
 ## Installation
 
-### Bun + React
+Create the project directory once, then follow the flow for your runtime:
 
 ```bash
 mkdir my-docs && cd my-docs
+```
+
+### Bun + React
+
+```bash
 bun add @docubook/flame
 bunx flame init
 bun run dev
@@ -102,7 +82,6 @@ bun run dev
 ### Node.js + React (Node >= 20.11)
 
 ```bash
-mkdir my-docs && cd my-docs
 npm install @docubook/flame
 npx flame init
 npm run dev
@@ -111,7 +90,6 @@ npm run dev
 ### Deno + React
 
 ```bash
-mkdir my-docs && cd my-docs
 deno run -A npm:@docubook/flame init
 deno task dev
 ```
