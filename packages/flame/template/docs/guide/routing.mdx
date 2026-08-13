@@ -1,9 +1,9 @@
 ---
 title: Routing
-description: How Flame maps MDX files to static HTML pages.
+description: How Flame maps markdown files to static pages.
 ---
 
-Flame uses **filesystem-based routing** — every `.mdx` file in `docs/` compiles to a matching `.html` path:
+Flame uses **filesystem-based routing** — every markdown file in `docs/` compiles to a matching `.html` path:
 
 ```
 docs/
@@ -16,10 +16,12 @@ docs/
     └── routing.mdx                 → /docs/guide/routing.html
 ```
 
-## Auto-routing
+## Add a page
 
-When `routes: []` in `docu.json`, Flame automatically scans `docs/` at build time and generates the sidebar from the directory structure.
+1. Create `docs/guide/faq.mdx`
+2. Add frontmatter: `title` and `description`
+3. Write markdown — the page appears in the sidebar and search automatically
 
-## Manual routes
+## Sidebar order
 
-Define `routes` in `docu.json` for a custom sidebar. Add `context` groups with icons for multi-section documentation. See this project's `docu.json` for examples.
+When `routes: []`, Flame scans `docs/` and builds the sidebar from the directory structure. Define `routes` in `docu.json` for a custom order and grouped sections — see this project's `docu.json` for a working example.

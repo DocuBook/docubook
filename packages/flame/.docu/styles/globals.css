@@ -9,6 +9,15 @@
 @plugin "@tailwindcss/typography";
 @source "../../.docu/components";
 @source "../../.docu/pages";
+@source "../../../ui-react/src";
+
+/* daisyUI breadcrumbs underline every li child on hover (including plain
+   spans) — crumbs are not links, so strip the underline (and pointer cursor)
+   for non-anchor items; real anchors keep daisyUI's hover feedback. */
+.breadcrumbs > ul > li > :not(a):hover {
+  text-decoration-line: none;
+  cursor: default;
+}
 @source inline(
   "breadcrumbs collapse collapse-open collapse-close collapse-arrow collapse-plus collapse-title collapse-content"
 );

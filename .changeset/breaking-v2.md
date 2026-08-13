@@ -68,3 +68,56 @@
 
 - **refactor:** package directory renamed `@docubook/ui/react` →
   `@docubook/ui-react`; dropdown + shared type tweaks
+
+## 2.0.0-alpha.0 → 2.0.0-alpha.1
+
+Real changes shipped since `2.0.0-alpha.0`:
+
+### `@docubook/flame` — fix
+
+- **fix:** TOC anchor precision — the scroll observer, URL hash, and click
+  jumps now agree (single source of truth: CSS `scroll-margin`; manual
+  `scrollTo` for iOS Safari; container-offset formula on desktop; sub-pixel
+  rounding; `scrollend` listener; mobile-bar collapse). Anchor offsets reduced
+  to 64px mobile / 16px desktop; the hidden desktop TOC island no longer
+  hijacks the mobile URL hash
+- **fix:** 404 page now uses root-absolute asset URLs — typing a `noLink`
+  section path in the address bar renders a fully styled 404 instead of one
+  with broken CSS/JS
+- **fix:** daisyUI breadcrumb hover underline overridden for non-link crumbs
+  (`:not(a):hover` → `text-decoration: none`)
+- **feat:** pagination — inline-style components pill nav: ghost Previous (no title),
+  Next card with frontmatter description (ellipsized, visible from 640px),
+  callout-style primary grading (`bg-primary/15` + solid title + `75%`
+  content), calc-based 30/70 split, `no-underline`, next-only navigation on
+  the docs index
+- **feat:** scaffold template docs rewritten — DRY, directive-based (v2), a
+  4-step quick start workflow, first-edit checklist, add-a-page guide, and
+  links to www.docubook.pro
+- **docs:** `meta.title` trimmed to the brand, `meta.description` reworded to
+  the markdown-first positioning
+
+### `@docubook/markdown` — fix/feat
+
+- **feat:** Mermaid fullscreen canvas UI — ESC badge, zoom bar (− / % / +,
+  percentage click resets to 100%), one-time help panel with keyboard
+  shortcuts; native double-tap / pinch / ctrl+wheel zoom blocked via
+  non-passive listeners; touch drag pan; shortcuts on `window` so Esc works
+  without focus
+- **fix:** double-tap in fullscreen no longer triggers native browser zoom
+  (`touch-action: none` + non-passive `touchstart`)
+
+### `@docubook/ui-react` — feat
+
+- **feat:** `PaginationDocs` restyled to the Mintlify/Browserbase reference —
+  pill container, ghost prev, `h-16` next card with title + optional
+  description, divider, chevrons (never shrunk by flex)
+
+### `@docubook/core` — no changes in this range
+
+### Docs (repo)
+
+- README: DRY refactor — single Quick Start, sequence-diagram architecture,
+  no internal package list
+- ARCHITECTURE.md: rewritten to the v2 codebase (package map, eval-free
+  hydration, corrected CSP/cache values)

@@ -418,6 +418,9 @@ async function build() {
     js: assetManifest.js,
     nonce: generateNonce(),
     themeCss: inlineThemeCss,
+    // Served as the static-host fallback at ANY requested path — relative
+    // depth can never be right there, so use root-absolute asset URLs.
+    absoluteAssets: true,
   });
   await writeFile(join(DIST_DIR, "404.html"), notFoundHtml);
 

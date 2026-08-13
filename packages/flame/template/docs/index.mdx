@@ -1,15 +1,16 @@
 ---
-title: DocuBook Flame 🔥
-description: An open-source alternative to Mintlify or GitBook — MDX-powered documentation, static HTML output.
+title: My Docs
+description: Documentation powered by DocuBook Flame.
 ---
 
-**@docubook/flame** is a static site generator for documentation. Write in MDX, compile to flat static HTML — no server required. Runs on **Bun**, **Node.js**, and **Deno**.
+Welcome to **My Docs** — a static documentation site built with [DocuBook Flame](https://www.docubook.pro/).
+
+Flame compiles the markdown in `docs/` into flat static HTML. No server, no database, no runtime — deploy anywhere.
 
 ```mermaid
-flowchart LR
-    A[Your .mdx content] --> B[flame build]
-    B --> C[Static HTML + assets]
-    C --> D[Vercel / Netlify / GitHub Pages / S3]
+flowchart TD
+    A["docs/*.md"] --> B["flame build"]
+    B --> C["Static HTML + assets"]
+    C --> D["Vercel · Netlify · GitHub Pages · S3"]
 ```
 
-Check the sidebar for guides on getting started, configuration, components, routing, and deployment.

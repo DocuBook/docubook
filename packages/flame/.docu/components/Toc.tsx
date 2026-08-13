@@ -25,12 +25,12 @@ export default function Toc({ tocs }: TocProps) {
   // CSS scroll-margin-top (prose-headings:scroll-mt-4 desktop /
   // scroll-mt-16 mobile) so a change in one place updates both, and the
   // heading lands exactly where the browser would put a native anchor jump.
-  function getAnchorOffset(): number {
+  const getAnchorOffset = useCallback((): number => {
     if (typeof window === "undefined") return 100;
     const first = tocs[0] ? document.getElementById(tocs[0].href.slice(1)) : null;
     const margin = first ? parseFloat(getComputedStyle(first).scrollMarginTop) : 0;
     return margin || 100;
-  }
+  }, [tocs]);
 
   useEffect(() => {
     // Desktop-only TOC — on mobile this island is display:none but still
@@ -88,7 +88,7 @@ export default function Toc({ tocs }: TocProps) {
       scrollTarget.removeEventListener("scroll", listener);
       if (throttleTimer) clearTimeout(throttleTimer);
     };
-  }, [tocs]);
+  }, [tocs, getAnchorOffset]);
 
   const handleLinkClick = useCallback((id: string) => {
     clickedIdRef.current = id;
