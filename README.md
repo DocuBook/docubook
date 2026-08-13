@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="DocuBook" src="https://shieldcn.dev/header/dots.svg?title=DocuBook&amp;subtitle=DocuBook+is+a+modern+documentation+platform+for+building%2C+deploying%2C+and+managing+your+docs+with+ease.&amp;logo=lu%3AZap&amp;mode=dark" />
+  <img alt="DocuBook" src="https://shieldcn.dev/header/dots.svg?title=DocuBook&amp;subtitle=A+markdown-first+documentation+framework.+Write+with+common+mark+and+directives%2C+compile+to+flat+static+HTML.&amp;logo=lu%3AZap&amp;mode=dark" />
 </p>
 
 <p align="center">
@@ -8,17 +8,16 @@
   <a href="https://www.npmjs.com/package/@docubook/flame"><img alt="badge" src="https://shieldcn.dev/npm/dt/@docubook/flame.svg" /></a>
 </p>
 
-> An open-source alternative to Mintlify or GitBook. Write documentation in MDX with React.
+> An open-source alternative to Mintlify or GitBook. Write documentation in markdown and directives.
+>
 > The toolchain runs on Bun, Node.js, or Deno — output is flat static HTML, no server required.
 
 ## Architecture
 
-DocuBook is a **static site generator for documentation**. Flame compiles markdown into flat `.html` files — pure static output, no server required. Bun, Node.js, or Deno only powers the build toolchain and dev server.
-
 ```mermaid
 sequenceDiagram
     participant Author as 📝 Author
-    participant Flame as ⚙️ Flame
+    participant Flame as DocuBook Flame 🔥
     participant Host as 📦 Static host
     participant Browser as 🌐 Browser
 
@@ -28,50 +27,21 @@ sequenceDiagram
     Host-->>Browser: serves static HTML
 ```
 
-## Prerequisites
+## Quick Start
 
-Choose **one** runtime to get started.
+#### Prerequisite
 
-### Bun (≥ 1.1.0)
+<!-- prettier-ignore -->
+> [!WARNING]
+> Verify the runtime is installed: `bun --version`, `node --version`, or `deno --version`.
 
-```bash
-# Install: https://bun.sh
-curl -fsSL https://bun.sh/install | bash
-# or: npm install -g bun
-
-bun --version
-```
-
-### Node.js (≥ 20.11)
-
-```bash
-# Install: https://nodejs.org
-# or: https://github.com/nvm-sh/nvm#installing-and-updating
-
-node --version
-```
-
-### Deno (≥ 2.x)
-
-```bash
-# Install: https://deno.com
-curl -fsSL https://deno.land/install.sh | sh
-# or (macOS): brew install deno
-
-deno --version
-```
-
----
-
-## Installation
-
-Create the project directory once, then follow the flow for your runtime:
+Create the project directory, then run the flow for your runtime:
 
 ```bash
 mkdir my-docs && cd my-docs
 ```
 
-### Bun + React
+### Bun (≥ 1.1.0) — [install](https://bun.sh)
 
 ```bash
 bun add @docubook/flame
@@ -79,7 +49,7 @@ bunx flame init
 bun run dev
 ```
 
-### Node.js + React (Node >= 20.11)
+### Node.js (≥ 20.11) — [install](https://nodejs.org)
 
 ```bash
 npm install @docubook/flame
@@ -87,7 +57,7 @@ npx flame init
 npm run dev
 ```
 
-### Deno + React
+### Deno (≥ 2.x) — [install](https://deno.com)
 
 ```bash
 deno run -A npm:@docubook/flame init

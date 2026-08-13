@@ -44,6 +44,10 @@ function createHtmlResponse(
     extraScripts: hmrScript(nonce),
     themeCss: state.inlineThemeCss,
     depth,
+    // 404 pages can be requested at arbitrary depths (e.g. a noLink section
+    // path typed in the address bar) — relative asset paths would resolve
+    // against the wrong directory and break CSS/JS.
+    absoluteAssets: status === 404,
   });
   /** Dev-only: serves compiledSource → MDXRemote eval path (no CSP in production). */
   return htmlResponse(html, nonce, status, true);

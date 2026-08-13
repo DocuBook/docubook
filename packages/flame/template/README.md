@@ -42,7 +42,7 @@ deno task dev
 
 ## Documentation
 
-For the full documentation, please visit **[packages/flame/docs](https://github.com/DocuBook/docubook/tree/main/packages/flame/docs)** or read the official site [docubook.pro](https://docubook.pro)
+For the full documentation, visit **[www.docubook.pro](https://www.docubook.pro/)**
 
 ---
 

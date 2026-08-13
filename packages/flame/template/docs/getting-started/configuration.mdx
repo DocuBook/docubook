@@ -3,16 +3,28 @@ title: Configuration
 description: docu.json reference — meta, navbar, themes, routes, and plugins.
 ---
 
-`docu.json` in your project root controls the site. Key sections:
+`docu.json` in the project root controls the whole site. It is validated against `docu.schema.json`.
+
+## First edits
+
+| What | Where |
+|---|---|
+| Site name & tagline | `meta.title`, `meta.description` |
+| Brand in the header | `navbar.logoText` |
+| Landing copy | `home.hero` — headline, description, actions |
+| Colour preset | `themes.colors` — `default`, `freshlime`, `coffee` |
+| Footer links | `footer.social` |
+
+## Reference
 
 | Field | Description |
 |---|---|
 | `meta` | Site title, description, favicon, base URL |
 | `navbar` | Logo, navigation menu links |
-| `home.hero` | Landing page hero with tagline, headline, actions |
-| `home.features` | Feature cards with icon, title, description |
+| `home.hero` | Landing page hero — tagline, headline, actions |
+| `home.features` | Feature cards — icon, title, description |
 | `routes` | Sidebar navigation (auto-detected from `docs/` when empty) |
 | `themes` | Colour preset or custom palette |
 | `plugins` | Build/dev pipeline extensions |
 
-See this site's `docu.json` for a complete example, or refer to `docu.schema.json` in the package root.
+This project's `docu.json` is a complete working example — edit it and the dev server applies the changes live.

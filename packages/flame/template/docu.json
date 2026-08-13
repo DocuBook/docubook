@@ -7,6 +7,9 @@
     "favicon": "/docs/assets/images/favicon.ico",
     "ogImage": "/docs/assets/images/og.png"
   },
+  "sidebar": {
+    "context": "separator"
+  },
   "themes": {
     "colors": "default"
   },
@@ -71,12 +74,9 @@
     "social": []
   },
   "repo": {
-    "url": "",
+    "url": "https://github.com/DocuBook/docubook",
     "path": "blob/main/{filePath}",
     "edit": false
-  },
-  "sidebar": {
-    "context": "dropdown"
   },
   "routes": [
     {

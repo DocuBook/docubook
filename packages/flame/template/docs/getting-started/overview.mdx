@@ -1,50 +1,42 @@
 ---
 title: Quick Start
-description: Get your first documentation site running on Bun, Node.js, or Deno.
+description: The Flame workflow — dev server, first edit, authoring, and build.
 ---
 
-## Prerequisites
+Your Flame project is ready — this is the workflow to make it yours.
 
-Choose **one** runtime:
-
-- **Bun** >= 1.1: `curl -fsSL https://bun.sh/install | bash`
-- **Node.js** >= 20.11: [nodejs.org](https://nodejs.org)
-- **Deno** >= 2.x: `curl -fsSL https://deno.land/install.sh | sh`
-
-## Create a project
-
-<Tabs>
-  <Tab title="Bun">
-    ```bash
-    mkdir my-docs && cd my-docs
-    bun add @docubook/flame
-    bunx flame init
-    bun run dev
-    ```
-  </Tab>
-  <Tab title="Node.js">
-    ```bash
-    mkdir my-docs && cd my-docs
-    npm install @docubook/flame
-    npx flame init
-    npm run dev
-    ```
-  </Tab>
-  <Tab title="Deno">
-    ```bash
-    mkdir my-docs && cd my-docs
-    deno run -A npm:@docubook/flame init
-    deno task dev
-    ```
-  </Tab>
-</Tabs>
-
-Open http://localhost:3000 — changes to `docs/` or `docu.json` hot-reload.
-
-## Build for production
+## 1. Run the dev server
 
 ```bash
-npm run build     # or: bun run build / deno task build
+bun run dev        # or: npm run dev / deno task dev
 ```
 
-Static output goes to `.docu/dist/` — deploy to any CDN or static host.
+Open http://localhost:3000 — edits to `docs/` and `docu.json` hot-reload instantly.
+
+## 2. Make your first edit
+
+Open `docs/getting-started/overview.mdx` (this file):
+
+1. Change `title` and `description` in the frontmatter — the browser updates live
+2. Add a heading below and save
+3. New pages appear in the sidebar and search automatically
+
+## 3. Author with directives
+
+Content is plain markdown — components are directives, no JSX:
+
+```md
+:::tip
+A callout — no JSX needed.
+:::
+```
+
+See [Components](/docs/guide/components) for the full directive set.
+
+## 4. Build for production
+
+```bash
+bun run build      # or: npm run build / deno task build
+```
+
+Flat static HTML lands in `.docu/dist/` — deploy anywhere ([Deployment](/docs/guide/deployment)).

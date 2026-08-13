@@ -16,14 +16,16 @@ export function htmlShell(opts: HtmlShellOptions): string {
     depth = 0,
     headExtra,
     bodyExtra,
+    absoluteAssets = false,
   } = opts;
   const nonceAttr = nonce ? ` nonce="${Bun.escapeHTML(nonce)}"` : "";
   const themeStyle = themeCss ? `\n  <style${nonceAttr}>${Bun.escapeHTML(themeCss)}</style>` : "";
   const headInjection = headExtra?.length ? `\n  ${headExtra.join("\n  ")}` : "";
   const bodyInjection = bodyExtra?.length ? `\n  ${bodyExtra.join("\n  ")}` : "";
   const depthPrefix = depth === 0 ? "" : "../".repeat(depth);
-  const assetPrefix = depthPrefix + "assets/";
-  const resolvePath = (path: string) => (path.startsWith("/") ? depthPrefix + path.slice(1) : path);
+  const assetPrefix = absoluteAssets ? "/assets/" : depthPrefix + "assets/";
+  const resolvePath = (path: string) =>
+    absoluteAssets ? path : path.startsWith("/") ? depthPrefix + path.slice(1) : path;
 
   // Build SEO meta tags (OG, Twitter, canonical)
   let seoTags = "";

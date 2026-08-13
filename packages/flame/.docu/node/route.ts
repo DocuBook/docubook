@@ -1,6 +1,11 @@
 import { loadDocuConfig } from "./paths";
 import type { DocuRoute } from "./types";
 import { resolveRoutes } from "./fs-scanner";
+import { DOCS_DIR } from "./paths";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { extractFrontmatter } from "@docubook/core";
+import type { Frontmatter } from "./mdx";
 
 const docuConfig = loadDocuConfig();
 export const routes: DocuRoute[] = resolveRoutes(docuConfig.routes);
@@ -41,8 +46,53 @@ export function getRouteMap(): Map<string, string> {
   return map;
 }
 
+/** Build-time cache of href → frontmatter description (docs content is static). */
+const descriptionCache = new Map<string, string>();
+
+function readDescription(href: string): string {
+  const cached = descriptionCache.get(href);
+  if (cached !== undefined) return cached;
+
+  let description = "";
+  const rel = href.replace(/^\/|$/g, "");
+  for (const ext of [".mdx", ".md"]) {
+    for (const file of [join(DOCS_DIR, `${rel}${ext}`), join(DOCS_DIR, `${rel}/index${ext}`)]) {
+      try {
+        const fm = extractFrontmatter<Frontmatter>(readFileSync(file, "utf-8"));
+        description = typeof fm.description === "string" ? fm.description : "";
+        if (description) break;
+      } catch {
+        // not this file — try the next candidate
+      }
+    }
+    if (description) break;
+  }
+  descriptionCache.set(href, description);
+  return description;
+}
+
 export function getPreviousNext(pathname: string) {
   const normalizedPath = pathname.replace(/^\/|$/g, "");
+
+  // Docs index (/docs — DocsPage renders with pathname "" from slug []):
+  // next-only navigation into the first docs page — never read the route
+  // backward from the index, so prev stays null even if a page sits before
+  // it in the route list.
+  if (normalizedPath === "docs" || normalizedPath === "") {
+    const paths = flattenRoutes();
+    const routeMap = getRouteMap();
+    const first = paths[0];
+    if (!first) return { prev: null, next: null };
+    return {
+      prev: null,
+      next: {
+        href: first,
+        title: routeMap.get(first) || "",
+        description: readDescription(first),
+      },
+    };
+  }
+
   const paths = flattenRoutes();
 
   const index = paths.findIndex((href) => href === `/${normalizedPath}` || href === normalizedPath);
@@ -57,7 +107,13 @@ export function getPreviousNext(pathname: string) {
 
   return {
     prev: prevHref ? { href: prevHref, title: routeMap.get(prevHref) || "" } : null,
-    next: nextHref ? { href: nextHref, title: routeMap.get(nextHref) || "" } : null,
+    next: nextHref
+      ? {
+          href: nextHref,
+          title: routeMap.get(nextHref) || "",
+          description: readDescription(nextHref),
+        }
+      : null,
   };
 }
 

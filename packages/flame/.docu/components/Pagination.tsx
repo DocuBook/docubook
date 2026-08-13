@@ -29,7 +29,15 @@ export default function Pagination({
   return (
     <PaginationDocs
       prev={prev ? { href: docsHtmlHref(`/docs${prev.href}`), title: prev.title } : undefined}
-      next={next ? { href: docsHtmlHref(`/docs${next.href}`), title: next.title } : undefined}
+      next={
+        next
+          ? {
+              href: docsHtmlHref(`/docs${next.href}`),
+              title: next.title,
+              description: next.description,
+            }
+          : undefined
+      }
       className={className}
       prevIcon={prevIcon}
       nextIcon={nextIcon}

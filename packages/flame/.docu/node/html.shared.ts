@@ -34,6 +34,9 @@ export interface HtmlShellOptions {
   bodyExtra?: string[];
   /** SEO meta tags derived from config + frontmatter */
   seo?: SeoMeta;
+  /** Root-absolute asset URLs (`/assets/...`). Required for pages served at
+   * arbitrary paths (404 fallback) — relative depth is wrong there. */
+  absoluteAssets?: boolean;
 }
 
 export function htmlShell(opts: HtmlShellOptions): string {
@@ -51,14 +54,16 @@ export function htmlShell(opts: HtmlShellOptions): string {
     depth = 0,
     headExtra,
     bodyExtra,
+    absoluteAssets = false,
   } = opts;
   const nonceAttr = nonce ? ` nonce="${escapeHtml(nonce)}"` : "";
   const themeStyle = themeCss ? `\n  <style${nonceAttr}>${escapeHtml(themeCss)}</style>` : "";
   const headInjection = headExtra?.length ? `\n  ${headExtra.join("\n  ")}` : "";
   const bodyInjection = bodyExtra?.length ? `\n  ${bodyExtra.join("\n  ")}` : "";
   const depthPrefix = depth === 0 ? "" : "../".repeat(depth);
-  const assetPrefix = depthPrefix + "assets/";
-  const resolvePath = (path: string) => (path.startsWith("/") ? depthPrefix + path.slice(1) : path);
+  const assetPrefix = absoluteAssets ? "/assets/" : depthPrefix + "assets/";
+  const resolvePath = (path: string) =>
+    absoluteAssets ? path : path.startsWith("/") ? depthPrefix + path.slice(1) : path;
 
   // Build SEO meta tags (OG, Twitter, canonical)
   let seoTags = "";
