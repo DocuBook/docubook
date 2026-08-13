@@ -1,8 +1,8 @@
 {
   "$schema": "https://cdn.jsdelivr.net/npm/@docubook/flame/docu.schema.json",
   "meta": {
-    "title": "Flame - Docs Framework",
-    "description": "A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.",
+    "title": "DocuBook Flame",
+    "description": "A markdown-first documentation framework. Write with directives, compile to flat static HTML — no runtime, no server, no lock-in. Runs on Bun, Node.js, or Deno.",
     "baseURL": "https://docubook.pro",
     "favicon": "/docs/assets/images/favicon.ico",
     "ogImage": "/docs/assets/images/og.png"
