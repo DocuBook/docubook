@@ -13,6 +13,9 @@ import type { Mermaid } from "mermaid";
 
 // Module-level singleton — one dynamic import regardless of diagram count
 let mermaidPromise: Promise<typeof import("mermaid")> | null = null;
+// One-time onboarding — help panel auto-opens on first fullscreen entry per
+// page load (not per diagram); re-openable via the help button
+let hintSeen = false;
 
 interface MermaidMdxProps {
   /** Mermaid diagram definition (from rehype plugin or programmatic) */
@@ -27,7 +30,7 @@ function getTheme(): "dark" | "default" {
   return document.documentElement.classList.contains("dark") ? "dark" : "default";
 }
 
-// Pan/zoom tuning — button-driven like GFM's mermaid viewer (no drag/wheel)
+// Pan/zoom tuning — drag/wheel/touch pan; zoom via the fullscreen control bar
 const PAN_STEP = 50;
 const ZOOM_STEP = 1.2;
 const MIN_SCALE = 0.4;
@@ -46,6 +49,23 @@ const controlButtonStyle: CSSProperties = {
   borderRadius: 6,
   background: "rgba(127,127,127,0.12)",
   color: "currentcolor",
+  cursor: "pointer",
+};
+
+// Top-right chrome (ESC badge / help button) — pill look matching the zoom bar
+const topBarButtonStyle: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 6,
+  padding: "6px 10px",
+  border: "1px solid rgba(127,127,127,0.25)",
+  borderRadius: 8,
+  background: "rgba(127,127,127,0.12)",
+  backdropFilter: "blur(8px)",
+  color: "currentcolor",
+  fontSize: 12,
+  lineHeight: 1.4,
   cursor: "pointer",
 };
 
@@ -96,7 +116,9 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
   const [view, setView] = useState({ x: 0, y: 0, scale: 1 });
   const [fullscreen, setFullscreen] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const dragRef = useRef({ dragging: false, lastX: 0, lastY: 0 });
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   // Keep chartRef in sync so theme-change re-render (T-005) can restore text
   chartRef.current = chart;
@@ -211,6 +233,10 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
     // chart string is static from MDX — this only fires on mount
   }, []);
 
+  const pan = (dx: number, dy: number) => setView((v) => ({ ...v, x: v.x + dx, y: v.y + dy }));
+  const zoom = (factor: number) => setView((v) => ({ ...v, scale: clampScale(v.scale * factor) }));
+  const resetView = () => setView({ x: 0, y: 0, scale: 1 });
+
   // Lock page scroll while the fullscreen lightbox is open
   useEffect(() => {
     if (!fullscreen) return;
@@ -221,44 +247,83 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
     };
   }, [fullscreen]);
 
+  // Onboarding — auto-opens the help panel on first fullscreen entry per
+  // page load; the help button re-opens it anytime; collapses on exit so a
+  // later entry starts clean (one-time onboarding, not "every entry")
+  useEffect(() => {
+    if (fullscreen) {
+      if (!hintSeen) {
+        hintSeen = true;
+        setShowHelp(true);
+      }
+    } else {
+      setShowHelp(false);
+    }
+  }, [fullscreen]);
+
+  // Block native browser gestures (double-tap / pinch / ctrl+wheel zoom).
+  // React attaches wheel & touch listeners as passive, so preventDefault
+  // needs native non-passive listeners to stop the browser from zooming the
+  // whole window while the canvas is in fullscreen.
+  useEffect(() => {
+    if (!fullscreen || !rendered) return;
+    const el = viewportRef.current;
+    if (!el) return;
+    const blockWheel = (e: WheelEvent) => e.preventDefault();
+    const blockTouchStart = (e: TouchEvent) => {
+      const target = e.target as HTMLElement | null;
+      // Controls must stay clickable on touch devices
+      if (target?.closest("button")) return;
+      e.preventDefault();
+    };
+    el.addEventListener("wheel", blockWheel, { passive: false });
+    el.addEventListener("touchstart", blockTouchStart, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", blockWheel);
+      el.removeEventListener("touchstart", blockTouchStart);
+    };
+  }, [fullscreen, rendered]);
+
+  // Fullscreen shortcuts live on window so ESC (and pan/zoom keys) keep
+  // working regardless of which element holds focus after a click.
+  useEffect(() => {
+    if (!fullscreen) return;
+    const onKeyDown = (e: globalThis.KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const actions: Record<string, () => void> = {
+        ArrowUp: () => pan(0, -PAN_STEP),
+        ArrowDown: () => pan(0, PAN_STEP),
+        ArrowLeft: () => pan(-PAN_STEP, 0),
+        ArrowRight: () => pan(PAN_STEP, 0),
+        "+": () => zoom(ZOOM_STEP),
+        "=": () => zoom(ZOOM_STEP),
+        "-": () => zoom(1 / ZOOM_STEP),
+        "0": resetView,
+        Escape: () => setFullscreen(false),
+      };
+      const action = actions[e.key];
+      if (!action) return;
+      e.preventDefault();
+      action();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [fullscreen]);
+
   // Guard: empty chart
   if (!chart) return null;
-
-  const pan = (dx: number, dy: number) => setView((v) => ({ ...v, x: v.x + dx, y: v.y + dy }));
-  const zoom = (factor: number) => setView((v) => ({ ...v, scale: clampScale(v.scale * factor) }));
-  const resetView = () => setView({ x: 0, y: 0, scale: 1 });
 
   const controlsActive = rendered && fullscreen;
   const showFullscreenBtn = rendered;
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (!showFullscreenBtn || e.ctrlKey || e.metaKey || e.altKey) return;
-
-    if (!controlsActive) {
-      // Non-fullscreen: Enter toggles fullscreen
-      if (e.key === "Enter") {
-        e.preventDefault();
-        setFullscreen(true);
-      }
-      return;
+    // Non-fullscreen: Enter opens fullscreen. Fullscreen shortcuts live on
+    // window (see effect above) so they work regardless of focus.
+    if (!showFullscreenBtn || controlsActive || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === "Enter") {
+      e.preventDefault();
+      setFullscreen(true);
     }
-
-    // Fullscreen mode: pan/zoom shortcuts
-    const actions: Record<string, () => void> = {
-      ArrowUp: () => pan(0, -PAN_STEP),
-      ArrowDown: () => pan(0, PAN_STEP),
-      ArrowLeft: () => pan(-PAN_STEP, 0),
-      ArrowRight: () => pan(PAN_STEP, 0),
-      "+": () => zoom(ZOOM_STEP),
-      "=": () => zoom(ZOOM_STEP),
-      "-": () => zoom(1 / ZOOM_STEP),
-      "0": resetView,
-      Escape: () => setFullscreen(false),
-    };
-    const action = actions[e.key];
-    if (!action) return;
-    e.preventDefault();
-    action();
   };
 
   if (error) {
@@ -297,18 +362,56 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
 
   return (
     <div
+      ref={viewportRef}
       className="max-w-full"
       tabIndex={showFullscreenBtn ? 0 : undefined}
       role={showFullscreenBtn ? "group" : undefined}
       aria-label={
         showFullscreenBtn
           ? fullscreen
-            ? "Mermaid diagram. Use arrow keys to pan, + and - to zoom, 0 to reset."
+            ? "Mermaid diagram. Drag or use arrow keys to pan, + and - to zoom, click the percentage to reset, Esc to exit."
             : "Mermaid diagram. Press Enter to open fullscreen view."
           : undefined
       }
       onKeyDown={handleKeyDown}
       onWheel={controlsActive ? (e) => zoom(e.deltaY > 0 ? 1 / ZOOM_STEP : ZOOM_STEP) : undefined}
+      onTouchStart={
+        controlsActive
+          ? (e) => {
+              const t = e.touches[0];
+              dragRef.current = { dragging: true, lastX: t.clientX, lastY: t.clientY };
+              setIsPanning(true);
+            }
+          : undefined
+      }
+      onTouchMove={
+        controlsActive
+          ? (e) => {
+              const d = dragRef.current;
+              if (!d.dragging) return;
+              const t = e.touches[0];
+              pan(t.clientX - d.lastX, t.clientY - d.lastY);
+              dragRef.current.lastX = t.clientX;
+              dragRef.current.lastY = t.clientY;
+            }
+          : undefined
+      }
+      onTouchEnd={
+        controlsActive
+          ? () => {
+              dragRef.current.dragging = false;
+              setIsPanning(false);
+            }
+          : undefined
+      }
+      onTouchCancel={
+        controlsActive
+          ? () => {
+              dragRef.current.dragging = false;
+              setIsPanning(false);
+            }
+          : undefined
+      }
       onMouseDown={
         controlsActive
           ? (e) => {
@@ -356,7 +459,14 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
               justifyContent: "center",
             }
           : { position: "relative" }),
-        ...(controlsActive ? { overflow: "hidden" } : { overflow: "auto" }),
+        ...(controlsActive
+          ? {
+              overflow: "hidden",
+              touchAction: "none",
+              userSelect: "none",
+              cursor: isPanning ? "grabbing" : "grab",
+            }
+          : { overflow: "auto" }),
       }}
     >
       <div
@@ -385,70 +495,135 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
           <div
             role="group"
             aria-label="Pan and zoom controls"
-            style={{
-              position: "absolute",
-              bottom: 8,
-              right: 8,
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 28px)",
-              gap: 4,
-            }}
+            style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
           >
-            <ControlButton
-              label="Exit full screen"
-              onClick={() => setFullscreen(false)}
-              cell={{ col: 1, row: 1 }}
+            {/* Top-right chrome: ESC badge + help toggle, panel drops below */}
+            <div
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
+                gap: 8,
+                pointerEvents: "auto",
+              }}
             >
-              <path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3" />
-            </ControlButton>
-            <ControlButton
-              label="Pan up"
-              onClick={() => pan(0, -PAN_STEP)}
-              cell={{ col: 2, row: 1 }}
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  type="button"
+                  aria-label="Exit full screen"
+                  onClick={() => setFullscreen(false)}
+                  style={topBarButtonStyle}
+                >
+                  <kbd
+                    style={{
+                      padding: "1px 5px",
+                      borderRadius: 4,
+                      border: "1px solid rgba(127,127,127,0.4)",
+                      background: "rgba(127,127,127,0.15)",
+                      fontSize: 11,
+                      fontFamily: "inherit",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    Esc
+                  </kbd>
+                  <span>Exit fullscreen</span>
+                </button>
+                <button
+                  type="button"
+                  aria-label="Toggle help"
+                  aria-expanded={showHelp}
+                  title="Canvas controls & keyboard shortcuts"
+                  onClick={() => setShowHelp((v) => !v)}
+                  style={{ ...topBarButtonStyle, width: 28, padding: 0, fontSize: 14 }}
+                >
+                  {showHelp ? "×" : "?"}
+                </button>
+              </div>
+
+              {/* Onboarding / shortcuts — auto-opens once, re-openable via "?" */}
+              {showHelp ? (
+                <div
+                  role="status"
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: 10,
+                    border: "1px solid rgba(127,127,127,0.25)",
+                    background: "rgba(127,127,127,0.12)",
+                    backdropFilter: "blur(8px)",
+                    color: "currentcolor",
+                    fontSize: 12,
+                    lineHeight: 1.7,
+                    maxWidth: 280,
+                  }}
+                >
+                  <p style={{ margin: 0, fontWeight: 600 }}>Canvas controls</p>
+                  <p style={{ margin: 0 }}>Move — hold scroll wheel or tap &amp; drag</p>
+                  <p style={{ margin: 0 }}>Zoom — + / − keys or scroll</p>
+                  <p style={{ margin: 0 }}>Reset — 0 or click the zoom %</p>
+                  <p style={{ margin: 0 }}>Exit — Esc</p>
+                </div>
+              ) : null}
+            </div>
+
+            {/* Zoom bar — minus / percentage-reset / plus */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 16,
+                left: "50%",
+                transform: "translateX(-50%)",
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                padding: 4,
+                borderRadius: 10,
+                border: "1px solid rgba(127,127,127,0.25)",
+                background: "rgba(127,127,127,0.12)",
+                backdropFilter: "blur(8px)",
+                pointerEvents: "auto",
+              }}
             >
-              <path d="m18 15-6-6-6 6" />
-            </ControlButton>
-            <ControlButton
-              label="Zoom in"
-              onClick={() => zoom(ZOOM_STEP)}
-              cell={{ col: 3, row: 1 }}
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="m21 21-4-4M8 11h6M11 8v6" />
-            </ControlButton>
-            <ControlButton
-              label="Pan left"
-              onClick={() => pan(-PAN_STEP, 0)}
-              cell={{ col: 1, row: 2 }}
-            >
-              <path d="m15 18-6-6 6-6" />
-            </ControlButton>
-            <ControlButton label="Reset view" onClick={resetView} cell={{ col: 2, row: 2 }}>
-              <path d="M3 12a9 9 0 1 0 2.6-6.3L3 8" />
-              <path d="M3 3v5h5" />
-            </ControlButton>
-            <ControlButton
-              label="Pan right"
-              onClick={() => pan(PAN_STEP, 0)}
-              cell={{ col: 3, row: 2 }}
-            >
-              <path d="m9 18 6-6-6-6" />
-            </ControlButton>
-            <ControlButton
-              label="Pan down"
-              onClick={() => pan(0, PAN_STEP)}
-              cell={{ col: 2, row: 3 }}
-            >
-              <path d="m6 9 6 6 6-6" />
-            </ControlButton>
-            <ControlButton
-              label="Zoom out"
-              onClick={() => zoom(1 / ZOOM_STEP)}
-              cell={{ col: 3, row: 3 }}
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="m21 21-4-4M8 11h6" />
-            </ControlButton>
+              <ControlButton
+                label="Zoom out"
+                onClick={() => zoom(1 / ZOOM_STEP)}
+                cell={{ col: 1, row: 1 }}
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="m21 21-4-4M8 11h6" />
+              </ControlButton>
+              <button
+                type="button"
+                aria-label="Reset view"
+                title="Reset zoom to 100%"
+                onClick={resetView}
+                style={{
+                  minWidth: 56,
+                  height: 28,
+                  padding: "0 8px",
+                  border: "none",
+                  borderRadius: 6,
+                  background: "transparent",
+                  color: "currentcolor",
+                  fontSize: 12,
+                  fontVariantNumeric: "tabular-nums",
+                  cursor: "pointer",
+                }}
+              >
+                {Math.round(view.scale * 100)}%
+              </button>
+              <ControlButton
+                label="Zoom in"
+                onClick={() => zoom(ZOOM_STEP)}
+                cell={{ col: 3, row: 1 }}
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="m21 21-4-4M8 11h6M11 8v6" />
+              </ControlButton>
+            </div>
           </div>
         ) : (
           <div style={{ position: "absolute", bottom: 8, right: 8 }}>

@@ -280,6 +280,14 @@ describe("MermaidMdx", () => {
       return result;
     }
 
+    // NOTE: this must run before any other test in this describe — the help
+    // panel auto-opens only on the first fullscreen entry per module (hintSeen)
+    it("auto-opens the help panel on the first fullscreen entry", async () => {
+      const { container } = await renderAndEnterFullscreen();
+      expect(container.textContent).toContain("Canvas controls");
+      expect(container.textContent).toContain("hold scroll wheel or tap & drag");
+    });
+
     it("shows only fullscreen button after render, full controls in fullscreen", async () => {
       mockParse.mockResolvedValueOnce(undefined);
       const { container } = render(<MermaidMdx chart="graph TD; A-->B;" />);
@@ -298,29 +306,22 @@ describe("MermaidMdx", () => {
         expect(container.querySelector('[aria-label="Pan and zoom controls"]')).not.toBeNull();
       });
 
-      const labels = [
-        "Exit full screen",
-        "Pan up",
-        "Pan down",
-        "Pan left",
-        "Pan right",
-        "Zoom in",
-        "Zoom out",
-        "Reset view",
-      ];
+      const labels = ["Exit full screen", "Zoom in", "Zoom out", "Reset view"];
       for (const label of labels) {
         expect(container.querySelector(`button[aria-label="${label}"]`)).not.toBeNull();
       }
     });
 
-    it("zoom, pan, and reset buttons update the transform", async () => {
+    it("zoom and reset buttons update the transform", async () => {
       const { container } = await renderAndEnterFullscreen();
       const layer = container.querySelector("pre.mermaid")?.parentElement as HTMLElement;
 
       fireEvent.click(container.querySelector('button[aria-label="Zoom in"]')!);
       expect(layer.style.transform).toBe("translate(0px, 0px) scale(1.2)");
 
-      fireEvent.click(container.querySelector('button[aria-label="Pan right"]')!);
+      // Panning stays keyboard-driven (arrow keys)
+      const viewport = container.querySelector('[tabindex="0"]') as HTMLElement;
+      fireEvent.keyDown(viewport, { key: "ArrowRight" });
       expect(layer.style.transform).toBe("translate(50px, 0px) scale(1.2)");
 
       fireEvent.click(container.querySelector('button[aria-label="Reset view"]')!);
@@ -405,6 +406,39 @@ describe("MermaidMdx", () => {
       expect(layer.style.transform).toBe("translate(80px, 30px) scale(1)");
     });
 
+    it("shows the zoom percentage and resets to 100% on click", async () => {
+      const { container } = await renderAndEnterFullscreen();
+      const layer = container.querySelector("pre.mermaid")?.parentElement as HTMLElement;
+      const pct = container.querySelector('button[aria-label="Reset view"]') as HTMLElement;
+
+      expect(pct.textContent).toBe("100%");
+
+      fireEvent.click(container.querySelector('button[aria-label="Zoom in"]')!);
+      fireEvent.click(container.querySelector('button[aria-label="Zoom in"]')!);
+      expect(pct.textContent).toBe("144%");
+      expect(layer.style.transform).toBe("translate(0px, 0px) scale(1.44)");
+
+      // Clicking the percentage resets to the default view
+      fireEvent.click(pct);
+      expect(pct.textContent).toBe("100%");
+      expect(layer.style.transform).toBe("translate(0px, 0px) scale(1)");
+    });
+
+    it("pans with touch drag in fullscreen mode", async () => {
+      const { container } = await renderAndEnterFullscreen();
+      const viewport = container.querySelector('[tabindex="0"]') as HTMLElement;
+      const layer = container.querySelector("pre.mermaid")?.parentElement as HTMLElement;
+
+      fireEvent.touchStart(viewport, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchMove(viewport, { touches: [{ clientX: 150, clientY: 120 }] });
+      expect(layer.style.transform).toBe("translate(50px, 20px) scale(1)");
+
+      // touchEnd stops dragging; subsequent moves do nothing
+      fireEvent.touchEnd(viewport, { touches: [] });
+      fireEvent.touchMove(viewport, { touches: [{ clientX: 200, clientY: 150 }] });
+      expect(layer.style.transform).toBe("translate(50px, 20px) scale(1)");
+    });
+
     it("toggles fullscreen via button, Enter key, and Escape", async () => {
       mockParse.mockResolvedValueOnce(undefined);
       const { container } = render(<MermaidMdx chart="graph TD; A-->B;" />);
@@ -432,6 +466,50 @@ describe("MermaidMdx", () => {
       // Enter via keyboard (Enter key) in non-fullscreen
       fireEvent.keyDown(viewport, { key: "Enter" });
       expect(viewport.style.position).toBe("fixed");
+    });
+
+    it("exits fullscreen via Esc even when a control has focus", async () => {
+      const { container } = await renderAndEnterFullscreen();
+      const viewport = container.querySelector('[tabindex="0"]') as HTMLElement;
+
+      // Click a control button — focus leaves the canvas
+      const zoomIn = container.querySelector('button[aria-label="Zoom in"]') as HTMLElement;
+      fireEvent.click(zoomIn);
+
+      // Esc dispatched on the focused control must still exit (window-level listener)
+      fireEvent.keyDown(zoomIn, { key: "Escape" });
+      expect(viewport.style.position).toBe("relative");
+    });
+
+    it("toggles the help panel via the help button", async () => {
+      const { container } = await renderAndEnterFullscreen();
+      const help = container.querySelector('button[aria-label="Toggle help"]') as HTMLElement;
+
+      // Collapse whatever the current state is, then toggle both ways
+      if (container.textContent.includes("Canvas controls")) fireEvent.click(help);
+      expect(container.textContent).not.toContain("Canvas controls");
+      fireEvent.click(help);
+      expect(container.textContent).toContain("Canvas controls");
+      fireEvent.click(help);
+      expect(container.textContent).not.toContain("Canvas controls");
+    });
+
+    it("closes the help panel when exiting fullscreen", async () => {
+      const { container } = await renderAndEnterFullscreen();
+      const help = container.querySelector('button[aria-label="Toggle help"]') as HTMLElement;
+      const viewport = container.querySelector('[tabindex="0"]') as HTMLElement;
+
+      // Open the panel manually (auto-open was consumed by an earlier test)
+      if (!container.textContent.includes("Canvas controls")) fireEvent.click(help);
+      expect(container.textContent).toContain("Canvas controls");
+
+      // Exit fullscreen with the panel open → it must collapse
+      fireEvent.keyDown(viewport, { key: "Escape" });
+      expect(viewport.style.position).toBe("relative");
+
+      // Re-enter → panel stays collapsed (one-time onboarding, not per entry)
+      fireEvent.keyDown(viewport, { key: "Enter" });
+      expect(container.textContent).not.toContain("Canvas controls");
     });
   });
 });

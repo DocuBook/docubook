@@ -20,13 +20,29 @@ export default function Toc({ tocs }: TocProps) {
     activeIdRef.current = activeId;
   }, [activeId]);
 
+  // Single source of truth for the anchor offset — used by BOTH the scroll
+  // observer and the TOC click scroll so they can never disagree. Reads the
+  // CSS scroll-margin-top (prose-headings:scroll-mt-4 desktop /
+  // scroll-mt-16 mobile) so a change in one place updates both, and the
+  // heading lands exactly where the browser would put a native anchor jump.
+  function getAnchorOffset(): number {
+    if (typeof window === "undefined") return 100;
+    const first = tocs[0] ? document.getElementById(tocs[0].href.slice(1)) : null;
+    const margin = first ? parseFloat(getComputedStyle(first).scrollMarginTop) : 0;
+    return margin || 100;
+  }
+
   useEffect(() => {
-    if (typeof document === "undefined" || !tocs.length) return;
+    // Desktop-only TOC — on mobile this island is display:none but still
+    // mounted; letting its observer run would hijack the URL hash while the
+    // mobile bar owns TOC behavior there.
+    if (typeof window === "undefined" || window.innerWidth < 1024) return;
+    if (!tocs.length) return;
 
     const isDesktop = window.innerWidth >= 1024;
     const container = isDesktop ? document.getElementById("scroll-container") : null;
     const scrollTarget = container || window;
-    const offset = isDesktop ? 80 : 100;
+    const offset = getAnchorOffset();
 
     const handleScroll = () => {
       if (clickedIdRef.current) return;
@@ -143,7 +159,37 @@ export default function Toc({ tocs }: TocProps) {
                       e.preventDefault();
                       handleLinkClick(id);
                       const el = document.getElementById(id);
-                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                      if (el) {
+                        // Manual scroll with the same offset the observer uses —
+                        // scrollIntoView ignores scroll-margin-top on iOS Safari
+                        // window-scroll, landing the heading under the sticky
+                        // mobile bar.
+                        const offset = getAnchorOffset();
+                        const scroller =
+                          window.innerWidth >= 1024
+                            ? document.getElementById("scroll-container")
+                            : null;
+                        const elTop = el.getBoundingClientRect().top;
+                        if (scroller) {
+                          // Container scroll space: element offset within the
+                          // container minus the anchor offset (the container
+                          // itself may sit below the viewport top, e.g. under
+                          // the navbar).
+                          scroller.scrollTo({
+                            top:
+                              elTop -
+                              scroller.getBoundingClientRect().top +
+                              scroller.scrollTop -
+                              offset,
+                            behavior: "smooth",
+                          });
+                        } else {
+                          window.scrollTo({
+                            top: elTop + window.scrollY - offset,
+                            behavior: "smooth",
+                          });
+                        }
+                      }
                     }}
                     className={cn(
                       "flex flex-1 items-center py-2 transition-all duration-200",
