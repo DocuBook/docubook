@@ -7,48 +7,43 @@ DocuBook Flame runs on **Bun >= 1.1.0**, **Node.js >= 20.11**, or **Deno >= 2.x*
 
 ## Quick Setup
 
-<Tabs className="pt-5 pb-1">
-<Tab title="Bun">
-
+::::tabs{className="pt-5 pb-1"}
+:::
+:::tab{title="Bun"}
 ```shell:bun
 mkdir my-docs && cd my-docs
 bun add @docubook/flame
 bunx flame init
 bun run dev
 ```
+:::
 
-</Tab>
-<Tab title="Node.js">
-
+:::tab{title="Node.js"}
 ```shell:bash
 mkdir my-docs && cd my-docs
 npm install @docubook/flame
 npx flame init
 npm run dev
 ```
+:::
 
-</Tab>
-<Tab title="Deno">
-
+:::tab{title="Deno"}
 ```shell:bash
 mkdir my-docs && cd my-docs
 deno add npm:@docubook/flame
 deno run -A npm:@docubook/flame init
 deno task dev
 ```
+:::
+::::
 
-<Note type="note" title="First run">
-  Deno may show a freshness/cache warning on first run. If you see one, set `DENO_ALLOW_NEWER=true deno task dev` to bypass it.
-</Note>
+::info{title="First run"}
+> Deno may show a freshness/cache warning on first run. If you see one, set `DENO_ALLOW_NEWER=true deno task dev` to bypass it.
 
-</Tab>
-</Tabs>
-
-<Note type="info" title="First run (Node.js / Deno only)">
-  `flame init` only scaffolds files — `compile-lib.mjs` runs **lazily** on first `flame dev` or `flame build`, not during init.
-  This step precompiles TypeScript sources to `.docu/lib/` so Node.js and Deno can execute them.
-  In a published npm package `.docu/lib` is already included, so the lazy compile never runs.
-</Note>
+::info{title="First run (Node.js / Deno only)"}
+> `flame init` only scaffolds files — `compile-lib.mjs` runs **lazily** on first `flame dev` or `flame build`, not during init.
+This step precompiles TypeScript sources to `.docu/lib/` so Node.js and Deno can execute them.
+In a published npm package `.docu/lib` is already included, so the lazy compile never runs.
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
@@ -89,27 +84,23 @@ When scaffolding on Deno, `flame init` also generates a `deno.json` with `nodeMo
 
 ## Global Installation
 
-<Tabs className="pt-5 pb-1">
-<Tab title="Bun">
-
+::::tabs{className="pt-5 pb-1"}
+:::tab{title="Bun"}
 ```shell:bun
 bun add -g @docubook/flame
 ```
+:::
 
-</Tab>
-<Tab title="Node.js">
-
+:::tab{title="Node.js"}
 ```shell:bash
 npm install -g @docubook/flame
 ```
+:::
 
-</Tab>
-<Tab title="Deno">
-
+:::tab{title="Deno"}
 Deno does not support global npm packages. Use `deno run -A npm:@docubook/flame <command>` or add a task in `deno.json`.
-
-</Tab>
-</Tabs>
+:::
+::::
 
 After global install, run:
 

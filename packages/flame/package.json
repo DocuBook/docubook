@@ -1,6 +1,6 @@
 {
   "name": "@docubook/flame",
-  "version": "1.7.2",
+  "version": "2.0.0-alpha.0",
   "description": "A blazing-fast React + MDX framework powered by Bun, built for modern documentation experiences.",
   "type": "module",
   "bin": {
@@ -57,10 +57,10 @@
   "license": "MIT",
   "dependencies": {
     "@docubook/core": "workspace:^",
-    "@docubook/mdx-content": "workspace:^",
-    "@docubook/runt": "workspace:^",
+    "@docubook/markdown": "workspace:^",
     "@docubook/themes-colors": "workspace:^",
     "@docubook/ui-react": "workspace:^",
+    "@mdx-js/react": "^3.0.1",
     "@tailwindcss/cli": "4.3.0",
     "@tailwindcss/typography": "0.5.16",
     "bun-plugin-tailwind": "^0.1.2",
@@ -69,7 +69,8 @@
     "lucide-react": "^1.14.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "unified": "^11.0.0"
+    "unified": "^11.0.0",
+    "zod": "^4.4.3"
   },
   "peerDependencies": {
     "@sentry/bun": "^10.0.0"

@@ -34,8 +34,8 @@ function renderActionButtonIcon(iconName: string | undefined, className?: string
 
 function ActionButton({ action }: ActionButtonProps) {
   const themeClasses = {
-    primary: "bg-primary text-primary-content hover:bg-primary/90",
-    secondary: "bg-secondary text-secondary-content hover:bg-secondary/90",
+    primary: "bg-primary text-primary-foreground hover:bg-primary/90",
+    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
     ghost: "bg-transparent text-muted-foreground border border-base-300 hover:bg-base-200",
   };
 
@@ -64,11 +64,11 @@ export function Hero({ hero, className }: HeroProps) {
     <div className={cn("mx-auto max-w-4xl px-6 py-32 sm:py-44", className)}>
       <div className="text-center">
         {tagline && <p className="text-primary mb-4 text-lg font-semibold">{tagline}</p>}
-        <h1 className="text-balance text-5xl font-semibold tracking-tight sm:text-7xl">
+        <h1 className="text-5xl font-semibold tracking-tight text-balance sm:text-7xl">
           {headline}
         </h1>
         {description && (
-          <p className="text-muted-foreground mt-8 text-pretty text-lg sm:text-xl">{description}</p>
+          <p className="text-muted-foreground mt-8 text-lg text-pretty sm:text-xl">{description}</p>
         )}
         {actions && actions.length > 0 && (
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">

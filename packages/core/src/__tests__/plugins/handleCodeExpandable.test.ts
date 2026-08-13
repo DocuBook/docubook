@@ -89,7 +89,10 @@ describe("handleCodeExpandableRemark", () => {
 
 // --- Rehype plugin tests ---
 
-function preNode(codeProps: Record<string, unknown> = {}, preProps: Record<string, unknown> = {}): ElementNode {
+function preNode(
+  codeProps: Record<string, unknown> = {},
+  preProps: Record<string, unknown> = {}
+): ElementNode {
   return {
     type: "element",
     tagName: "pre",

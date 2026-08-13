@@ -49,7 +49,7 @@ async function runBuild() {
   }
 }
 
-export const DOCKERFILE_BUN = `FROM ghcr.io/docubook/flame-builder:${FLAME_MAJOR} AS builder
+export const DOCKERFILE_BUN = `FROM ghcr.io/docubook/flame:${FLAME_MAJOR} AS builder
 ENV NODE_ENV=production
 WORKDIR /app
 COPY . .

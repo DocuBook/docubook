@@ -36,7 +36,7 @@ vi.mock("@docubook/core", () => {
   };
 });
 
-vi.mock("@docubook/mdx-content", () => ({
+vi.mock("@docubook/markdown", () => ({
   createMdxComponents: () => ({}),
 }));
 

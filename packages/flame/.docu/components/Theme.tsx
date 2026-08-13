@@ -24,7 +24,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
           >
             <Sun
               className={`h-4 w-4 transition-colors ${
-                !isDark ? "text-base-300" : "text-foreground"
+                !isDark ? "text-primary-foreground" : "text-foreground"
               }`}
             />
           </button>
@@ -38,7 +38,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
           >
             <Moon
               className={`h-4 w-4 transition-colors ${
-                isDark ? "text-foreground" : "text-base-content/60"
+                isDark ? "text-primary-foreground" : "text-base-content/60"
               }`}
             />
           </button>

@@ -6,7 +6,7 @@
 import { existsSync, statSync, readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import type { RuntimeAdapter, ServerHandle } from "@docubook/runt";
+import type { RuntimeAdapter, ServerHandle } from "./runtime";
 import { logger } from "./logger";
 import { DIST_DIR } from "./paths";
 import { getContentType } from "./utils";
@@ -63,7 +63,7 @@ export async function runPreview(adapter: RuntimeAdapter): Promise<ServerHandle 
             headers: {
               "Content-Type": "text/html",
               ...SECURITY_HEADERS,
-              "Content-Security-Policy": cspHeader(nonce, true),
+              "Content-Security-Policy": cspHeader(nonce),
             },
           });
         }
@@ -81,7 +81,7 @@ export async function runPreview(adapter: RuntimeAdapter): Promise<ServerHandle 
           headers: {
             "Content-Type": "text/html",
             ...SECURITY_HEADERS,
-            "Content-Security-Policy": cspHeader(nonce, true),
+            "Content-Security-Policy": cspHeader(nonce),
           },
         });
       }

@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "@docubook/mdx-content/styles.css";
+@import "@docubook/markdown/styles.css";
 
 @plugin "daisyui" {
   themes:
@@ -9,16 +9,22 @@
 @plugin "@tailwindcss/typography";
 @source "../../.docu/components";
 @source "../../.docu/pages";
-@source inline("breadcrumbs collapse collapse-open collapse-close collapse-arrow collapse-plus collapse-title collapse-content");
+@source inline(
+  "breadcrumbs collapse collapse-open collapse-close collapse-arrow collapse-plus collapse-title collapse-content"
+);
 @source inline("modal modal-top modal-middle modal-bottom modal-box modal-backdrop");
 @source inline("drawer drawer-end drawer-toggle drawer-side drawer-overlay drawer-content");
 @source inline("sm:drawer-open md:drawer-open lg:drawer-open xl:drawer-open");
 @source inline("navbar menu menu-horizontal");
 @source inline("kbd kbd-xs kbd-sm kbd-md kbd-lg kbd-xl");
 @source inline("toggle theme-controller toggle-xs toggle-sm toggle-md toggle-lg");
-@source inline("toggle-primary toggle-secondary toggle-accent toggle-neutral toggle-success toggle-warning toggle-info toggle-error");
+@source inline(
+  "toggle-primary toggle-secondary toggle-accent toggle-neutral toggle-success toggle-warning toggle-info toggle-error"
+);
 @source inline("input input-ghost input-xs input-sm input-md input-lg input-xl");
-@source inline("input-primary input-secondary input-accent input-neutral input-success input-warning input-info input-error");
+@source inline(
+  "input-primary input-secondary input-accent input-neutral input-success input-warning input-info input-error"
+);
 @source inline("label");
 
 @custom-variant dark (&:is(.dark *));
@@ -43,6 +49,9 @@
   --color-muted-foreground: hsl(var(--muted-foreground));
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-primary-content: hsl(var(--primary-foreground));
+  --color-secondary-content: hsl(var(--secondary-foreground));
+  --color-accent-content: hsl(var(--accent-foreground));
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
   --color-card: hsl(var(--card));
@@ -76,27 +85,27 @@
 @layer base {
   :root {
     --base-100: 100% 0 0;
-    --base-200: 98% 0 2;
-    --base-300: 95% 0 4;
-    --base-content: 222% 47% 11%;
-    --background: 210 40% 98%;
+    --base-200: 97% 0.002 260;
+    --base-300: 92% 0.004 260;
+    --base-content: 22% 0.03 260;
+    --background: 0 0% 100%;
     --foreground: 220 30% 15%;
     --card: 0 0% 100%;
     --card-foreground: 220 30% 15%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 30% 15%;
     --primary: 210 81% 56%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 30% 90%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 20% 94%;
     --secondary-foreground: 220 30% 15%;
-    --muted: 210 20% 92%;
-    --muted-foreground: 220 15% 50%;
+    --muted: 210 20% 94%;
+    --muted-foreground: 220 15% 38%;
     --accent: 200 100% 40%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 200 40% 98%;
     --destructive: 0 85% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border-color: 210 20% 85%;
-    --input: 210 20% 85%;
+    --destructive-foreground: 210 40% 98%;
+    --border-color: 210 20% 88%;
+    --input: 210 20% 88%;
     --ring: 210 81% 56%;
     --radius: 0.5rem;
   }
@@ -113,15 +122,15 @@
     --popover: 225 18% 14%;
     --popover-foreground: 210 20% 93%;
     --primary: 210 100% 67%;
-    --primary-foreground: 225 20% 11%;
+    --primary-foreground: 210 0% 10%;
     --secondary: 220 15% 18%;
     --secondary-foreground: 210 20% 90%;
     --muted: 220 12% 20%;
     --muted-foreground: 215 12% 58%;
     --accent: 200 100% 62%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 200 0% 10%;
     --destructive: 0 80% 65%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 0 0% 10%;
     --border-color: 220 10% 28%;
     --input: 220 10% 28%;
     --ring: 210 100% 67%;
@@ -195,7 +204,7 @@
   }
 
   .rehype-code-title {
-    @apply -mb-8 mt-5 w-full px-2 pb-5 text-sm font-medium;
+    @apply mt-5 -mb-8 w-full px-2 pb-5 text-sm font-medium;
   }
 
   .highlight-comp > code {

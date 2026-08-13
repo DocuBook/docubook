@@ -92,13 +92,21 @@ export function MobileBar({
   useEffect(() => {
     if (!tocs.length) return;
 
+    // Match the CSS scroll-margin-top (scroll-mt-54 = 216px) that anchor
+    // jumps rest at, so the highlight agrees with where a jump lands.
+    const firstEl = document.getElementById(tocs[0].href.slice(1));
+    const offset = firstEl ? parseFloat(getComputedStyle(firstEl).scrollMarginTop) || 100 : 100;
+
     const handleScroll = () => {
       let currentId: string | null = null;
       for (const toc of tocs) {
         const id = toc.href.slice(1);
         const el = document.getElementById(id);
         if (!el) continue;
-        if (el.getBoundingClientRect().top <= 100) {
+        // Round: smooth anchor scrolls land at sub-pixel positions (e.g.
+        // 216.4px), which would otherwise fail the <= offset comparison and
+        // leave the previous heading highlighted.
+        if (Math.round(el.getBoundingClientRect().top) <= offset) {
           currentId = id;
         } else {
           break;
@@ -109,7 +117,13 @@ export function MobileBar({
 
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    // Smooth anchor scrolls may not emit a trailing scroll event at the
+    // target position — recompute once the animation actually settles.
+    window.addEventListener("scrollend", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("scrollend", handleScroll);
+    };
   }, [tocs]);
 
   useEffect(() => {
@@ -192,7 +206,10 @@ export function MobileBar({
               <MobileTocList
                 tocs={tocs}
                 activeId={activeId}
-                onSelect={() => setTocExpanded(false)}
+                onSelect={(id) => {
+                  setTocExpanded(false);
+                  setActiveId(id);
+                }}
               />
             ) : (
               <div className="flex flex-col items-center py-6 text-center">
@@ -216,7 +233,7 @@ function MobileTocList({
 }: {
   tocs: TocItem[];
   activeId: string | null;
-  onSelect: () => void;
+  onSelect: (id: string) => void;
 }) {
   return (
     <ul className="flex flex-col gap-0.5">
@@ -230,9 +247,21 @@ function MobileTocList({
               href={toc.href}
               onClick={(e) => {
                 e.preventDefault();
-                onSelect();
-                const el = document.getElementById(id);
-                if (el) el.scrollIntoView({ behavior: "smooth" });
+                onSelect(id);
+                history.replaceState(null, "", toc.href);
+                const targetId = id;
+                // Wait for the bar collapse re-render so the measurement is
+                // accurate, then jump with the same offset the observer uses
+                // (scrollIntoView ignores scroll-margin-top on iOS Safari).
+                requestAnimationFrame(() => {
+                  const el = document.getElementById(targetId);
+                  if (!el) return;
+                  const margin = parseFloat(getComputedStyle(el).scrollMarginTop) || 100;
+                  window.scrollTo({
+                    top: el.getBoundingClientRect().top + window.scrollY - margin,
+                    behavior: "smooth",
+                  });
+                });
               }}
               className={cn(
                 "block rounded px-2 py-1.5 text-sm transition-colors",
@@ -276,7 +305,7 @@ function MobileDrawer({
   return (
     <div className="fixed inset-0 z-[100]">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden="true" />
-      <div className="bg-base-100 absolute right-0 top-0 flex h-full w-80 max-w-[85vw] flex-col shadow-xl">
+      <div className="bg-base-100 absolute top-0 right-0 flex h-full w-80 max-w-[85vw] flex-col shadow-xl">
         <div className="border-base-200 flex items-center justify-between border-b px-4 py-3">
           <div className="flex items-center gap-2">
             <GitHubLink repoUrl={repoUrl} />

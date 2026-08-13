@@ -7,42 +7,46 @@ In this guide, we utilize custom `Steps` and `Step` components, specifically des
 
 ## Preview
 
-<Steps>
-  <Step title="Step 1: Clone the DocuBook Repository">
-    ```bash
-    git clone https://github.com/DocuBook/docubook.git
-    ```
-  </Step>
-  <Step title="Step 2: Access the Project Directory">
-    ```bash
-    cd docubook
-    ```
-  </Step>
-  <Step title="Step 3: Install Required Dependencies">
-    ```bash
-    pnpm install
-    ```
-  </Step>
-</Steps>
+::::steps
+:::step{title="Step 1: Clone the DocuBook Repository"}
+```bash
+git clone https://github.com/DocuBook/docubook.git
+```
+:::
+
+:::step{title="Step 2: Access the Project Directory"}
+```bash
+cd docubook
+```
+:::
+
+:::step{title="Step 3: Install Required Dependencies"}
+```bash
+pnpm install
+```
+:::
+::::
 
 ## Output Markdown
 
-````markdown:mdx
-<Steps>
-  <Step title="Step 1: Clone the DocuBook Repository">
-    ```bash
-    git clone https://github.com/DocuBook/docubook.git
-    ```
-  </Step>
-  <Step title="Step 2: Access the Project Directory">
-    ```bash
-    cd docubook
-    ```
-  </Step>
-  <Step title="Step 3: Install Required Dependencies">
-    ```bash
-    pnpm install
-    ```
-  </Step>
-</Steps>
+````md
+::::steps
+:::step{title="Step 1: Clone the DocuBook Repository"}
+```bash
+git clone https://github.com/DocuBook/docubook.git
+```
+:::
+
+:::step{title="Step 2: Access the Project Directory"}
+```bash
+cd docubook
+```
+:::
+
+:::step{title="Step 3: Install Required Dependencies"}
+```bash
+pnpm install
+```
+:::
+::::
 ````

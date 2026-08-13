@@ -28,8 +28,8 @@ Resolution: relative path (starts with `.`) → project root, absolute → as-is
 
 ## Creating a Plugin
 
-<Steps>
-  <Step title="Step 1: Project Setup">
+::::steps
+:::step{title="Step 1: Project Setup"}
 
 Create a plugin file in your project directory, for example `plugins/reading-time.ts`:
 
@@ -44,9 +44,9 @@ project-root/
 ```
 
 A plugin can be stored as a **local file** in your `plugins/` folder, or published as a **separate package** on npm under `@docubook/plugin-*` or `docubook-plugin-*`.
+:::
 
-  </Step>
-  <Step title="Step 2: Basic Plugin Structure">
+:::step{title="Step 2: Basic Plugin Structure"}
 
 Every plugin must have a unique `name` and a `setup(build)` function:
 
@@ -66,9 +66,9 @@ const plugin: DocuBookPlugin = {
 
 export default plugin;
 ```
+:::
 
-  </Step>
-<Step title="Step 4: Using Factory Options">
+:::step{title="Step 3: Using Factory Options"}
 
 If your plugin needs configuration via `docu.json`, use a factory function:
 
@@ -119,9 +119,9 @@ Then register it in `docu.json`:
   ]
 }
 ```
+:::
 
-  </Step>
-  <Step title="Step 5: Managing Plugin State">
+:::step{title="Step 4: Managing Plugin State"}
 
 Plugins can maintain internal state using the `setup()` closure:
 
@@ -147,9 +147,9 @@ export default function pluginCounter(): DocuBookPlugin {
   };
 }
 ```
+:::
 
-  </Step>
-  <Step title="Step 6: Error Handling">
+:::step{title="Step 5: Error Handling"}
 
 Don't throw raw errors - use clear messages with a `[plugin:name]` prefix:
 
@@ -187,9 +187,9 @@ export default function pluginValidator(): DocuBookPlugin {
 ```
 
 See [Error Isolation](#error-isolation) for how errors behave in each hook.
+:::
 
-  </Step>
-  <Step title="Step 7: Testing Plugins">
+:::step{title="Step 6: Testing Plugins"}
 
 Use the available test helpers:
 
@@ -243,9 +243,9 @@ Run the tests:
 ```bash
 npx vitest run plugins/__tests__/
 ```
+:::
 
-  </Step>
-  <Step title="Step 8: Using Multiple Hooks">
+:::step{title="Step 7: Using Multiple Hooks"}
 
 A single plugin can register multiple hooks at once:
 
@@ -283,9 +283,9 @@ export default function pluginComplete(): DocuBookPlugin {
   };
 }
 ```
+:::
 
-  </Step>
-  <Step title="Step 9: Publishing a Plugin">
+:::step{title="Step 8: Publishing a Plugin"}
 
 To publish a plugin to npm, choose a **namespace** — `@docubook/plugin-*` for official plugins or `docubook-plugin-*` for community ones. The **entry point** must export a default `DocuBookPlugin` or factory function. Add `@docubook/flame` as a **peer dependency** and include a **README** with a `docu.json` configuration example.
 
@@ -305,9 +305,8 @@ To publish a plugin to npm, choose a **namespace** — `@docubook/plugin-*` for 
 ```
 
 For the full implementation example, see the [sitemap example](#example-plugins) below.
-
-  </Step>
-  </Steps>
+:::
+::::
 
 ## Error Isolation
 

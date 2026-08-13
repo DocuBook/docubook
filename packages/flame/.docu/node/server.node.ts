@@ -1,4 +1,4 @@
-import { nodeAdapter } from "@docubook/runt";
+import { nodeAdapter } from "./runtime";
 import { runServer } from "./server.impl";
 
 await runServer(nodeAdapter);

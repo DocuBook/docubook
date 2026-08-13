@@ -27,7 +27,7 @@ function escapeMeta(s: string): string {
     }
 
     // JS string: escape template literal & string special chars
-    if (ch === "`" || ch === "$" || ch === "{" || ch === "}" || ch === "\"" || ch === "\\") {
+    if (ch === "`" || ch === "$" || ch === "{" || ch === "}" || ch === '"' || ch === "\\") {
       out += `\\${ch}`;
       continue;
     }

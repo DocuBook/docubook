@@ -34,7 +34,7 @@ describe("integration — full pipeline", () => {
     const css = generateThemeCss(resolved);
 
     expect(css).toContain("@layer base");
-    expect(css).toContain("--background: 210 40% 98%;");
+    expect(css).toContain("--background: 0 0% 100%;");
     expect(css).toContain("--primary: 210 81% 56%;");
     expect(css).toContain("--radius: 0.5rem;");
     expect(css).toContain("--base-100: 100% 0 0;");

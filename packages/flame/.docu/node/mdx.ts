@@ -1,5 +1,6 @@
 import React from "react";
 import type { Pluggable } from "unified";
+import { z, type ZodType } from "zod";
 import {
   serialize,
   extractTocsFromRawMdx,
@@ -8,7 +9,7 @@ import {
   createDefaultRemarkPlugins,
   MDXRemote,
 } from "@docubook/core";
-import { createMdxComponents } from "@docubook/mdx-content";
+import { createMdxComponents } from "@docubook/markdown";
 import { getGitLastModified, getGitLastModifiedBatch, getFilesystemMtime } from "./git";
 
 /**
@@ -106,8 +107,87 @@ export { getGitLastModifiedBatch };
 export interface MdxResult {
   content: React.ReactElement;
   compiledSource: string;
-  frontmatter: { title?: string; description?: string; date?: string };
+  frontmatter: Frontmatter;
   tocs: ReturnType<typeof extractTocsFromRawMdx>;
+}
+
+/**
+ * DocuBook frontmatter contract — single source of truth for frontmatter
+ * fields. Add new properties here; types and validation derive from it.
+ * YAML coerces unquoted values, so string fields use `z.coerce.*`.
+ */
+export const frontmatterSchema = z.object({
+  title: z.coerce.string().optional(),
+  description: z.coerce.string().optional(),
+  image: z.coerce.string().optional(),
+  date: z.coerce.string().optional(),
+});
+
+export type Frontmatter = z.infer<typeof frontmatterSchema>;
+
+/**
+ * Read a string field from frontmatter after the plugin transform chain
+ * (which widens the type to `Record<string, unknown>`). Returns "" when
+ * missing or not a string.
+ */
+export function frontmatterField(frontmatter: Record<string, unknown>, key: string): string {
+  return typeof frontmatter[key] === "string" ? (frontmatter[key] as string) : "";
+}
+
+/**
+ * Zod schema validating frontmatter after extraction.
+ * Must satisfy the frontmatter contract (defaults to `frontmatterSchema`).
+ */
+export type FrontmatterSchema = ZodType<Frontmatter>;
+
+/**
+ * Compile MDX/MD content into a React element and compiled source.
+ *
+ * @param rawMdx - Raw MDX/MD file content
+ * @param filePath - Relative file path for git date lookup
+ * @param gitDates - Optional pre-fetched git last-modified map
+ * @param remarkPlugins - Additional remark plugins (merged after defaults, optional)
+ * @param rehypePlugins - Additional rehype plugins (merged after defaults, optional)
+ * @param frontmatterSchema - Custom schema overriding the default contract
+ */
+/**
+ * Shared compile core used by `compileMdx` (SSR) and `compileMdxModule`
+ * (static hydration). Strips frontmatter, merges the doc plugin chain
+ * (defaults + .html link fixes + user plugins) and runs `serialize()`.
+ */
+async function serializeWithDocPlugins(
+  rawMdx: string,
+  opts: {
+    outputFormat?: "function-body" | "program";
+    remarkPlugins?: Pluggable[];
+    rehypePlugins?: Pluggable[];
+    frontmatterSchema?: FrontmatterSchema;
+  } = {}
+) {
+  const { strippedContent } = extractFrontmatterWithContent<Frontmatter>(
+    rawMdx,
+    opts.frontmatterSchema
+  );
+
+  const defaultRemark = createDefaultRemarkPlugins();
+  const defaultRehype = createDefaultRehypePlugins();
+
+  // remarkMdxJsxDocsHtmlLinks must run before user plugins so custom remark
+  // transforms see already-fixed hrefs.  rehypeDocsHtmlLinks handles plain
+  // markdown [text](path) → <a> elements in the HAST phase.
+  const finalRemark = [...defaultRemark, remarkMdxJsxDocsHtmlLinks, ...(opts.remarkPlugins ?? [])];
+  const finalRehype = [...defaultRehype, rehypeDocsHtmlLinks, ...(opts.rehypePlugins ?? [])];
+
+  // v2 contract: plain markdown + directives only — authored JSX tags are
+  // not parsed (dropped, content kept as text).
+  return serialize(strippedContent, {
+    outputFormat: opts.outputFormat,
+    format: "md",
+    mdxOptions: {
+      rehypePlugins: finalRehype,
+      remarkPlugins: finalRemark,
+    },
+  });
 }
 
 /**
@@ -118,35 +198,22 @@ export interface MdxResult {
  * @param gitDates - Optional pre-fetched git last-modified map
  * @param remarkPlugins - Additional remark plugins (merged after defaults, optional)
  * @param rehypePlugins - Additional rehype plugins (merged after defaults, optional)
+ * @param frontmatterSchema - Custom schema overriding the default contract
  */
 export async function compileMdx(
   rawMdx: string,
   filePath: string,
   gitDates?: Map<string, string>,
   remarkPlugins?: Pluggable[],
-  rehypePlugins?: Pluggable[]
+  rehypePlugins?: Pluggable[],
+  frontmatterSchema?: FrontmatterSchema
 ): Promise<MdxResult> {
   const tocs = extractTocsFromRawMdx(rawMdx);
-  const { frontmatter, strippedContent } = extractFrontmatterWithContent<{
-    title?: string;
-    description?: string;
-    date?: string;
-  }>(rawMdx);
-
-  const defaultRemark = createDefaultRemarkPlugins();
-  const defaultRehype = createDefaultRehypePlugins();
-
-  // remarkMdxJsxDocsHtmlLinks must run before user plugins so custom remark
-  // transforms see already-fixed hrefs.  rehypeDocsHtmlLinks handles plain
-  // markdown [text](path) → <a> elements in the HAST phase.
-  const finalRemark = [...defaultRemark, remarkMdxJsxDocsHtmlLinks, ...(remarkPlugins ?? [])];
-  const finalRehype = [...defaultRehype, rehypeDocsHtmlLinks, ...(rehypePlugins ?? [])];
-
-  const serialized = await serialize(strippedContent, {
-    mdxOptions: {
-      rehypePlugins: finalRehype,
-      remarkPlugins: finalRemark,
-    },
+  const { frontmatter } = extractFrontmatterWithContent<Frontmatter>(rawMdx, frontmatterSchema);
+  const serialized = await serializeWithDocPlugins(rawMdx, {
+    remarkPlugins,
+    rehypePlugins,
+    frontmatterSchema,
   });
 
   const components = createMdxComponents();
@@ -170,4 +237,23 @@ export async function compileMdx(
     frontmatter: { ...frontmatter, date },
     tocs,
   };
+}
+
+/**
+ * Compile MDX to a real ESM module source (program format) for static
+ * client-side hydration — the browser imports and executes it via the bundler
+ * instead of `new Function(compiledSource)`. Uses the same plugin chain as
+ * `compileMdx` so the hydrated tree matches the SSR output.
+ */
+export async function compileMdxModule(
+  rawMdx: string,
+  remarkPlugins?: Pluggable[],
+  rehypePlugins?: Pluggable[]
+): Promise<string> {
+  const serialized = await serializeWithDocPlugins(rawMdx, {
+    outputFormat: "program",
+    remarkPlugins,
+    rehypePlugins,
+  });
+  return serialized.compiledSource;
 }

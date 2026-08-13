@@ -1,7 +1,6 @@
-export type { TocItem, MdxCompileResult } from "./types";
+export type { TocItem } from "./types";
 export { cn, parseDate, stringToDate, formatDate, formatDate2, toIsoDateOnly } from "./utils";
 export {
-  parseMdx,
   serialize,
   MDXRemote,
   preProcess,
@@ -12,22 +11,16 @@ export {
 export { handleCodeTitles } from "./plugins/handleCodeTitles";
 export { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/handleCodeExpandable";
 export { rehypeMermaid } from "./plugins/rehypeMermaid";
+export { remarkDirectiveToMdx } from "./plugins/remarkDirectiveToMdx";
 export {
   extractFrontmatter,
   extractFrontmatterWithContent,
   extractTocsFromRawMdx,
   sluggify,
 } from "./extract";
-export type { ParseMdxOptions } from "./compile";
-export {
-  readMdxFileBySlug,
-  parseMdxFile,
-  compileParsedMdxFile,
-  createMdxContentService,
-} from "./content";
+export type { MDXRemoteProps } from "./mdx-compiler/index";
 export type {
-  ReadMdxFileResult,
-  ParsedMdxFile,
-  CompiledMdxFile,
-  CreateMdxContentServiceOptions,
-} from "./content";
+  MDXRemoteSerializeResult,
+  SerializeOptions,
+  SerializeResult,
+} from "./mdx-compiler/serialize";

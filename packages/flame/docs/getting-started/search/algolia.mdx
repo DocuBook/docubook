@@ -5,10 +5,10 @@ description: Integrate Algolia DocSearch into your Flame documentation site.
 
 [Algolia DocSearch](https://docsearch.algolia.com/) provides a fast, relevant search experience for documentation sites. Flame does not include Algolia by default — add it via a plugin registered in the `plugins` array of `docu.json`:
 
-<Note type="info" title="Example configuration — adapt to your plugin">
+:::info title="Example configuration — adapt to your plugin"
   The entry below is an **example**. `@docubook/plugin-search-algolia` is a placeholder —
   replace it with whatever Algolia search plugin you install.
-</Note>
+:::
 
 ```json
 {
@@ -25,29 +25,31 @@ description: Integrate Algolia DocSearch into your Flame documentation site.
 
 The plugin format is `[packageName, factoryOptions]`. At build time, Flame loads the package, calls its default export as a factory with your options, and registers the returned plugin instance.
 
-<Note type="note" title="Is this safe?">
+:::info{title="Is this safe?"}
   Yes. The **search-only API key** only allows querying your index — no writes. The App ID and index name are already visible in browser network requests. Never put your **Admin API Key** here.
-</Note>
+:::
 
 ## Register for DocSearch
 
 Algolia provides DocSearch for open-source projects for free.
 
-<Steps>
-  <Step title="Visit the DocSearch application">
-    Go to [docsearch.algolia.com/apply](https://docsearch.algolia.com/apply/) and submit your documentation URL.
-  </Step>
-  <Step title="Wait for approval">
-    Algolia reviews your application and sends your credentials:
-    - **Application ID**
-    - **Search-Only API Key**
-    - **Index Name**
-    - (optional) **Assistant ID**
-  </Step>
-  <Step title="Add credentials to docu.json">
-    Add the plugin entry to `plugins` as shown above. No `.env` file needed.
-  </Step>
-</Steps>
+::::steps
+:::step{title="Visit the DocSearch application"}
+  Go to [docsearch.algolia.com/apply](https://docsearch.algolia.com/apply/) and submit your documentation URL.
+:::
+
+:::step{title="Wait for approval"}
+  Algolia reviews your application and sends your credentials:
+  - **Application ID**
+  - **Search-Only API Key**
+  - **Index Name**
+  - (optional) **Assistant ID**
+:::
+
+:::step{title="Add credentials to docu.json"}
+  Add the plugin entry to `plugins` as shown above. No `.env` file needed.
+:::
+::::
 
 ## Crawler Setup
 
@@ -55,20 +57,23 @@ After your site is live, configure the Algolia crawler to index your pages. The 
 
 ### Dashboard Setup
 
-<Steps>
-  <Step title="Open Algolia Dashboard">
-    Visit [dashboard.algolia.com](https://dashboard.algolia.com/).
-  </Step>
-  <Step title="Navigate to Crawler">
-    Go to **Data Sources** → **Crawler** → click your crawler name.
-  </Step>
-  <Step title="Add your domain">
-    In the **Domains** tab, add your production URL.
-  </Step>
-  <Step title="Open the Editor">
-    Open the **Setup** dropdown → select **Editor**.
-  </Step>
-</Steps>
+::::steps
+:::step{title="Open Algolia Dashboard"}
+  Visit [dashboard.algolia.com](https://dashboard.algolia.com/).
+:::
+
+:::step{title="Navigate to Crawler"}
+  Go to **Data Sources** → **Crawler** → click your crawler name.
+:::
+
+:::step{title="Add your domain"}
+  In the **Domains** tab, add your production URL.
+:::
+
+:::step{title="Open the Editor"}
+  Open the **Setup** dropdown → select **Editor**.
+:::
+::::
 
 ### Crawler Configuration
 

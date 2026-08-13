@@ -53,6 +53,9 @@ export {
   hslToRgb,
   rgbToOklch,
   hexToOklch,
+  relativeLuminance,
+  contrastRatio,
+  getContrastingForeground,
 } from "./hex-to-hsl";
 
 // Re-export resolver

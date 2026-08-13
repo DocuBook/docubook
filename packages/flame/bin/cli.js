@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 /* global process, console, Bun, Deno */
-
 import { resolve, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { cpSync, existsSync, readFileSync, writeFileSync, renameSync } from "node:fs";
@@ -50,6 +49,23 @@ if (!COMMAND_MAP) {
 }
 
 const command = process.argv[2];
+
+// Detect the package manager that invoked this binary. npm, pnpm, bun, and
+// yarn set npm_config_user_agent when they run a bin; fall back to lockfiles
+// in the target directory for direct invocations (e.g. `node bin/cli.js`).
+function detectPkgManager(dir) {
+  const userAgent = process.env.npm_config_user_agent || "";
+  // pnpm/yarn UA strings also contain "npm/?" — match specific tools first.
+  if (/bun\//.test(userAgent)) return "bun";
+  if (/pnpm\//.test(userAgent)) return "pnpm";
+  if (/yarn\//.test(userAgent)) return "yarn";
+  if (/npm\//.test(userAgent)) return "npm";
+  if (existsSync(join(dir, "bun.lock"))) return "bun";
+  if (existsSync(join(dir, "pnpm-lock.yaml"))) return "pnpm";
+  if (existsSync(join(dir, "yarn.lock"))) return "yarn";
+  if (existsSync(join(dir, "package-lock.json"))) return "npm";
+  return "npm";
+}
 
 // Parse flags
 const themeIndex = process.argv.indexOf("--theme");
@@ -142,16 +158,18 @@ if (command === "init") {
     }
     writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
 
-    // Runtime detection via shebang (#!/usr/bin/env node) makes typeof Bun
-    // unavailable — check for bun.lock as a reliable Bun indicator.
-    const isBun = existsSync(join(targetDir, "bun.lock"));
-    const pkgManager = runtime === "deno" ? "deno" : isBun ? "bun" : "node";
+    // The shebang (#!/usr/bin/env node) hides `typeof Bun`, so the package
+    // manager is detected from the invoking tool (npm_config_user_agent) with
+    // a lockfile fallback — the next steps must match the PM the user is on.
+    const pkgManager = runtime === "deno" ? "deno" : detectPkgManager(targetDir);
     const nextSteps = {
       bun: "    bun install\n    bun run dev",
-      node: "    npm install\n    npm run dev",
+      pnpm: "    pnpm install\n    pnpm run dev",
+      yarn: "    yarn\n    yarn dev",
+      npm: "    npm install\n    npm run dev",
       deno: "    deno task dev\n\n  ⚠️  If you see a freshness error, run:\n    DENO_ALLOW_NEWER=true deno task dev",
     }[pkgManager];
-    console.log(`\n  ✓ Project scaffolded!\n\n  Next steps:\n${nextSteps}\n`);
+    console.log(`\n  ✓ Project scaffolded!\n\n  Next steps (${pkgManager}):\n${nextSteps}\n`);
     process.exit(0);
   } catch (err) {
     console.error(`Failed to scaffold project: ${err.message}`);

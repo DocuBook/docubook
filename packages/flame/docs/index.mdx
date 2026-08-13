@@ -1,37 +1,94 @@
 ---
 title: Welcome
-description: Documentation for @docubook/flame — a runtime-agnostic React + MDX framework for modern documentation sites.
+description: Documentation for @docubook/flame — a build-time bridge between tooling and content plain markdown in, flat static HTML out.
 ---
 
-**@docubook/flame** is the core framework of the DocuBook ecosystem. It is a lightweight runtime for building documentation websites using React 19, MDX, and filesystem-based routing — runs on **Bun**, **Node.js**, and **Deno**.
+**@docubook/flame** compiles plain markdown (`.md` / `.mdx`) into flat static HTML — a build-time bridge, not a runtime. Bun, Node.js, or Deno only run the toolchain; the output deploys anywhere.
 
-|         Feature          |                    Description                     |
-| ------------------------ | -------------------------------------------------- |
-| **Runtime-agnostic**     | Bun, Node.js, or Deno — same CLI, same output      |
-| **React 19 SSR**         | Server-side rendering with client hydration        |
-| **Filesystem routing**   | Auto-discover pages from `docs/` folder            |
-| **Plugin system**        | Extend the build pipeline and dev server via hooks |
-| **Built-in search**      | Full-text search index generated at build time     |
-| **Config-driven themes** | Switch presets or use custom colors                |
-| **Static build**         | Pre-render all pages to static HTML for deployment |
+- [Quick start](/docs/getting-started/quick-start-guide) — a docs site in minutes
+- [Formatting](/docs/getting-started/formatting) — the v2 authoring contract: markdown, fenced code, directives
+- [Introduction](/docs/getting-started/introduction) — why v2 is markdown-first, not JSX
 
-<Cards>
-  <Card title="@docubook/core" icon="Cpu" horizontal>
-    Shared MDX compile pipeline and markdown utilities. Handles compilation, rehype/remark plugin orchestration, and frontmatter parsing used by all DocuBook packages.
-  </Card>
-  <Card title="@docubook/mdx-content" icon="Package" horizontal>
-    Portable MDX components and framework adapters. Pre-built components like cards, tabs, accordions, steps, notes, and code blocks for rich documentation.
-  </Card>
-  <Card title="@docubook/mdx-remote" icon="Radio" horizontal>
-    Runtime MDX compilation and rendering. A rewrite of next-mdx-remote for server-side MDX evaluation in DocuBook.
-  </Card>
-  <Card title="@docubook/runt" icon="Server" horizontal>
-    Runtime HTTP server adapters — Bun.serve, Node HTTP, and Deno HTTP. The abstraction that makes Flame runtime-agnostic.
-  </Card>
-  <Card title="@docubook/themes-colors" icon="Palette" horizontal>
-    Theme color presets and color utilities — hex-to-HSL conversion, CSS variable generation, and 3 built-in presets (Default Blue, Fresh Lime, Coffee).
-  </Card>
-  <Card title="@docubook/ui-react" icon="Component" horizontal>
-    React + daisyUI component library for documentation sites — sidebar, table of contents, navbar, footer, search modal, and MDX content renderers.
-  </Card>
-</Cards>
+::::cards{cols="2"}
+  :::card{title="@docubook/core" icon="Cpu"}
+    Compile pipeline — remark/rehype plugins, frontmatter, and the directive system that turns `:::` / `::::` into components.
+  :::
+  :::card{title="@docubook/markdown" icon="Package"}
+    Component registry — callout, tabs, cards, accordions, steps, tree, mermaid, youtube, tooltip — resolved from directives at compile time.
+  :::
+  :::card{title="@docubook/ui-react" icon="Component"}
+    React + daisyUI UI — sidebar, TOC, navbar, footer, search modal.
+  :::
+  :::card{title="@docubook/themes-colors" icon="Palette"}
+    Theme color presets and utilities — hex-to-HSL conversion, CSS variables, 3 built-in presets.
+  :::
+::::
+
+::warning{title="Performance: v1 vs v2"}
+
+> A same-docs benchmark: the full Flame documentation (27 `.mdx`, 308 KB) built
+by both versions on Node 22, `NODE_ENV=production`, cold cache — v1 from the
+npm registry tarball (`1.7.2`), v2 from the local workspace tarball
+(`2.0.0-alpha.0`).
+
+```mermaid
+flowchart LR
+    classDef v1 fill:#f8fafc,stroke:#94a3b8,stroke-width:1px,color:#334155
+    classDef v2 fill:#ecfdf5,stroke:#34d399,stroke-width:1px,color:#064e3b
+    classDef note fill:#fef2f2,stroke:#f87171,stroke-width:1px,color:#7f1d1d
+
+    RAW["same content · 27 mdx / 308 KB"] --> V1
+    RAW --> V2
+
+    subgraph V1["Flame v1 · 1.7.2"]
+        direction TB
+        C1["JSX conversion"]
+        B1["mdx-remote compile"]
+        H1["new Function hydration"]
+        D1["dist 7.1 MB"]
+        C1 --> B1 --> H1 --> D1
+    end
+    subgraph V2["Flame v2 · 2.0.0-alpha.0"]
+        direction TB
+        B2["common markdown + directives"]
+        H2["static ESM hydration"]
+        D2["dist 6.9 MB"]
+        B2 --> H2 --> D2
+    end
+
+    T1["pages: 1490 ms"] -.-> B1
+    T2["pages: 1220 ms"] -.-> B2
+
+    class E1 note
+    class B1,H1,D1 v1
+    class B2,H2,D2 v2
+```
+
+> The same raw content forks at the entry: **v1 cannot parse v2's directive
+syntax** — 7 of 26 files fail with `Could not parse expression with acorn`,
+because mdx-remote reads `{...}` attribute blocks as JSX. Those 7 files were
+converted to v1-native JSX (the migration table in
+[Formatting](/docs/getting-started/formatting)), then both versions build all 26 pages. What differs is the measured compile phase and the output.
+
+```mermaid
+xychart-beta
+    title "Cold build · MDX page compile (ms) — lower is better"
+    x-axis ["v1 1.7.2", "v2 2.0.0-alpha.0"]
+    y-axis "milliseconds" 0 --> 1600
+    bar [1490, 1220]
+```
+
+| Metric | v1 1.7.2 | v2 2.0.0-alpha.0 | Δ |
+| ------ | -------- | ----------------- | - |
+| MDX page compile | 1490 ms | 1220 ms | **−18%** |
+| Client bundle | 2930 ms | 2970 ms | ≈ |
+| Total wall | 5.66 s | 6.39 s | +0.73 s |
+| dist size | 7.1 MB | 6.9 MB | −3% |
+| client JS | 4.3 MB | 4.8 MB | +12% |
+| Pages built | 26/26 (after conversion) | 26/26 (as-is) | — |
+
+> Reading the numbers: v2 compiles pages **18% faster** with a **3% smaller
+dist**. The `+0.73 s` wall is the price of v2's hydration model — a prePass
+that compiles each page to a static ESM module for eval-free hydration, which v1 does not have (v1 re-uses the SSR `compiledSource` via `new Function`).
+That prePass is the double-parse targeted by the build cache fix: with warm
+cache, a no-change build skips it entirely.

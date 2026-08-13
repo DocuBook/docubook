@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import DocsBreadcrumb from "../../components/Breadcrumb";
 import Pagination from "../../components/Pagination";
@@ -14,10 +13,15 @@ interface DocsPageProps {
   title: string;
   description?: string;
   date?: string;
-  content: ReactNode;
+  /** SSR'd MDX content HTML — rendered as its own root so client hydration
+   * (separate island root) matches useId-based ids. */
+  content: string;
   tocs: TocItem[];
   filePath: string;
   repoUrl?: string;
+  /** Build-time slug keying into the bundled mdxModules manifest (client.ts). */
+  mdxSlug?: string;
+  /** Dev-only pre-compiled source for the legacy MDXRemote eval path. */
   compiledSource?: string;
 }
 
@@ -30,6 +34,7 @@ export default function DocsPage({
   tocs,
   filePath,
   repoUrl,
+  mdxSlug,
   compiledSource,
 }: DocsPageProps) {
   const pathname = slug.join("/");
@@ -39,7 +44,7 @@ export default function DocsPage({
     <div className="flex w-full flex-1 px-0 pb-4 lg:h-[calc(100vh-4rem)] lg:px-8 lg:pb-8">
       <div
         id="scroll-container"
-        className="bg-base-100 border-base-300 max-lg:scroll-p-54 relative flex w-full flex-col items-start rounded-b-3xl border shadow-md lg:h-full lg:flex-row lg:overflow-y-auto lg:rounded-xl"
+        className="bg-base-100 border-base-300 relative flex w-full flex-col items-start rounded-b-3xl border shadow-md max-lg:scroll-p-54 lg:h-full lg:flex-row lg:overflow-y-auto lg:rounded-xl"
       >
         {/* Mobile bar - island */}
         <div
@@ -60,7 +65,11 @@ export default function DocsPage({
               {description && (
                 <p className="text-muted-foreground -mt-4 text-[16.5px]">{description}</p>
               )}
-              <div id="mdx-content-island">{content}</div>
+              <div
+                id="mdx-content-island"
+                data-mdx-slug={mdxSlug}
+                dangerouslySetInnerHTML={{ __html: content }}
+              />
               {compiledSource && (
                 <script
                   id="mdx-compiled-source"

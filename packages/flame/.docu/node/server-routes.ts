@@ -1,9 +1,9 @@
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { resolve } from "node:path";
 import { readFileSync, statSync } from "node:fs";
 import React, { type ReactNode } from "react";
 import { renderToString } from "react-dom/server";
-import { compileMdx } from "./mdx";
+import { compileMdx, frontmatterField } from "./mdx";
 import { getContentType } from "./utils";
 import { DOCS_DIR, DIST_DIR, PROJECT_ROOT } from "./paths";
 import { BuildPluginBuilder } from "./plugin-builder";
@@ -45,9 +45,19 @@ function createHtmlResponse(
     themeCss: state.inlineThemeCss,
     depth,
   });
-  /** unsafe-eval required by mdx-remote hydration — see build.impl.ts */
+  /** Dev-only: serves compiledSource → MDXRemote eval path (no CSP in production). */
   return htmlResponse(html, nonce, status, true);
 }
+
+// Dev-only memo: compileMdx per request is ~70ms; repeat navigations with
+// an unchanged file (same mtime) reuse the compiled result. The dev server
+// has no other per-page cache — without this every navigation re-parses MDX.
+// ponytail: unbounded Map is fine — docs sites have a handful of pages; cap
+// with an LRU only if a project exceeds thousands of routes.
+const docsCache = new Map<
+  string,
+  { mtimeMs: number; doc: NonNullable<Awaited<ReturnType<typeof getDocsForSlug>>> }
+>();
 
 async function getDocsForSlug(
   slug: string,
@@ -92,6 +102,12 @@ async function getDocsForSlug(
 
   const relPath = filePath.replace(PROJECT_ROOT + "/", "");
 
+  const mtimeMs = (await stat(filePath)).mtimeMs;
+  const cached = docsCache.get(relPath);
+  if (cached && cached.mtimeMs === mtimeMs) {
+    return cached.doc;
+  }
+
   let content = raw;
   if (state.builder) {
     const transformed = await state.builder.runOnLoad(relPath, content);
@@ -113,7 +129,7 @@ async function getDocsForSlug(
     });
   }
 
-  return {
+  const doc = {
     content: result.content,
     compiledSource: result.compiledSource,
     frontmatter,
@@ -121,6 +137,8 @@ async function getDocsForSlug(
     filePath: relPath,
     resolvedContent: content,
   };
+  docsCache.set(relPath, { mtimeMs, doc });
+  return doc;
 }
 
 async function renderDocsServerPage(
@@ -129,12 +147,8 @@ async function renderDocsServerPage(
   pathname: string,
   state: ServerState
 ): Promise<Response> {
-  const title =
-    (typeof doc.frontmatter.title === "string" ? doc.frontmatter.title : "") ||
-    slug.join("/") ||
-    "Docs";
-  const description =
-    typeof doc.frontmatter.description === "string" ? doc.frontmatter.description : "";
+  const title = frontmatterField(doc.frontmatter, "title") || slug.join("/") || "Docs";
+  const description = frontmatterField(doc.frontmatter, "description");
 
   const page = React.createElement(
     DocsLayout,
@@ -143,8 +157,9 @@ async function renderDocsServerPage(
       slug,
       title,
       description,
-      date: doc.frontmatter.date as string | undefined,
-      content: doc.content,
+      date: frontmatterField(doc.frontmatter, "date") || undefined,
+      // Same root-relative SSR as build — see build.ts.
+      content: renderToString(doc.content),
       tocs: doc.tocs,
       filePath: doc.filePath,
       repoUrl: state.docuConfig.repo?.url,
@@ -184,7 +199,7 @@ async function renderDocsServerPage(
       depth,
     });
     html = await state.builder.runTransformHtmlChain(html, ctx);
-    /** unsafe-eval required by mdx-remote hydration — see build.impl.ts */
+    /** Dev-only: serves compiledSource → MDXRemote eval path (no CSP in production). */
     return htmlResponse(html, nonce, 200, true);
   }
 

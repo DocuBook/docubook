@@ -14,6 +14,7 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { extractFrontmatterWithContent } from "@docubook/core";
+import { frontmatterField } from "./mdx";
 import { DOCS_DIR, ASSETS_DIR, loadDocuConfig } from "./paths";
 import { scanMdxFiles, docsHtmlHref } from "./utils";
 
@@ -74,7 +75,7 @@ export function extractRecords(filePath: string, raw: string): SearchRecord[] {
   const records: SearchRecord[] = [];
   const url = docsHtmlHref(`/docs/${filePath}`);
   const lvl0 = getSectionTitle(filePath);
-  const lvl1 = frontmatter.title || null;
+  const lvl1 = frontmatterField(frontmatter, "title") || null;
 
   const hierarchy = {
     lvl0,
@@ -90,7 +91,7 @@ export function extractRecords(filePath: string, raw: string): SearchRecord[] {
     records.push({
       url,
       hierarchy: { ...hierarchy },
-      content: frontmatter.description || null,
+      content: frontmatterField(frontmatter, "description") || null,
       type: "lvl1",
     });
   }

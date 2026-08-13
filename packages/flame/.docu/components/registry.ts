@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { createMdxComponents } from "@docubook/mdx-content";
+import { createMdxComponents } from "@docubook/markdown";
 import { Dropdown, DropdownItem, DropdownLink } from "@docubook/ui-react/dropdown";
 import { PaginationDocs } from "@docubook/ui-react/pagination";
 import { Toggle, ToggleGroup } from "@docubook/ui-react/toggle";

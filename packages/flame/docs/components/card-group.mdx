@@ -5,20 +5,20 @@ description: A component used to create card groups that can be used to display 
 
 ## Preview
 
-<Cards cols={2}>
-<Card title="Heading 1" icon="Heading1">
-  This is an example of card content with columns.
-</Card>
-<Card title="Heading 2" icon="Heading2">
-  This is an example of card content with columns.
-</Card>
-<Card title="Grid Card" icon="Grid" horizontal>
-    This is a horizontal card layout.
-</Card>
-<Card title="Horizontal Card" icon="Layout" horizontal>
-    This is a horizontal card layout.
-</Card>
-</Cards>
+::::cards{cols="2"}
+:::card{title="Heading 1" icon="Heading1"}
+This is an example of card content with columns.
+:::
+:::card{title="Heading 2" icon="Heading2"}
+This is an example of card content with columns.
+:::
+:::card{title="Grid Card" icon="Grid" horizontal}
+This is a horizontal card layout.
+:::
+:::card{title="Horizontal Card" icon="Layout" horizontal}
+This is a horizontal card layout.
+:::
+::::
 
 ## Props
 
@@ -28,19 +28,19 @@ description: A component used to create card groups that can be used to display 
 
 ## Output Markdown
 
-```markdown
-<Cards cols={2}>
-  <Card title="Heading 1" icon="Heading1">
-    This is an example of card content with columns.
-  </Card>
-  <Card title="Heading 2" icon="Heading2">
-    This is an example of card content with columns.
-  </Card>
-  <Card title="Grid Card" icon="Grid" horizontal>
-      This is a horizontal card layout.
-  </Card>
-  <Card title="Horizontal Card" icon="Layout" horizontal>
-      This is a horizontal card layout.
-  </Card>
-</Cards>
+```md
+::::cards{cols="2"}
+:::card{title="Heading 1" icon="Heading1"}
+This is an example of card content with columns.
+:::
+:::card{title="Heading 2" icon="Heading2"}
+This is an example of card content with columns.
+:::
+:::card{title="Grid Card" icon="Grid" horizontal}
+This is a horizontal card layout.
+:::
+:::card{title="Horizontal Card" icon="Layout" horizontal}
+This is a horizontal card layout.
+:::
+::::
 ```

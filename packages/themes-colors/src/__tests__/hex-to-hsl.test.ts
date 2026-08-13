@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { hexToRgb, rgbToHsl, hexToHsl, hslToString, generateScale } from "../hex-to-hsl";
+import {
+  hexToRgb,
+  rgbToHsl,
+  hexToHsl,
+  hslToString,
+  generateScale,
+  contrastRatio,
+  getContrastingForeground,
+} from "../hex-to-hsl";
 import { expectedScaleKeys } from "../__fixtures__/themes";
 
 describe("hexToRgb", () => {
@@ -210,7 +218,7 @@ describe("generateScale", () => {
 
   it("handles low saturation primary", () => {
     const scale = generateScale({ h: 210, s: 5, l: 50 });
-    expect(scale.root.background).toMatch(/^210 5%/);
+    expect(scale.root.background).toBe("0 0% 100%");
   });
 
   it("handles high saturation primary", () => {
@@ -235,5 +243,51 @@ describe("generateScale", () => {
     const bgL = Number.parseInt(scale.dark.background.split(" ")[2]);
     const fgL = Number.parseInt(scale.dark.foreground.split(" ")[2]);
     expect(fgL).toBeGreaterThan(bgL);
+  });
+
+  it("uses a near-black foreground on light surfaces", () => {
+    const scale = generateScale({ h: 210, s: 81, l: 56 });
+    // Light-mode primary (56% lightness) and dark-mode accent/destructive
+    // (62%/65% lightness) are light surfaces — white text would fail WCAG AA.
+    expect(scale.root["primary-foreground"]).toBe("210 0% 10%");
+    expect(scale.dark["accent-foreground"]).toBe("225 0% 10%");
+    expect(scale.dark["destructive-foreground"]).toBe("0 0% 10%");
+  });
+
+  it("keeps a white foreground on dark surfaces", () => {
+    const scale = generateScale({ h: 210, s: 81, l: 56 });
+    // Root accent (40% lightness) is dark enough for white text.
+    expect(scale.root["accent-foreground"]).toBe("0 0% 100%");
+  });
+});
+
+describe("contrastRatio", () => {
+  it("returns 21 for black vs white", () => {
+    expect(contrastRatio({ r: 0, g: 0, b: 0 }, { r: 255, g: 255, b: 255 })).toBe(21);
+  });
+
+  it("returns 1 for identical colors", () => {
+    expect(contrastRatio({ r: 100, g: 100, b: 100 }, { r: 100, g: 100, b: 100 })).toBe(1);
+  });
+
+  it("is symmetric", () => {
+    const a = { r: 59, g: 130, b: 246 };
+    const b = { r: 255, g: 255, b: 255 };
+    expect(contrastRatio(a, b)).toBe(contrastRatio(b, a));
+  });
+});
+
+describe("getContrastingForeground", () => {
+  it("returns white for dark backgrounds", () => {
+    expect(getContrastingForeground({ h: 210, s: 20, l: 11 })).toEqual({ h: 0, s: 0, l: 100 });
+  });
+
+  it("returns near-black for light backgrounds", () => {
+    expect(getContrastingForeground({ h: 200, s: 100, l: 62 })).toEqual({ h: 200, s: 0, l: 10 });
+  });
+
+  it("resolves vivid mid-tones by contrast ratio, not lightness alone", () => {
+    // 50% lightness is neutral, but a saturated green at 50% still needs dark text.
+    expect(getContrastingForeground({ h: 85, s: 70, l: 50 })).toEqual({ h: 85, s: 0, l: 10 });
   });
 });

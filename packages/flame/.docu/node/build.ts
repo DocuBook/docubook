@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { join, dirname } from "node:path";
 import React from "react";
 import { renderToString } from "react-dom/server";
-import { compileMdx, getGitLastModifiedBatch } from "./mdx";
+import { compileMdx, compileMdxModule, frontmatterField, getGitLastModifiedBatch } from "./mdx";
 import {
   DOCS_DIR,
   DIST_DIR,
@@ -113,8 +113,8 @@ async function renderDocsPage(
     });
   }
 
-  const title = (typeof frontmatter.title === "string" ? frontmatter.title : "") || slug || "Docs";
-  const description = typeof frontmatter.description === "string" ? frontmatter.description : "";
+  const title = frontmatterField(frontmatter, "title") || slug || "Docs";
+  const description = frontmatterField(frontmatter, "description");
   const slugParts = slug ? slug.split("/") : [];
 
   const page = React.createElement(
@@ -124,12 +124,15 @@ async function renderDocsPage(
       slug: slugParts,
       title,
       description,
-      date: (frontmatter.date as string) || undefined,
-      content: result.content,
+      date: frontmatterField(frontmatter, "date") || undefined,
+      // Render MDX content as its own root: client hydrates the island as a
+      // separate root, so SSR must be root-relative too or useId-based ids
+      // (mdx-compiler components) mismatch during hydration.
+      content: renderToString(result.content),
       tocs: result.tocs,
       filePath,
       repoUrl: docuConfig.repo?.url,
-      compiledSource: result.compiledSource,
+      mdxSlug: slug,
     })
   );
 
@@ -203,9 +206,66 @@ async function build() {
   let built = 0;
   let skipped = 0;
 
+  const pluginsConfig = docuConfig.plugins ?? [];
+  const builder = pluginsConfig.length > 0 ? new BuildPluginBuilder(docuConfig) : null;
+  if (builder) {
+    const plugins = await loadPlugins(pluginsConfig);
+    for (const plugin of plugins) {
+      await plugin.setup(builder);
+    }
+    await builder.runOnStart();
+  }
+
+  // Pre-compile every page's MDX to an ESM module (program format) so the
+  // client bundle can hydrate the content island statically — no new Function.
+  // Mirrors the page loop's transform + plugin chain so SSR and client trees
+  // match. Runs for all files regardless of cache; the bundle is shared by
+  // every page, so a content change invalidates the page cache anyway.
+  const mdxSources: Record<string, string> = {};
+  const prePassTasks = mdxFiles.map(async (file) => {
+    let raw: string;
+    try {
+      raw = await readFile(file.absPath, "utf-8");
+    } catch {
+      return;
+    }
+    let content = raw;
+    if (builder) {
+      const relPath = file.absPath.replace(PROJECT_ROOT + "/", "");
+      const transformed = await builder.runOnLoad(relPath, content);
+      if (transformed?.contents) content = transformed.contents;
+    }
+    const remarkPlugins = builder?.collectRemarkPlugins();
+    const rehypePlugins = builder?.collectRehypePlugins();
+    mdxSources[file.path] = await compileMdxModule(content, remarkPlugins, rehypePlugins);
+  });
+  await Promise.all(prePassTasks);
+
+  // The docs root (index.mdx) renders with slug "" — mirror that key so the
+  // index page hydrates too. Its render has its own try/catch; skip on error.
+  const indexMdxPath = join(DOCS_DIR, "index.mdx");
+  if (existsSync(indexMdxPath)) {
+    try {
+      const indexRaw = await readFile(indexMdxPath, "utf-8");
+      let indexContent = indexRaw;
+      if (builder) {
+        const relPath = indexMdxPath.replace(PROJECT_ROOT + "/", "");
+        const transformed = await builder.runOnLoad(relPath, indexContent);
+        if (transformed?.contents) indexContent = transformed.contents;
+      }
+      mdxSources[""] = await compileMdxModule(
+        indexContent,
+        builder?.collectRemarkPlugins(),
+        builder?.collectRehypePlugins()
+      );
+    } catch {
+      // ignore — the index render reports its own error
+    }
+  }
+
   logger.bundleStart();
   let t = performance.now();
-  assetManifest = await buildClientBundle();
+  assetManifest = await buildClientBundle(mdxSources);
   logger.bundleDone(Math.round(performance.now() - t));
 
   inlineThemeCss = computeInlineThemeCss();
@@ -219,16 +279,6 @@ async function build() {
       mtime: 0,
       builtAt: Date.now(),
     };
-  }
-
-  const pluginsConfig = docuConfig.plugins ?? [];
-  const builder = pluginsConfig.length > 0 ? new BuildPluginBuilder(docuConfig) : null;
-  if (builder) {
-    const plugins = await loadPlugins(pluginsConfig);
-    for (const plugin of plugins) {
-      await plugin.setup(builder);
-    }
-    await builder.runOnStart();
   }
 
   logger.spinner.start("Building pages...");

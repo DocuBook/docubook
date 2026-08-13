@@ -1,5 +1,4 @@
-import { compileMDX } from "@docubook/mdx-remote/rsc";
-import { serialize } from "@docubook/mdx-remote/serialize";
+import { serialize } from "./mdx-compiler/serialize.js";
 import type { Node } from "unist";
 import { visit } from "unist-util-visit";
 import remarkGfm from "remark-gfm";
@@ -10,7 +9,8 @@ import rehypeCodeTitles from "rehype-code-titles";
 import { handleCodeTitles } from "./plugins/handleCodeTitles";
 import { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/handleCodeExpandable";
 import { rehypeMermaid } from "./plugins/rehypeMermaid";
-import type { MdxCompileResult } from "./types";
+import { remarkDirectiveToMdx } from "./plugins/remarkDirectiveToMdx";
+import remarkDirective from "remark-directive";
 import type { ElementNode } from "./utils";
 import type { Pluggable } from "unified";
 
@@ -18,29 +18,12 @@ import type { Pluggable } from "unified";
 export { serialize };
 
 // Re-export MDXRemote for client-side hydration
-export { MDXRemote } from "@docubook/mdx-remote";
+export { MDXRemote } from "./mdx-compiler/index.js";
 
 interface TextNode extends Node {
   type: "text";
   value: string;
 }
-
-type CompileMdxInput = Parameters<typeof compileMDX<Record<string, unknown>>>[0];
-type CompileMdxOptions = NonNullable<CompileMdxInput["options"]>;
-type CompilerMdxOptions = NonNullable<CompileMdxOptions["mdxOptions"]>;
-
-export type ParseMdxOptions = {
-  components?: CompileMdxInput["components"];
-  rehypePlugins?: CompilerMdxOptions["rehypePlugins"];
-  remarkPlugins?: CompilerMdxOptions["remarkPlugins"];
-  /**
-   * Whether to parse frontmatter during MDX compilation.
-   * Set to `false` when frontmatter is already extracted separately
-   * (e.g. via gray-matter) to avoid redundant parsing.
-   * Defaults to `true`.
-   */
-  parseFrontmatter?: boolean;
-};
 
 export const preProcess = () => (tree: Node) => {
   visit(tree, (node: Node) => {
@@ -105,27 +88,5 @@ export function createDefaultRehypePlugins(): Pluggable[] {
 }
 
 export function createDefaultRemarkPlugins(): Pluggable[] {
-  return [remarkGfm, handleCodeExpandableRemark];
-}
-
-export async function parseMdx<Frontmatter>(
-  rawMdx: string,
-  options: ParseMdxOptions = {}
-): Promise<MdxCompileResult<Frontmatter>> {
-  const rehypePlugins =
-    options.rehypePlugins ?? (createDefaultRehypePlugins() as CompilerMdxOptions["rehypePlugins"]);
-  const remarkPlugins =
-    options.remarkPlugins ?? (createDefaultRemarkPlugins() as CompilerMdxOptions["remarkPlugins"]);
-
-  return await compileMDX<Frontmatter>({
-    source: rawMdx,
-    options: {
-      parseFrontmatter: options.parseFrontmatter ?? true,
-      mdxOptions: {
-        rehypePlugins,
-        remarkPlugins,
-      },
-    },
-    components: options.components,
-  });
+  return [remarkGfm, handleCodeExpandableRemark, remarkDirective, remarkDirectiveToMdx];
 }
