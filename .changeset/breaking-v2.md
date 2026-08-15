@@ -121,3 +121,41 @@ Real changes shipped since `2.0.0-alpha.0`:
   no internal package list
 - ARCHITECTURE.md: rewritten to the v2 codebase (package map, eval-free
   hydration, corrected CSP/cache values)
+
+## 2.0.0-alpha.1 → 2.0.0-alpha.2
+
+Real changes shipped since `2.0.0-alpha.1`:
+
+### `@docubook/markdown` — fix
+
+- **fix:** tooltip renders as one unified chat bubble — the tail notch now
+  paints on top of the body with a 2px overlap, so the body border flows
+  continuously into the notch outline (previously two separate borders at
+  the junction); open-path tail (no stroke on the attachment edge), concave
+  sides read as a proper bubble notch
+
+### `@docubook/flame` — fix/feat
+
+- **feat:** sidebar groups are exclusive accordions — level 2+ groups
+  (e.g. Search) default closed, expand on header click, opening one closes
+  the other; the group containing the active page auto-expands; chevron uses
+  the tree convention (right when closed, down when open)
+- **fix:** nested `noLink` groups are styled as links, not section headers
+  (no `font-medium`/bold below the top section)
+- **fix:** scaffold CSS in the npm install layout — ui-react's Tailwind
+  `@source` now lives inside the package's own `styles.css` (imported via
+  `@docubook/ui-react/styles.css`) instead of a monorepo-relative path that
+  resolves nowhere when the package is installed from a registry
+
+### `@docubook/ui-react` — feat
+
+- **feat:** ships a `styles.css` (`@source "./src"`) so consumers scan the
+  component classes from any install layout
+
+### Release (repo)
+
+- **fix:** releases create a single `v<flame version>` tag instead of one tag
+  per package — the changesets action publishes all linked packages but
+  skips per-package GitHub releases; CI removes the per-package tags and
+  creates one `v2.x` tag + release
+- **chore:** all packages bumped `2.0.0-alpha.1` → `2.0.0-alpha.2`

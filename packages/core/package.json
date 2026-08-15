@@ -1,6 +1,6 @@
 {
   "name": "@docubook/core",
-  "version": "2.0.0-alpha.1",
+  "version": "2.0.0-alpha.2",
   "description": "Shared MDX compile pipeline and markdown utilities for DocuBook",
   "type": "module",
   "main": "./dist/index.js",

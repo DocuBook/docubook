@@ -69,12 +69,14 @@ export function TooltipMdx({ text, tip }: TooltipMdxProps) {
 
     // Tail: horizontal center tracks the trigger; vertical edge depends on
     // the flip — bubble below trigger → tail at the TOP (tip up), bubble
-    // above → tail at the BOTTOM (tip down). TAIL_PAD of overlap lets the
-    // body cover the closing edge.
+    // above → tail at the BOTTOM (tip down). Overlap the body border by
+    // TAIL_PAD + 1 (2px) so the tail fill fully covers the body's border at
+    // the junction — with only 1px the border's outer half still shows
+    // through as a separate line across the tail base.
     const tailCenter = trigger.left + trigger.width / 2 - left;
     setTailStyle({
       left: Math.min(Math.max(tailCenter - TAIL_SIZE / 2, 2), bubble.width - TAIL_SIZE - 2),
-      top: flip ? -TAIL_PROTRUSION + TAIL_PAD : bubble.height - TAIL_PAD,
+      top: flip ? -TAIL_PROTRUSION + TAIL_PAD + 1 : bubble.height - TAIL_PAD - 1,
     });
   }, [open]);
 
@@ -84,23 +86,26 @@ export function TooltipMdx({ text, tip }: TooltipMdxProps) {
   const borderColor = "hsl(var(--border-color, 210 20% 85%))";
 
   // Quadratic Bézier tail path (tip points down when the bubble sits above
-  // the trigger, up otherwise). Each control point sits at the midpoint of
-  // the shoulder→tip segment, pulled slightly OUTWARD (concave side) — the
-  // taper stays almost straight, so the notch narrows sharply from wide to
-  // point instead of bulging.
+  // the trigger, up otherwise). OPEN path (no Z close) so the attachment edge
+  // has no stroke: it sits under the bubble body, and only the curved sides
+  // + tip carry the border stroke — otherwise the closing edge's 1px line
+  // shows through at the bubble's border and collides with its rounding.
+  // Control points sit at the midpoint of the shoulder→tip segment, pulled
+  // INWARD (concave) so the notch reads as a chat-bubble tail, pinched
+  // sharply from wide shoulders to a point.
   const tipY = TAIL_PROTRUSION + TAIL_PAD;
   const shoulderY = TAIL_PAD;
   const tipX = TAIL_TIP_X + TAIL_PAD;
   const midY = (shoulderY + tipY) / 2;
-  const curveOut = 1.4; // outward pull (px) — smaller = straighter, sharper
+  const curveIn = 2.5; // inward pull (px) — concave notch
   const leftMid = (TAIL_PAD + tipX) / 2;
   const rightMid = (tipX + TAIL_SIZE + TAIL_PAD) / 2;
-  const curveLeft = leftMid - curveOut;
-  const curveRight = rightMid + curveOut;
+  const curveLeft = leftMid + curveIn;
+  const curveRight = rightMid - curveIn;
   const rightX = TAIL_SIZE + TAIL_PAD;
   const tailPath = below
-    ? `M ${TAIL_PAD} ${tipY} Q ${curveLeft} ${midY} ${tipX} ${shoulderY} Q ${curveRight} ${midY} ${rightX} ${tipY} Z`
-    : `M ${TAIL_PAD} ${shoulderY} Q ${curveLeft} ${midY} ${tipX} ${tipY} Q ${curveRight} ${midY} ${rightX} ${shoulderY} Z`;
+    ? `M ${TAIL_PAD} ${tipY} Q ${curveLeft} ${midY} ${tipX} ${shoulderY} Q ${curveRight} ${midY} ${rightX} ${tipY}`
+    : `M ${TAIL_PAD} ${shoulderY} Q ${curveLeft} ${midY} ${tipX} ${tipY} Q ${curveRight} ${midY} ${rightX} ${shoulderY}`;
 
   return (
     <span
@@ -136,17 +141,10 @@ export function TooltipMdx({ text, tip }: TooltipMdxProps) {
           role="tooltip"
           style={{ position: "fixed", ...bubbleStyle, zIndex: 9999 }}
         >
-          {/* Notched tail — rendered behind the bubble body so the body covers
-              the closing edge; only the curved notch and its stroke show. */}
-          <svg
-            aria-hidden="true"
-            width={TAIL_SIZE}
-            height={TAIL_PROTRUSION}
-            viewBox={`0 0 ${TAIL_W} ${TAIL_H}`}
-            style={{ position: "absolute", ...tailStyle, display: "block" }}
-          >
-            <path d={tailPath} fill={bubbleColor} stroke={borderColor} strokeWidth={1} />
-          </svg>
+          {/* Body first, tail painted ON TOP — the tail's fill (same colour as
+              the body) covers the body's border where they meet, so the bubble
+              outline flows continuously into the notch instead of showing two
+              separate borders. */}
           <span
             style={{
               position: "relative",
@@ -166,6 +164,15 @@ export function TooltipMdx({ text, tip }: TooltipMdxProps) {
           >
             {content}
           </span>
+          <svg
+            aria-hidden="true"
+            width={TAIL_SIZE}
+            height={TAIL_PROTRUSION}
+            viewBox={`0 0 ${TAIL_W} ${TAIL_H}`}
+            style={{ position: "absolute", ...tailStyle, display: "block" }}
+          >
+            <path d={tailPath} fill={bubbleColor} stroke={borderColor} strokeWidth={1} />
+          </svg>
         </span>
       ) : null}
     </span>

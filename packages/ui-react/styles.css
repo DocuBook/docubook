@@ -1,0 +1,4 @@
+/* Tailwind source root for ui-react components — @source is resolved relative
+   to this file, so consumers can import this stylesheet from any install
+   layout and the component classes are still scanned. */
+@source "./src";

@@ -30,13 +30,36 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Create Release Pull Request or Publish to npm
+        id: changesets
         uses: changesets/action@v1
         with:
           publish: pnpm publish-packages
           version: pnpm version-packages
           commit: "chore: version packages"
           title: "chore: version packages"
+          # Single product release — flame is the only output; the step below
+          # creates the one `v<flame version>` tag and GitHub release, so
+          # disable the per-package releases the action would otherwise create.
+          createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           HUSKY: "0"
+
+      - name: Create single GitHub Release (v<flame version>)
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          VERSION=$(node -p "require('./packages/flame/package.json').version")
+          TAG="v${VERSION}"
+          # The product ships as ONE tag (flame version). `changeset publish`
+          # tags every published package (@docubook/*@<version>) — remove them
+          # from local + origin and keep only the v<version> tag.
+          for T in $(git tag -l "@docubook/*@${VERSION}"); do
+            git tag -d "$T"
+            git push origin --delete "$T" 2>/dev/null || true
+          done
+          git tag -f "$TAG"
+          git push origin "$TAG"
+          gh release create "$TAG" --title "$TAG" --generate-notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
