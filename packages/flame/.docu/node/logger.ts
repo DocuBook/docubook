@@ -179,9 +179,13 @@ export const logger = {
     this.spinner.start("Generating search index...");
   },
 
-  indexDone(records: number, ms: number) {
-    if (guard("info", "index_done", { records, duration_ms: ms })) return;
-    this.spinner.stop(`Search index generated ${c.dim}(${records} records, ${ms}ms)${c.reset}`);
+  indexDone(records: number, ms: number, skipped = false) {
+    if (guard("info", "index_done", { records, duration_ms: ms, skipped })) return;
+    this.spinner.stop(
+      skipped
+        ? `Search index cached ${c.dim}(${ms}ms)${c.reset}`
+        : `Search index generated ${c.dim}(${records} records, ${ms}ms)${c.reset}`
+    );
   },
 
   routes() {
