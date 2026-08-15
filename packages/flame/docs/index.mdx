@@ -27,9 +27,9 @@ description: Documentation for @docubook/flame — a build-time bridge between t
 ::warning{title="Performance: v1 vs v2"}
 
 > A same-docs benchmark: the full Flame documentation (27 `.mdx`, 308 KB) built
-by both versions on Node 22, `NODE_ENV=production`, cold cache — v1 from the
-npm registry tarball (`1.7.2`), v2 from the local workspace tarball
-(`2.0.0-alpha.0`).
+> by both versions on Node 22, `NODE_ENV=production`, cold cache. Both are
+> installed from the npm registry (`1.7.2` / `2.0.0-alpha.2`) and measured
+> back-to-back on the same machine — medians of 3 cold builds each.
 
 ```mermaid
 flowchart LR
@@ -45,19 +45,19 @@ flowchart LR
         C1["JSX conversion"]
         B1["mdx-remote compile"]
         H1["new Function hydration"]
-        D1["dist 7.1 MB"]
+        D1["dist 7.0 MB"]
         C1 --> B1 --> H1 --> D1
     end
-    subgraph V2["Flame v2 · 2.0.0-alpha.0"]
+    subgraph V2["Flame v2 · 2.0.0-alpha.2"]
         direction TB
         B2["common markdown + directives"]
         H2["static ESM hydration"]
-        D2["dist 6.9 MB"]
+        D2["dist 6.7 MB"]
         B2 --> H2 --> D2
     end
 
-    T1["pages: 1490 ms"] -.-> B1
-    T2["pages: 1220 ms"] -.-> B2
+    T1["pages: 1732 ms"] -.-> B1
+    T2["pages: 1206 ms"] -.-> B2
 
     class E1 note
     class B1,H1,D1 v1
@@ -65,30 +65,34 @@ flowchart LR
 ```
 
 > The same raw content forks at the entry: **v1 cannot parse v2's directive
-syntax** — 7 of 26 files fail with `Could not parse expression with acorn`,
-because mdx-remote reads `{...}` attribute blocks as JSX. Those 7 files were
-converted to v1-native JSX (the migration table in
-[Formatting](/docs/getting-started/formatting)), then both versions build all 26 pages. What differs is the measured compile phase and the output.
+> syntax** — 19 of 26 files carry directives and fail with `Could not parse
+> expression with acorn`, because mdx-remote reads `{...}` attribute blocks
+> as JSX. Those files were converted to v1-native JSX (the migration table in
+> [Formatting](/docs/getting-started/formatting)), then both versions build
+> all 26 pages. What differs is the measured compile phase and the output.
 
 ```mermaid
 xychart-beta
     title "Cold build · MDX page compile (ms) — lower is better"
-    x-axis ["v1 1.7.2", "v2 2.0.0-alpha.0"]
-    y-axis "milliseconds" 0 --> 1600
-    bar [1490, 1220]
+    x-axis ["v1 1.7.2", "v2 2.0.0-alpha.2"]
+    y-axis "milliseconds" 0 --> 2000
+    bar [1732, 1206]
 ```
 
-| Metric | v1 1.7.2 | v2 2.0.0-alpha.0 | Δ |
+| Metric | v1 1.7.2 | v2 2.0.0-alpha.2 | Δ |
 | ------ | -------- | ----------------- | - |
-| MDX page compile | 1490 ms | 1220 ms | **−18%** |
-| Client bundle | 2930 ms | 2970 ms | ≈ |
-| Total wall | 5.66 s | 6.39 s | +0.73 s |
-| dist size | 7.1 MB | 6.9 MB | −3% |
+| MDX page compile | 1732 ms | 1206 ms | **−30%** |
+| Client bundle | 2933 ms | 2560 ms | **−13%** |
+| Total wall | 5.26 s | 6.25 s | +0.99 s |
+| dist size | 7.0 MB | 6.7 MB | **−4%** |
 | client JS | 4.3 MB | 4.8 MB | +12% |
 | Pages built | 26/26 (after conversion) | 26/26 (as-is) | — |
 
-> Reading the numbers: v2 compiles pages **18% faster** with a **3% smaller
-dist**. The `+0.73 s` wall is the price of v2's hydration model — a prePass
-that compiles each page to a static ESM module for eval-free hydration, which v1 does not have (v1 re-uses the SSR `compiledSource` via `new Function`).
-That prePass is the double-parse targeted by the build cache fix: with warm
-cache, a no-change build skips it entirely.
+> Reading the numbers: v2 compiles pages **30% faster**, bundles **13%
+> faster**, and ships a **4% smaller dist** — while the raw client JS is 12%
+> larger (eval-free ESM modules + daisyUI runtime). The `+0.99 s` wall is the
+> price of v2's hydration model — a prePass that compiles each page to a
+> static ESM module for eval-free hydration, which v1 does not have (v1
+> re-uses the SSR `compiledSource` via `new Function`). That prePass is the
+> double-parse targeted by the build cache fix: with warm cache, a no-change
+> build skips it entirely.
