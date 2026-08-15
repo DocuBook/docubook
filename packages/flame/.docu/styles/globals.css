@@ -9,7 +9,7 @@
 @plugin "@tailwindcss/typography";
 @source "../../.docu/components";
 @source "../../.docu/pages";
-@source "../../../ui-react/src";
+@import "@docubook/ui-react/styles.css";
 
 /* daisyUI breadcrumbs underline every li child on hover (including plain
    spans) — crumbs are not links, so strip the underline (and pointer cursor)

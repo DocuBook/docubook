@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Sublink from "./Sublink";
+import Sublink, { GroupAccordionProvider } from "./Sublink";
 import SidebarGroupHeader from "./SidebarGroupHeader";
 import type { DocuRoute } from "../node/types";
 import { cn } from "../node/utils";
@@ -76,28 +76,32 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
     // No context routes defined — fall back to flat list of all routes
     if (contextRoutes.length === 0) {
       return (
-        <nav {...navProps}>
-          <ul className={sharedUlClasses}>
-            {menuRoutes.map((route) => renderBorderItem(route, "", route.href))}
-          </ul>
-        </nav>
+        <GroupAccordionProvider>
+          <nav {...navProps}>
+            <ul className={sharedUlClasses}>
+              {menuRoutes.map((route) => renderBorderItem(route, "", route.href))}
+            </ul>
+          </nav>
+        </GroupAccordionProvider>
       );
     }
 
     return (
-      <nav {...navProps}>
-        {contextRoutes.map((route, i) => (
-          <div key={route.href} className={i > 0 ? "mt-6 lg:mt-8" : ""}>
-            <SidebarGroupHeader
-              icon={route.context?.icon}
-              title={route.context?.title || route.title}
-            />
-            <ul className={sharedUlClasses}>
-              {route.items?.map((item) => renderBorderItem(item, route.href, item.href))}
-            </ul>
-          </div>
-        ))}
-      </nav>
+      <GroupAccordionProvider>
+        <nav {...navProps}>
+          {contextRoutes.map((route, i) => (
+            <div key={route.href} className={i > 0 ? "mt-6 lg:mt-8" : ""}>
+              <SidebarGroupHeader
+                icon={route.context?.icon}
+                title={route.context?.title || route.title}
+              />
+              <ul className={sharedUlClasses}>
+                {route.items?.map((item) => renderBorderItem(item, route.href, item.href))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+      </GroupAccordionProvider>
     );
   }
 
@@ -119,18 +123,20 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
   if (!contextRoute) return null;
 
   return (
-    <nav {...navProps}>
-      <ul className="flex flex-col gap-0.5 py-4">
-        <li key={contextRoute.title}>
-          <Sublink
-            {...contextRoute}
-            href={contextRoute.href}
-            level={0}
-            onNavigate={onNavigate}
-            parentHref="/docs"
-          />
-        </li>
-      </ul>
-    </nav>
+    <GroupAccordionProvider>
+      <nav {...navProps}>
+        <ul className="flex flex-col gap-0.5 py-4">
+          <li key={contextRoute.title}>
+            <Sublink
+              {...contextRoute}
+              href={contextRoute.href}
+              level={0}
+              onNavigate={onNavigate}
+              parentHref="/docs"
+            />
+          </li>
+        </ul>
+      </nav>
+    </GroupAccordionProvider>
   );
 }

@@ -1,6 +1,6 @@
 {
   "name": "@docubook/ui-react",
-  "version": "2.0.0-alpha.1",
+  "version": "2.0.0-alpha.2",
   "description": "React + DaisyUI component library for documentation sites",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -136,11 +136,13 @@
         "types": "./dist/pagination.d.cts",
         "default": "./dist/pagination.cjs"
       }
-    }
+    },
+    "./styles.css": "./styles.css"
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "styles.css"
   ],
   "sideEffects": false,
   "scripts": {
