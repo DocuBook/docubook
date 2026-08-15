@@ -37,6 +37,29 @@ describe("htmlShell", () => {
     });
   });
 
+  describe("absoluteAssets (404 fallback)", () => {
+    it("uses root-absolute /assets/ URLs when absoluteAssets is set", () => {
+      const html = htmlShell({ ...MINIMAL_OPTS, absoluteAssets: true });
+      expect(html).toContain('href="/assets/client-abc123.css"');
+      expect(html).toContain('src="/assets/client-xyz789.js"');
+    });
+
+    it("absoluteAssets ignores depth — served at arbitrary paths", () => {
+      const html = htmlShell({ ...MINIMAL_OPTS, absoluteAssets: true, depth: 3 });
+      expect(html).toContain('href="/assets/client-abc123.css"');
+      expect(html).toContain('src="/assets/client-xyz789.js"');
+    });
+
+    it("absoluteAssets keeps the favicon root-absolute too", () => {
+      const html = htmlShell({
+        ...MINIMAL_OPTS,
+        absoluteAssets: true,
+        favicon: "/docs/assets/images/favicon.ico",
+      });
+      expect(html).toContain('href="/docs/assets/images/favicon.ico"');
+    });
+  });
+
   describe("resolvePath for favicon", () => {
     it("resolves absolute favicon path at root (depth=0)", () => {
       const html = htmlShell({

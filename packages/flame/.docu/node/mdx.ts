@@ -115,13 +115,19 @@ export interface MdxResult {
  * DocuBook frontmatter contract — single source of truth for frontmatter
  * fields. Add new properties here; types and validation derive from it.
  * YAML coerces unquoted values, so string fields use `z.coerce.*`.
+ * `.passthrough()` keeps unknown fields (e.g. `author: wildan`, `tags`)
+ * in the parsed output — arbitrary frontmatter metadata stays available
+ * via `frontmatterField(frontmatter, key)` instead of being silently
+ * stripped by Zod's default object parsing.
  */
-export const frontmatterSchema = z.object({
-  title: z.coerce.string().optional(),
-  description: z.coerce.string().optional(),
-  image: z.coerce.string().optional(),
-  date: z.coerce.string().optional(),
-});
+export const frontmatterSchema = z
+  .object({
+    title: z.coerce.string().optional(),
+    description: z.coerce.string().optional(),
+    image: z.coerce.string().optional(),
+    date: z.coerce.string().optional(),
+  })
+  .passthrough();
 
 export type Frontmatter = z.infer<typeof frontmatterSchema>;
 
@@ -162,12 +168,13 @@ async function serializeWithDocPlugins(
     remarkPlugins?: Pluggable[];
     rehypePlugins?: Pluggable[];
     frontmatterSchema?: FrontmatterSchema;
-  } = {}
+  } = {},
+  pre?: { frontmatter: Frontmatter; strippedContent: string }
 ) {
-  const { strippedContent } = extractFrontmatterWithContent<Frontmatter>(
-    rawMdx,
-    opts.frontmatterSchema
-  );
+  // Parse-once: when the prePass already extracted the frontmatter + stripped
+  // content, reuse it instead of re-parsing (the SSR phase skips extraction).
+  const { strippedContent, frontmatter } =
+    pre ?? extractFrontmatterWithContent<Frontmatter>(rawMdx, opts.frontmatterSchema);
 
   const defaultRemark = createDefaultRemarkPlugins();
   const defaultRehype = createDefaultRehypePlugins();
@@ -179,7 +186,8 @@ async function serializeWithDocPlugins(
   const finalRehype = [...defaultRehype, rehypeDocsHtmlLinks, ...(opts.rehypePlugins ?? [])];
 
   // v2 contract: plain markdown + directives only — authored JSX tags are
-  // not parsed (dropped, content kept as text).
+  // not parsed (dropped, content kept as text). Return the frontmatter parsed
+  // above — `serialize()` only parses it when `parseFrontmatter` is set.
   return serialize(strippedContent, {
     outputFormat: opts.outputFormat,
     format: "md",
@@ -187,7 +195,7 @@ async function serializeWithDocPlugins(
       rehypePlugins: finalRehype,
       remarkPlugins: finalRemark,
     },
-  });
+  }).then((serialized) => ({ ...serialized, frontmatter, strippedContent }));
 }
 
 /**
@@ -206,15 +214,19 @@ export async function compileMdx(
   gitDates?: Map<string, string>,
   remarkPlugins?: Pluggable[],
   rehypePlugins?: Pluggable[],
-  frontmatterSchema?: FrontmatterSchema
+  frontmatterSchema?: FrontmatterSchema,
+  /** Pre-pass extracted data — avoids re-parsing frontmatter in the SSR phase. */
+  pre?: { frontmatter: Frontmatter; strippedContent: string }
 ): Promise<MdxResult> {
   const tocs = extractTocsFromRawMdx(rawMdx);
-  const { frontmatter } = extractFrontmatterWithContent<Frontmatter>(rawMdx, frontmatterSchema);
-  const serialized = await serializeWithDocPlugins(rawMdx, {
-    remarkPlugins,
-    rehypePlugins,
-    frontmatterSchema,
-  });
+  const frontmatter =
+    pre?.frontmatter ??
+    extractFrontmatterWithContent<Frontmatter>(rawMdx, frontmatterSchema).frontmatter;
+  const serialized = await serializeWithDocPlugins(
+    rawMdx,
+    { remarkPlugins, rehypePlugins, frontmatterSchema },
+    pre
+  );
 
   const components = createMdxComponents();
   const content = React.createElement(MDXRemote, {
@@ -245,15 +257,69 @@ export async function compileMdx(
  * instead of `new Function(compiledSource)`. Uses the same plugin chain as
  * `compileMdx` so the hydrated tree matches the SSR output.
  */
+/**
+ * Frontmatter records collected once during compilation — pagination title /
+ * description and other metadata consumers read from here instead of
+ * re-reading + re-parsing files (parse-once contract: the frontmatter is
+ * already parsed by `serializeWithDocPlugins`).
+ */
+const pageFrontmatter = new Map<string, Frontmatter>();
+
+/** Register a page's frontmatter, keyed by its href. */
+export function registerPageFrontmatter(href: string, frontmatter: Frontmatter): void {
+  pageFrontmatter.set(href, frontmatter);
+}
+
+/** Look up a page's frontmatter (undefined when not yet compiled). */
+export function getPageFrontmatter(href: string): Frontmatter | undefined {
+  return pageFrontmatter.get(href);
+}
+
+/**
+ * Frontmatter-stripped content from the prePass — lets the SSR compile
+ * phase skip its own `extractFrontmatterWithContent` (parse-once across
+ * both compile phases).
+ */
+const pageStripped = new Map<string, string>();
+
+export function registerPageStripped(href: string, stripped: string): void {
+  pageStripped.set(href, stripped);
+}
+
+export function getPageStripped(href: string): string | undefined {
+  return pageStripped.get(href);
+}
+
+/**
+ * Original (pre-transform) file content, cached during the prePass so the
+ * page loop does not re-read the file from disk — one read per file.
+ */
+const pageContent = new Map<string, string>();
+
+export function registerPageContent(href: string, raw: string): void {
+  pageContent.set(href, raw);
+}
+
+export function getPageContent(href: string): string | undefined {
+  return pageContent.get(href);
+}
+
 export async function compileMdxModule(
   rawMdx: string,
   remarkPlugins?: Pluggable[],
-  rehypePlugins?: Pluggable[]
+  rehypePlugins?: Pluggable[],
+  /** Page href — registers the frontmatter (title/description/image/date)
+   * once for pagination and metadata consumers. */
+  href?: string
 ): Promise<string> {
   const serialized = await serializeWithDocPlugins(rawMdx, {
     outputFormat: "program",
     remarkPlugins,
     rehypePlugins,
   });
+  if (href) {
+    registerPageFrontmatter(href, serialized.frontmatter as Frontmatter);
+    registerPageStripped(href, serialized.strippedContent);
+  }
   return serialized.compiledSource;
 }

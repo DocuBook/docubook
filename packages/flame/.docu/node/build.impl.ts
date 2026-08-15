@@ -12,7 +12,16 @@ import { createHash } from "node:crypto";
 import { join, dirname } from "node:path";
 import React from "react";
 import { renderToString } from "react-dom/server";
-import { compileMdx, compileMdxModule, frontmatterField, getGitLastModifiedBatch } from "./mdx";
+import {
+  compileMdx,
+  compileMdxModule,
+  frontmatterField,
+  getGitLastModifiedBatch,
+  getPageContent,
+  getPageFrontmatter,
+  getPageStripped,
+  registerPageContent,
+} from "./mdx";
 import {
   DOCS_DIR,
   DIST_DIR,
@@ -105,7 +114,24 @@ async function renderDocsPage(
   try {
     const remarkPlugins = builder?.collectRemarkPlugins();
     const rehypePlugins = builder?.collectRehypePlugins();
-    result = await compileMdx(content, filePath, gitDates, remarkPlugins, rehypePlugins);
+    // Parse-once: reuse the prePass frontmatter + stripped content so the
+    // SSR phase does not re-extract them. Only when the prePass actually
+    // registered them — otherwise compileMdx does its own extraction.
+    const preFm = getPageFrontmatter(`/${slug}`);
+    const preStripped = getPageStripped(`/${slug}`);
+    const pre =
+      preFm !== undefined && preStripped !== undefined
+        ? { frontmatter: preFm, strippedContent: preStripped }
+        : undefined;
+    result = await compileMdx(
+      content,
+      filePath,
+      gitDates,
+      remarkPlugins,
+      rehypePlugins,
+      undefined,
+      pre
+    );
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown MDX error";
     throw new Error(`MDX Error in: docs/${slug}.mdx\n${msg}`, { cause: err });
@@ -241,6 +267,9 @@ export async function runBuild(): Promise<void> {
     } catch {
       return;
     }
+    // Cache the original content so the page loop does not re-read the file
+    // (one disk read per file — the frontmatter is parsed once here too).
+    registerPageContent(`/${file.path}`, raw);
     let content = raw;
     if (builder) {
       const relPath = file.absPath.replace(PROJECT_ROOT + "/", "");
@@ -249,7 +278,12 @@ export async function runBuild(): Promise<void> {
     }
     const remarkPlugins = builder?.collectRemarkPlugins();
     const rehypePlugins = builder?.collectRehypePlugins();
-    mdxSources[file.path] = await compileMdxModule(content, remarkPlugins, rehypePlugins);
+    mdxSources[file.path] = await compileMdxModule(
+      content,
+      remarkPlugins,
+      rehypePlugins,
+      `/${file.path}`
+    );
   });
   await Promise.all(prePassTasks);
 
@@ -319,12 +353,14 @@ export async function runBuild(): Promise<void> {
       }
     }
 
-    let rawMdx: string;
-    try {
-      rawMdx = await readFile(file.absPath, "utf-8");
-    } catch (err) {
-      if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
-      continue;
+    let rawMdx = getPageContent(`/${file.path}`);
+    if (rawMdx === undefined) {
+      try {
+        rawMdx = await readFile(file.absPath, "utf-8");
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+        continue;
+      }
     }
 
     if (rebuildDecision === "hash_check") {
@@ -458,8 +494,11 @@ export async function runBuild(): Promise<void> {
 
   logger.indexStart();
   t = performance.now();
-  const indexCount = await generateSearchIndex();
-  logger.indexDone(indexCount, Math.round(performance.now() - t));
+  // No content changed (all pages cached) → the aggregated index is
+  // unchanged too; reuse the existing file instead of regenerating it.
+  const indexSkipped = built === 0 && existsSync(join(ASSETS_DIR, "search-index.json"));
+  const indexCount = indexSkipped ? 0 : await generateSearchIndex();
+  logger.indexDone(indexCount, Math.round(performance.now() - t), indexSkipped);
 
   logger.routes();
 

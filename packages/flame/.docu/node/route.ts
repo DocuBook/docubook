@@ -5,6 +5,7 @@ import { DOCS_DIR } from "./paths";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { extractFrontmatter } from "@docubook/core";
+import { getPageFrontmatter, registerPageFrontmatter } from "./mdx";
 import type { Frontmatter } from "./mdx";
 
 const docuConfig = loadDocuConfig();
@@ -46,29 +47,31 @@ export function getRouteMap(): Map<string, string> {
   return map;
 }
 
-/** Build-time cache of href → frontmatter description (docs content is static). */
-const descriptionCache = new Map<string, string>();
+/**
+ * Frontmatter for a page — read from the parse-once registry (populated
+ * during compilation) instead of re-reading + re-parsing the file. Falls
+ * back to a direct read only for pages the dev server has not compiled yet,
+ * and caches the result back into the registry.
+ */
+function readPageFrontmatter(href: string): Frontmatter {
+  const registered = getPageFrontmatter(href);
+  if (registered) return registered;
 
-function readDescription(href: string): string {
-  const cached = descriptionCache.get(href);
-  if (cached !== undefined) return cached;
-
-  let description = "";
+  let fm: Frontmatter = {};
   const rel = href.replace(/^\/|$/g, "");
   for (const ext of [".mdx", ".md"]) {
     for (const file of [join(DOCS_DIR, `${rel}${ext}`), join(DOCS_DIR, `${rel}/index${ext}`)]) {
       try {
-        const fm = extractFrontmatter<Frontmatter>(readFileSync(file, "utf-8"));
-        description = typeof fm.description === "string" ? fm.description : "";
-        if (description) break;
+        fm = extractFrontmatter<Frontmatter>(readFileSync(file, "utf-8"));
+        break;
       } catch {
         // not this file — try the next candidate
       }
     }
-    if (description) break;
+    if (Object.keys(fm).length) break;
   }
-  descriptionCache.set(href, description);
-  return description;
+  registerPageFrontmatter(href, fm);
+  return fm;
 }
 
 export function getPreviousNext(pathname: string) {
@@ -83,12 +86,13 @@ export function getPreviousNext(pathname: string) {
     const routeMap = getRouteMap();
     const first = paths[0];
     if (!first) return { prev: null, next: null };
+    const fm = readPageFrontmatter(first);
     return {
       prev: null,
       next: {
         href: first,
-        title: routeMap.get(first) || "",
-        description: readDescription(first),
+        title: fm.title || routeMap.get(first) || "",
+        description: fm.description || "",
       },
     };
   }
@@ -105,13 +109,17 @@ export function getPreviousNext(pathname: string) {
   const prevHref = index > 0 ? paths[index - 1] : null;
   const nextHref = index < paths.length - 1 ? paths[index + 1] : null;
 
+  const prevFm = prevHref ? readPageFrontmatter(prevHref) : null;
+  const nextFm = nextHref ? readPageFrontmatter(nextHref) : null;
   return {
-    prev: prevHref ? { href: prevHref, title: routeMap.get(prevHref) || "" } : null,
+    prev: prevHref
+      ? { href: prevHref, title: prevFm?.title || routeMap.get(prevHref) || "" }
+      : null,
     next: nextHref
       ? {
           href: nextHref,
-          title: routeMap.get(nextHref) || "",
-          description: readDescription(nextHref),
+          title: nextFm?.title || routeMap.get(nextHref) || "",
+          description: nextFm?.description || "",
         }
       : null,
   };

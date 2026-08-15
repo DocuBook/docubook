@@ -13,6 +13,7 @@
 
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { resolve, join } from "node:path";
+import { getPageContent } from "./mdx";
 import { extractFrontmatterWithContent } from "@docubook/core";
 import { frontmatterField } from "./mdx";
 import { DOCS_DIR, ASSETS_DIR, loadDocuConfig } from "./paths";
@@ -193,7 +194,9 @@ export async function generateSearchIndex(docsDir?: string, outputDir?: string):
   const mdxFiles = await scanMdxFiles(docs);
   const results = await Promise.all(
     mdxFiles.map(async (file) => {
-      const raw = await readFile(file.absPath, "utf-8");
+      // Parse-once: reuse the prePass-cached raw content when available —
+      // no second disk read of every file.
+      const raw = getPageContent(`/${file.path}`) ?? (await readFile(file.absPath, "utf-8"));
       return extractRecords(file.path, raw);
     })
   );
