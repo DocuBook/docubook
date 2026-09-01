@@ -62,9 +62,9 @@ export default function Toc({ tocs }: TocProps) {
         }
       }
 
-      if (currentId && currentId !== activeIdRef.current) {
+      if (currentId !== activeIdRef.current) {
         setActiveId(currentId);
-        history.replaceState(null, "", `#${currentId}`);
+        history.replaceState(null, "", currentId ? `#${currentId}` : "#top");
       }
     };
 
@@ -100,22 +100,43 @@ export default function Toc({ tocs }: TocProps) {
     }, 1000);
   }, []);
 
+  const handleScrollToTop = useCallback(() => {
+    clickedIdRef.current = "__top__";
+    setActiveId(null);
+    history.replaceState(null, "", "#top");
+    if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+    clickTimerRef.current = setTimeout(() => {
+      clickedIdRef.current = null;
+    }, 1000);
+  }, []);
+
   useEffect(() => {
     return () => {
       if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
     };
   }, []);
 
+  const activeItemRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (activeId && activeItemRef.current && !clickedIdRef.current) {
+      activeItemRef.current.scrollIntoView({
+        block: "nearest",
+        behavior: "smooth",
+      });
+    }
+  }, [activeId]);
+
   if (!tocs.length) return null;
 
   return (
-    <div className="flex w-full flex-col gap-2">
-      <div className="flex items-center gap-2">
+    <div className="flex h-full min-h-0 w-full flex-col gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         <ListIcon className="h-4 w-4" />
         <h3 className="text-sm font-medium">On this page</h3>
       </div>
 
-      <div className="relative">
+      <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
         <div className="relative text-sm">
           <div className="bg-base-300 absolute top-0 left-0 h-full w-px" />
 
@@ -128,6 +149,7 @@ export default function Toc({ tocs }: TocProps) {
               return (
                 <div
                   key={href}
+                  ref={isActive ? activeItemRef : undefined}
                   className={cn(
                     "relative flex items-center transition-all duration-200",
                     isActive && "bg-primary/5"
@@ -206,9 +228,12 @@ export default function Toc({ tocs }: TocProps) {
             })}
           </div>
         </div>
-      </div>
 
-      <ScrollTo className="mt-2" />
+        <div className="mt-2 grid grid-cols-[28px_minmax(0,1fr)] items-start px-4 text-sm">
+          <div aria-hidden="true" />
+          <ScrollTo className="mt-0" onScrollToTop={handleScrollToTop} />
+        </div>
+      </div>
     </div>
   );
 }

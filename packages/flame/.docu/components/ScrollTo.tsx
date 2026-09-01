@@ -8,9 +8,10 @@ interface ScrollToProps {
   className?: string;
   showIcon?: boolean;
   offset?: number;
+  onScrollToTop?: () => void;
 }
 
-export function ScrollTo({ className, showIcon = true }: ScrollToProps) {
+export function ScrollTo({ className, showIcon = true, onScrollToTop }: ScrollToProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   const checkScroll = useCallback(() => {
@@ -41,15 +42,20 @@ export function ScrollTo({ className, showIcon = true }: ScrollToProps) {
     };
   }, [checkScroll]);
 
-  const scrollToTop = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    const container = document.getElementById("scroll-container");
-    if (container) {
-      container.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, []);
+  const scrollToTop = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      onScrollToTop?.();
+      history.replaceState(null, "", "#top");
+      const container = document.getElementById("scroll-container");
+      if (container) {
+        container.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    },
+    [onScrollToTop]
+  );
 
   return (
     <div
@@ -61,7 +67,7 @@ export function ScrollTo({ className, showIcon = true }: ScrollToProps) {
       )}
     >
       <a
-        href="#"
+        href="#top"
         onClick={scrollToTop}
         className={cn(
           "inline-flex items-center text-sm",
