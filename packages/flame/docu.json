@@ -15,7 +15,7 @@
   },
   "home": {
     "hero": {
-      "tagline": "DocuBook Flame - v2.0.0-alpha",
+      "tagline": "DocuBook Flame - v2.0.0-beta",
       "headline": "Compile markdown. Deploy anything.",
       "description": "No runtime, no server to run, no lock-in. One markdown format, readable by humans and agents alike, compiled to flat static HTML — deploy anywhere.",
       "actions": [
