@@ -350,7 +350,6 @@ function createPluginResponse(overrides?: {
   return {
     status: 200,
     statusText: "OK",
-    headers: new Headers({}),
     body: "plugin body",
     ...overrides,
     headers: new Headers(overrides?.headers ?? {}),

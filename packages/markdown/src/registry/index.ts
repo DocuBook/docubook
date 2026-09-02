@@ -25,7 +25,7 @@ import {
   MermaidMdx,
 } from "../components";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 export type MdxComponentMap = Record<string, ComponentType<any>>;
 
 function callout(type: CalloutType): ComponentType<Record<string, unknown>> {
