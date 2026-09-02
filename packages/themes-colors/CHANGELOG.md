@@ -1,5 +1,35 @@
 # @docubook/themes-colors
 
+## 2.0.0-beta.2
+
+### Patch Changes
+
+- [#356](https://github.com/DocuBook/docubook/pull/356) [`5be00ec`](https://github.com/DocuBook/docubook/commit/5be00ec629d8452aec67bda080a4497177c3ac3a) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Migrate the DocuBook package suite to Vite 8, Rolldown, and native ESM.
+
+  ### `@docubook/core`
+  - Switched the library build from `tsup` to Vite 8 with TypeScript declaration output.
+  - Preserved the existing ESM entry points and export map structure.
+  - Added an explicit `MDXRemote` return type to keep declaration output portable.
+
+  ### `@docubook/flame`
+  - Switched the Node and Deno compatibility compiler in `bin/compile-lib.mjs` from `esbuild` to Vite 8 with Rolldown, keeping ESM output in `.docu/lib`.
+  - Kept the main runtime pipeline Bun-native and limited Vite/Rolldown to the compatibility build path.
+  - Updated the Vitest config to use `import.meta.dirname` for native ESM config loading.
+  - Fixed the plugin integration test to await its async assertion cleanly under newer Vitest behavior.
+
+  ### `@docubook/markdown`
+  - Switched the library build from `tsup` to Vite 8 with TypeScript declaration output.
+  - Preserved the package's ESM-first output while aligning it with the new workspace build flow.
+
+  ### `@docubook/themes-colors`
+  - Switched the library build from `tsup` to Vite 8 with TypeScript declaration output.
+  - Kept the same public API while continuing to ship native ESM output.
+
+  ### `@docubook/ui-react`
+  - Switched the multi-entry library build from `tsup` to Vite 8 with TypeScript declaration output.
+  - Simplified the package to native ESM output only and removed CommonJS export conditions.
+  - Preserved existing component subpath entry points such as `input`, `dropdown`, `modal`, and `navbar`.
+
 ## 2.0.0-alpha.0
 
 ### Major Changes
