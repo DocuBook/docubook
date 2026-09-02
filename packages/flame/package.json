@@ -33,8 +33,8 @@
     "deploy": "bun .docu/node/deploy.ts",
     "compile:lib": "node bin/compile-lib.mjs",
     "test": "vitest run",
-    "lint": "eslint .",
-    "prepublishOnly": "bun .docu/node/clean.ts && eslint . && vitest run && node bin/compile-lib.mjs"
+    "lint": "oxlint .",
+    "prepublishOnly": "bun .docu/node/clean.ts && oxlint . && vitest run && node bin/compile-lib.mjs"
   },
   "keywords": [
     "docubook",
@@ -65,11 +65,11 @@
     "@tailwindcss/typography": "0.5.16",
     "bun-plugin-tailwind": "^0.1.2",
     "daisyui": "^5.5.19",
-    "vite": "^8.2.1",
     "lucide-react": "^1.14.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "unified": "^11.0.0",
+    "vite": "^8.2.1",
     "zod": "^4.4.3"
   },
   "peerDependencies": {
@@ -81,17 +81,11 @@
     }
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "bun-types": "^1.3.0",
-    "eslint": "^10.3.0",
-    "eslint-plugin-perfectionist": "^5.9.0",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.1.1",
     "tailwindcss": "^4.3.0",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.59.2"
+    "typescript": "^7.0.2"
   }
 }

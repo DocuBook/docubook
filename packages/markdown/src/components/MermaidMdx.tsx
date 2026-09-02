@@ -120,12 +120,14 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
   const dragRef = useRef({ dragging: false, lastX: 0, lastY: 0 });
   const viewportRef = useRef<HTMLDivElement>(null);
 
-  // Keep chartRef in sync so theme-change re-render (T-005) can restore text
-  chartRef.current = chart;
-
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!chart) return;
+
+    // Keep chartRef in sync so theme-change re-render (T-005) can restore text
+    chartRef.current = chart;
+    setError(null);
+    setRendered(false);
 
     let cancelled = false;
     let lazyObserver: IntersectionObserver | null = null;
@@ -230,8 +232,7 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
       lazyObserver?.disconnect();
       syncObserver?.disconnect();
     };
-    // chart string is static from MDX — this only fires on mount
-  }, []);
+  }, [chart]);
 
   const pan = (dx: number, dy: number) => setView((v) => ({ ...v, x: v.x + dx, y: v.y + dy }));
   const zoom = (factor: number) => setView((v) => ({ ...v, scale: clampScale(v.scale * factor) }));

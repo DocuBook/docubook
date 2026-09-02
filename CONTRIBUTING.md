@@ -138,7 +138,7 @@ Git hooks are installed by Husky during `pnpm install`.
 `lint-staged` currently runs:
 
 - `prettier --write --ignore-unknown` on all staged files
-- `eslint --no-warn-ignored` on staged JS/TS files
+- `oxlint` on staged JS/TS files
 
 ### On Every Push
 
