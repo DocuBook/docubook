@@ -26,10 +26,10 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "pnpm run clean && vite build && tsc -p tsconfig.build.json",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "prepublishOnly": "pnpm run clean && pnpm run build"
   },
   "keywords": [
@@ -78,7 +78,7 @@
     "@types/unist": "^3.0.3",
     "mdast-util-directive": "^3.1.0",
     "react": "^19.0.0",
-    "tsup": "^8.5.1",
+    "vite": "^8.2.1",
     "typescript": "^5.9.3",
     "unified": "^11.0.0"
   }

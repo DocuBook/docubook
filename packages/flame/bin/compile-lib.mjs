@@ -7,37 +7,39 @@
  * The CLI routes non-Bun runtimes here (see `bin/cli.js`).
  */
 
-import { rmSync } from "node:fs";
-import { build, stop } from "esbuild";
+import { build } from "vite";
 
-const ENTRIES = [
-  "server.node.ts",
-  "server.deno.ts",
-  "build.node.ts",
-  "build.deno.ts",
-  "preview.node.ts",
-  "preview.deno.ts",
-  "deploy.node.ts",
-  "deploy.deno.ts",
-  "clean.ts",
+const entries = [
+  "server.node",
+  "server.deno",
+  "build.node",
+  "build.deno",
+  "preview.node",
+  "preview.deno",
+  "deploy.node",
+  "deploy.deno",
+  "clean",
 ];
 
-rmSync(".docu/lib", { recursive: true, force: true });
+const entry = Object.fromEntries(entries.map((name) => [name, `.docu/node/${name}.ts`]));
 
 await build({
-  entryPoints: ENTRIES.map((entry) => `.docu/node/${entry}`),
-  outdir: ".docu/lib",
-  bundle: true,
-  splitting: true,
-  format: "esm",
-  platform: "node",
-  target: "node20",
-  packages: "external",
-  jsx: "automatic",
-  logLevel: "info",
+  build: {
+    outDir: ".docu/lib",
+    emptyOutDir: true,
+    ssr: true,
+    target: "node20",
+    minify: false,
+    sourcemap: true,
+    lib: {
+      entry,
+      formats: ["es"],
+      fileName: (_format, entryName) => `${entryName}.js`,
+    },
+    rollupOptions: {
+      // Keep npm and runtime dependencies resolvable by the target runtime.
+      // Relative imports are bundled from the TypeScript source tree.
+      external: (id) => !id.startsWith(".") && !id.startsWith("/") && !id.startsWith("\0"),
+    },
+  },
 });
-
-// esbuild's service process keeps Deno's event loop alive after one-shot
-// build() calls — stop it explicitly so `flame` can invoke this script
-// under Deno. Harmless under Node.
-await stop();

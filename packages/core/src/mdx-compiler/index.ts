@@ -24,7 +24,7 @@ export function MDXRemote({
   scope = {},
   components = {},
   lazy,
-}: MDXRemoteProps) {
+}: MDXRemoteProps): React.ReactElement {
   const [ready, setReady] = useState(!lazy || typeof window === "undefined");
 
   useEffect(() => {
