@@ -39,13 +39,16 @@
 .prose .contains-task-list {
   list-style-type: none !important;
   list-style: none !important;
+  /* Override both physical and logical padding from @tailwindcss/typography */
   padding-left: 0 !important;
+  padding-inline-start: 0 !important;
   margin-left: 0 !important;
 }
 
 .contains-task-list .contains-task-list,
 .prose .contains-task-list .contains-task-list {
   padding-left: 1.5rem !important;
+  padding-inline-start: 1.5rem !important;
   margin-top: 0.25rem !important;
   margin-bottom: 0.25rem !important;
 }
@@ -55,13 +58,18 @@
   list-style-type: none !important;
   list-style: none !important;
   padding-left: 0 !important;
+  padding-inline-start: 0 !important;
   margin-top: 0.35rem;
   margin-bottom: 0.35rem;
 }
 
+/* content:none hides ::marker (valid); display:none is ignored on ::marker */
 .contains-task-list > .task-list-item::marker,
+.prose .contains-task-list > .task-list-item::marker {
+  content: none !important;
+}
+/* ::before fallback for browsers that don't use ::marker */
 .contains-task-list > .task-list-item::before,
-.prose .contains-task-list > .task-list-item::marker,
 .prose .contains-task-list > .task-list-item::before {
   content: none !important;
   display: none !important;
@@ -96,6 +104,7 @@
 
 .task-list-item > input[type="checkbox"]:checked::after {
   content: "";
+  display: block;
   width: 0.3rem;
   height: 0.55rem;
   border-right: 2px solid hsl(var(--primary-foreground, 210 40% 98%));
