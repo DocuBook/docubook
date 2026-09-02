@@ -65,7 +65,7 @@
     "@tailwindcss/typography": "0.5.16",
     "bun-plugin-tailwind": "^0.1.2",
     "daisyui": "^5.5.19",
-    "esbuild": "^0.28.1",
+    "vite": "^8.2.1",
     "lucide-react": "^1.14.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

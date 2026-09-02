@@ -3,139 +3,74 @@
   "version": "2.0.0-beta.0",
   "description": "React + DaisyUI component library for documentation sites",
   "type": "module",
-  "main": "./dist/index.cjs",
+  "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./cn": {
-      "import": {
-        "types": "./dist/cn.d.ts",
-        "default": "./dist/cn.js"
-      },
-      "require": {
-        "types": "./dist/cn.d.cts",
-        "default": "./dist/cn.cjs"
-      }
+      "types": "./dist/cn.d.ts",
+      "import": "./dist/cn.js",
+      "default": "./dist/cn.js"
     },
     "./input": {
-      "import": {
-        "types": "./dist/input.d.ts",
-        "default": "./dist/input.js"
-      },
-      "require": {
-        "types": "./dist/input.d.cts",
-        "default": "./dist/input.cjs"
-      }
+      "types": "./dist/input.d.ts",
+      "import": "./dist/input.js",
+      "default": "./dist/input.js"
     },
     "./kbd": {
-      "import": {
-        "types": "./dist/kbd.d.ts",
-        "default": "./dist/kbd.js"
-      },
-      "require": {
-        "types": "./dist/kbd.d.cts",
-        "default": "./dist/kbd.cjs"
-      }
+      "types": "./dist/kbd.d.ts",
+      "import": "./dist/kbd.js",
+      "default": "./dist/kbd.js"
     },
     "./toggle": {
-      "import": {
-        "types": "./dist/toggle.d.ts",
-        "default": "./dist/toggle.js"
-      },
-      "require": {
-        "types": "./dist/toggle.d.cts",
-        "default": "./dist/toggle.cjs"
-      }
+      "types": "./dist/toggle.d.ts",
+      "import": "./dist/toggle.js",
+      "default": "./dist/toggle.js"
     },
     "./dropdown": {
-      "import": {
-        "types": "./dist/dropdown.d.ts",
-        "default": "./dist/dropdown.js"
-      },
-      "require": {
-        "types": "./dist/dropdown.d.cts",
-        "default": "./dist/dropdown.cjs"
-      }
+      "types": "./dist/dropdown.d.ts",
+      "import": "./dist/dropdown.js",
+      "default": "./dist/dropdown.js"
     },
     "./modal": {
-      "import": {
-        "types": "./dist/modal.d.ts",
-        "default": "./dist/modal.js"
-      },
-      "require": {
-        "types": "./dist/modal.d.cts",
-        "default": "./dist/modal.cjs"
-      }
+      "types": "./dist/modal.d.ts",
+      "import": "./dist/modal.js",
+      "default": "./dist/modal.js"
     },
     "./drawer": {
-      "import": {
-        "types": "./dist/drawer.d.ts",
-        "default": "./dist/drawer.js"
-      },
-      "require": {
-        "types": "./dist/drawer.d.cts",
-        "default": "./dist/drawer.cjs"
-      }
+      "types": "./dist/drawer.d.ts",
+      "import": "./dist/drawer.js",
+      "default": "./dist/drawer.js"
     },
     "./collapse": {
-      "import": {
-        "types": "./dist/collapse.d.ts",
-        "default": "./dist/collapse.js"
-      },
-      "require": {
-        "types": "./dist/collapse.d.cts",
-        "default": "./dist/collapse.cjs"
-      }
+      "types": "./dist/collapse.d.ts",
+      "import": "./dist/collapse.js",
+      "default": "./dist/collapse.js"
     },
     "./theme-controller": {
-      "import": {
-        "types": "./dist/theme-controller.d.ts",
-        "default": "./dist/theme-controller.js"
-      },
-      "require": {
-        "types": "./dist/theme-controller.d.cts",
-        "default": "./dist/theme-controller.cjs"
-      }
+      "types": "./dist/theme-controller.d.ts",
+      "import": "./dist/theme-controller.js",
+      "default": "./dist/theme-controller.js"
     },
     "./navbar": {
-      "import": {
-        "types": "./dist/navbar.d.ts",
-        "default": "./dist/navbar.js"
-      },
-      "require": {
-        "types": "./dist/navbar.d.cts",
-        "default": "./dist/navbar.cjs"
-      }
+      "types": "./dist/navbar.d.ts",
+      "import": "./dist/navbar.js",
+      "default": "./dist/navbar.js"
     },
     "./breadcrumbs": {
-      "import": {
-        "types": "./dist/breadcrumbs.d.ts",
-        "default": "./dist/breadcrumbs.js"
-      },
-      "require": {
-        "types": "./dist/breadcrumbs.d.cts",
-        "default": "./dist/breadcrumbs.cjs"
-      }
+      "types": "./dist/breadcrumbs.d.ts",
+      "import": "./dist/breadcrumbs.js",
+      "default": "./dist/breadcrumbs.js"
     },
     "./pagination": {
-      "import": {
-        "types": "./dist/pagination.d.ts",
-        "default": "./dist/pagination.js"
-      },
-      "require": {
-        "types": "./dist/pagination.d.cts",
-        "default": "./dist/pagination.cjs"
-      }
+      "types": "./dist/pagination.d.ts",
+      "import": "./dist/pagination.js",
+      "default": "./dist/pagination.js"
     },
     "./styles.css": "./styles.css"
   },
@@ -146,8 +81,8 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "dev": "vite build --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx",
     "test": "vitest run",
@@ -173,7 +108,7 @@
     "jsdom": "^26.1.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "tsup": "^8.5.0",
+    "vite": "^8.2.1",
     "typescript": "^5.9.3"
   },
   "publishConfig": {

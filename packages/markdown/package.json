@@ -18,7 +18,7 @@
     "styles.css"
   ],
   "scripts": {
-    "build": "rm -rf dist tsconfig.tsbuildinfo && tsup",
+    "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && tsc -p tsconfig.build.json",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -62,7 +62,7 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-icons": "^5.0.0",
-    "tsup": "^8.5.1",
+    "vite": "^8.2.1",
     "typescript": "^5.9.3"
   }
 }

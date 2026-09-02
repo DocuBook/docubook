@@ -140,13 +140,13 @@ describe("Plugin integration — no-op mode", () => {
     ).resolves.toBeUndefined();
   });
 
-  it("returns empty arrays when no plugins registered", () => {
+  it("returns empty arrays when no plugins registered", async () => {
     const builder = createBuilder();
     expect(builder.collectHead({} as any)).toEqual([]);
     expect(builder.collectBody({} as any)).toEqual([]);
     expect(builder.collectRemarkPlugins()).toEqual([]);
     expect(builder.collectRehypePlugins()).toEqual([]);
-    expect(builder.runOnLoad("page.mdx", "content")).resolves.toBeNull();
+    await expect(builder.runOnLoad("page.mdx", "content")).resolves.toBeNull();
   });
 });
 

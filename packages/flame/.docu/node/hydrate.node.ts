@@ -1,7 +1,7 @@
 /**
  * Client bundle builder for Node/Deno runtimes.
  *
- * Wraps esbuild with the plugins needed to produce a browser-ready client
+ * Uses Vite with Rolldown plugins to produce a browser-ready client
  * bundle (JS + CSS) from the same components Bun.build handles natively.
  * Theme helpers (getThemeConfig, buildThemeCss, computeInlineThemeCss)
  * are re-exported from `hydrate.ts` — that module's `buildClientBundle`
@@ -15,6 +15,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { promisify } from "node:util";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
+import { build as viteBuild } from "vite";
 import {
   ASSETS_DIR,
   FRAMEWORK_ROOT,
@@ -203,180 +204,129 @@ export async function buildClientBundle(
   await cleanOldBundles(new Set([`client-${twKey}.css`]));
 
   const nodeEnv = process.env.NODE_ENV || "development";
-  const esbuild = await import("esbuild");
-  const { build } = esbuild;
 
   const entryPath = join(LIB_DIR, "client.ts");
-  const workingDir = process.cwd();
-  let result: Awaited<ReturnType<typeof build>>;
-  try {
-    result = await build({
-      entryPoints: [entryPath],
-      bundle: true,
-      outdir: ASSETS_DIR,
-      entryNames: "client-[hash]",
-      platform: "browser",
-      format: "esm",
+  const bundle = await viteBuild({
+    configFile: false,
+    publicDir: false,
+    define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
+    plugins: [
+      {
+        name: "node-builtin-stub",
+        resolveId(id) {
+          if (NODE_BUILTINS_RE.test(id)) return `\0node-stub:${id}`;
+          return null;
+        },
+        load(id) {
+          if (!id.startsWith("\0node-stub:")) return null;
+          return "export default {}; export {};";
+        },
+      },
+      {
+        name: "lucide-optimize",
+        resolveId(id, importer) {
+          if (id !== "lucide-react") return null;
+          if (importer) {
+            const normalized = normalizeImporterPath(importer);
+            if (normalized.includes("/markdown/dist/")) return null;
+          }
+          return "\0lucide-virt";
+        },
+        load(id) {
+          if (id !== "\0lucide-virt") return null;
+          const scanned = collectAllLucideIcons();
+          const configured = extractConfigIcons(loadDocuConfig());
+          const allIcons = [...new Set([...scanned, ...configured])];
+          return `export { ${allIcons.join(", ")} } from ${JSON.stringify(getLucideRealEntry())};`;
+        },
+      },
+      {
+        name: "docu-config",
+        resolveId(id) {
+          if (!/client-routes$/.test(id)) return null;
+          return "\0client-routes";
+        },
+        load(id) {
+          if (id !== "\0client-routes") return null;
+          const config = loadDocuConfig();
+          const resolved = {
+            ...config,
+            routes: resolveRoutes(config.routes as DocuRoute[] | undefined),
+          };
+          return [
+            `const docuConfig = ${JSON.stringify(resolved)};`,
+            `export const routes = docuConfig.routes || [];`,
+            `export const config = docuConfig;`,
+          ].join("\n");
+        },
+      },
+      {
+        name: "mdx-hydrate",
+        resolveId(id) {
+          if (/mdx-manifest$/.test(id)) return "\0mdx-manifest";
+          if (id.startsWith("mdx-module:")) return `\0${id}`;
+          return null;
+        },
+        load(id) {
+          if (id === "\0mdx-manifest") {
+            const slugs = Object.keys(mdxSources).sort();
+            const imports = slugs
+              .map((slug, i) => {
+                const key = slug.replace(/["\\]/g, "");
+                return `import * as _mdx${i} from ${JSON.stringify(`mdx-module:${key}`)};`;
+              })
+              .join("\n");
+            const map = slugs.map((slug, i) => `${JSON.stringify(slug)}: _mdx${i}`).join(", ");
+            return `${imports}\nexport const mdxModules = { ${map} };\n`;
+          }
+          if (!id.startsWith("\0mdx-module:")) return null;
+          const slug = id.slice("\0mdx-module:".length);
+          const contents = mdxSources[slug];
+          if (contents == null) {
+            throw new Error(`unknown mdx module: ${slug}`);
+          }
+          return contents;
+        },
+      },
+    ],
+    build: {
+      outDir: ASSETS_DIR,
+      emptyOutDir: false,
+      sourcemap: true,
       minify: nodeEnv === "production",
-      define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
-      jsx: "automatic",
-      jsxDev: nodeEnv !== "production",
-      metafile: true,
-      logLevel: "silent",
-      plugins: [
-        {
-          name: "node-builtin-stub",
-          setup(build) {
-            build.onResolve({ filter: NODE_BUILTINS_RE }, (args) => ({
-              path: args.path,
-              namespace: "node-stub",
-            }));
-            build.onLoad({ filter: /.*/, namespace: "node-stub" }, () => ({
-              contents: "module.exports = {};",
-              loader: "js",
-            }));
-          },
+      target: "es2020",
+      rollupOptions: {
+        input: entryPath,
+        output: {
+          format: "es",
+          entryFileNames: "client-[hash].js",
+          chunkFileNames: "chunks/[name]-[hash].js",
+          assetFileNames: "assets/[name]-[hash][extname]",
         },
-        {
-          name: "lucide-optimize",
-          setup(build) {
-            build.onResolve({ filter: /^lucide-react$/ }, (args) => {
-              // Imports from within our virtual module go to the real package.
-              if (args.namespace === "lucide-virt") {
-                return { path: getLucideRealEntry(), namespace: "file" };
-              }
-              // markdown Icon.tsx uses namespace import for arbitrary
-              // user-provided icon names in MDX — keep full barrel there.
-              if (args.importer) {
-                const normalized = normalizeImporterPath(args.importer);
-                if (normalized.includes("/markdown/dist/")) {
-                  return { path: getLucideRealEntry(), namespace: "file" };
-                }
-              }
-              // All other files get tree-shaken via the virtual module.
-              // Lucide.tsx renders only config-defined icons, which are
-              // collected by extractConfigIcons() + collectAllLucideIcons().
-              return { path: args.path, namespace: "lucide-virt" };
-            });
-            build.onLoad({ filter: /.*/, namespace: "lucide-virt" }, () => {
-              const scanned = collectAllLucideIcons();
-              const configured = extractConfigIcons(loadDocuConfig());
-              const allIcons = [...new Set([...scanned, ...configured])];
-              return {
-                contents: `export { ${allIcons.join(", ")} } from "lucide-react";`,
-                loader: "js",
-              };
-            });
-          },
-        },
-        {
-          name: "docu-config",
-          setup(build) {
-            // Components import as "../node/client-routes" (no .ts extension),
-            // so filter matches the path tail without requiring the extension.
-            build.onResolve({ filter: /client-routes$/ }, (args) => ({
-              path: args.path,
-              namespace: "client-routes",
-            }));
-            build.onLoad({ filter: /.*/, namespace: "client-routes" }, () => {
-              const config = loadDocuConfig();
-              const resolved = {
-                ...config,
-                routes: resolveRoutes(config.routes as DocuRoute[] | undefined),
-              };
-              return {
-                contents: [
-                  `import type { DocuRoute, DocuConfig } from "./types";`,
-                  `const docuConfig = ${JSON.stringify(resolved)};`,
-                  `export const routes = docuConfig.routes || [];`,
-                  `export const config = docuConfig;`,
-                ].join("\n"),
-                loader: "ts",
-              };
-            });
-          },
-        },
-        {
-          // Serves per-page compiled MDX (program format) as real modules so
-          // the client hydrates the content island without `new Function`.
-          // client.ts imports `{ mdxModules } from "./mdx-manifest"`.
-          name: "mdx-hydrate",
-          setup(build) {
-            // Compiled MDX (program format) imports the JSX runtime and the
-            // MDX provider. Virtual modules have no real directory, so esbuild
-            // cannot resolve bare specifiers from them — map them to the
-            // installed real paths explicitly (same pattern as lucide-optimize).
-            const require = createRequire(import.meta.url);
-            const mdxModuleDeps: Record<string, string> = {
-              "react/jsx-runtime": require.resolve("react/jsx-runtime"),
-              "react/jsx-dev-runtime": require.resolve("react/jsx-dev-runtime"),
-              "@mdx-js/react": require.resolve("@mdx-js/react"),
-            };
-            build.onResolve(
-              { filter: /^(react\/jsx-runtime|react\/jsx-dev-runtime|@mdx-js\/react)$/ },
-              (args) => {
-                if (args.namespace !== "mdx-module") return;
-                return { path: mdxModuleDeps[args.path], namespace: "file" };
-              }
-            );
-            build.onResolve({ filter: /^mdx-module:/ }, (args) => ({
-              path: args.path,
-              namespace: "mdx-module",
-            }));
-            build.onLoad({ filter: /.*/, namespace: "mdx-module" }, (args) => {
-              const slug = args.path.slice("mdx-module:".length);
-              const contents = mdxSources[slug];
-              if (contents == null) {
-                return {
-                  errors: [{ text: `unknown mdx module: ${slug}` }],
-                  contents: "",
-                  loader: "js",
-                };
-              }
-              return { contents, loader: "js" };
-            });
-            build.onResolve({ filter: /mdx-manifest$/ }, (args) => ({
-              path: args.path,
-              namespace: "mdx-manifest",
-            }));
-            build.onLoad({ filter: /.*/, namespace: "mdx-manifest" }, () => {
-              // Sort keys: the prePass fills mdxSources via Promise.all, so
-              // insertion order = resolution order (non-deterministic across
-              // processes). Stable key order keeps the bundle hash stable so
-              // the build cache (`assetsChanged`) actually hits.
-              const slugs = Object.keys(mdxSources).sort();
-              const imports = slugs
-                .map((slug, i) => {
-                  const key = slug.replace(/["\\]/g, "");
-                  return `import * as _mdx${i} from "mdx-module:${key}";`;
-                })
-                .join("\n");
-              const map = slugs.map((slug, i) => `${JSON.stringify(slug)}: _mdx${i}`).join(", ");
-              return {
-                contents: `${imports}\nexport const mdxModules = { ${map} };\n`,
-                loader: "js",
-              };
-            });
-          },
-        },
-      ],
-    });
-  } finally {
-    // esbuild's service child process keeps Deno's event loop alive after a
-    // one-shot build (node-compat gap) — stop it so `flame build` exits.
-    await esbuild.stop();
-  }
-
-  // The single entry produces one output. Match resolved source path.
-  const { outputs } = result.metafile!;
-  const jsOutput = Object.keys(outputs).find((p) => {
-    const o = outputs[p];
-    return o.entryPoint && resolve(workingDir, o.entryPoint) === entryPath;
+      },
+    },
   });
-  if (!jsOutput) {
+
+  const outputs = Array.isArray(bundle) ? bundle : [bundle];
+  let jsFile: string | undefined;
+  for (const item of outputs) {
+    if (!("output" in item)) continue;
+    for (const output of item.output) {
+      if (
+        output.type === "chunk" &&
+        output.isEntry &&
+        output.facadeModuleId &&
+        resolve(output.facadeModuleId) === entryPath
+      ) {
+        jsFile = basename(output.fileName);
+        break;
+      }
+    }
+    if (jsFile) break;
+  }
+  if (!jsFile) {
     throw new Error("Client bundle produced no output files");
   }
-  const jsFile = basename(jsOutput);
 
   const { file: cssFile } = await buildTailwindCss(twKey);
 
