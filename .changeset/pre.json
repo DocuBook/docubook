@@ -10,6 +10,7 @@
   },
   "changesets": [
     "breaking-v2",
+    "brisk-lighthouses-jam",
     "swifty-carpets-teach"
   ]
 }
