@@ -174,7 +174,10 @@ async function serializeWithDocPlugins(
   // Parse-once: when the prePass already extracted the frontmatter + stripped
   // content, reuse it instead of re-parsing (the SSR phase skips extraction).
   const { strippedContent, frontmatter } =
-    pre ?? extractFrontmatterWithContent<Frontmatter>(rawMdx, opts.frontmatterSchema);
+    pre ??
+    (opts.frontmatterSchema
+      ? extractFrontmatterWithContent<Frontmatter>(rawMdx, opts.frontmatterSchema)
+      : extractFrontmatterWithContent<Frontmatter>(rawMdx));
 
   const defaultRemark = createDefaultRemarkPlugins();
   const defaultRehype = createDefaultRehypePlugins();
@@ -221,7 +224,9 @@ export async function compileMdx(
   const tocs = extractTocsFromRawMdx(rawMdx);
   const frontmatter =
     pre?.frontmatter ??
-    extractFrontmatterWithContent<Frontmatter>(rawMdx, frontmatterSchema).frontmatter;
+    (frontmatterSchema
+      ? extractFrontmatterWithContent<Frontmatter>(rawMdx, frontmatterSchema).frontmatter
+      : extractFrontmatterWithContent<Frontmatter>(rawMdx).frontmatter);
   const serialized = await serializeWithDocPlugins(
     rawMdx,
     { remarkPlugins, rehypePlugins, frontmatterSchema },
@@ -302,6 +307,13 @@ export function registerPageContent(href: string, raw: string): void {
 
 export function getPageContent(href: string): string | undefined {
   return pageContent.get(href);
+}
+
+/** Drop derived page maps under OS memory pressure (Bun 1.4 `memoryPressure`). */
+export function clearDerivedPageCaches(): void {
+  pageContent.clear();
+  pageStripped.clear();
+  pageFrontmatter.clear();
 }
 
 export async function compileMdxModule(

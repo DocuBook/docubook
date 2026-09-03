@@ -13,8 +13,7 @@ import { builtinModules, createRequire } from "node:module";
 import { basename, dirname, join, resolve } from "node:path";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { promisify } from "node:util";
-import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
-import { createHash } from "node:crypto";
+import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { build as viteBuild } from "vite";
 import {
   ASSETS_DIR,
@@ -25,6 +24,7 @@ import {
   loadDocuConfig,
 } from "./paths";
 import { buildThemeCss, getThemeConfig } from "./hydrate";
+import { atomicWriteFile, computeTailwindCacheKey, readGlobalsCss } from "./cache-key";
 import { resolveRoutes } from "./fs-scanner";
 import { normalizeImporterPath } from "./security";
 import type { DocuConfig, DocuRoute } from "./types";
@@ -59,10 +59,9 @@ function resolveTailwindBin(): string {
   return join(dirname(pkgPath), binRel);
 }
 
-/** Compute a cache key from globals.css + theme config content. */
+/** Compute a cache key from globals.css + theme + config + toolchain. */
 function tailwindCacheKey(): string {
-  const globalsPath = join(STYLES_DIR, "globals.css");
-  const globalsContent = existsSync(globalsPath) ? readFileSync(globalsPath, "utf-8") : "";
+  const globalsContent = readGlobalsCss();
   let themeSuffix = "";
   try {
     const themeColors = getThemeConfig();
@@ -72,10 +71,7 @@ function tailwindCacheKey(): string {
   } catch {
     // theme config unavailable — proceed without it
   }
-  return createHash("sha256")
-    .update(globalsContent + themeSuffix)
-    .digest("hex")
-    .slice(0, 16);
+  return computeTailwindCacheKey(globalsContent, themeSuffix);
 }
 
 /**
@@ -105,7 +101,7 @@ async function buildTailwindCss(key: string): Promise<{ file: string; content: s
   }
 
   let cssContent = await readFile(tmpCss, "utf-8");
-  await unlink(tmpCss);
+  await unlink(tmpCss).catch(() => {});
 
   try {
     const themeColors = getThemeConfig();
@@ -120,11 +116,12 @@ async function buildTailwindCss(key: string): Promise<{ file: string; content: s
 
   // Use the same input-derived key for lookup and output — if inputs change,
   // the key changes, cache busting works without a separate content hash.
+  // Atomic tmp+rename with pid suffix: parallel builds never clobber each other.
   const cssFile = `client-${key}.css`;
   const outPath = join(ASSETS_DIR, cssFile);
 
   if (!existsSync(outPath)) {
-    await writeFile(outPath, cssContent);
+    await atomicWriteFile(writeFile, rename, unlink, outPath, cssContent);
   }
 
   return { file: cssFile, content: cssContent };

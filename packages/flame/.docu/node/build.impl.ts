@@ -6,7 +6,7 @@
  * The Node/Deno build entries call `runBuildCli()`.
  */
 
-import { readFile, writeFile, mkdir, readdir, copyFile } from "node:fs/promises";
+import { readFile, writeFile, mkdir, readdir, copyFile, rename, unlink } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join, dirname } from "node:path";
@@ -39,7 +39,16 @@ import { initSentry, captureException } from "./sentry";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
 import { scanMdxFiles } from "./utils";
-import type { BuildCache, CliArgs } from "./types";
+import type { BuildCache, BuildCacheMeta, CliArgs } from "./types";
+import { isCacheEntry } from "./types";
+import {
+  BUILD_CACHE_VERSION,
+  atomicWriteFile,
+  hashMdxSources,
+  hookMemoryPressure,
+  runtimeStamp,
+} from "./cache-key";
+import { clearDerivedPageCaches } from "./mdx";
 import { generateNonce, cspHeader } from "./security";
 import type { PageMeta, PageContext } from "./plugin";
 import { buildSeoMeta } from "./seo";
@@ -64,7 +73,12 @@ async function readCache(): Promise<BuildCache> {
   try {
     if (existsSync(CACHE_FILE)) {
       const data = await readFile(CACHE_FILE, "utf-8");
-      return JSON.parse(data);
+      const parsed = JSON.parse(data) as BuildCache;
+      const meta = parsed.__meta__ as BuildCacheMeta | undefined;
+      if (!meta || meta.version !== BUILD_CACHE_VERSION || meta.runtime !== runtimeStamp()) {
+        return {};
+      }
+      return parsed;
     }
   } catch (err) {
     console.error("Failed to load build cache:", (err as Error).message);
@@ -72,8 +86,19 @@ async function readCache(): Promise<BuildCache> {
   return {};
 }
 
+function stampCache(cache: BuildCache): void {
+  cache.__meta__ = {
+    hash: `${BUILD_CACHE_VERSION}:${runtimeStamp()}`,
+    mtime: 0,
+    builtAt: Date.now(),
+    version: BUILD_CACHE_VERSION,
+    runtime: runtimeStamp(),
+  };
+}
+
 async function writeCache(cache: BuildCache): Promise<void> {
-  await writeFile(CACHE_FILE, JSON.stringify(cache, null, 2));
+  stampCache(cache);
+  await atomicWriteFile(writeFile, rename, unlink, CACHE_FILE, JSON.stringify(cache, null, 2));
 }
 
 function parseConcurrency(): number {
@@ -84,12 +109,37 @@ type RebuildDecision = "yes" | "hash_check" | "no";
 
 function shouldRebuild(path: string, mtime: number, cache: BuildCache): RebuildDecision {
   const cached = cache[path];
-  if (!cached) return "yes";
-  if (mtime > cached.builtAt) return "hash_check";
+  if (!isCacheEntry(cached)) return "yes";
+  if (mtime > cached.builtAt + 2000) return "hash_check";
+  if (Math.abs(mtime - cached.builtAt) <= 2000 && mtime !== cached.mtime) return "hash_check";
+  if (mtime !== cached.mtime && mtime > cached.mtime) return "hash_check";
   return "no";
 }
 
 let assetManifest = { js: "client.js", css: "client.css" };
+
+/**
+ * Reuse manifest.json on bundle cache hit; fall back to a full rebuild
+ * when the manifest is missing or malformed.
+ */
+async function resolveAssetManifest(
+  bundleHit: boolean,
+  mdxSources: Record<string, string>
+): Promise<{ js: string; css: string }> {
+  if (!bundleHit) return buildClientBundle(mdxSources);
+  try {
+    const manifest = JSON.parse(await readFile(join(ASSETS_DIR, "manifest.json"), "utf-8")) as {
+      js?: string;
+      css?: string;
+    };
+    if (typeof manifest.js === "string" && typeof manifest.css === "string") {
+      return { js: manifest.js, css: manifest.css };
+    }
+  } catch {
+    // corrupt/missing manifest — rebuild below
+  }
+  return buildClientBundle(mdxSources);
+}
 
 let inlineThemeCss: string | undefined;
 
@@ -180,7 +230,7 @@ async function renderDocsPage(
   const seo = buildSeoMeta(docuConfig, frontmatter, slug || "");
   // MDX content hydrates from the bundled ESM module (mdx-hydrate), not
   // new Function — no 'unsafe-eval' needed in the CSP.
-  const csp = cspHeader(nonce);
+  const csp = nonce ? cspHeader(nonce) : undefined;
   let html = htmlShell({
     title,
     description,
@@ -222,6 +272,8 @@ async function copyDirectoryRecursive(src: string, dest: string): Promise<void> 
 export async function runBuild(): Promise<void> {
   const docuConfig = loadDocuConfig();
   const args = parseArgs();
+
+  hookMemoryPressure(clearDerivedPageCaches);
 
   logger.buildStart();
 
@@ -311,20 +363,29 @@ export async function runBuild(): Promise<void> {
 
   logger.bundleStart();
   let t = performance.now();
-  assetManifest = await buildClientBundle(mdxSources);
+  const bundleHash = hashMdxSources(mdxSources);
+  const lastBundle = cache["__bundle__"];
+  const bundleHit =
+    isCacheEntry(lastBundle) &&
+    lastBundle.hash === bundleHash &&
+    existsSync(join(ASSETS_DIR, "manifest.json"));
+  assetManifest = await resolveAssetManifest(bundleHit, mdxSources);
   logger.bundleDone(Math.round(performance.now() - t));
 
   inlineThemeCss = computeInlineThemeCss();
 
   const lastManifest = cache["__assets__"];
   const assetsChanged =
-    !lastManifest || lastManifest.hash !== `${assetManifest.js}:${assetManifest.css}`;
+    !isCacheEntry(lastManifest) || lastManifest.hash !== `${assetManifest.js}:${assetManifest.css}`;
   if (assetsChanged) {
     cache["__assets__"] = {
       hash: `${assetManifest.js}:${assetManifest.css}`,
       mtime: 0,
       builtAt: Date.now(),
     };
+  }
+  if (!bundleHit) {
+    cache["__bundle__"] = { hash: bundleHash, mtime: 0, builtAt: Date.now() };
   }
 
   logger.spinner.start("Building pages...");
@@ -366,7 +427,7 @@ export async function runBuild(): Promise<void> {
     if (rebuildDecision === "hash_check") {
       const contentHash = hashContent(rawMdx);
       const cached = cache[file.path];
-      if (cached && cached.hash === contentHash) {
+      if (isCacheEntry(cached) && cached.hash === contentHash) {
         if (!assetsChanged) {
           const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
           if (existsSync(outputPath)) {
@@ -438,7 +499,11 @@ export async function runBuild(): Promise<void> {
 
   const landingPage = React.createElement(IndexPage);
   const landingFavicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
-  const landingSeo = buildSeoMeta(docuConfig, docuConfig.meta as Record<string, unknown>, "");
+  const landingSeo = buildSeoMeta(
+    docuConfig,
+    docuConfig.meta as unknown as Record<string, unknown>,
+    ""
+  );
   const landingNonce = generateNonce();
   const landingHtml = htmlShell({
     title: docuConfig.meta?.title || "DocuBook",

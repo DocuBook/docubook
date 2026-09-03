@@ -1,9 +1,9 @@
 import { join } from "node:path";
-import { mkdir, unlink } from "node:fs/promises";
-import { existsSync, readFileSync } from "node:fs";
-import { createHash } from "node:crypto";
+import { mkdir, unlink, rename } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { resolveTheme, generateThemeCss, presetRegistry } from "@docubook/themes-colors";
 import { ASSETS_DIR, cleanOldBundles, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
+import { atomicWriteFile, computeTailwindCacheKey, readGlobalsCss } from "./cache-key";
 import { resolveRoutes } from "./fs-scanner";
 import type { DocuRoute } from "./types";
 import type { ThemeConfig } from "@docubook/themes-colors";
@@ -57,10 +57,9 @@ export function computeInlineThemeCss(): string | undefined {
   return undefined;
 }
 
-/** Compute Tailwind cache key from globals.css + theme config. */
+/** Compute Tailwind cache key from globals.css + theme + config + toolchain. */
 function twCacheKey(): string {
-  const globalsPath = join(STYLES_DIR, "globals.css");
-  const globals = existsSync(globalsPath) ? readFileSync(globalsPath, "utf-8") : "";
+  const globals = readGlobalsCss();
   let themeSuffix = "";
   try {
     const themeColors = getThemeConfig();
@@ -68,10 +67,7 @@ function twCacheKey(): string {
   } catch {
     // theme config unavailable — proceed without
   }
-  return createHash("sha256")
-    .update(globals + themeSuffix)
-    .digest("hex")
-    .slice(0, 16);
+  return computeTailwindCacheKey(globals, themeSuffix);
 }
 
 /** Run Tailwind CLI, caching by content hash. */
@@ -105,7 +101,7 @@ async function buildTailwindCss(key: string): Promise<{ file: string; content: s
   }
 
   let cssContent = await Bun.file(tmpCss).text();
-  await unlink(tmpCss);
+  await unlink(tmpCss).catch(() => {});
 
   try {
     const themeColors = getThemeConfig();
@@ -116,11 +112,14 @@ async function buildTailwindCss(key: string): Promise<{ file: string; content: s
     );
   }
 
-  // Use the same input-derived key for lookup and output — if inputs change,
-  // the key changes, cache busting works without a separate content hash.
   const cssFile = `client-${key}.css`;
   const outPath = join(ASSETS_DIR, cssFile);
-  if (!existsSync(outPath)) await Bun.write(outPath, cssContent);
+  // Atomic tmp+rename with pid suffix: parallel builds never clobber each
+  // other, and a crash cannot leave a half-written CSS file behind.
+  if (!existsSync(outPath)) {
+    const { writeFile } = await import("node:fs/promises");
+    await atomicWriteFile(writeFile, rename, unlink, outPath, cssContent);
+  }
 
   return { file: cssFile, content: cssContent };
 }
