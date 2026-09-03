@@ -10,7 +10,28 @@ import type { DocuConfig } from "./types";
 
 // .docu/node/paths.ts → package root is 2 levels up
 export const FRAMEWORK_ROOT = resolve(import.meta.dirname, "../..");
-export const PROJECT_ROOT = process.cwd();
+
+/**
+ * Find the project root by walking up from cwd until docu.json is found.
+ * Falls back to cwd when not found (tests, ad-hoc scripts). Bun 1.4
+ * `run --parallel --filter` may change cwd per workspace task, so a bare
+ * process.cwd() can point at the wrong package.
+ */
+function findProjectRoot(): string {
+  let dir = process.cwd();
+  for (let i = 0; i < 6; i++) {
+    try {
+      if (existsSync(join(dir, "docu.json"))) return dir;
+    } catch {
+      break;
+    }
+    const parent = resolve(dir, "..");
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return process.cwd();
+}
+export const PROJECT_ROOT = findProjectRoot();
 
 // Framework paths (internal)
 export const PAGES_DIR = join(FRAMEWORK_ROOT, ".docu/pages");
@@ -28,6 +49,11 @@ export const CACHE_FILE = join(PROJECT_ROOT, ".docu/build-cache.json");
 export const DOCS_DIR = join(PROJECT_ROOT, "docs");
 export const DOCS_ASSETS_DIR = join(PROJECT_ROOT, "docs/assets");
 export const DOCU_CONFIG_PATH = join(PROJECT_ROOT, "docu.json");
+
+/** Resolve a project-relative file against the discovered PROJECT_ROOT. */
+export function resolveProjectFile(...segments: string[]): string {
+  return join(PROJECT_ROOT, ...segments);
+}
 
 // Config singleton
 let _config: DocuConfig | null = null;

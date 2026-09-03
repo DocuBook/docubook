@@ -93,12 +93,30 @@ export interface DocuConfig {
   plugins?: PluginEntry[];
 }
 
+export interface BuildCacheEntry {
+  hash: string;
+  mtime: number;
+  builtAt: number;
+}
+
+/** Version stamp stored as `__meta__` — extends entry so the index signature stays valid. */
+export interface BuildCacheMeta extends BuildCacheEntry {
+  version: number;
+  runtime: string;
+}
+
 export interface BuildCache {
-  [path: string]: {
-    hash: string;
-    mtime: number;
-    builtAt: number;
-  };
+  [path: string]: BuildCacheEntry;
+  __meta__?: BuildCacheMeta;
+  __assets__?: BuildCacheEntry;
+  __bundle__?: BuildCacheEntry;
+}
+
+/** Narrow a cache slot to a real page/asset entry (guards `__meta__` shape). */
+export function isCacheEntry(value: unknown): value is BuildCacheEntry {
+  if (typeof value !== "object" || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return typeof v.hash === "string" && typeof v.mtime === "number" && typeof v.builtAt === "number";
 }
 
 export interface CliArgs {

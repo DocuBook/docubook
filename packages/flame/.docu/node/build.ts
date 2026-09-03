@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir, readdir, copyFile } from "node:fs/promises";
+import { readFile, writeFile, mkdir, readdir, copyFile, rename, unlink } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join, dirname } from "node:path";
@@ -31,7 +31,16 @@ import { initSentry, captureException } from "./sentry";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
 import { scanMdxFiles } from "./utils";
-import type { BuildCache, CliArgs } from "./types";
+import type { BuildCache, BuildCacheMeta, CliArgs } from "./types";
+import { isCacheEntry } from "./types";
+import {
+  BUILD_CACHE_VERSION,
+  atomicWriteFile,
+  hashMdxSources,
+  hookMemoryPressure,
+  runtimeStamp,
+} from "./cache-key";
+import { clearDerivedPageCaches } from "./mdx";
 import { generateNonce } from "./security";
 import type { PageMeta, PageContext } from "./plugin";
 import { buildSeoMeta } from "./seo";
@@ -58,7 +67,15 @@ async function readCache(): Promise<BuildCache> {
   try {
     if (existsSync(CACHE_FILE)) {
       const data = await readFile(CACHE_FILE, "utf-8");
-      return JSON.parse(data);
+      const parsed = JSON.parse(data) as BuildCache;
+      // Toolchain upgrade (Bun 1.3 → 1.4, Tailwind CLI bump) changes build
+      // output without changing page content — a stale cache would false-hit.
+      // Discard when the version stamp or runtime fingerprint mismatches.
+      const meta = parsed.__meta__ as BuildCacheMeta | undefined;
+      if (!meta || meta.version !== BUILD_CACHE_VERSION || meta.runtime !== runtimeStamp()) {
+        return {};
+      }
+      return parsed;
     }
   } catch (err) {
     console.error("Failed to load build cache:", (err as Error).message);
@@ -66,8 +83,21 @@ async function readCache(): Promise<BuildCache> {
   return {};
 }
 
+/** Stamp the cache with the current toolchain fingerprint. */
+function stampCache(cache: BuildCache): void {
+  cache.__meta__ = {
+    hash: `${BUILD_CACHE_VERSION}:${runtimeStamp()}`,
+    mtime: 0,
+    builtAt: Date.now(),
+    version: BUILD_CACHE_VERSION,
+    runtime: runtimeStamp(),
+  };
+}
+
 async function writeCache(cache: BuildCache): Promise<void> {
-  await writeFile(CACHE_FILE, JSON.stringify(cache, null, 2));
+  stampCache(cache);
+  // Atomic tmp+rename: a crash mid-write never leaves a corrupt cache file.
+  await atomicWriteFile(writeFile, rename, unlink, CACHE_FILE, JSON.stringify(cache, null, 2));
 }
 
 export function parseConcurrency(): number {
@@ -78,12 +108,40 @@ type RebuildDecision = "yes" | "hash_check" | "no";
 
 export function shouldRebuild(path: string, mtime: number, cache: BuildCache): RebuildDecision {
   const cached = cache[path];
-  if (!cached) return "yes";
-  if (mtime > cached.builtAt) return "hash_check";
+  if (!isCacheEntry(cached)) return "yes";
+  // 2s tolerance: mtimeMs (float, fs precision) vs builtAt (int, Date.now())
+  // can miss on fast rebuilds after Bun 1.4's 2x faster startup — equality
+  // within tolerance still falls through to the hash check, never to "no".
+  if (mtime > cached.builtAt + 2000) return "hash_check";
+  if (Math.abs(mtime - cached.builtAt) <= 2000 && mtime !== cached.mtime) return "hash_check";
+  if (mtime !== cached.mtime && mtime > cached.mtime) return "hash_check";
   return "no";
 }
 
 let assetManifest = { js: "client.js", css: "client.css" };
+
+/**
+ * Reuse manifest.json on bundle cache hit; fall back to a full rebuild
+ * when the manifest is missing or malformed.
+ */
+async function resolveAssetManifest(
+  bundleHit: boolean,
+  mdxSources: Record<string, string>
+): Promise<{ js: string; css: string }> {
+  if (!bundleHit) return buildClientBundle(mdxSources);
+  try {
+    const manifest = JSON.parse(await readFile(join(ASSETS_DIR, "manifest.json"), "utf-8")) as {
+      js?: string;
+      css?: string;
+    };
+    if (typeof manifest.js === "string" && typeof manifest.css === "string") {
+      return { js: manifest.js, css: manifest.css };
+    }
+  } catch {
+    // corrupt/missing manifest — rebuild below
+  }
+  return buildClientBundle(mdxSources);
+}
 
 let inlineThemeCss: string | undefined;
 
@@ -211,6 +269,10 @@ async function copyDirectoryRecursive(src: string, dest: string): Promise<void> 
 async function build() {
   const args = parseArgs();
 
+  // Bun 1.4 `process.on("memoryPressure")`: drop parsed page maps when the
+  // OS runs low on memory (long CI builds). No-op on older runtimes.
+  hookMemoryPressure(clearDerivedPageCaches);
+
   logger.buildStart();
 
   if (args.clean) {
@@ -299,20 +361,32 @@ async function build() {
 
   logger.bundleStart();
   let t = performance.now();
-  assetManifest = await buildClientBundle(mdxSources);
+  // Skip the JS bundle when compiled MDX sources are unchanged: the bundle
+  // is shared by every page, so its hash doubles as the content fingerprint.
+  // CSS still builds via its own content-keyed cache inside the hydrator.
+  const bundleHash = hashMdxSources(mdxSources);
+  const lastBundle = cache["__bundle__"];
+  const bundleHit =
+    isCacheEntry(lastBundle) &&
+    lastBundle.hash === bundleHash &&
+    existsSync(join(ASSETS_DIR, "manifest.json"));
+  assetManifest = await resolveAssetManifest(bundleHit, mdxSources);
   logger.bundleDone(Math.round(performance.now() - t));
 
   inlineThemeCss = computeInlineThemeCss();
 
   const lastManifest = cache["__assets__"];
   const assetsChanged =
-    !lastManifest || lastManifest.hash !== `${assetManifest.js}:${assetManifest.css}`;
+    !isCacheEntry(lastManifest) || lastManifest.hash !== `${assetManifest.js}:${assetManifest.css}`;
   if (assetsChanged) {
     cache["__assets__"] = {
       hash: `${assetManifest.js}:${assetManifest.css}`,
       mtime: 0,
       builtAt: Date.now(),
     };
+  }
+  if (!bundleHit) {
+    cache["__bundle__"] = { hash: bundleHash, mtime: 0, builtAt: Date.now() };
   }
 
   logger.spinner.start("Building pages...");
@@ -354,7 +428,7 @@ async function build() {
     if (rebuildDecision === "hash_check") {
       const contentHash = hashContent(rawMdx);
       const cached = cache[file.path];
-      if (cached && cached.hash === contentHash) {
+      if (isCacheEntry(cached) && cached.hash === contentHash) {
         if (!assetsChanged) {
           const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
           if (existsSync(outputPath)) {
