@@ -7,9 +7,35 @@ import { spawnSync } from "node:child_process";
 
 const __dirname = import.meta.dirname;
 
+// Detect the package manager that invoked this binary. npm, pnpm, bun, and
+// yarn set npm_config_user_agent when they run a bin; fall back to lockfiles
+// in the target directory for direct invocations (e.g. `node bin/cli.js`).
+function detectPkgManager(dir) {
+  const userAgent = process.env.npm_config_user_agent || "";
+  // pnpm/yarn UA strings also contain "npm/?" — match specific tools first.
+  if (/bun\//.test(userAgent)) return "bun";
+  if (/pnpm\//.test(userAgent)) return "pnpm";
+  if (/yarn\//.test(userAgent)) return "yarn";
+  if (/npm\//.test(userAgent)) return "npm";
+  if (existsSync(join(dir, "bun.lock"))) return "bun";
+  if (existsSync(join(dir, "pnpm-lock.yaml"))) return "pnpm";
+  if (existsSync(join(dir, "yarn.lock"))) return "yarn";
+  if (existsSync(join(dir, "package-lock.json"))) return "npm";
+  return "npm";
+}
+
+// Explicit `--bun` on the flame CLI itself (e.g. `flame dev --bun`).
+// Distinct from `bun run --bun dev` (consumed by bun, never reaches here).
+// Stripped so downstream entries don't see an unknown flag.
+const bunFlagIndex = process.argv.indexOf("--bun");
+const wantBun = bunFlagIndex !== -1;
+if (wantBun) process.argv.splice(bunFlagIndex, 1);
+
 // Runtime detection — override with FLAME_RUNTIME=bun|node|deno for testing.
 // Deno's npm compat layer may expose `Bun` via globals, check execPath first.
-const runtime =
+// The shebang (#!/usr/bin/env node) hides `typeof Bun` under `bun run`, so a
+// bun PM also selects the bun runtime; the re-exec below lands on it.
+let runtime =
   process.env.FLAME_RUNTIME ||
   (process.execPath.includes("deno")
     ? "deno"
@@ -18,6 +44,35 @@ const runtime =
       : typeof Deno !== "undefined"
         ? "deno"
         : "node");
+if (wantBun) runtime = "bun";
+else if (
+  !process.env.FLAME_RUNTIME &&
+  runtime === "node" &&
+  detectPkgManager(process.cwd()) === "bun"
+)
+  runtime = "bun";
+
+// Re-exec under `bun` when selected but this process is node. One spawn per
+// command; FLAME_REEXEC guards the loop; silent node fallback when `bun` is
+// missing unless explicitly requested.
+if (
+  runtime === "bun" &&
+  typeof Bun === "undefined" &&
+  !process.execPath.includes("deno") &&
+  !process.env.FLAME_REEXEC
+) {
+  const result = spawnSync("bun", [process.argv[1], ...process.argv.slice(2)], {
+    stdio: "inherit",
+    env: { ...process.env, FLAME_REEXEC: "1" },
+  });
+  if (result.error?.code === "ENOENT") {
+    if (wantBun || process.env.FLAME_RUNTIME)
+      console.error("flame: --bun requested but `bun` not found in PATH, falling back to node.");
+    runtime = "node";
+  } else {
+    process.exit(result.status ?? 0);
+  }
+}
 
 const COMMAND_MAP = {
   bun: {
@@ -49,23 +104,6 @@ if (!COMMAND_MAP) {
 }
 
 const command = process.argv[2];
-
-// Detect the package manager that invoked this binary. npm, pnpm, bun, and
-// yarn set npm_config_user_agent when they run a bin; fall back to lockfiles
-// in the target directory for direct invocations (e.g. `node bin/cli.js`).
-function detectPkgManager(dir) {
-  const userAgent = process.env.npm_config_user_agent || "";
-  // pnpm/yarn UA strings also contain "npm/?" — match specific tools first.
-  if (/bun\//.test(userAgent)) return "bun";
-  if (/pnpm\//.test(userAgent)) return "pnpm";
-  if (/yarn\//.test(userAgent)) return "yarn";
-  if (/npm\//.test(userAgent)) return "npm";
-  if (existsSync(join(dir, "bun.lock"))) return "bun";
-  if (existsSync(join(dir, "pnpm-lock.yaml"))) return "pnpm";
-  if (existsSync(join(dir, "yarn.lock"))) return "yarn";
-  if (existsSync(join(dir, "package-lock.json"))) return "npm";
-  return "npm";
-}
 
 // Parse flags
 const themeIndex = process.argv.indexOf("--theme");
