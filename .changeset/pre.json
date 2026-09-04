@@ -8,9 +8,5 @@
     "@docubook/themes-colors": "1.9.0",
     "@docubook/ui-react": "1.9.0"
   },
-  "changesets": [
-    "breaking-v2",
-    "brisk-lighthouses-jam",
-    "swifty-carpets-teach"
-  ]
+  "changesets": ["breaking-v2"]
 }
