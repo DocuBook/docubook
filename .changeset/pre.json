@@ -8,5 +8,8 @@
     "@docubook/themes-colors": "1.9.0",
     "@docubook/ui-react": "1.9.0"
   },
-  "changesets": ["breaking-v2"]
+  "changesets": [
+    "breaking-v2",
+    "tidy-pandas-shake"
+  ]
 }
