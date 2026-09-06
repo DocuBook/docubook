@@ -99,4 +99,15 @@ describe("getPreviousNext reads the registry, not the file (route.ts)", () => {
     expect(next?.title).toBe("Formatting Override");
     expect(next?.description).toBe("REGISTERED DESC");
   });
+
+  it("prev carries description from the parsed-once frontmatter (last page shows it)", () => {
+    // /components/youtube is the last route per docu.json → prev-only page.
+    // `getPreviousNext` reuses the same parsed-once frontmatter for prev as
+    // for next (DRY) — the UI keeps paired prev minimal and shows title +
+    // description only when prev stands alone.
+    const { prev, next } = getPreviousNext("/components/youtube");
+    expect(next).toBeNull();
+    expect(prev?.title).toBe("Tables");
+    expect(prev?.description).toContain("GitHub-flavored tables");
+  });
 });

@@ -97,4 +97,28 @@ describe("Breadcrumbs", () => {
 
 describe("PaginationDocs", () => {
   it("is exported", () => expect(typeof PaginationDocs).toBe("function"));
+
+  it("prev alone renders title + description (last page)", () => {
+    render(
+      <PaginationDocs prev={{ href: "/docs/a", title: "Prev Title", description: "Prev desc" }} />
+    );
+    expect(screen.getByText("Prev Title")).toBeDefined();
+    expect(screen.getByText("Prev desc")).toBeDefined();
+    expect(screen.getByText("Previous")).toBeDefined();
+    expect(screen.queryByText("Next")).toBeNull();
+  });
+
+  it("paired prev stays minimal (no title/description) while next is rich", () => {
+    render(
+      <PaginationDocs
+        prev={{ href: "/docs/a", title: "Prev Title", description: "Prev desc" }}
+        next={{ href: "/docs/c", title: "Next Title", description: "Next desc" }}
+      />
+    );
+    expect(screen.getByText("Previous")).toBeDefined();
+    expect(screen.queryByText("Prev Title")).toBeNull();
+    expect(screen.queryByText("Prev desc")).toBeNull();
+    expect(screen.getByText("Next Title")).toBeDefined();
+    expect(screen.getByText("Next desc")).toBeDefined();
+  });
 });
