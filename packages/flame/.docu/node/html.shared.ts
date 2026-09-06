@@ -7,6 +7,7 @@
  */
 
 import { escapeHtml } from "./escapeHtml";
+import { cspMeta } from "./security";
 
 import type { SeoMeta } from "./seo";
 
@@ -86,7 +87,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
   ${favicon ? `<link rel="icon" type="image/x-icon" href="${escapeHtml(resolvePath(favicon))}">` : ""}${themeStyle}
   <link rel="preload" href="${escapeHtml(assetPrefix + css)}" as="style">
   <link rel="stylesheet" href="${escapeHtml(assetPrefix + css)}">
-  ${csp ? `<meta http-equiv="Content-Security-Policy" content="${escapeHtml(csp)}">` : ""}
+  ${csp ? `<meta http-equiv="Content-Security-Policy" content="${escapeHtml(cspMeta(csp))}">` : ""}
   ${seoTags}
   <script${nonceAttr}>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>${headInjection}
 </head>

@@ -30,6 +30,15 @@ export function cspHeader(nonce: string, allowEval = false): string {
   ].join("; ");
 }
 
+/**
+ * Strip `frame-ancestors` for `<meta http-equiv="Content-Security-Policy">`.
+ * Browsers ignore `frame-ancestors` in meta CSP (header-only directive)
+ * and log a console warning. HTTP header from `cspHeader()` keeps it.
+ */
+export function cspMeta(csp: string): string {
+  return csp.replace(/;\s*frame-ancestors 'none'/, "");
+}
+
 export function isPathSafe(pathname: string, baseDir: string): boolean {
   const decoded = decodeURIComponent(pathname);
   const resolved = resolve(baseDir, decoded.slice(1));
