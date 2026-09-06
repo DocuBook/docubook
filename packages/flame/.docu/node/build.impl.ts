@@ -38,7 +38,7 @@ import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
-import { scanMdxFiles, DEFAULT_FAVICON } from "./utils";
+import { scanMdxFiles, resolveDocsIndexSource, DEFAULT_FAVICON } from "./utils";
 import type { BuildCache, BuildCacheMeta, CliArgs } from "./types";
 import { isCacheEntry } from "./types";
 import {
@@ -110,9 +110,11 @@ type RebuildDecision = "yes" | "hash_check" | "no";
 function shouldRebuild(path: string, mtime: number, cache: BuildCache): RebuildDecision {
   const cached = cache[path];
   if (!isCacheEntry(cached)) return "yes";
-  if (mtime > cached.builtAt + 2000) return "hash_check";
-  if (Math.abs(mtime - cached.builtAt) <= 2000 && mtime !== cached.mtime) return "hash_check";
-  if (mtime !== cached.mtime && mtime > cached.mtime) return "hash_check";
+  // Any mtime drift vs the recorded one — a newer edit, or mtime moving
+  // backwards (rsync -a, cp -p, snapshot restore) — falls through to the
+  // hash check: hashing an unchanged file is cheap, serving a stale page
+  // is not. Only an untouched mtime skips without reading the file.
+  if (mtime !== cached.mtime) return "hash_check";
   return "no";
 }
 
@@ -339,15 +341,16 @@ export async function runBuild(): Promise<void> {
   });
   await Promise.all(prePassTasks);
 
-  // The docs root (index.mdx) renders with slug "" — mirror that key so the
-  // index page hydrates too. Its render has its own try/catch; skip on error.
-  const indexMdxPath = join(DOCS_DIR, "index.mdx");
-  if (existsSync(indexMdxPath)) {
+  // The docs root (index.mdx, or index.md) renders with slug "" — mirror that
+  // key so the index page hydrates too. Its render has its own try/catch; skip
+  // on error.
+  const indexSource = resolveDocsIndexSource(DOCS_DIR);
+  if (indexSource) {
     try {
-      const indexRaw = await readFile(indexMdxPath, "utf-8");
+      const indexRaw = await readFile(indexSource, "utf-8");
       let indexContent = indexRaw;
       if (builder) {
-        const relPath = indexMdxPath.replace(PROJECT_ROOT + "/", "");
+        const relPath = indexSource.replace(PROJECT_ROOT + "/", "");
         const transformed = await builder.runOnLoad(relPath, indexContent);
         if (transformed?.contents) indexContent = transformed.contents;
       }
@@ -393,9 +396,8 @@ export async function runBuild(): Promise<void> {
 
   const allRelPaths = mdxFiles.map((f) => f.absPath.replace(PROJECT_ROOT + "/", ""));
 
-  const indexMdxFull = join(DOCS_DIR, "index.mdx");
-  if (existsSync(indexMdxFull)) {
-    allRelPaths.push(indexMdxFull.replace(PROJECT_ROOT + "/", ""));
+  if (indexSource) {
+    allRelPaths.push(indexSource.replace(PROJECT_ROOT + "/", ""));
   }
   const gitDates = await getGitLastModifiedBatch(allRelPaths);
 
@@ -476,25 +478,30 @@ export async function runBuild(): Promise<void> {
     await Promise.all(buildTasks.slice(i, i + CONCURRENCY).map((fn) => fn()));
   }
 
-  try {
-    const indexMdxPath = join(DOCS_DIR, "index.mdx");
-    const indexRaw = await readFile(indexMdxPath, "utf-8");
-    const indexRelPath = indexMdxPath.replace(PROJECT_ROOT + "/", "");
-    const indexHtml = await renderDocsPage(
-      docuConfig,
-      "",
-      indexRaw,
-      indexRelPath,
-      gitDates,
-      builder,
-      generateNonce()
-    );
-    await mkdir(join(DIST_DIR, "docs"), { recursive: true });
-    await writeFile(join(DIST_DIR, "docs", "index.html"), indexHtml);
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    errors.push(`index.mdx: ${msg}`);
-    console.error(`\n\u274C Failed to build index: ${msg}\n`);
+  if (indexSource) {
+    try {
+      const indexRaw = await readFile(indexSource, "utf-8");
+      const indexRelPath = indexSource.replace(PROJECT_ROOT + "/", "");
+      const indexHtml = await renderDocsPage(
+        docuConfig,
+        "",
+        indexRaw,
+        indexRelPath,
+        gitDates,
+        builder,
+        generateNonce()
+      );
+      await mkdir(join(DIST_DIR, "docs"), { recursive: true });
+      await writeFile(join(DIST_DIR, "docs", "index.html"), indexHtml);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      errors.push(`index: ${msg}`);
+      console.error(`\n❌ Failed to build index: ${msg}\n`);
+    }
+  } else {
+    const msg = "docs root index: docs/index.mdx (or docs/index.md) not found";
+    errors.push(`index: ${msg}`);
+    console.error(`\n❌ Failed to build index: ${msg}\n`);
   }
 
   const landingPage = React.createElement(IndexPage);

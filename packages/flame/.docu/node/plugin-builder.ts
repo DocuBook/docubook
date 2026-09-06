@@ -408,6 +408,8 @@ export class BuildPluginBuilder implements PluginBuilder {
    * Execute the transformHtml chain in pipeline pattern.
    * Each callback receives the **previous** callback's return value (or the
    * original HTML for the first). Every callback **must** return a string.
+   * Callbacks returning a non-string (e.g. `undefined`) are skipped with a
+   * warning — the current HTML passes through unchanged for that step.
    * Errors inside individual callbacks are caught and logged — the current
    * HTML passes through unchanged for that step.
    *
@@ -419,7 +421,14 @@ export class BuildPluginBuilder implements PluginBuilder {
     let result = html;
     for (let i = 0; i < this._transformHtml.length; i++) {
       try {
-        result = await this._transformHtml[i](result, context);
+        const next = await this._transformHtml[i](result, context);
+        if (typeof next === "string") {
+          result = next;
+        } else {
+          console.warn(
+            `[plugin] transformHtml callback #${i + 1} returned invalid type (expected a string), keeping previous HTML`
+          );
+        }
       } catch (err) {
         console.error(
           `[plugin] transformHtml callback #${i + 1} error: ${err instanceof Error ? err.message : String(err)}`

@@ -81,7 +81,7 @@ describe("getGitLastModifiedBatch", () => {
 });
 
 // Import after mock setup
-import { getGitLastModifiedBatch, scanMdxFiles } from "../node/utils";
+import { getGitLastModifiedBatch, resolveDocsIndexSource, scanMdxFiles } from "../node/utils";
 
 describe("scanMdxFiles", () => {
   let tmpDir: string;
@@ -91,6 +91,7 @@ describe("scanMdxFiles", () => {
 
     // docs/
     // ├── index.mdx        (root-level → skipped)
+    // ├── index.md         (root-level → skipped)
     // ├── getting-started/
     // │   ├── index.mdx    → slug: "getting-started"
     // │   └── intro.mdx    → slug: "getting-started/intro"
@@ -101,6 +102,7 @@ describe("scanMdxFiles", () => {
     // docs/assets/          → should be skipped
 
     writeFileSync(join(tmpDir, "index.mdx"), "# Root");
+    writeFileSync(join(tmpDir, "index.md"), "# Root fallback");
 
     mkdirSync(join(tmpDir, "getting-started"), { recursive: true });
     writeFileSync(join(tmpDir, "getting-started", "index.mdx"), "# Getting Started");
@@ -119,7 +121,7 @@ describe("scanMdxFiles", () => {
     rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  it("returns all MDX/MD files excluding root index.mdx and assets/", async () => {
+  it("returns all MDX/MD files excluding root index files and assets/", async () => {
     const files = await scanMdxFiles(tmpDir);
 
     expect(files).toHaveLength(4);
@@ -147,6 +149,27 @@ describe("scanMdxFiles", () => {
     for (const file of files) {
       expect(file.mtime).toBeGreaterThan(0);
     }
+  });
+
+  describe("resolveDocsIndexSource", () => {
+    it("prefers index.mdx when both root index files exist", () => {
+      expect(resolveDocsIndexSource(tmpDir)).toBe(join(tmpDir, "index.mdx"));
+    });
+
+    it("falls back to index.md when index.mdx is absent", () => {
+      const docsDir = mkdtempSync(join(tmpdir(), "flame-index-md-"));
+      writeFileSync(join(docsDir, "index.md"), "# Root");
+
+      expect(resolveDocsIndexSource(docsDir)).toBe(join(docsDir, "index.md"));
+      rmSync(docsDir, { recursive: true, force: true });
+    });
+
+    it("returns undefined when no root index file exists", () => {
+      const docsDir = mkdtempSync(join(tmpdir(), "flame-index-empty-"));
+
+      expect(resolveDocsIndexSource(docsDir)).toBeUndefined();
+      rmSync(docsDir, { recursive: true, force: true });
+    });
   });
 
   it("returns empty array for directory with no MDX files", async () => {
