@@ -149,6 +149,33 @@ describe("injectNonce", () => {
     const result = injectNonce(html, "n1");
     expect(result).toContain(`nonce="n1"`);
   });
+
+  it("syncs the nonce inside a <meta> CSP tag (static pages re-served by preview)", () => {
+    const html =
+      `<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'nonce-old'">` +
+      `<script nonce="old">run()</script>`;
+    const result = injectNonce(html, "new");
+    expect(result).toContain(`'nonce-new'`);
+    expect(result).not.toContain(`'nonce-old'`);
+    expect(result).toContain(`nonce="new"`);
+    expect(result).not.toContain(`nonce="old"`);
+  });
+
+  it("syncs an HTML-escaped nonce from static build output", () => {
+    const html =
+      `<meta http-equiv="Content-Security-Policy" ` +
+      `content="script-src &#x27;self&#x27; &#x27;nonce-old&#x27;">` +
+      `<script nonce="old">run()</script>`;
+    const result = injectNonce(html, "new");
+    expect(result).toContain("&#x27;nonce-new&#x27;");
+    expect(result).not.toContain("&#x27;nonce-old&#x27;");
+  });
+
+  it("leaves HTML without a <meta> CSP tag unchanged (script-only rewrite)", () => {
+    const html = `<script>a()</script><meta name="description" content="x">`;
+    const result = injectNonce(html, "n");
+    expect(result).toBe(`<script nonce="n">a()</script><meta name="description" content="x">`);
+  });
 });
 
 describe("wrapPluginResponse", () => {

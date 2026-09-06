@@ -87,12 +87,20 @@ export function normalizeImporterPath(importer: string): string {
 }
 
 export function injectNonce(html: string, nonce: string): string {
-  return html.replace(/<script\b(?![^>]*\bsrc\s*=)([^>]*)>/gi, (match) => {
+  const scripts = html.replace(/<script\b(?![^>]*\bsrc\s*=)([^>]*)>/gi, (match) => {
     if (/nonce\s*=/i.test(match)) {
       return match.replace(/nonce="[^"]*"/i, `nonce="${nonce}"`);
     }
     return match.replace(/>$/, ` nonce="${nonce}">`);
   });
+  // Keep the <meta> CSP nonce in sync: browsers intersect the meta policy
+  // with the response-header policy, so a stale build-time nonce would block
+  // the very scripts re-tagged above.
+  return scripts.replace(/<meta\b[^>]*Content-Security-Policy[^>]*>/gi, (tag) =>
+    tag.replace(/'nonce-[^']*'|&#(?:x27;|39;)nonce-[^&]*(?:&#(?:x27;|39;))/i, (match) =>
+      match.startsWith("&#") ? `&#x27;nonce-${nonce}&#x27;` : `'nonce-${nonce}'`
+    )
+  );
 }
 
 export interface PluginResponseLike {
