@@ -1,5 +1,6 @@
 export { cn, parseDate, formatDate, formatDate2 } from "@docubook/core";
 
+import { existsSync } from "node:fs";
 import { readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -11,7 +12,8 @@ export interface ScannedMdxFile {
 
 /**
  * Scan a directory recursively for MDX/MD files.
- * Skips "assets" directories, hidden directories (dot-prefixed), and root-level index.mdx.
+ * Skips "assets" directories, hidden directories (dot-prefixed), and root-level
+ * index.mdx/index.md (the docs root renders separately in build).
  * Shared between build.ts and search-indexer.ts.
  */
 export async function scanMdxFiles(dir: string, baseDir = ""): Promise<ScannedMdxFile[]> {
@@ -26,7 +28,9 @@ export async function scanMdxFiles(dir: string, baseDir = ""): Promise<ScannedMd
       if (entry.name === "assets" || entry.name.startsWith(".")) continue;
       files.push(...(await scanMdxFiles(fullPath, relativePath)));
     } else if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
-      if (entry.name === "index.mdx" && !baseDir) continue;
+      // Root index renders separately (either extension) — scanning it would
+      // produce a duplicate "index" page colliding with dist/docs/index.html.
+      if (!baseDir && (entry.name === "index.mdx" || entry.name === "index.md")) continue;
       const stats = await stat(fullPath);
       let path = relativePath.replace(/\.(mdx|md)$/, "");
 
@@ -42,6 +46,18 @@ export async function scanMdxFiles(dir: string, baseDir = ""): Promise<ScannedMd
 
 export function isExternalUrl(url: string): boolean {
   return /^(https?:\/\/|\/\/)/.test(url);
+}
+
+/**
+ * Resolve the docs root index source — docs/index.mdx preferred, docs/index.md
+ * as fallback (mirrors the dev server's getDocsForSlug extension handling).
+ */
+export function resolveDocsIndexSource(docsDir: string): string | undefined {
+  for (const ext of [".mdx", ".md"]) {
+    const candidate = join(docsDir, `index${ext}`);
+    if (existsSync(candidate)) return candidate;
+  }
+  return undefined;
 }
 
 /** Default favicon — resolves in both build output (`docs/assets/` is copied

@@ -192,6 +192,17 @@ describe("BuildPluginBuilder — Execution", () => {
       const result = await builder.runTransformHtmlChain("<p>foo</p>", null as any);
       expect(result).toBe("<wrapper><p>bar</p></wrapper>");
     });
+
+    it("keeps previous HTML when a callback returns a non-string", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      // A void-looking callback returning undefined must not poison the chain
+      builder.transformHtml(() => undefined as unknown as string);
+      builder.transformHtml((html) => `<wrap>${html}</wrap>`);
+      const result = await builder.runTransformHtmlChain("<p>hi</p>", null as any);
+      expect(result).toBe("<wrap><p>hi</p></wrap>");
+      expect(warn).toHaveBeenCalled();
+      warn.mockRestore();
+    });
   });
 
   describe("collectHead / collectBody", () => {
