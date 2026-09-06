@@ -4,7 +4,7 @@ import { readFileSync, statSync } from "node:fs";
 import React, { type ReactNode } from "react";
 import { renderToString } from "react-dom/server";
 import { compileMdx, frontmatterField } from "./mdx";
-import { getContentType } from "./utils";
+import { DEFAULT_FAVICON, getContentType } from "./utils";
 import { DOCS_DIR, DIST_DIR, PROJECT_ROOT } from "./paths";
 import { BuildPluginBuilder } from "./plugin-builder";
 import type { PageContext } from "./plugin";
@@ -32,7 +32,7 @@ function createHtmlResponse(
   depth = 0
 ): Response {
   const nonce = generateNonce();
-  const favicon = state.docuConfig.meta?.favicon || "/favicon.ico";
+  const favicon = state.docuConfig.meta?.favicon || DEFAULT_FAVICON;
   const html = createHtmlShell({
     title,
     description,
@@ -187,7 +187,7 @@ async function renderDocsServerPage(
     const headExtra = state.builder.collectHead(ctx);
     const bodyExtra = state.builder.collectBody(ctx);
     const nonce = generateNonce();
-    const favicon = state.docuConfig.meta?.favicon || "/favicon.ico";
+    const favicon = state.docuConfig.meta?.favicon || DEFAULT_FAVICON;
     let html = createHtmlShell({
       title,
       description,

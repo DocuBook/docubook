@@ -38,7 +38,7 @@ import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
-import { scanMdxFiles } from "./utils";
+import { scanMdxFiles, DEFAULT_FAVICON } from "./utils";
 import type { BuildCache, BuildCacheMeta, CliArgs } from "./types";
 import { isCacheEntry } from "./types";
 import {
@@ -226,7 +226,7 @@ async function renderDocsPage(
   const bodyExtra = builder?.collectBody(ctx);
 
   const depth = slug ? slug.split("/").length : 1;
-  const favicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
+  const favicon = docuConfig.meta?.favicon || DEFAULT_FAVICON;
   const seo = buildSeoMeta(docuConfig, frontmatter, slug || "");
   // MDX content hydrates from the bundled ESM module (mdx-hydrate), not
   // new Function — no 'unsafe-eval' needed in the CSP.
@@ -498,7 +498,7 @@ export async function runBuild(): Promise<void> {
   }
 
   const landingPage = React.createElement(IndexPage);
-  const landingFavicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
+  const landingFavicon = docuConfig.meta?.favicon || DEFAULT_FAVICON;
   const landingSeo = buildSeoMeta(
     docuConfig,
     docuConfig.meta as unknown as Record<string, unknown>,
@@ -524,7 +524,7 @@ export async function runBuild(): Promise<void> {
     { repoUrl: docuConfig.repo?.url },
     React.createElement(NotFoundPage)
   );
-  const notFoundFavicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
+  const notFoundFavicon = docuConfig.meta?.favicon || DEFAULT_FAVICON;
   const notFoundNonce = generateNonce();
   const notFoundHtml = htmlShell({
     title: "404 - Not Found",

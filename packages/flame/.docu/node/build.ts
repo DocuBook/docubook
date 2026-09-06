@@ -30,7 +30,7 @@ import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
-import { scanMdxFiles } from "./utils";
+import { scanMdxFiles, DEFAULT_FAVICON } from "./utils";
 import type { BuildCache, BuildCacheMeta, CliArgs } from "./types";
 import { isCacheEntry } from "./types";
 import {
@@ -41,7 +41,7 @@ import {
   runtimeStamp,
 } from "./cache-key";
 import { clearDerivedPageCaches } from "./mdx";
-import { generateNonce } from "./security";
+import { generateNonce, cspHeader } from "./security";
 import type { PageMeta, PageContext } from "./plugin";
 import { buildSeoMeta } from "./seo";
 import DocsPage from "../pages/docs/[[...slug]]";
@@ -227,14 +227,18 @@ async function renderDocsPage(
   const bodyExtra = builder?.collectBody(ctx);
 
   const depth = slug ? slug.split("/").length : 1;
-  const favicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
+  const favicon = docuConfig.meta?.favicon || DEFAULT_FAVICON;
   const seo = buildSeoMeta(docuConfig, frontmatter, slug || "");
+  // Parity with build.impl.ts: static hosts without header control (GitHub
+  // Pages) rely on the <meta> CSP for the per-page script policy.
+  const csp = nonce ? cspHeader(nonce) : undefined;
   let html = htmlShell({
     title,
     description,
     body,
     favicon,
     seo,
+    csp,
     css: assetManifest.css,
     js: assetManifest.js,
     nonce,
@@ -497,17 +501,23 @@ async function build() {
   }
 
   const landingPage = React.createElement(IndexPage);
-  const landingFavicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
-  const landingSeo = buildSeoMeta(docuConfig, {}, "");
+  const landingFavicon = docuConfig.meta?.favicon || DEFAULT_FAVICON;
+  const landingSeo = buildSeoMeta(
+    docuConfig,
+    docuConfig.meta as unknown as Record<string, unknown>,
+    ""
+  );
+  const landingNonce = generateNonce();
   const landingHtml = htmlShell({
     title: docuConfig.meta?.title || "DocuBook",
     description: docuConfig.meta?.description || "",
     body: renderToString(landingPage),
     favicon: landingFavicon,
     seo: landingSeo,
+    csp: cspHeader(landingNonce),
     css: assetManifest.css,
     js: assetManifest.js,
-    nonce: generateNonce(),
+    nonce: landingNonce,
     themeCss: inlineThemeCss,
   });
   await writeFile(join(DIST_DIR, "index.html"), landingHtml);
@@ -517,16 +527,18 @@ async function build() {
     { repoUrl: docuConfig.repo?.url },
     React.createElement(NotFoundPage)
   );
-  const notFoundFavicon = docuConfig.meta?.favicon || "/docs/assets/images/favicon.ico";
+  const notFoundFavicon = docuConfig.meta?.favicon || DEFAULT_FAVICON;
+  const notFoundNonce = generateNonce();
   const notFoundHtml = htmlShell({
     title: "404 - Not Found",
     description: "",
     body: renderToString(notFoundPage),
     favicon: notFoundFavicon,
     headExtra: ['<meta name="robots" content="noindex,follow">'],
+    csp: cspHeader(notFoundNonce),
     css: assetManifest.css,
     js: assetManifest.js,
-    nonce: generateNonce(),
+    nonce: notFoundNonce,
     themeCss: inlineThemeCss,
     // Served as the static-host fallback at ANY requested path — relative
     // depth can never be right there, so use root-absolute asset URLs.

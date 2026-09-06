@@ -44,6 +44,10 @@ export function isExternalUrl(url: string): boolean {
   return /^(https?:\/\/|\/\/)/.test(url);
 }
 
+/** Default favicon — resolves in both build output (`docs/assets/` is copied
+ *  to `dist/docs/assets/`) and dev (served from `docs/assets/` via fallback). */
+export const DEFAULT_FAVICON = "/docs/assets/images/favicon.ico";
+
 /** Suffix an internal docs link with `.html` to match the flat static build output. */
 export function docsHtmlHref(path: string): string {
   return `${path}.html`;
