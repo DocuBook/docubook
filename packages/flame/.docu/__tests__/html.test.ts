@@ -142,6 +142,16 @@ describe("htmlShell", () => {
       expect(html).toMatch(/&#(?:39|x27);self&#(?:39|x27);/);
     });
 
+    it("strips frame-ancestors from meta CSP (header-only directive)", () => {
+      const html = htmlShell({
+        ...MINIMAL_OPTS,
+        csp: "default-src 'self'; script-src 'self' 'nonce-x'; frame-ancestors 'none'",
+      });
+      expect(html).toContain('<meta http-equiv="Content-Security-Policy"');
+      expect(html).not.toContain("frame-ancestors");
+      expect(html).toContain("script-src");
+    });
+
     it("omits CSP meta tag when not provided", () => {
       const html = htmlShell(MINIMAL_OPTS);
       expect(html).not.toContain("Content-Security-Policy");

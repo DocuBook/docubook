@@ -3,6 +3,7 @@ import { resolve, join } from "node:path";
 import {
   normalizeImporterPath,
   cspHeader,
+  cspMeta,
   isPathSafe,
   isSlugSafe,
   injectNonce,
@@ -71,6 +72,18 @@ describe("cspHeader", () => {
   it("allows images from https: and data:", () => {
     const csp = cspHeader("x");
     expect(csp).toContain("img-src 'self' https: data:");
+  });
+});
+
+describe("cspMeta", () => {
+  it("strips frame-ancestors for <meta> CSP", () => {
+    const meta = cspMeta(cspHeader("x"));
+    expect(meta).not.toContain("frame-ancestors");
+    expect(meta).toContain("script-src 'self' 'nonce-x'");
+  });
+
+  it("leaves CSP without frame-ancestors unchanged", () => {
+    expect(cspMeta("default-src 'self'")).toBe("default-src 'self'");
   });
 });
 

@@ -8,7 +8,7 @@ import { FRAMEWORK_ROOT, STYLES_DIR, resolveProjectFile } from "./paths";
  * (e.g. Bun.build barrel optimization, Tailwind CLI upgrade). Old caches
  * with a mismatched version are discarded on read (see build.ts readCache).
  */
-export const BUILD_CACHE_VERSION = 3;
+export const BUILD_CACHE_VERSION = 4;
 
 /** Toolchain fingerprint: Bun version on Bun, Deno version on Deno, Node elsewhere. */
 export function runtimeStamp(): string {

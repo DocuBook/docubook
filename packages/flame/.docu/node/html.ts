@@ -1,5 +1,6 @@
 import type { HtmlShellOptions } from "./html.shared";
 export type { HtmlShellOptions };
+import { cspMeta } from "./security";
 
 export function htmlShell(opts: HtmlShellOptions): string {
   const {
@@ -48,7 +49,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
   ${favicon ? `<link rel="icon" type="image/x-icon" href="${Bun.escapeHTML(resolvePath(favicon))}">` : ""}${themeStyle}
   <link rel="preload" href="${Bun.escapeHTML(assetPrefix + css)}" as="style">
   <link rel="stylesheet" href="${Bun.escapeHTML(assetPrefix + css)}">
-  ${csp ? `<meta http-equiv="Content-Security-Policy" content="${Bun.escapeHTML(csp)}">` : ""}
+  ${csp ? `<meta http-equiv="Content-Security-Policy" content="${Bun.escapeHTML(cspMeta(csp))}">` : ""}
   ${seoTags}
   <script${nonceAttr}>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>${headInjection}
 </head>
