@@ -28,7 +28,18 @@ export default function Pagination({
 
   return (
     <PaginationDocs
-      prev={prev ? { href: docsHtmlHref(`/docs${prev.href}`), title: prev.title } : undefined}
+      // `description` rides along always; PaginationDocs keeps the paired prev
+      // minimal by design and renders title + description only when prev is
+      // alone (last page, no next) — single branch point, no duplicated logic.
+      prev={
+        prev
+          ? {
+              href: docsHtmlHref(`/docs${prev.href}`),
+              title: prev.title,
+              description: prev.description,
+            }
+          : undefined
+      }
       next={
         next
           ? {

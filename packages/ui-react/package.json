@@ -18,57 +18,57 @@
       "default": "./dist/cn.js"
     },
     "./input": {
-      "types": "./dist/input.d.ts",
+      "types": "./dist/base/input.d.ts",
       "import": "./dist/input.js",
       "default": "./dist/input.js"
     },
     "./kbd": {
-      "types": "./dist/kbd.d.ts",
+      "types": "./dist/base/kbd.d.ts",
       "import": "./dist/kbd.js",
       "default": "./dist/kbd.js"
     },
     "./toggle": {
-      "types": "./dist/toggle.d.ts",
+      "types": "./dist/base/toggle.d.ts",
       "import": "./dist/toggle.js",
       "default": "./dist/toggle.js"
     },
     "./dropdown": {
-      "types": "./dist/dropdown.d.ts",
+      "types": "./dist/base/dropdown.d.ts",
       "import": "./dist/dropdown.js",
       "default": "./dist/dropdown.js"
     },
     "./modal": {
-      "types": "./dist/modal.d.ts",
+      "types": "./dist/base/modal.d.ts",
       "import": "./dist/modal.js",
       "default": "./dist/modal.js"
     },
     "./drawer": {
-      "types": "./dist/drawer.d.ts",
+      "types": "./dist/base/drawer.d.ts",
       "import": "./dist/drawer.js",
       "default": "./dist/drawer.js"
     },
     "./collapse": {
-      "types": "./dist/collapse.d.ts",
+      "types": "./dist/base/collapse.d.ts",
       "import": "./dist/collapse.js",
       "default": "./dist/collapse.js"
     },
     "./theme-controller": {
-      "types": "./dist/theme-controller.d.ts",
+      "types": "./dist/base/theme-controller.d.ts",
       "import": "./dist/theme-controller.js",
       "default": "./dist/theme-controller.js"
     },
     "./navbar": {
-      "types": "./dist/navbar.d.ts",
+      "types": "./dist/base/navbar.d.ts",
       "import": "./dist/navbar.js",
       "default": "./dist/navbar.js"
     },
     "./breadcrumbs": {
-      "types": "./dist/breadcrumbs.d.ts",
+      "types": "./dist/base/breadcrumbs.d.ts",
       "import": "./dist/breadcrumbs.js",
       "default": "./dist/breadcrumbs.js"
     },
     "./pagination": {
-      "types": "./dist/pagination.d.ts",
+      "types": "./dist/base/pagination.d.ts",
       "import": "./dist/pagination.js",
       "default": "./dist/pagination.js"
     },

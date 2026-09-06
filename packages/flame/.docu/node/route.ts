@@ -48,6 +48,22 @@ export function getRouteMap(): Map<string, string> {
 }
 
 /**
+ * Single pagination entry builder (DRY) — one `readPageFrontmatter` call
+ * serves both prev + next from the parse-once registry, so no file is
+ * re-read or re-parsed. `description` rides along on prev too; the UI
+ * keeps the paired prev minimal by design and only renders the rich
+ * title + description when prev stands alone (last page, no next).
+ */
+function toPaginationEntry(href: string, routeMap: Map<string, string>) {
+  const fm = readPageFrontmatter(href);
+  return {
+    href,
+    title: fm.title || routeMap.get(href) || "",
+    description: fm.description || "",
+  };
+}
+
+/**
  * Frontmatter for a page — read from the parse-once registry (populated
  * during compilation) instead of re-reading + re-parsing the file. Falls
  * back to a direct read only for pages the dev server has not compiled yet,
@@ -86,15 +102,7 @@ export function getPreviousNext(pathname: string) {
     const routeMap = getRouteMap();
     const first = paths[0];
     if (!first) return { prev: null, next: null };
-    const fm = readPageFrontmatter(first);
-    return {
-      prev: null,
-      next: {
-        href: first,
-        title: fm.title || routeMap.get(first) || "",
-        description: fm.description || "",
-      },
-    };
+    return { prev: null, next: toPaginationEntry(first, routeMap) };
   }
 
   const paths = flattenRoutes();
@@ -109,19 +117,9 @@ export function getPreviousNext(pathname: string) {
   const prevHref = index > 0 ? paths[index - 1] : null;
   const nextHref = index < paths.length - 1 ? paths[index + 1] : null;
 
-  const prevFm = prevHref ? readPageFrontmatter(prevHref) : null;
-  const nextFm = nextHref ? readPageFrontmatter(nextHref) : null;
   return {
-    prev: prevHref
-      ? { href: prevHref, title: prevFm?.title || routeMap.get(prevHref) || "" }
-      : null,
-    next: nextHref
-      ? {
-          href: nextHref,
-          title: nextFm?.title || routeMap.get(nextHref) || "",
-          description: nextFm?.description || "",
-        }
-      : null,
+    prev: prevHref ? toPaginationEntry(prevHref, routeMap) : null,
+    next: nextHref ? toPaginationEntry(nextHref, routeMap) : null,
   };
 }
 
