@@ -41,7 +41,7 @@ Create the project directory, then run the flow for your runtime:
 mkdir my-docs && cd my-docs
 ```
 
-### Bun (≥ 1.1.0) — [install](https://bun.sh)
+### Bun (≥ 1.4.0) — [install](https://bun.sh)
 
 ```bash
 bun add @docubook/flame
