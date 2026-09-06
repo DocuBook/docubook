@@ -68,15 +68,16 @@ public disclosure and contact maintainers privately first.
 ### Requirements
 
 - **Node.js** `^20.19.0 || ^22.13.0 || >=24`
-- **pnpm** `11.x` (the repo is pinned via `packageManager`)
-- **Bun** `>=1.1.0` if you work on `packages/flame` default runtime flows
+- **pnpm** `12.x` (repo pin via `packageManager`)
+- **Bun** `>=1.4.0` jika kerja di `packages/flame` default runtime flows
 
 Enable pnpm with Corepack:
 
 ```bash
 corepack enable
-corepack prepare pnpm@11.10.0 --activate
 ```
+
+Corepack baca pin `packageManager` (`pnpm@12.3.4`).
 
 Then install:
 
