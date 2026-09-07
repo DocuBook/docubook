@@ -106,7 +106,7 @@ export interface BuildCacheMeta extends BuildCacheEntry {
 }
 
 export interface BuildCache {
-  [path: string]: BuildCacheEntry;
+  [path: string]: BuildCacheEntry | undefined;
   __meta__?: BuildCacheMeta;
   __assets__?: BuildCacheEntry;
   __bundle__?: BuildCacheEntry;

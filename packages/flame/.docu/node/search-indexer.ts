@@ -39,6 +39,7 @@ export interface SearchRecord {
 interface Frontmatter {
   title?: string;
   description?: string;
+  [key: string]: unknown;
 }
 
 function getSectionTitle(filePath: string): string {
@@ -142,14 +143,19 @@ export function extractRecords(filePath: string, raw: string): SearchRecord[] {
       const level = headingMatch[1].length;
       const title = headingMatch[2].replace(/[*`[\]]/g, "").trim();
 
+      if (level === 1) {
+        // Frontmatter title is authoritative; use H1 only as a fallback.
+        for (let i = 2; i <= 6; i++) {
+          (hierarchy as Record<string, string | null>)[`lvl${i}`] = null;
+        }
+        if (!hierarchy.lvl1) hierarchy.lvl1 = title;
+        continue;
+      }
+
       for (let i = level; i <= 6; i++) {
         (hierarchy as Record<string, string | null>)[`lvl${i}`] = null;
       }
       hierarchy[`lvl${level}` as keyof typeof hierarchy] = title;
-
-      if (level === 1 && !hierarchy.lvl1) {
-        hierarchy.lvl1 = title;
-      }
 
       if (level >= 2) {
         records.push({

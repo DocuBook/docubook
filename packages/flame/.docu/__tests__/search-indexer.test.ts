@@ -5,8 +5,9 @@ import { stripJsx, extractRecords } from "../node/search-indexer";
 vi.mock("@docubook/core", () => ({
   extractFrontmatterWithContent: <T>(raw: string) => {
     // We cast to T to satisfy the generic constraint and avoid the unused-var error
+    const title = raw.match(/^title:\s*(.+)$/m)?.[1]?.trim() || "Test Page";
     const frontmatter = {
-      title: "Test Page",
+      title,
       description: "Test Description",
     } as Record<string, string> as unknown as T;
 
@@ -137,6 +138,30 @@ Make sure to use the <Alert type="info">Don't forget to install bun</Alert> comp
         (r) => r.content?.includes("Feature") || r.content?.includes("Safe")
       );
       expect(hasTableText).toBe(false);
+    });
+  });
+
+  // ==========================================
+  // UNIT TEST: Frontmatter title precedence
+  // ==========================================
+  describe("extractRecords() - Frontmatter title precedence", () => {
+    it("keeps the frontmatter title when an H1 differs", () => {
+      const records = extractRecords(
+        "getting-started/title-precedence",
+        `---
+title: Frontmatter Title
+---
+# Different H1
+
+Paragraph content.
+`
+      );
+
+      const pageRecord = records.find((r) => r.type === "lvl1");
+      expect(pageRecord?.hierarchy.lvl1).toBe("Frontmatter Title");
+      expect(records.some((r) => r.type === "lvl1" && r.hierarchy.lvl1 === "Different H1")).toBe(
+        false
+      );
     });
   });
 
