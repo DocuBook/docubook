@@ -191,7 +191,9 @@ describe("generateSyntaxCss", () => {
       { light: { keyword: "#1d4ed8" }, dark: { keyword: "#60a5fa" } },
       ".code-block "
     );
-    expect(css).toContain(".code-block .dark .keyword {");
+    // .dark scopes the whole rule so ancestor-scoped syntax blocks (e.g. a
+    // .code-block inside dark mode) resolve correctly.
+    expect(css).toContain(".dark .code-block .keyword {");
   });
 
   it("handles multiple tokens", () => {

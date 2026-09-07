@@ -2,7 +2,7 @@
 
 import { cn } from "../utils/cn";
 import type { InputHTMLAttributes, ReactNode } from "react";
-import { forwardRef, useState, useEffect } from "react";
+import { forwardRef, useState, useEffect, useRef, useCallback } from "react";
 import type { Color, Size } from "../utils/types";
 
 type ToggleColor = Color;
@@ -38,18 +38,26 @@ const Toggle = forwardRef<HTMLInputElement, ToggleProps>(function Toggle(
   },
   ref
 ) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const setInputRef = useCallback(
+    (el: HTMLInputElement | null) => {
+      inputRef.current = el;
+      if (typeof ref === "function") ref(el);
+      else if (ref) ref.current = el;
+    },
+    [ref]
+  );
+
   useEffect(() => {
-    if (indeterminate && ref) {
-      const input = (ref as React.RefObject<HTMLInputElement>).current;
-      if (input) input.indeterminate = true;
-    }
-  }, [ref, indeterminate]);
+    if (inputRef.current) inputRef.current.indeterminate = indeterminate;
+  }, [indeterminate]);
 
   const toggleEl = (
     <input
-      ref={ref}
+      ref={setInputRef}
       type="checkbox"
-      className={cn(`toggle-${color}`, `toggle-${size}`, className)}
+      className={cn("toggle", `toggle-${color}`, `toggle-${size}`, className)}
       disabled={disabled}
       checked={checked}
       defaultChecked={defaultChecked}
@@ -132,7 +140,7 @@ export function ToggleGroup({
         >
           <input
             type="checkbox"
-            className={cn(`toggle-${color}`, `toggle-${size}`)}
+            className={cn("toggle", `toggle-${color}`, `toggle-${size}`)}
             checked={selectedValues.includes(item.value)}
             disabled={item.disabled}
             onChange={() => !item.disabled && toggle(item.value)}

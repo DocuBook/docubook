@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { Dropdown, DropdownItem, DropdownLink } from "../src/base/dropdown";
 
 describe("Dropdown", () => {
@@ -43,13 +43,31 @@ describe("Dropdown", () => {
 });
 
 describe("DropdownItem", () => {
-  it("renders with menuitem role", () => {
+  it("renders a focusable button with menuitem role", () => {
     render(
       <Dropdown trigger={<button>Open</button>}>
         <DropdownItem>Item</DropdownItem>
       </Dropdown>
     );
-    expect(screen.getByRole("menuitem")).toHaveTextContent("Item");
+    const item = screen.getByRole("menuitem");
+    expect(item).toHaveTextContent("Item");
+    expect(item.tagName).toBe("BUTTON");
+  });
+
+  it("activates onSelect on click and is keyboard-focusable", () => {
+    const onSelect = vi.fn();
+    render(
+      <Dropdown trigger={<button>Open</button>}>
+        <DropdownItem onSelect={onSelect}>Item</DropdownItem>
+      </Dropdown>
+    );
+    const item = screen.getByRole("menuitem");
+    // Native <button> handles Enter/Space activation; jsdom only simulates click.
+    fireEvent.click(item);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    // Focusable via Tab (proves keyboard reachability — the actual #6 fix).
+    item.focus();
+    expect(document.activeElement).toBe(item);
   });
 
   it("applies custom className", () => {
@@ -63,12 +81,14 @@ describe("DropdownItem", () => {
 });
 
 describe("DropdownLink", () => {
-  it("renders as anchor tag", () => {
+  it("renders menuitem directly on the anchor", () => {
     render(
       <Dropdown trigger={<button>Open</button>}>
         <DropdownLink href="/page">Link</DropdownLink>
       </Dropdown>
     );
-    expect(screen.getByRole("menuitem").querySelector("a")).toHaveAttribute("href", "/page");
+    const link = screen.getByRole("menuitem");
+    expect(link.tagName).toBe("A");
+    expect(link).toHaveAttribute("href", "/page");
   });
 });

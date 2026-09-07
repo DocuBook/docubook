@@ -21,7 +21,7 @@
  * - CDN: https://cdn.jsdelivr.net/npm/@docubook/themes-colors/themes/default.json
  * - CDN: https://cdn.jsdelivr.net/npm/@docubook/themes-colors/themes/freshlime.json
  * - CDN: https://cdn.jsdelivr.net/npm/@docubook/themes-colors/themes/coffee.json
- * - Local (when installed): import data from '@docubook/themes-colors/themes/default.json' assert { type: 'json' }
+ * - Local (when installed): import data from '@docubook/themes-colors/themes/default.json' with { type: 'json' }
  *
  * ## Preset themes available
  * - `default` — Modern Blue theme

@@ -83,7 +83,7 @@ export function generateSyntaxCss(syntax: SyntaxTokens, prefix: string = ""): st
 
     for (const [token, color] of Object.entries(dark)) {
       const selector = toTokenSelector(token);
-      parts.push(`${prefix}.dark ${selector} {`);
+      parts.push(`.dark ${prefix}${selector} {`);
       parts.push(`  color: ${color};`);
       parts.push("}");
     }
