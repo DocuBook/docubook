@@ -213,6 +213,11 @@ export function hexToOklch(hex: string): OklchColor {
  * NOTE: This is a simple automatic scaling. For best results, users should
  * provide explicit color values for each semantic role.
  */
+/** Shift a hue by degrees, wrapping around the 0-360 color wheel. */
+function shiftHue(h: number, degrees: number): number {
+  return (((h + degrees) % 360) + 360) % 360;
+}
+
 export function generateScale(primary: HslColor): {
   root: Record<string, string>;
   dark: Record<string, string>;
@@ -228,7 +233,7 @@ export function generateScale(primary: HslColor): {
 
   // Compute accurate oklch hue via HSL → RGB → OKLch pipeline
   function getOklchHue(): number {
-    const shifted: HslColor = { h: Math.min(h + 5, 360), s: primaryS, l: 45 };
+    const shifted: HslColor = { h: shiftHue(h, 5), s: primaryS, l: 45 };
     const rgb = hslToRgb(shifted);
     const oklch = rgbToOklch(rgb);
     return Math.round(oklch.h);
@@ -248,8 +253,8 @@ export function generateScale(primary: HslColor): {
     "secondary-foreground": `${h} ${Math.max(primaryS - 20, 10)}% 15%`,
     muted: `${h} ${Math.max(primaryS - 50, 5)}% 92%`,
     "muted-foreground": `${h} ${Math.max(primaryS - 50, 5)}% 38%`,
-    accent: `${Math.min(h + 15, 360)} ${primaryS}% 40%`,
-    "accent-foreground": foregroundFor({ h: Math.min(h + 15, 360), s: primaryS, l: 40 }),
+    accent: `${shiftHue(h, 15)} ${primaryS}% 40%`,
+    "accent-foreground": foregroundFor({ h: shiftHue(h, 15), s: primaryS, l: 40 }),
     destructive: `0 85% 60%`,
     "destructive-foreground": foregroundFor({ h: 0, s: 85, l: 60 }),
     "border-color": `${h} ${Math.max(primaryS - 50, 5)}% 85%`,
@@ -275,8 +280,8 @@ export function generateScale(primary: HslColor): {
     "secondary-foreground": `${h} ${Math.max(primaryS - 20, 5)}% 90%`,
     muted: `${h + 10} ${Math.max(primaryS - 55, 5)}% 20%`,
     "muted-foreground": `${h} ${Math.max(primaryS - 55, 5)}% 58%`,
-    accent: `${Math.min(h + 15, 360)} ${primaryS}% 62%`,
-    "accent-foreground": foregroundFor({ h: Math.min(h + 15, 360), s: primaryS, l: 62 }),
+    accent: `${shiftHue(h, 15)} ${primaryS}% 62%`,
+    "accent-foreground": foregroundFor({ h: shiftHue(h, 15), s: primaryS, l: 62 }),
     destructive: `0 80% 65%`,
     "destructive-foreground": foregroundFor({ h: 0, s: 80, l: 65 }),
     "border-color": `${h + 10} ${Math.max(primaryS - 55, 5)}% 28%`,
@@ -310,7 +315,7 @@ export function generateSyntaxScale(primary: HslColor): {
   // Light mode — darker tones for contrast on light backgrounds
   const light: Record<string, string> = {
     keyword: hsl(h, s, 30),
-    function: hsl(Math.min(h + 10, 360), s, 35),
+    function: hsl(shiftHue(h, 10), s, 35),
     punctuation: hsl(h, Math.max(s - 50, 5), 50),
     comment: hsl(h, Math.max(s - 50, 5), 45),
     string: hsl(h, Math.max(s - 20, 15), 35),
@@ -319,14 +324,14 @@ export function generateSyntaxScale(primary: HslColor): {
     boolean: hsl(h, Math.max(s - 20, 15), 35),
     number: hsl(h, Math.max(s - 20, 15), 35),
     tag: hsl(h, Math.min(s + 10, 100), 25),
-    attrName: hsl(Math.min(h + 10, 360), s, 35),
+    attrName: hsl(shiftHue(h, 10), s, 35),
     attrValue: hsl(h, s, 32),
   };
 
   // Dark mode — lighter tones for readability on dark backgrounds
   const dark: Record<string, string> = {
     keyword: hsl(h, s, 70),
-    function: hsl(Math.min(h + 10, 360), s, 72),
+    function: hsl(shiftHue(h, 10), s, 72),
     punctuation: hsl(h, Math.max(s - 50, 5), 65),
     comment: hsl(h, Math.max(s - 50, 5), 60),
     string: hsl(h, Math.max(s - 20, 15), 68),
@@ -335,7 +340,7 @@ export function generateSyntaxScale(primary: HslColor): {
     boolean: hsl(h, Math.max(s - 20, 15), 68),
     number: hsl(h, Math.max(s - 20, 15), 68),
     tag: hsl(h, Math.min(s + 10, 100), 75),
-    attrName: hsl(Math.min(h + 10, 360), s, 72),
+    attrName: hsl(shiftHue(h, 10), s, 72),
     attrValue: hsl(h, s, 70),
   };
 

@@ -211,9 +211,10 @@ describe("generateScale", () => {
     expect(scale.root.accent).toMatch(/^215/);
   });
 
-  it("accent hue caps at 360", () => {
+  it("accent hue wraps past 360", () => {
     const scale = generateScale({ h: 350, s: 70, l: 50 });
-    expect(scale.root.accent).toMatch(/^360/);
+    // 350 + 15 wraps around the color wheel to 5, not clamped to 360.
+    expect(scale.root.accent).toMatch(/^5 /);
   });
 
   it("handles low saturation primary", () => {

@@ -1,23 +1,32 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { cn } from "../utils/cn";
 import type { Size } from "../utils/types";
 
-function applyTheme(theme: string) {
-  if (typeof document !== "undefined") {
-    document.documentElement.classList.toggle("dark", theme === "dark");
+function readStoredTheme(): string | null {
+  try {
+    if (typeof window === "undefined") return null;
+    return window.localStorage.getItem("theme");
+  } catch {
+    return null;
   }
 }
 
-function useApplyThemeOnMount(theme: string) {
-  const applied = useRef(false);
-  useEffect(() => {
-    if (!applied.current) {
-      applyTheme(theme);
-      applied.current = true;
+function applyTheme(isDark: boolean) {
+  if (typeof document !== "undefined") {
+    document.documentElement.classList.toggle("dark", isDark);
+  }
+}
+
+function writeStoredTheme(theme: string) {
+  try {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("theme", theme);
     }
-  }, [theme]);
+  } catch {
+    // Storage can be unavailable (private mode, blocked cookies); theme still applies in-memory.
+  }
 }
 
 // --- ThemeControllerToggle ---
@@ -26,6 +35,11 @@ export interface ThemeControllerToggleProps {
   defaultTheme?: string;
   lightTheme?: string;
   darkTheme?: string;
+  ariaLabel?: string;
+  inputProps?: Omit<
+    InputHTMLAttributes<HTMLInputElement>,
+    "type" | "checked" | "onChange" | "value"
+  >;
   onThemeChange?: (theme: string) => void;
   className?: string;
   label?: ReactNode;
@@ -41,23 +55,29 @@ export function ThemeControllerToggle({
   defaultTheme = "light",
   lightTheme = "light",
   darkTheme = "dark",
+  ariaLabel = "Toggle dark mode",
+  inputProps,
   onThemeChange,
   className,
   label,
   size = "md",
   children,
 }: ThemeControllerToggleProps) {
-  const [checked, setChecked] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return (localStorage.getItem("theme") || defaultTheme) === darkTheme;
-  });
-  useApplyThemeOnMount(checked ? darkTheme : lightTheme);
+  // Deterministic initial render so SSR and hydration match. Stored theme syncs after mount.
+  const [checked, setChecked] = useState(() => defaultTheme === darkTheme);
+
+  useEffect(() => {
+    const storedTheme = readStoredTheme() ?? defaultTheme;
+    const isDark = storedTheme === darkTheme;
+    setChecked(isDark);
+    applyTheme(isDark);
+  }, [defaultTheme, darkTheme]);
 
   const handleChange = (newChecked: boolean) => {
     const newTheme = newChecked ? darkTheme : lightTheme;
     setChecked(newChecked);
-    applyTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
+    applyTheme(newChecked);
+    writeStoredTheme(newTheme);
     onThemeChange?.(newTheme);
   };
 
@@ -75,7 +95,9 @@ export function ThemeControllerToggle({
       className={cn("toggle theme-controller", `toggle-${size}`)}
       checked={checked}
       value={darkTheme}
+      aria-label={ariaLabel}
       onChange={(e) => handleChange(e.target.checked)}
+      {...inputProps}
     />
   );
 

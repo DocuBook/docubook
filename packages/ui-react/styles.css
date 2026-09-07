@@ -2,3 +2,20 @@
    to this file, so consumers can import this stylesheet from any install
    layout and the component classes are still scanned. */
 @source "./src";
+
+/* Dynamic variants built via template interpolation (`toggle-${color}`,
+   `input-${color}`, `kbd-${size}`, `modal-${placement}`,
+   `${breakpoint}:drawer-open`) are invisible to Tailwind's scanner, so
+   safelist the full variant sets here. Standalone consumers get them without
+   needing their own @source inline. */
+@source inline(
+  "toggle toggle-primary toggle-secondary toggle-accent toggle-neutral toggle-success toggle-warning toggle-info toggle-error"
+);
+@source inline("toggle-xs toggle-sm toggle-md toggle-lg");
+@source inline(
+  "input-primary input-secondary input-accent input-neutral input-success input-warning input-info input-error"
+);
+@source inline("input-xs input-sm input-md input-lg input-xl");
+@source inline("kbd-xs kbd-sm kbd-md kbd-lg kbd-xl");
+@source inline("modal-top modal-middle modal-bottom");
+@source inline("sm:drawer-open md:drawer-open lg:drawer-open xl:drawer-open 2xl:drawer-open");

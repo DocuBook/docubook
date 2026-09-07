@@ -2,9 +2,12 @@ import type { ResolvedTheme, ThemeConfig, ThemeData, ThemeRegistry } from "./typ
 import { hexToHsl, generateScale, generateSyntaxScale } from "./hex-to-hsl";
 
 /**
- * Default empty syntax tokens used as fallback.
+ * Fresh empty syntax tokens used as fallback. A factory (not a shared const)
+ * so callers can't mutate each other's fallback via the returned reference.
  */
-const EMPTY_SYNTAX = { light: {}, dark: {} };
+function emptySyntax(): ResolvedTheme["syntax"] {
+  return { light: {}, dark: {} };
+}
 
 /**
  * Resolve a user-facing theme config into a fully expanded ResolvedTheme.
@@ -24,7 +27,7 @@ export function resolveTheme(
 ): ResolvedTheme {
   // Fallback to default when config is missing
   if (!config) {
-    return registry.default || { variables: { root: {}, dark: {} }, syntax: EMPTY_SYNTAX };
+    return registry.default || { variables: { root: {}, dark: {} }, syntax: emptySyntax() };
   }
 
   // Preset name lookup
@@ -34,7 +37,7 @@ export function resolveTheme(
       return preset;
     }
     console.warn(`[themes-colors] Unknown theme preset "${config}". Falling back to "default".`);
-    return registry.default || { variables: { root: {}, dark: {} }, syntax: EMPTY_SYNTAX };
+    return registry.default || { variables: { root: {}, dark: {} }, syntax: emptySyntax() };
   }
 
   // Custom hex config
@@ -54,11 +57,11 @@ export function resolveTheme(
         `[themes-colors] Invalid hex color "${config.primary}". Falling back to "default".`,
         err
       );
-      return registry.default || { variables: { root: {}, dark: {} }, syntax: EMPTY_SYNTAX };
+      return registry.default || { variables: { root: {}, dark: {} }, syntax: emptySyntax() };
     }
   }
 
   // Invalid config shape
   console.warn(`[themes-colors] Invalid theme config. Falling back to "default".`);
-  return registry.default || { variables: { root: {}, dark: {} }, syntax: EMPTY_SYNTAX };
+  return registry.default || { variables: { root: {}, dark: {} }, syntax: emptySyntax() };
 }

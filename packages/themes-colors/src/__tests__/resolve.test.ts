@@ -160,4 +160,17 @@ describe("resolveTheme — edge cases", () => {
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("Invalid theme config"));
     expect(result.variables).toEqual({ root: {}, dark: {} });
   });
+
+  it("returns fresh empty syntax objects per fallback call (no shared mutation)", () => {
+    const emptyRegistry: ThemeRegistry = {};
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const first = resolveTheme(undefined, emptyRegistry);
+    const second = resolveTheme(undefined, emptyRegistry);
+    expect(first.syntax).toEqual({ light: {}, dark: {} });
+    expect(first.syntax).not.toBe(second.syntax);
+    expect(first.syntax.light).not.toBe(second.syntax.light);
+    first.syntax.light.keyword = "#000";
+    expect(second.syntax.light).toEqual({});
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
 });

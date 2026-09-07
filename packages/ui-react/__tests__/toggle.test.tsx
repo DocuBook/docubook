@@ -5,12 +5,35 @@ import { Toggle, ToggleGroup } from "../src/base/toggle";
 describe("Toggle", () => {
   it("renders with toggle class", () => {
     render(<Toggle data-testid="toggle" />);
+    expect(screen.getByTestId("toggle")).toHaveClass("toggle");
     expect(screen.getByTestId("toggle")).toHaveClass("toggle-primary");
   });
 
   it("applies color variant", () => {
     render(<Toggle data-testid="toggle" color="secondary" />);
+    expect(screen.getByTestId("toggle")).toHaveClass("toggle");
     expect(screen.getByTestId("toggle")).toHaveClass("toggle-secondary");
+  });
+
+  it("sets indeterminate via property and resets to false", () => {
+    const { rerender } = render(<Toggle data-testid="toggle" indeterminate />);
+    expect((screen.getByTestId("toggle") as HTMLInputElement).indeterminate).toBe(true);
+    rerender(<Toggle data-testid="toggle" indeterminate={false} />);
+    expect((screen.getByTestId("toggle") as HTMLInputElement).indeterminate).toBe(false);
+  });
+
+  it("supports callback refs with indeterminate", () => {
+    let el: HTMLInputElement | null = null;
+    render(
+      <Toggle
+        indeterminate
+        ref={(node) => {
+          el = node;
+        }}
+      />
+    );
+    expect(el).not.toBeNull();
+    expect(el!.indeterminate).toBe(true);
   });
 
   it("applies size variant", () => {
@@ -93,6 +116,7 @@ describe("ToggleGroup", () => {
     render(<ToggleGroup items={items} color="accent" size="sm" />);
     const toggles = document.querySelectorAll('input[type="checkbox"]');
     toggles.forEach((toggle) => {
+      expect(toggle).toHaveClass("toggle");
       expect(toggle).toHaveClass("toggle-accent");
       expect(toggle).toHaveClass("toggle-sm");
     });
