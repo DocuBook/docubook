@@ -54,10 +54,16 @@ function levenshtein(a: string, b: string): number {
 function fuzzyMatch(query: string, text: string): number {
   const q = query.toLowerCase();
   const t = text.toLowerCase();
-
-  if (t.includes(q)) return 1;
-
   const words = t.split(/\s+/);
+  const shortQuery = q.length <= 3;
+
+  // For short queries, prefer a meaningful word prefix (`seq` → `sequence`)
+  // over an isolated exact occurrence in lower-signal text. This keeps search
+  // useful without removing substring or typo matching.
+  if (words.some((word) => word === q)) return shortQuery ? 0.9 : 1;
+  if (words.some((word) => word.startsWith(q))) return 0.95;
+  if (t.includes(q)) return shortQuery ? 0.7 : 1;
+
   let bestScore = 0;
 
   for (const word of words) {
