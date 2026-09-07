@@ -69,7 +69,7 @@ export function TabsMdx({ className, children }: TabsMdxProps) {
           borderBottom: "1px solid hsl(var(--border-color, 210 20% 85%))",
         }}
       >
-        {tabItems.map((item) => {
+        {tabItems.map((item, index) => {
           const active = item.value === activeItem?.value;
           const triggerId = `${id}-tab-${item.value}`;
           const panelId = `${id}-panel-${item.value}`;
@@ -83,6 +83,29 @@ export function TabsMdx({ className, children }: TabsMdxProps) {
               aria-controls={panelId}
               tabIndex={active ? 0 : -1}
               onClick={() => setActiveValue(item.value)}
+              onKeyDown={(event) => {
+                let nextIndex: number;
+                switch (event.key) {
+                  case "ArrowRight":
+                    nextIndex = (index + 1) % tabItems.length;
+                    break;
+                  case "ArrowLeft":
+                    nextIndex = (index - 1 + tabItems.length) % tabItems.length;
+                    break;
+                  case "Home":
+                    nextIndex = 0;
+                    break;
+                  case "End":
+                    nextIndex = tabItems.length - 1;
+                    break;
+                  default:
+                    return;
+                }
+                event.preventDefault();
+                const nextValue = tabItems[nextIndex].value;
+                setActiveValue(nextValue);
+                event.currentTarget.ownerDocument.getElementById(`${id}-tab-${nextValue}`)?.focus();
+              }}
               style={{
                 border: "none",
                 borderBottom: active

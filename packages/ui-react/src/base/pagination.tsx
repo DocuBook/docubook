@@ -25,7 +25,8 @@ function PaginationCard({ direction, label, title, description, icon }: Paginati
     <div
       className={cn(
         "text-primary/75 flex items-center gap-1.5 text-sm",
-        isPrevious ? "pr-5 pl-3" : "pr-3 pl-5"
+        isPrevious ? "pr-5 pl-3" : "pr-3 pl-5",
+        isPrevious && "shrink-0"
       )}
     >
       {isPrevious && icon && <span className="flex shrink-0 items-center">{icon}</span>}
@@ -68,7 +69,7 @@ function PaginationCard({ direction, label, title, description, icon }: Paginati
       {isPrevious ? (
         <>
           {labelNode}
-          <div className="bg-primary/20 h-8 w-px" />
+          <div className="bg-primary/20 h-8 w-px shrink-0" />
           {metaNode}
         </>
       ) : (
