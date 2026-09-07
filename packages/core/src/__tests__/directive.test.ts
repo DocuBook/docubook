@@ -100,6 +100,38 @@ describe("directives → MDX components (explicit-close contract)", () => {
   });
 });
 
+describe.each(["md", "mdx"] as const)("literal directive fallback (format: %s)", (format) => {
+  it.each([
+    ":custom[important content]",
+    ":custom[**bold** and *italic* and `code` and [link](https://example.com)]",
+    ":custom[label]{#anchor .first .second title='quoted value'  disabled data-x=\"a&amp;b\"}",
+    String.raw`:custom[escaped \*literal\* &amp; text]{title="a &quot;quote&quot;"}`,
+    "::tooltip",
+    "::tooltip[**important content**]{tip='help text'  .hint}",
+  ])("preserves exact source: %s", async (literal) => {
+    const result = await serialize(literal, {
+      outputFormat: "program",
+      parseFrontmatter: false,
+      format,
+      mdxOptions: { remarkPlugins: createDefaultRemarkPlugins() },
+    });
+    expect(result.compiledSource).toContain(JSON.stringify(literal));
+  });
+
+  it("uses original offsets inside nested containers after earlier content", async () => {
+    const literal = ":custom[**important content**]{.hint title='keep spacing'}";
+    const result = await serialize(`Earlier content 😀\n\n:::note\n${literal}\n:::\n\nAfter`, {
+      outputFormat: "program",
+      parseFrontmatter: false,
+      format,
+      mdxOptions: { remarkPlugins: createDefaultRemarkPlugins() },
+    });
+    expect(result.compiledSource).toContain(JSON.stringify(literal));
+    expect(result.compiledSource).toContain("Note");
+    expect(result.compiledSource).toContain("After");
+  });
+});
+
 describe("format: md — authored JSX tags disabled (v2 contract)", () => {
   it("drops authored JSX tags but keeps content as text", async () => {
     const result = await serialize('<Card title="Hi">konten</Card>', {

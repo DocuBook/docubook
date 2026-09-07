@@ -68,8 +68,9 @@ boolean props. Nested containers need a longer outer fence (`::::`).
 | `MDXRemote` | Client-side renderer for pre-compiled `serialize()` output | React component |
 | `extractFrontmatter` | Parse frontmatter only | `Frontmatter` |
 | `extractFrontmatterWithContent` | Extract frontmatter and stripped content in one pass (avoids double parsing) | `{ frontmatter, strippedContent }` |
-| `extractTocsFromRawMdx` | Extract headings for TOC generation | `TocItem[]` |
-| `sluggify` | Convert heading text into URL-safe slug | `string` |
+| `extractTocsFromRawMdx` | Synchronously extract h2–h4 from Markdown/directives using default heading IDs; strips frontmatter | `TocItem[]` |
+| `rehypeCollectTocs` | Append `[rehypeCollectTocs, tocs]` after slugging and custom rehype plugins to collect final heading IDs during compilation | transformer |
+| `sluggify` | Legacy ASCII slug helper; not used for compiler heading IDs | `string` |
 | `createDefaultRehypePlugins` | Default rehype plugin stack | `Pluggable[]` |
 | `createDefaultRemarkPlugins` | Default remark stack (GFM, expandable, directives) | `Pluggable[]` |
 | `remarkDirectiveToMdx` | Convert `:::name{attrs}` directives into MDX component elements | transformer |

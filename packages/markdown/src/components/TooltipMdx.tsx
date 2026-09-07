@@ -138,6 +138,7 @@ export function TooltipMdx({ text, tip }: TooltipMdxProps) {
       {show ? (
         <span
           ref={bubbleRef}
+          id={id}
           role="tooltip"
           style={{ position: "fixed", ...bubbleStyle, zIndex: 9999 }}
         >

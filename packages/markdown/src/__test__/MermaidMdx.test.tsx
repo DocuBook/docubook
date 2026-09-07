@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, fireEvent, cleanup } from "@testing-library/react";
+import { act, render, fireEvent, cleanup } from "@testing-library/react";
 import { MermaidMdx } from "../components/MermaidMdx";
 
 // Mock mermaid module for client-side hydration tests
@@ -37,7 +37,7 @@ class FakeIntersectionObserver {
 vi.stubGlobal("IntersectionObserver", FakeIntersectionObserver);
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
 });
 
 // No vitest globals — RTL's auto-cleanup does not register, so unmount
@@ -125,6 +125,104 @@ describe("MermaidMdx", () => {
     await vi.waitFor(() => {
       expect(mockRun).toHaveBeenCalledWith(expect.objectContaining({ nodes: expect.any(Array) }));
     });
+  });
+
+  it("restores chart text and clears data-processed on chart changes", async () => {
+    const charts: string[] = [];
+    mockRun.mockImplementation(({ nodes }: { nodes: HTMLElement[] }) => {
+      const node = nodes[0];
+      if (node.hasAttribute("data-processed")) return;
+      charts.push(node.textContent!);
+      node.setAttribute("data-processed", "true");
+      node.innerHTML = "<svg><text>Rendered diagram</text></svg>";
+    });
+    const { container, rerender } = render(<MermaidMdx chart="graph TD; A-->B;" />);
+    await vi.waitFor(() => expect(charts).toHaveLength(1));
+
+    rerender(<MermaidMdx chart="graph LR; C-->D;" />);
+    await vi.waitFor(() => expect(mockRun).toHaveBeenCalledTimes(2));
+    expect(charts).toEqual(["graph TD; A-->B;", "graph LR; C-->D;"]);
+    expect(container.querySelector("pre.mermaid svg")).not.toBeNull();
+  });
+
+  it.each(["resolve", "reject"])(
+    "waits for stale runs to %s before resetting the latest chart",
+    async (outcome) => {
+      let settleFirst!: () => void;
+      mockRun.mockImplementationOnce(({ nodes }: { nodes: HTMLElement[] }) => {
+        nodes[0].setAttribute("data-processed", "true");
+        return new Promise<void>((resolve, reject) => {
+          settleFirst = () => {
+            // In-flight Mermaid work can write again after props have changed.
+            nodes[0].textContent = "stale output";
+            nodes[0].setAttribute("data-processed", "true");
+            if (outcome === "reject") reject(new Error("stale render failure"));
+            else resolve();
+          };
+        });
+      });
+      const { container, rerender } = render(<MermaidMdx chart="graph TD; A-->B;" />);
+      await vi.waitFor(() => expect(mockRun).toHaveBeenCalledTimes(1));
+      const pre = container.querySelector("pre.mermaid")!;
+
+      try {
+        await act(async () => rerender(<MermaidMdx chart="graph LR; C-->D;" />));
+        await act(async () => rerender(<MermaidMdx chart="graph TD; E-->F;" />));
+        expect(mockParse).toHaveBeenCalledWith("graph TD; E-->F;");
+        expect(mockRun).toHaveBeenCalledTimes(1);
+        expect(pre.getAttribute("data-processed")).toBe("true");
+        expect(container.querySelector('button[aria-label="Enter full screen"]')).toBeNull();
+        mockRun.mockImplementationOnce(({ nodes }: { nodes: HTMLElement[] }) => {
+          expect(nodes[0]).toBe(pre);
+          expect(nodes[0].textContent).toBe("graph TD; E-->F;");
+          expect(nodes[0].hasAttribute("data-processed")).toBe(false);
+          nodes[0].innerHTML = "<svg><text>Latest diagram</text></svg>";
+        });
+      } finally {
+        await act(async () => settleFirst());
+      }
+      expect(mockRun).toHaveBeenCalledTimes(2);
+      expect(pre.textContent).toBe("Latest diagram");
+      expect(container.textContent).not.toContain("Diagram rendering error");
+      expect(container.querySelector('button[aria-label="Enter full screen"]')).not.toBeNull();
+    }
+  );
+
+  it.each(["resolve", "reject"])("ignores stale parsing that finishes with %s", async (outcome) => {
+    let settleParse!: () => void;
+    mockParse.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve, reject) => {
+          settleParse = () => {
+            if (outcome === "reject") reject(new Error("stale syntax error"));
+            else resolve();
+          };
+        })
+    );
+    const { container, rerender } = render(<MermaidMdx chart="old chart" />);
+    await vi.waitFor(() => expect(mockParse).toHaveBeenCalledTimes(1));
+    rerender(<MermaidMdx chart="graph TD; A-->B;" />);
+    await vi.waitFor(() => expect(mockRun).toHaveBeenCalledTimes(1));
+    await act(async () => settleParse());
+    expect(mockRun).toHaveBeenCalledTimes(1);
+    expect(container.textContent).not.toContain("Diagram rendering error");
+    expect(container.querySelector('button[aria-label="Enter full screen"]')).not.toBeNull();
+  });
+
+  it("skips queued chart work after unmount", async () => {
+    let finishRun!: () => void;
+    mockRun.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finishRun = resolve;
+        })
+    );
+    const { rerender, unmount } = render(<MermaidMdx chart="graph TD; A-->B;" />);
+    await vi.waitFor(() => expect(mockRun).toHaveBeenCalledTimes(1));
+    await act(async () => rerender(<MermaidMdx chart="graph LR; C-->D;" />));
+    unmount();
+    await act(async () => finishRun());
+    expect(mockRun).toHaveBeenCalledTimes(1);
   });
 
   it("removes data-processed attribute before re-render on theme change", async () => {

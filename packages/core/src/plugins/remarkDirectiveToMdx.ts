@@ -1,4 +1,5 @@
 import type { Node } from "unist";
+import type { VFile } from "vfile";
 
 /**
  * Remark plugin: convert markdown directives into MDX component elements.
@@ -22,9 +23,10 @@ import type { Node } from "unist";
  * (`Tip`/`Info`/…) which wrap the `Callout` component with the type set.
  */
 export function remarkDirectiveToMdx() {
-  return (tree: Node) => {
+  return (tree: Node, file: VFile) => {
+    const source = String(file);
     const root = tree as unknown as { children: Node[] };
-    root.children = root.children.map(transform);
+    root.children = root.children.map((node) => transform(node, source));
     return tree;
   };
 }
@@ -35,7 +37,6 @@ const PURE_LEAVES = new Set(["youtube"]);
 type DirectiveNode = Node & {
   type: "containerDirective" | "leafDirective" | "textDirective";
   name: string;
-  label?: string;
   attributes?: Record<string, string>;
   children?: Node[];
 };
@@ -48,11 +49,13 @@ function isDirective(node: Node): node is DirectiveNode {
   );
 }
 
-function transform(node: Node): Node {
+function transform(node: Node, source: string): Node {
   if (!isDirective(node)) {
     const children = (node as unknown as { children?: Node[] }).children;
     if (Array.isArray(children)) {
-      (node as unknown as { children: Node[] }).children = children.map(transform);
+      (node as unknown as { children: Node[] }).children = children.map((child) =>
+        transform(child, source)
+      );
     }
     return node;
   }
@@ -63,17 +66,17 @@ function transform(node: Node): Node {
     if (node.name === "tooltip") {
       return inlineTooltip(node);
     }
-    return literalDirective(node);
+    return literalDirective(node, source);
   }
   // Block-form tooltips are gone in v2 — degrade to literal text so the
   // author sees the directive instead of a broken component.
   if (node.type === "leafDirective" && node.name === "tooltip") {
-    return literalDirective(node);
+    return literalDirective(node, source);
   }
   // containerDirective → component with children; leafDirective → self-closing.
   const children =
     node.type === "containerDirective" && !PURE_LEAVES.has(node.name)
-      ? (node.children ?? []).map(transform)
+      ? (node.children ?? []).map((child) => transform(child, source))
       : [];
   return directiveToElement(node, children);
 }
@@ -93,13 +96,13 @@ function directiveToElement(directive: DirectiveNode, children: Node[]): Node {
   } as Node;
 }
 
-/** Rebuild a text directive as literal text (single-colon is not a contract). */
-function literalDirective(directive: DirectiveNode): Node {
-  const literal = ":" + directive.name + (directive.label ? `[${directive.label}]` : "");
-  const attrStr = Object.entries(directive.attributes ?? {})
-    .map(([k, v]) => (v === "" ? k : `${k}="${v}"`))
-    .join(" ");
-  return { type: "text", value: literal + (attrStr ? `{${attrStr}}` : "") } as Node;
+/** Preserve authored syntax: parsed children and attributes lose formatting. */
+function literalDirective(directive: DirectiveNode, source: string): Node {
+  const start = directive.position?.start.offset;
+  const end = directive.position?.end.offset;
+  // Synthetic nodes without source offsets cannot be restored losslessly.
+  if (start === undefined || end === undefined) return directive;
+  return { type: "text", value: source.slice(start, end) } as Node;
 }
 
 /**

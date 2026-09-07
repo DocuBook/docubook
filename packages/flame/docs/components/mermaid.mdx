@@ -119,14 +119,17 @@ erDiagram
 
 ## Pan and Zoom
 
-Every rendered diagram gets a GFM-style control cluster in the bottom-right corner, so large diagrams stay explorable without mouse-drag interaction:
+Pan and zoom are only active inside the fullscreen view. A rendered diagram shows just a fullscreen button in the bottom-right corner — the non-fullscreen diagram scrolls normally with no transform controls.
 
-- **Arrow buttons** — pan the diagram up, down, left, or right in fixed steps
-- **Zoom in / zoom out** — scale the diagram between 0.4× and 4×
-- **Reset** — restore the original position and scale
-- **Full screen** — open the diagram in a lightbox overlay; close it with the same button or <kbd>Escape</kbd>
+Open fullscreen by clicking the button, or focus the container with <kbd>Tab</kbd> then press <kbd>Enter</kbd>. Fullscreen locks page scroll and shows:
 
-The diagram container is keyboard accessible: focus it with <kbd>Tab</kbd>, then press <kbd>Enter</kbd> to open the fullscreen view. Inside fullscreen, pan with arrow keys, zoom with <kbd>+</kbd> / <kbd>-</kbd>, and reset with <kbd>0</kbd>.
+- **Pan** — mouse-drag, touch-drag, or arrow keys
+- **Zoom in / zoom out** — scroll wheel, <kbd>+</kbd> / <kbd>-</kbd> keys, or the zoom bar buttons (range 0.4× to 4×)
+- **Reset** — click the zoom percentage button or press <kbd>0</kbd>
+- **Help (?)** — auto-opens on first fullscreen entry, re-openable anytime via the `?` button
+- **Exit** — Exit fullscreen button (top-right) or <kbd>Escape</kbd>
+
+Fullscreen shortcuts work regardless of focus. Exiting fullscreen collapses the help panel.
 
 ## Output Markdown
 
@@ -145,7 +148,7 @@ graph TD
 ## Notes
 
 - Diagrams are rendered **client-side**. During SSR, a `<pre class="mermaid">` placeholder is rendered instead.
-- **Pan, zoom, and fullscreen**: A fullscreen button appears after the diagram renders. Click or press Enter to open the fullscreen lightbox. Inside fullscreen, use pan/zoom buttons, arrow keys, scroll-wheel zoom, or click-and-drag to explore the diagram. Press Escape to exit.
+- **Pan, zoom, and fullscreen**: A fullscreen button appears after the diagram renders. Click or press Enter to open the fullscreen lightbox. Inside fullscreen, pan with mouse-drag, touch-drag, or arrow keys; zoom with the zoom bar buttons, scroll wheel, or <kbd>+</kbd> / <kbd>-</kbd>; reset via the zoom percentage button or <kbd>0</kbd>. Press Escape to exit.
 - **Theme synchronization**: The component automatically detects dark/light theme changes and re-renders diagrams.
 - **Lazy loading**: Off-screen diagrams are only rendered when scrolled into view (200px margin).
 - **Error fallback**: If a diagram has invalid Mermaid syntax, the raw code is shown with an error message.

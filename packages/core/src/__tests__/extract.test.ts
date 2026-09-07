@@ -61,6 +61,40 @@ describe("extractTocsFromRawMdx", () => {
     expect(tocs).toEqual([]);
   });
 
+  it("uses rendered inline text and Unicode heading IDs", () => {
+    expect(
+      extractTocsFromRawMdx(
+        "## Café Résumé\n## [Guide](https://example.com)\n## **Bold** `code` &amp; text"
+      )
+    ).toEqual([
+      { level: 2, text: "Café Résumé", href: "#café-résumé" },
+      { level: 2, text: "Guide", href: "#guide" },
+      { level: 2, text: "Bold code & text", href: "#bold-code--text" },
+    ]);
+  });
+
+  it("counts excluded heading levels when assigning duplicate IDs", () => {
+    expect(extractTocsFromRawMdx("# Hello\n## Hello\n##### Hello\n## Hello")).toEqual([
+      { level: 2, text: "Hello", href: "#hello-1" },
+      { level: 2, text: "Hello", href: "#hello-3" },
+    ]);
+  });
+
+  it("ignores frontmatter, indented code and tilde fences", () => {
+    const source =
+      "---\ntitle: |\n  ## Metadata\n---\n\n    ## Indented\n\n~~~~\n## Fenced\n~~~~~\n\n## Visible";
+    expect(extractTocsFromRawMdx(source)).toEqual([
+      { level: 2, text: "Visible", href: "#visible" },
+    ]);
+  });
+
+  it("recognizes setext headings and headings inside directives", () => {
+    expect(extractTocsFromRawMdx("Section\n-------\n\n:::note\n## Nested\n:::")).toEqual([
+      { level: 2, text: "Section", href: "#section" },
+      { level: 2, text: "Nested", href: "#nested" },
+    ]);
+  });
+
   it("strips trailing hashes from headings", () => {
     const mdx = `## Heading ##`;
     const tocs = extractTocsFromRawMdx(mdx);

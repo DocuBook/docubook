@@ -17,7 +17,7 @@ vi.mock("@docubook/core", () => {
   return {
     createDefaultRemarkPlugins: () => [...defaultRemarkPlugins],
     createDefaultRehypePlugins: () => [...defaultRehypePlugins],
-    extractTocsFromRawMdx: () => [],
+    rehypeCollectTocs: () => () => {},
     extractFrontmatterWithContent: <T>() => ({
       frontmatter: {} as unknown as T,
       strippedContent: "<p>test</p>",
@@ -63,7 +63,7 @@ describe("compileMdx — plugin merging", () => {
     expect(lastSerializeOptions!.remarkPlugins).toHaveLength(2);
     expect(lastSerializeOptions!.remarkPlugins![0].name).toBe("defaultRemark");
     expect(lastSerializeOptions!.remarkPlugins![1].name).toBe("remarkMdxJsxDocsHtmlLinks");
-    expect(lastSerializeOptions!.rehypePlugins).toHaveLength(2);
+    expect(lastSerializeOptions!.rehypePlugins).toHaveLength(3);
     expect(lastSerializeOptions!.rehypePlugins![0].name).toBe("defaultRehype");
     expect(lastSerializeOptions!.rehypePlugins![1].name).toBe("rehypeDocsHtmlLinks");
   });
@@ -71,7 +71,7 @@ describe("compileMdx — plugin merging", () => {
   it("uses only defaults and built-ins when empty arrays passed", async () => {
     await compileMdx(sampleMdx, "test.mdx", undefined, [], []);
     expect(lastSerializeOptions!.remarkPlugins).toHaveLength(2);
-    expect(lastSerializeOptions!.rehypePlugins).toHaveLength(2);
+    expect(lastSerializeOptions!.rehypePlugins).toHaveLength(3);
   });
 
   it("merges remark plugins after defaults and built-ins", async () => {
@@ -86,7 +86,7 @@ describe("compileMdx — plugin merging", () => {
   it("merges rehype plugins after defaults and built-ins", async () => {
     const extraRehype: Pluggable[] = [{ name: "customRehype" } as any];
     await compileMdx(sampleMdx, "test.mdx", undefined, undefined, extraRehype);
-    expect(lastSerializeOptions!.rehypePlugins).toHaveLength(3);
+    expect(lastSerializeOptions!.rehypePlugins).toHaveLength(4);
     expect(lastSerializeOptions!.rehypePlugins![0].name).toBe("defaultRehype");
     expect(lastSerializeOptions!.rehypePlugins![1].name).toBe("rehypeDocsHtmlLinks");
     expect(lastSerializeOptions!.rehypePlugins![2].name).toBe("customRehype");
@@ -97,7 +97,7 @@ describe("compileMdx — plugin merging", () => {
     const extraRehype: Pluggable[] = [{ name: "customRehype" } as any];
     await compileMdx(sampleMdx, "test.mdx", undefined, extraRemark, extraRehype);
     expect(lastSerializeOptions!.remarkPlugins).toHaveLength(3);
-    expect(lastSerializeOptions!.rehypePlugins).toHaveLength(3);
+    expect(lastSerializeOptions!.rehypePlugins).toHaveLength(4);
   });
 
   it("preserves MdxResult shape", async () => {

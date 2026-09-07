@@ -1,9 +1,10 @@
 import matter from "@11ty/gray-matter";
 import type { ZodType } from "zod";
 import type { TocItem } from "./types";
-
-const FENCE_MARKER_REGEX = /^(````|```)(?!`)/;
-const HEADING_REGEX = /^(#{2,4})\s+(.+)$/;
+import { compileSync } from "@mdx-js/mdx";
+import { createDefaultRemarkPlugins } from "./compile";
+import rehypeSlug from "rehype-slug";
+import { rehypeCollectTocs } from "./plugins/rehypeCollectTocs";
 
 export function sluggify(text: string): string {
   const normalized = text.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove accents
@@ -12,47 +13,13 @@ export function sluggify(text: string): string {
 }
 
 export function extractTocsFromRawMdx(rawMdx: string): TocItem[] {
-  const extractedHeadings: TocItem[] = [];
-
-  const lines = rawMdx.split(/\r?\n/);
-  let inFence = false;
-  let fenceLength = 0;
-
-  for (const line of lines) {
-    const trimmed = line.trimStart();
-
-    const fenceMatch = FENCE_MARKER_REGEX.exec(trimmed);
-    if (fenceMatch) {
-      const marker = fenceMatch[1];
-
-      if (!inFence) {
-        inFence = true;
-        fenceLength = marker.length;
-      } else if (marker.length === fenceLength) {
-        inFence = false;
-      }
-
-      continue;
-    }
-
-    if (inFence) {
-      continue;
-    }
-
-    const headingMatch = HEADING_REGEX.exec(trimmed);
-    if (headingMatch) {
-      const headingLevel = headingMatch[1].length;
-      const headingText = headingMatch[2].trim().replace(/\s+#+\s*$/, "");
-      extractedHeadings.push({
-        level: headingLevel,
-        text: headingText,
-        href: `#${sluggify(headingText)}`,
-      });
-      continue;
-    }
-  }
-
-  return extractedHeadings;
+  const tocs: TocItem[] = [];
+  compileSync(matter(rawMdx).content, {
+    format: "md",
+    remarkPlugins: createDefaultRemarkPlugins(),
+    rehypePlugins: [rehypeSlug, [rehypeCollectTocs, tocs]],
+  });
+  return tocs;
 }
 
 export function extractFrontmatter<Frontmatter>(content: string): Frontmatter {

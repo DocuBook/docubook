@@ -9,6 +9,7 @@ import {
   registerPageContent,
 } from "../node/mdx";
 import { getPreviousNext } from "../node/route";
+import { renderToStaticMarkup } from "react-dom/server";
 
 const MDX = `---
 title: Test Page
@@ -77,6 +78,49 @@ describe("frontmatter parse-once registry (mdx.ts)", () => {
     expect(result.frontmatter.title).toBe("Pre Title");
     expect(result.frontmatter.author).toBeUndefined(); // pre data used, not the source
     expect(getPageFrontmatter(h)).toBeUndefined(); // compileMdx alone does not register
+  });
+});
+
+describe("compiled TOC", () => {
+  it("matches rendered heading IDs and ignores fenced headings", async () => {
+    const source =
+      "# Hello\n## Hello\n## Café Résumé\n## [Guide](https://example.com)\n## Hello\n\n~~~\n## Not a heading\n~~~";
+    const result = await compileMdx(source, "test.mdx", new Map([["test.mdx", "2026-01-01"]]));
+    expect(result.tocs).toEqual([
+      { level: 2, text: "Hello", href: "#hello-1" },
+      { level: 2, text: "Café Résumé", href: "#café-résumé" },
+      { level: 2, text: "Guide", href: "#guide" },
+      { level: 2, text: "Hello", href: "#hello-2" },
+    ]);
+    const html = renderToStaticMarkup(result.content);
+    for (const toc of result.tocs) expect(html).toContain(`id="${toc.href.slice(1)}"`);
+  });
+
+  it("collects IDs and text after custom rehype transforms using precompiled content", async () => {
+    function renameHeading() {
+      return (tree: {
+        children: {
+          tagName?: string;
+          properties?: Record<string, unknown>;
+          children?: unknown[];
+        }[];
+      }) => {
+        const heading = tree.children.find((node) => node.tagName === "h2")!;
+        heading.properties = { ...heading.properties, id: "custom-section" };
+        heading.children = [{ type: "text", value: "Changed heading" }];
+      };
+    }
+    const result = await compileMdx(
+      "## Unused source",
+      "test.mdx",
+      new Map([["test.mdx", "2026-01-01"]]),
+      [],
+      [renameHeading],
+      undefined,
+      { frontmatter: {}, strippedContent: "## Compiled source" }
+    );
+    expect(result.tocs).toEqual([{ level: 2, text: "Changed heading", href: "#custom-section" }]);
+    expect(renderToStaticMarkup(result.content)).toContain('id="custom-section"');
   });
 });
 

@@ -109,7 +109,8 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
   const generatedId = useId();
   const domId = id ?? `mermaid-${generatedId.replace(/[:.]/g, "-")}`;
   const ref = useRef<HTMLPreElement>(null);
-  const chartRef = useRef(chart);
+  // Preserve serialization across chart changes while an old run is still pending.
+  const runChainRef = useRef<Promise<void>>(Promise.resolve());
   const mermaidRef = useRef<Mermaid | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [rendered, setRendered] = useState(false);
@@ -124,8 +125,6 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
     if (typeof window === "undefined") return;
     if (!chart) return;
 
-    // Keep chartRef in sync so theme-change re-render (T-005) can restore text
-    chartRef.current = chart;
     setError(null);
     setRendered(false);
 
@@ -136,15 +135,17 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
     let lastTheme = getTheme();
     // Serialize mermaid.run calls — overlapping runs on the same node detach
     // in-flight SVG and crash inside d3's dispatchEvent (issue #268)
-    let runChain: Promise<void> = Promise.resolve();
-
     function enqueueRun(run: () => Promise<void>): Promise<void> {
-      const next = runChain.then(() => {
-        if (cancelled || !ref.current?.isConnected) return;
+      const next = runChainRef.current.then(() => {
+        const node = ref.current;
+        if (cancelled || !node?.isConnected) return;
+        // Reset only after prior work settles: Mermaid can still write to this node.
+        node.textContent = chart;
+        node.removeAttribute("data-processed");
         return run();
       });
       // Keep the chain alive after a failure; the caller handles rejection
-      runChain = next.catch(() => {});
+      runChainRef.current = next.catch(() => {});
       return next;
     }
 
@@ -155,6 +156,7 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
           mermaidPromise = import("mermaid");
         }
         const mod = await mermaidPromise;
+        if (cancelled) return;
         const mermaid = (mermaidRef.current = mod.default);
 
         mermaid.initialize({ startOnLoad: false, theme: getTheme() });
@@ -209,15 +211,12 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
           const node = ref.current;
           if (!mermaid || !node) return Promise.resolve();
           lastTheme = getTheme();
-          // Mermaid replaces innerHTML — restore original chart text before re-render
-          node.textContent = chartRef.current;
-          // Remove data-processed so mermaid v11 does not skip this node
-          node.removeAttribute("data-processed");
+
           mermaid.initialize({ startOnLoad: false, theme: lastTheme });
           return mermaid.run({ nodes: [node] });
         }).catch((e) => {
           // Warn, not error state — the previously rendered diagram is still on screen
-          console.warn("[mermaid] diagram render error:", e);
+          if (!cancelled) console.warn("[mermaid] diagram render error:", e);
         });
       }, 200);
     });

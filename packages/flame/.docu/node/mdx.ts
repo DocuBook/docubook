@@ -3,7 +3,8 @@ import type { Pluggable } from "unified";
 import { z, type ZodType } from "zod";
 import {
   serialize,
-  extractTocsFromRawMdx,
+  rehypeCollectTocs,
+  type TocItem,
   extractFrontmatterWithContent,
   createDefaultRehypePlugins,
   createDefaultRemarkPlugins,
@@ -108,7 +109,7 @@ export interface MdxResult {
   content: React.ReactElement;
   compiledSource: string;
   frontmatter: Frontmatter;
-  tocs: ReturnType<typeof extractTocsFromRawMdx>;
+  tocs: TocItem[];
 }
 
 /**
@@ -186,7 +187,13 @@ async function serializeWithDocPlugins(
   // transforms see already-fixed hrefs.  rehypeDocsHtmlLinks handles plain
   // markdown [text](path) → <a> elements in the HAST phase.
   const finalRemark = [...defaultRemark, remarkMdxJsxDocsHtmlLinks, ...(opts.remarkPlugins ?? [])];
-  const finalRehype = [...defaultRehype, rehypeDocsHtmlLinks, ...(opts.rehypePlugins ?? [])];
+  const tocs: TocItem[] = [];
+  const finalRehype: Pluggable[] = [
+    ...defaultRehype,
+    rehypeDocsHtmlLinks,
+    ...(opts.rehypePlugins ?? []),
+    [rehypeCollectTocs, tocs],
+  ];
 
   // v2 contract: plain markdown + directives only — authored JSX tags are
   // not parsed (dropped, content kept as text). Return the frontmatter parsed
@@ -198,7 +205,7 @@ async function serializeWithDocPlugins(
       rehypePlugins: finalRehype,
       remarkPlugins: finalRemark,
     },
-  }).then((serialized) => ({ ...serialized, frontmatter, strippedContent }));
+  }).then((serialized) => ({ ...serialized, frontmatter, strippedContent, tocs }));
 }
 
 /**
@@ -221,7 +228,6 @@ export async function compileMdx(
   /** Pre-pass extracted data — avoids re-parsing frontmatter in the SSR phase. */
   pre?: { frontmatter: Frontmatter; strippedContent: string }
 ): Promise<MdxResult> {
-  const tocs = extractTocsFromRawMdx(rawMdx);
   const frontmatter =
     pre?.frontmatter ??
     (frontmatterSchema
@@ -252,7 +258,7 @@ export async function compileMdx(
     content,
     compiledSource: serialized.compiledSource,
     frontmatter: { ...frontmatter, date },
-    tocs,
+    tocs: serialized.tocs,
   };
 }
 
