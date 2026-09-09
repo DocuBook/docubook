@@ -136,7 +136,7 @@ export default function Toc({ tocs }: TocProps) {
         <h3 className="text-sm font-medium">On this page</h3>
       </div>
 
-      <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+      <div className="relative min-h-0 flex-1 overflow-y-auto pr-1">
         <div className="relative text-sm">
           <div className="bg-base-300 absolute top-0 left-0 h-full w-px" />
 
