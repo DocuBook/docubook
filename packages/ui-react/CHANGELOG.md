@@ -1,5 +1,13 @@
 # @docubook/ui-react
 
+## 2.0.1
+
+### Patch Changes
+
+- [#385](https://github.com/DocuBook/docubook/pull/385) [`881f43b`](https://github.com/DocuBook/docubook/commit/881f43be7796f78ddc86a4c682405da105337f68) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - - Scan published `@docubook/ui-react` component output from its shared Tailwind stylesheet, restoring pagination utilities in scaffolded Flame sites without publishing source files.
+  - Refresh Flame v2.0.0 release messaging and benchmark documentation with corrected measurements, setup details, and runtime caveats.
+  - Keep all linked DocuBook packages on synchronized patch versions.
+
 ## 2.0.0
 
 ### Major Changes
