@@ -42,7 +42,7 @@ public disclosure and contact maintainers privately first.
    ```text
    fix/search-modal-focus
    feat/cli-template-update
-   chore/migrate-packages-to-vite
+   chore/update-dependencies
    docs/update-architecture
    ```
 5. **Install dependencies**
@@ -67,9 +67,10 @@ public disclosure and contact maintainers privately first.
 
 ### Requirements
 
-- **Node.js** `^20.19.0 || ^22.13.0 || >=24`
-- **pnpm** `12.x` (repo pin via `packageManager`)
-- **Bun** `>=1.4.0` jika kerja di `packages/flame` default runtime flows
+- **Node.js** `^20.19.0 || ^22.13.0 || >=24` (root `engines` range)
+- **pnpm** `12.x` (`packageManager` pins `pnpm@12.3.4`)
+- **Bun** `>=1.4.0` for flame's default `dev`, `build`, `preview`, and
+  `deploy` scripts; a full-workspace `pnpm build` also requires Bun
 
 Enable pnpm with Corepack:
 
@@ -77,7 +78,7 @@ Enable pnpm with Corepack:
 corepack enable
 ```
 
-Corepack baca pin `packageManager` (`pnpm@12.3.4`).
+Corepack reads the `packageManager` pin automatically.
 
 Then install:
 
@@ -90,10 +91,10 @@ pnpm install
 | Command | Purpose |
 |---|---|
 | `pnpm build` | Build the full workspace via Turborepo |
-| `pnpm lint` | Lint the full workspace |
-| `pnpm typecheck` | Type-check the full workspace |
-| `pnpm test` | Run all workspace tests |
-| `pnpm clean` | Clean Turborepo outputs |
+| `pnpm lint` | Run the root Oxlint configuration across the repository |
+| `pnpm typecheck` | Type-check the workspace through Turborepo |
+| `pnpm test` | Run workspace tests through Turborepo |
+| `pnpm clean` | Run every package's clean script through Turborepo |
 | `pnpm commit` | Open the interactive commit prompt |
 | `pnpm changeset` | Create a changeset |
 | `pnpm version-packages` | Consume changesets and update package versions + changelogs |
@@ -104,10 +105,11 @@ pnpm install
 Examples:
 
 ```bash
-pnpm --filter ./packages/core run build
-pnpm --filter ./packages/markdown run test
-pnpm --filter ./packages/ui-react run typecheck
-pnpm --filter ./packages/flame run compile:lib
+pnpm --filter @docubook/core run build
+pnpm --filter @docubook/markdown run test
+pnpm --filter @docubook/ui-react run typecheck
+pnpm --filter @docubook/flame run compile:lib
+pnpm turbo build --filter=@docubook/flame...
 ```
 
 Notes:
@@ -117,6 +119,11 @@ Notes:
   scripts.
 - `flame` uses **Vite 8** for Node/Deno compatibility compilation
   (`compile:lib`) and the Node/Deno browser-bundle path.
+- Turbo `typecheck` and `test` tasks depend on workspace dependency builds;
+  direct package commands bypass that ordering.
+- `pnpm-workspace.yaml` is the source of truth for shared dependency overrides
+  and native `allowBuilds`. Call out any new install script and required
+  `allowBuilds` entry in the PR.
 
 ## Git Hooks and Local Enforcement
 
@@ -138,23 +145,29 @@ Git hooks are installed by Husky during `pnpm install`.
 
 `lint-staged` currently runs:
 
-- `prettier --write --ignore-unknown` on all staged files
-- `oxlint` on staged JS/TS files
+- `prettier --write --ignore-unknown` on staged files; `.prettierignore`
+  excludes Markdown and MDX
+- check-only `oxlint` on staged `*.{js,ts,jsx,tsx}` files
 
 ### On Every Push
 
-`pre-push` runs stricter workspace-wide checks:
+`pre-push` runs:
 
-1. `pnpm turbo lint`
-2. `pnpm turbo build`
-3. `pnpm exec commitlint --from ... --to HEAD --verbose`
+1. `pnpm turbo lint` for package lint scripts (currently flame and ui-react)
+2. `pnpm turbo build` for the workspace
+3. `pnpm exec commitlint --from ... --to HEAD --verbose` for the pushed range
 
-This means a commit may pass local `pre-commit` checks but still be rejected on
-push if:
+It does not run the root `pnpm lint`, `pnpm typecheck`, or `pnpm test`. Run the
+baseline commands before opening a PR. A push can still be rejected when the
+workspace no longer builds or any commit in the pushed range has an invalid
+message.
 
-- the full workspace no longer builds
-- lint fails outside your staged files
-- an older commit on your branch has an invalid message
+### In CI
+
+Pull requests and pushes to `main` run the Turbo `lint`, `typecheck`, `build`,
+and `test` matrix on Node.js 22. Build and test jobs install Bun. Separate smoke
+jobs build flame through Node and Deno, including the lazy `.docu/lib`
+compilation path. `commitlint.yml` validates every commit in a pull request.
 
 ## Branch Naming
 
@@ -172,7 +185,7 @@ Examples:
 ```text
 feat/add-mermaid-controls
 fix/node-runtime-smoke
-chore/migrate-packages-to-vite
+chore/update-dependencies
 docs/update-contributing-guide
 ```
 
@@ -203,7 +216,8 @@ Rules enforced by `commitlint.config.js`:
   - `chore`
   - `revert`
   - `review`
-- subject must be lowercase
+- subject must not use sentence case, start case, PascalCase, or uppercase;
+  lowercase is recommended
 - header max length is 100 characters
 
 Examples:
@@ -212,20 +226,23 @@ Examples:
 feat(flame): add runtime smoke coverage
 fix(core): preserve portable declaration output
 docs: update architecture notes
-chore: migrate packages to vite 8
+chore: update dependenciesmigrate packages to vite 8
 ```
 
 ### Scopes
 
-Scopes are optional. Common examples in this repo:
+Scopes are optional and `commitlint` does not enforce a scope allow-list. The
+interactive `czg` prompt currently offers:
 
 - `docs`
 - `packages`
 - `core`
+- `mdx-content`
 - `flame`
 
-The interactive prompt still includes some historical scope names for legacy
-workflows; that does not change the active package names in the codebase.
+`mdx-content` is a historical prompt value. Current package scopes are `core`,
+`flame`, `markdown`, `themes-colors`, and `ui-react`; type those manually when
+they improve clarity, or omit the scope.
 
 ### Non-Interactive Commits
 
@@ -305,7 +322,9 @@ The published packages are **linked** in `.changeset/config.json`:
 - `@docubook/themes-colors`
 - `@docubook/ui-react`
 
-The repo is also in **prerelease mode** with the `beta` tag.
+The repository is currently in stable release mode; `.changeset/pre.json` is
+absent. Prerelease mode and tags must be entered explicitly before documenting
+or publishing another prerelease series.
 
 Practical consequence:
 
@@ -368,12 +387,17 @@ which runs:
 pnpm build && changeset publish
 ```
 
-After publish, the workflow removes per-package tags and creates a single GitHub
-release tag based on flame's version:
+After publish, the workflow disables Changesets' per-package GitHub releases,
+removes the generated per-package tags, and creates one product release tag
+based on flame's version:
 
 ```text
 v<flame version>
 ```
+
+It then triggers `.github/workflows/docker-builder.yml`, which publishes the
+flame builder image to GHCR as `<version>`, `<major>`, and `latest` from
+`packages/flame/docker/Dockerfile.builder`.
 
 ## Documentation Contributions
 

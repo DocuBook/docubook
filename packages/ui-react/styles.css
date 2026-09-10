@@ -1,7 +1,6 @@
 /* Tailwind source root for ui-react components — @source is resolved relative
-   to this file, so consumers can import this stylesheet from any install
-   layout and the component classes are still scanned. */
-@source "./src";
+   to this file and dist is included in the published package. */
+@source "./dist";
 
 /* Dynamic variants built via template interpolation (`toggle-${color}`,
    `input-${color}`, `kbd-${size}`, `modal-${placement}`,
