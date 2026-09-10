@@ -93,6 +93,17 @@ export interface DocuConfig {
   plugins?: PluginEntry[];
 }
 
+export interface AssetEntry {
+  css: string;
+  js?: string;
+}
+
+export interface AssetManifest {
+  docs: AssetEntry;
+  home: AssetEntry;
+  notFound: AssetEntry;
+}
+
 export interface BuildCacheEntry {
   hash: string;
   mtime: number;

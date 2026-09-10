@@ -1,56 +1,40 @@
-/**
- * Client bundle builder for Node/Deno runtimes.
- *
- * Uses Vite with Rolldown plugins to produce a browser-ready client
- * bundle (JS + CSS) from the same components Bun.build handles natively.
- * Theme helpers (getThemeConfig, buildThemeCss, computeInlineThemeCss)
- * are re-exported from `hydrate.ts` — that module's `buildClientBundle`
- * is Bun-only and unused here.
- */
+/** Client bundle builder for Node/Deno runtimes. */
 
 import { execFile } from "node:child_process";
 import { builtinModules, createRequire } from "node:module";
-import { basename, dirname, join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { promisify } from "node:util";
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { build as viteBuild } from "vite";
-import {
-  ASSETS_DIR,
-  FRAMEWORK_ROOT,
-  cleanOldBundles,
-  LIB_DIR,
-  STYLES_DIR,
-  loadDocuConfig,
-} from "./paths";
-import { buildThemeCss, getThemeConfig } from "./hydrate";
-import { atomicWriteFile, computeTailwindCacheKey, readGlobalsCss } from "./cache-key";
+import { ASSETS_DIR, FRAMEWORK_ROOT, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
+import { buildThemeCss, createMdxModuleEntries, getThemeConfig } from "./hydrate";
+import { atomicWriteFile, computeTailwindCacheKey, readStyleCss } from "./cache-key";
 import { resolveRoutes } from "./fs-scanner";
 import { normalizeImporterPath } from "./security";
-import type { DocuConfig, DocuRoute } from "./types";
+import type { AssetManifest, DocuConfig, DocuRoute } from "./types";
 
 /** Extract Lucide icon names from user docu.json configuration. */
 function extractConfigIcons(config: DocuConfig): string[] {
   const icons: string[] = [];
-  const pushIf = (s: string | undefined) => {
-    if (s) icons.push(s);
+  const pushIf = (value: string | undefined) => {
+    if (value) icons.push(value);
   };
-  config.home?.hero?.actions?.forEach((a) => pushIf(a.icon));
-  config.home?.features?.forEach((f) => pushIf(f.icon));
+  config.home?.hero?.actions?.forEach((action) => pushIf(action.icon));
+  config.home?.features?.forEach((feature) => pushIf(feature.icon));
   (function walk(routes: DocuRoute[]) {
-    for (const r of routes) {
-      pushIf(r.context?.icon);
-      if (r.items) walk(r.items);
+    for (const route of routes) {
+      pushIf(route.context?.icon);
+      if (route.items) walk(route.items);
     }
   })(config.routes ?? []);
-  return [...new Set(icons.filter((n) => /^[A-Z]/.test(n)))];
+  return [...new Set(icons.filter((name) => /^[A-Z]/.test(name)))];
 }
 
 export { buildThemeCss, computeInlineThemeCss, getThemeConfig } from "./hydrate";
 
 const execFileAsync = promisify(execFile);
 
-/** Resolve the @tailwindcss/cli binary path from the installed package. */
 function resolveTailwindBin(): string {
   const require = createRequire(import.meta.url);
   const pkgPath = require.resolve("@tailwindcss/cli/package.json");
@@ -59,40 +43,36 @@ function resolveTailwindBin(): string {
   return join(dirname(pkgPath), binRel);
 }
 
-/** Compute a cache key from globals.css + theme + config + toolchain. */
-function tailwindCacheKey(): string {
-  const globalsContent = readGlobalsCss();
-  let themeSuffix = "";
+function themeCacheSuffix(): string {
   try {
     const themeColors = getThemeConfig();
-    if (themeColors) {
-      themeSuffix = JSON.stringify(themeColors);
-    }
+    return themeColors ? JSON.stringify(themeColors) : "";
   } catch {
-    // theme config unavailable — proceed without it
+    return "";
   }
-  return computeTailwindCacheKey(globalsContent, themeSuffix);
 }
 
-/**
- * Build Tailwind CSS with content-based caching.
- * If a CSS file for the current input hash already exists, skip the subprocess.
- * Returns the filename (e.g. "client-abc123.css") and CSS content.
- */
-async function buildTailwindCss(key: string): Promise<{ file: string; content: string }> {
-  const cachedFile = `client-${key}.css`;
+function tailwindCacheKey(styleFile: string): string {
+  return computeTailwindCacheKey(readStyleCss(styleFile), `${styleFile}\0${themeCacheSuffix()}`);
+}
+
+async function buildTailwindCss(
+  name: string,
+  styleFile: string
+): Promise<{ file: string; content: string }> {
+  const key = tailwindCacheKey(styleFile);
+  const cachedFile = `${name}-${key}.css`;
   const cachedPath = join(ASSETS_DIR, cachedFile);
 
   if (existsSync(cachedPath)) {
-    const content = readFileSync(cachedPath, "utf-8");
-    return { file: cachedFile, content };
+    return { file: cachedFile, content: readFileSync(cachedPath, "utf-8") };
   }
 
-  const tmpCss = join(ASSETS_DIR, `_tmp-${key}.css`);
+  const tmpCss = join(ASSETS_DIR, `_tmp-${name}-${key}.css`);
   const bin = resolveTailwindBin();
-  const twArgs = ["-i", join(STYLES_DIR, "globals.css"), "-o", tmpCss, "--minify"];
+  const tailwindArgs = ["-i", join(STYLES_DIR, styleFile), "-o", tmpCss, "--minify"];
   const isDeno = "Deno" in globalThis;
-  const args = isDeno ? ["run", "-A", bin, ...twArgs] : [bin, ...twArgs];
+  const args = isDeno ? ["run", "-A", bin, ...tailwindArgs] : [bin, ...tailwindArgs];
   try {
     await execFileAsync(process.execPath, args, { maxBuffer: 16 * 1024 * 1024 });
   } catch (err) {
@@ -105,35 +85,26 @@ async function buildTailwindCss(key: string): Promise<{ file: string; content: s
 
   try {
     const themeColors = getThemeConfig();
-    if (themeColors) {
-      cssContent = buildThemeCss(cssContent, themeColors);
-    }
+    if (themeColors) cssContent = buildThemeCss(cssContent, themeColors);
   } catch (err) {
     console.warn(
-      `[flame] Failed to resolve theme config, falling back to globals.css only: ${err instanceof Error ? err.message : String(err)}`
+      `[flame] Failed to resolve theme config: ${err instanceof Error ? err.message : String(err)}`
     );
   }
 
-  // Use the same input-derived key for lookup and output — if inputs change,
-  // the key changes, cache busting works without a separate content hash.
-  // Atomic tmp+rename with pid suffix: parallel builds never clobber each other.
-  const cssFile = `client-${key}.css`;
-  const outPath = join(ASSETS_DIR, cssFile);
-
-  if (!existsSync(outPath)) {
-    await atomicWriteFile(writeFile, rename, unlink, outPath, cssContent);
+  if (!existsSync(cachedPath)) {
+    await atomicWriteFile(writeFile, rename, unlink, cachedPath, cssContent);
   }
 
-  return { file: cssFile, content: cssContent };
+  return { file: cachedFile, content: cssContent };
 }
 
 const NODE_BUILTINS_RE = new RegExp(
-  `^(node:.*|${builtinModules.map((m) => m.replace(/\//g, "\\/")).join("|")})$`
+  `^(node:.*|${builtinModules.map((module) => module.replace(/\//g, "\\/")).join("|")})$`
 );
 
 let lucideRealEntry: string | undefined;
 
-/** Resolve the real lucide-react entry path once (cached). */
 function getLucideRealEntry(): string {
   if (!lucideRealEntry) {
     lucideRealEntry = createRequire(import.meta.url).resolve("lucide-react");
@@ -144,20 +115,19 @@ function getLucideRealEntry(): string {
 const LUCIDE_IMPORT_RE = /import\s*\{([^}]+)\}\s*from\s*["']lucide-react["']/g;
 const LUCIDE_ICON_RE = /^[A-Z]/;
 
-/** Walk a directory scanning JS/TS/TSX files for `lucide-react` named imports. */
 function scanDirLucideIcons(dir: string, set: Set<string>): void {
   if (!existsSync(dir)) return;
   try {
     const entries = readdirSync(dir, { withFileTypes: true });
-    for (const e of entries) {
-      const full = join(dir, e.name);
-      if (e.isDirectory()) {
-        if (e.name !== "node_modules") scanDirLucideIcons(full, set);
-      } else if (/\.(js|ts|tsx)$/.test(e.name)) {
+    for (const entry of entries) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name !== "node_modules") scanDirLucideIcons(full, set);
+      } else if (/\.(js|ts|tsx)$/.test(entry.name)) {
         const content = readFileSync(full, "utf-8");
-        for (const m of content.matchAll(LUCIDE_IMPORT_RE)) {
-          for (const s of m[1].split(",")) {
-            const name = s
+        for (const match of content.matchAll(LUCIDE_IMPORT_RE)) {
+          for (const specifier of match[1].split(",")) {
+            const name = specifier
               .trim()
               .split(/\s+as\s+/)[0]
               .trim();
@@ -173,36 +143,31 @@ function scanDirLucideIcons(dir: string, set: Set<string>): void {
   }
 }
 
-/** Collect every lucide icon name imported across flame sources and deps. */
 function collectAllLucideIcons(): string[] {
   const icons = new Set<string>();
-  // Scan flame's own components and pages
   scanDirLucideIcons(join(FRAMEWORK_ROOT, ".docu/components"), icons);
   scanDirLucideIcons(join(FRAMEWORK_ROOT, ".docu/pages"), icons);
-  // Scan dependency dist directories. In development (monorepo) they live under
-  // packages/; in production they are under node_modules/@docubook/.
-  const depDirs = [
+  const dependencyDirs = [
     join(FRAMEWORK_ROOT, "..", "mdx-content", "dist"),
     join(FRAMEWORK_ROOT, "..", "ui-react", "dist"),
     join(FRAMEWORK_ROOT, "..", "core", "dist"),
     join(FRAMEWORK_ROOT, "..", "themes-colors", "dist"),
   ];
-  for (const d of depDirs) scanDirLucideIcons(resolve(d), icons);
+  for (const dir of dependencyDirs) scanDirLucideIcons(resolve(dir), icons);
   return [...icons];
 }
 
-/** Build the client JS bundle and Tailwind CSS. */
 export async function buildClientBundle(
   /** slug → compiled MDX ESM module source (program format) for static hydration. */
   mdxSources: Record<string, string> = {}
-): Promise<{ js: string; css: string }> {
+): Promise<AssetManifest> {
   await mkdir(ASSETS_DIR, { recursive: true });
-  const twKey = tailwindCacheKey();
-  await cleanOldBundles(new Set([`client-${twKey}.css`]));
-
   const nodeEnv = process.env.NODE_ENV || "development";
+  const mdxEntries = createMdxModuleEntries(mdxSources);
+  const mdxEntriesById = new Map(mdxEntries.map((entry) => [entry.id, entry]));
+  const docsEntryPath = join(LIB_DIR, "client.ts");
+  const homeEntryPath = join(LIB_DIR, "home-client.ts");
 
-  const entryPath = join(LIB_DIR, "client.ts");
   const bundle = await viteBuild({
     configFile: false,
     publicDir: false,
@@ -261,27 +226,20 @@ export async function buildClientBundle(
         name: "mdx-hydrate",
         resolveId(id) {
           if (/mdx-manifest$/.test(id)) return "\0mdx-manifest";
-          if (id.startsWith("mdx-module:")) return `\0${id}`;
+          if (/^docubook-mdx-page-[a-f0-9]{16}$/.test(id)) return `\0${id}`;
           return null;
         },
         load(id) {
           if (id === "\0mdx-manifest") {
-            const slugs = Object.keys(mdxSources).sort();
-            const imports = slugs
-              .map((slug, i) => {
-                const key = slug.replace(/["\\]/g, "");
-                return `import * as _mdx${i} from ${JSON.stringify(`mdx-module:${key}`)};`;
-              })
-              .join("\n");
-            const map = slugs.map((slug, i) => `${JSON.stringify(slug)}: _mdx${i}`).join(", ");
-            return `${imports}\nexport const mdxModules = { ${map} };\n`;
+            const map = mdxEntries
+              .map(({ slug, id }) => `${JSON.stringify(slug)}: () => import(${JSON.stringify(id)})`)
+              .join(", ");
+            return `export const mdxModules = { ${map} };\n`;
           }
-          if (!id.startsWith("\0mdx-module:")) return null;
-          const slug = id.slice("\0mdx-module:".length);
-          const contents = mdxSources[slug];
-          if (contents == null) {
-            throw new Error(`unknown mdx module: ${slug}`);
-          }
+          if (!id.startsWith("\0docubook-mdx-page-")) return null;
+          const entry = mdxEntriesById.get(id.slice(1));
+          const contents = entry == null ? undefined : mdxSources[entry.slug];
+          if (contents == null) throw new Error(`unknown mdx module: ${id}`);
           return contents;
         },
       },
@@ -293,10 +251,10 @@ export async function buildClientBundle(
       minify: nodeEnv === "production",
       target: "es2020",
       rollupOptions: {
-        input: entryPath,
+        input: { client: docsEntryPath, "home-client": homeEntryPath },
         output: {
           format: "es",
-          entryFileNames: "client-[hash].js",
+          entryFileNames: "[name]-[hash].js",
           chunkFileNames: "chunks/[name]-[hash].js",
           assetFileNames: "assets/[name]-[hash][extname]",
         },
@@ -305,29 +263,30 @@ export async function buildClientBundle(
   });
 
   const outputs = Array.isArray(bundle) ? bundle : [bundle];
-  let jsFile: string | undefined;
+  let docsJs: string | undefined;
+  let homeJs: string | undefined;
   for (const item of outputs) {
     if (!("output" in item)) continue;
     for (const output of item.output) {
-      if (
-        output.type === "chunk" &&
-        output.isEntry &&
-        output.facadeModuleId &&
-        resolve(output.facadeModuleId) === entryPath
-      ) {
-        jsFile = basename(output.fileName);
-        break;
-      }
+      if (output.type !== "chunk" || !output.isEntry) continue;
+      if (output.name === "client") docsJs = output.fileName;
+      if (output.name === "home-client") homeJs = output.fileName;
     }
-    if (jsFile) break;
   }
-  if (!jsFile) {
-    throw new Error("Client bundle produced no output files");
+  if (!docsJs || !homeJs) {
+    throw new Error("Client bundle produced incomplete entry-point outputs");
   }
 
-  const { file: cssFile } = await buildTailwindCss(twKey);
+  const [{ file: docsCss }, { file: siteCss }] = await Promise.all([
+    buildTailwindCss("docs", "globals.css"),
+    buildTailwindCss("site", "site.css"),
+  ]);
 
-  await writeFile(join(ASSETS_DIR, "manifest.json"), JSON.stringify({ js: jsFile, css: cssFile }));
-
-  return { js: jsFile, css: cssFile };
+  const manifest: AssetManifest = {
+    docs: { js: docsJs, css: docsCss },
+    home: { js: homeJs, css: siteCss },
+    notFound: { css: siteCss },
+  };
+  await writeFile(join(ASSETS_DIR, "manifest.json"), JSON.stringify(manifest));
+  return manifest;
 }

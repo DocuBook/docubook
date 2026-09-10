@@ -39,7 +39,7 @@ import { initSentry, captureException } from "./sentry";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
 import { scanMdxFiles, resolveDocsIndexSource, DEFAULT_FAVICON } from "./utils";
-import type { BuildCache, BuildCacheMeta, CliArgs } from "./types";
+import type { AssetManifest, BuildCache, BuildCacheMeta, CliArgs } from "./types";
 import { isCacheEntry } from "./types";
 import {
   BUILD_CACHE_VERSION,
@@ -118,7 +118,11 @@ function shouldRebuild(path: string, mtime: number, cache: BuildCache): RebuildD
   return "no";
 }
 
-let assetManifest = { js: "client.js", css: "client.css" };
+let assetManifest: AssetManifest = {
+  docs: { js: "client.js", css: "docs.css" },
+  home: { js: "home-client.js", css: "site.css" },
+  notFound: { css: "site.css" },
+};
 
 /**
  * Reuse manifest.json on bundle cache hit; fall back to a full rebuild
@@ -127,15 +131,20 @@ let assetManifest = { js: "client.js", css: "client.css" };
 async function resolveAssetManifest(
   bundleHit: boolean,
   mdxSources: Record<string, string>
-): Promise<{ js: string; css: string }> {
+): Promise<AssetManifest> {
   if (!bundleHit) return buildClientBundle(mdxSources);
   try {
-    const manifest = JSON.parse(await readFile(join(ASSETS_DIR, "manifest.json"), "utf-8")) as {
-      js?: string;
-      css?: string;
-    };
-    if (typeof manifest.js === "string" && typeof manifest.css === "string") {
-      return { js: manifest.js, css: manifest.css };
+    const manifest = JSON.parse(
+      await readFile(join(ASSETS_DIR, "manifest.json"), "utf-8")
+    ) as Partial<AssetManifest>;
+    if (
+      typeof manifest.docs?.js === "string" &&
+      typeof manifest.docs.css === "string" &&
+      typeof manifest.home?.js === "string" &&
+      typeof manifest.home.css === "string" &&
+      typeof manifest.notFound?.css === "string"
+    ) {
+      return manifest as AssetManifest;
     }
   } catch {
     // corrupt/missing manifest — rebuild below
@@ -240,8 +249,8 @@ async function renderDocsPage(
     favicon,
     seo,
     csp,
-    css: assetManifest.css,
-    js: assetManifest.js,
+    css: assetManifest.docs.css,
+    js: assetManifest.docs.js,
     nonce,
     themeCss: inlineThemeCss,
     depth,
@@ -366,6 +375,9 @@ export async function runBuild(): Promise<void> {
 
   logger.bundleStart();
   let t = performance.now();
+  // Skip the JS bundle when compiled MDX sources are unchanged: the bundle
+  // is shared by every page, so its hash doubles as the content fingerprint.
+  // CSS still builds via its own content-keyed cache inside the hydrator.
   const bundleHash = hashMdxSources(mdxSources);
   const lastBundle = cache["__bundle__"];
   const bundleHit =
@@ -378,14 +390,10 @@ export async function runBuild(): Promise<void> {
   inlineThemeCss = computeInlineThemeCss();
 
   const lastManifest = cache["__assets__"];
-  const assetsChanged =
-    !isCacheEntry(lastManifest) || lastManifest.hash !== `${assetManifest.js}:${assetManifest.css}`;
+  const assetHash = JSON.stringify(assetManifest);
+  const assetsChanged = !isCacheEntry(lastManifest) || lastManifest.hash !== assetHash;
   if (assetsChanged) {
-    cache["__assets__"] = {
-      hash: `${assetManifest.js}:${assetManifest.css}`,
-      mtime: 0,
-      builtAt: Date.now(),
-    };
+    cache["__assets__"] = { hash: assetHash, mtime: 0, builtAt: Date.now() };
   }
   if (!bundleHit) {
     cache["__bundle__"] = { hash: bundleHash, mtime: 0, builtAt: Date.now() };
@@ -519,18 +527,14 @@ export async function runBuild(): Promise<void> {
     favicon: landingFavicon,
     seo: landingSeo,
     csp: cspHeader(landingNonce),
-    css: assetManifest.css,
-    js: assetManifest.js,
+    css: assetManifest.home.css,
+    js: assetManifest.home.js,
     nonce: landingNonce,
     themeCss: inlineThemeCss,
   });
   await writeFile(join(DIST_DIR, "index.html"), landingHtml);
 
-  const notFoundPage = React.createElement(
-    DocsLayout,
-    { repoUrl: docuConfig.repo?.url },
-    React.createElement(NotFoundPage)
-  );
+  const notFoundPage = React.createElement(NotFoundPage);
   const notFoundFavicon = docuConfig.meta?.favicon || DEFAULT_FAVICON;
   const notFoundNonce = generateNonce();
   const notFoundHtml = htmlShell({
@@ -540,8 +544,8 @@ export async function runBuild(): Promise<void> {
     favicon: notFoundFavicon,
     headExtra: ['<meta name="robots" content="noindex,follow">'],
     csp: cspHeader(notFoundNonce),
-    css: assetManifest.css,
-    js: assetManifest.js,
+    css: assetManifest.notFound.css,
+    js: assetManifest.notFound.js,
     nonce: notFoundNonce,
     themeCss: inlineThemeCss,
     // Served as the static-host fallback at ANY requested path — relative

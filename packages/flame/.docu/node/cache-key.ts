@@ -8,7 +8,7 @@ import { FRAMEWORK_ROOT, STYLES_DIR, resolveProjectFile } from "./paths";
  * (e.g. Bun.build barrel optimization, Tailwind CLI upgrade). Old caches
  * with a mismatched version are discarded on read (see build.ts readCache).
  */
-export const BUILD_CACHE_VERSION = 4;
+export const BUILD_CACHE_VERSION = 5;
 
 /** Toolchain fingerprint: Bun version on Bun, Deno version on Deno, Node elsewhere. */
 export function runtimeStamp(): string {
@@ -234,10 +234,14 @@ export function computeTailwindCacheKey(
   return h.digest("hex").slice(0, 16);
 }
 
-/** Read globals.css content ("" when missing). Shared by both hydrators. */
+/** Read a Tailwind entry plus relative imports for cache invalidation. */
+export function readStyleCss(file = "globals.css"): string {
+  return readCssWithImports(join(STYLES_DIR, file), new Set());
+}
+
+/** Backward-compatible alias for the docs stylesheet entry. */
 export function readGlobalsCss(): string {
-  const globalsPath = join(STYLES_DIR, "globals.css");
-  return existsSync(globalsPath) ? readFileSync(globalsPath, "utf-8") : "";
+  return readStyleCss();
 }
 
 /**

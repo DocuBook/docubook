@@ -8,7 +8,7 @@ import { DEFAULT_FAVICON, getContentType } from "./utils";
 import { DOCS_DIR, DIST_DIR, PROJECT_ROOT } from "./paths";
 import { BuildPluginBuilder } from "./plugin-builder";
 import type { PageContext } from "./plugin";
-import type { DocuConfig, TocItem } from "./types";
+import type { AssetEntry, AssetManifest, DocuConfig, TocItem } from "./types";
 import DocsPage from "../pages/docs/[[...slug]]";
 import NotFoundPage from "../pages/404";
 import IndexPage from "../pages/index";
@@ -18,7 +18,7 @@ import { htmlShell as createHtmlShell, hmrScript, errorHtml } from "./html.share
 
 export interface ServerState {
   docuConfig: DocuConfig;
-  assetManifest: { css: string; js: string };
+  assetManifest: AssetManifest;
   inlineThemeCss?: string;
   builder: BuildPluginBuilder | null;
 }
@@ -29,6 +29,7 @@ function createHtmlResponse(
   body: string,
   status: number,
   state: ServerState,
+  assets: AssetEntry,
   depth = 0
 ): Response {
   const nonce = generateNonce();
@@ -38,8 +39,8 @@ function createHtmlResponse(
     description,
     body,
     favicon,
-    css: state.assetManifest.css,
-    js: state.assetManifest.js,
+    css: assets.css,
+    js: assets.js,
     nonce,
     extraScripts: hmrScript(nonce),
     themeCss: state.inlineThemeCss,
@@ -193,8 +194,8 @@ async function renderDocsServerPage(
       description,
       body,
       favicon,
-      css: state.assetManifest.css,
-      js: state.assetManifest.js,
+      css: state.assetManifest.docs.css,
+      js: state.assetManifest.docs.js,
       nonce,
       extraScripts: hmrScript(nonce),
       themeCss: state.inlineThemeCss,
@@ -207,7 +208,7 @@ async function renderDocsServerPage(
     return htmlResponse(html, nonce, 200, true);
   }
 
-  return createHtmlResponse(title, description, body, 200, state, depth);
+  return createHtmlResponse(title, description, body, 200, state, state.assetManifest.docs, depth);
 }
 
 function renderPage(
@@ -219,13 +220,16 @@ function renderPage(
   props: Record<string, unknown> = {},
   depth = 0
 ): Response {
-  const page = React.createElement(
-    DocsLayout,
-    { repoUrl: state.docuConfig.repo?.url, pathname: "/docs" },
-    React.createElement(Component, props)
+  const body = renderToString(React.createElement(Component, props));
+  return createHtmlResponse(
+    title,
+    description,
+    body,
+    status,
+    state,
+    state.assetManifest.notFound,
+    depth
   );
-  const body = renderToString(page);
-  return createHtmlResponse(title, description, body, status, state, depth);
 }
 
 export async function handleDocsIndex(state: ServerState): Promise<Response> {
@@ -250,7 +254,8 @@ export function handleIndex(state: ServerState): Response {
     state.docuConfig.meta?.description || "",
     body,
     200,
-    state
+    state,
+    state.assetManifest.home
   );
 }
 

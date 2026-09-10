@@ -1,14 +1,24 @@
-import { join } from "node:path";
-import { mkdir, unlink, rename } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { basename, join } from "node:path";
+import { mkdir, rename, unlink } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { resolveTheme, generateThemeCss, presetRegistry } from "@docubook/themes-colors";
-import { ASSETS_DIR, cleanOldBundles, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
-import { atomicWriteFile, computeTailwindCacheKey, readGlobalsCss } from "./cache-key";
+import { ASSETS_DIR, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
+import { atomicWriteFile, computeTailwindCacheKey, readStyleCss } from "./cache-key";
 import { resolveRoutes } from "./fs-scanner";
-import type { DocuRoute } from "./types";
+import type { AssetManifest, DocuRoute } from "./types";
 import type { ThemeConfig } from "@docubook/themes-colors";
 
 const themeRegistry = presetRegistry;
+
+export function createMdxModuleEntries(mdxSources: Record<string, string>) {
+  return Object.keys(mdxSources)
+    .sort()
+    .map((slug) => ({
+      slug,
+      id: `docubook-mdx-page-${createHash("sha256").update(slug).digest("hex").slice(0, 16)}`,
+    }));
+}
 
 /**
  * Read the effective theme config with this priority:
@@ -23,9 +33,7 @@ export function getThemeConfig(): ThemeConfig | undefined {
   return config.themes?.colors;
 }
 
-/**
- * Append theme CSS to compiled Tailwind output based on theme config.
- */
+/** Append theme CSS to compiled Tailwind output based on theme config. */
 export function buildThemeCss(baseCss: string, themeConfig: unknown): string {
   try {
     const resolved = resolveTheme(themeConfig as ThemeConfig | undefined | null, themeRegistry);
@@ -38,10 +46,7 @@ export function buildThemeCss(baseCss: string, themeConfig: unknown): string {
   }
 }
 
-/**
- * Compute inline theme CSS for FOUC prevention.
- * Returns undefined if no theme is configured or on error.
- */
+/** Compute inline theme CSS for FOUC prevention. */
 export function computeInlineThemeCss(): string | undefined {
   try {
     const themeColors = getThemeConfig();
@@ -57,41 +62,35 @@ export function computeInlineThemeCss(): string | undefined {
   return undefined;
 }
 
-/** Compute Tailwind cache key from globals.css + theme + config + toolchain. */
-function twCacheKey(): string {
-  const globals = readGlobalsCss();
-  let themeSuffix = "";
+function themeCacheSuffix(): string {
   try {
     const themeColors = getThemeConfig();
-    if (themeColors) themeSuffix = JSON.stringify(themeColors);
+    return themeColors ? JSON.stringify(themeColors) : "";
   } catch {
-    // theme config unavailable — proceed without
+    return "";
   }
-  return computeTailwindCacheKey(globals, themeSuffix);
 }
 
-/** Run Tailwind CLI, caching by content hash. */
-async function buildTailwindCss(key: string): Promise<{ file: string; content: string }> {
-  const cachedFile = `client-${key}.css`;
+function tailwindCacheKey(styleFile: string): string {
+  return computeTailwindCacheKey(readStyleCss(styleFile), `${styleFile}\0${themeCacheSuffix()}`);
+}
+
+/** Run Tailwind CLI, caching each route stylesheet by content hash. */
+async function buildTailwindCss(
+  name: string,
+  styleFile: string
+): Promise<{ file: string; content: string }> {
+  const key = tailwindCacheKey(styleFile);
+  const cachedFile = `${name}-${key}.css`;
   const cachedPath = join(ASSETS_DIR, cachedFile);
 
   if (existsSync(cachedPath)) {
-    const content = await Bun.file(cachedPath).text();
-    return { file: cachedFile, content };
+    return { file: cachedFile, content: await Bun.file(cachedPath).text() };
   }
 
-  const tmpCss = join(ASSETS_DIR, `_tmp-${key}.css`);
+  const tmpCss = join(ASSETS_DIR, `_tmp-${name}-${key}.css`);
   const proc = Bun.spawn(
-    [
-      "bun",
-      "x",
-      "@tailwindcss/cli",
-      "-i",
-      join(STYLES_DIR, "globals.css"),
-      "-o",
-      tmpCss,
-      "--minify",
-    ],
+    ["bun", "x", "@tailwindcss/cli", "-i", join(STYLES_DIR, styleFile), "-o", tmpCss, "--minify"],
     { stdout: "ignore", stderr: "pipe" }
   );
   await proc.exited;
@@ -112,31 +111,32 @@ async function buildTailwindCss(key: string): Promise<{ file: string; content: s
     );
   }
 
-  const cssFile = `client-${key}.css`;
-  const outPath = join(ASSETS_DIR, cssFile);
-  // Atomic tmp+rename with pid suffix: parallel builds never clobber each
-  // other, and a crash cannot leave a half-written CSS file behind.
-  if (!existsSync(outPath)) {
+  if (!existsSync(cachedPath)) {
     const { writeFile } = await import("node:fs/promises");
-    await atomicWriteFile(writeFile, rename, unlink, outPath, cssContent);
+    await atomicWriteFile(writeFile, rename, unlink, cachedPath, cssContent);
   }
 
-  return { file: cssFile, content: cssContent };
+  return { file: cachedFile, content: cssContent };
 }
 
 export async function buildClientBundle(
   /** slug → compiled MDX ESM module source (program format) for static hydration. */
   mdxSources: Record<string, string> = {}
-): Promise<{ js: string; css: string }> {
+): Promise<AssetManifest> {
   await mkdir(ASSETS_DIR, { recursive: true });
-  const twKey = twCacheKey();
-  await cleanOldBundles(new Set([`client-${twKey}.css`]));
 
   const nodeEnv = process.env.NODE_ENV || "development";
+  const mdxEntries = createMdxModuleEntries(mdxSources);
+  const mdxEntriesById = new Map(mdxEntries.map((entry) => [entry.id, entry]));
   const result = await Bun.build({
-    entrypoints: [join(LIB_DIR, "client.ts")],
+    entrypoints: [join(LIB_DIR, "client.ts"), join(LIB_DIR, "home-client.ts")],
     outdir: ASSETS_DIR,
-    naming: "client-[hash].[ext]",
+    splitting: true,
+    naming: {
+      entry: "[name]-[hash].[ext]",
+      chunk: "chunks/[name]-[hash].[ext]",
+      asset: "assets/[name]-[hash].[ext]",
+    },
     target: "browser",
     minify: nodeEnv === "production",
     define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
@@ -144,8 +144,6 @@ export async function buildClientBundle(
       {
         name: "docu-config",
         setup(build) {
-          // Components import as "../node/client-routes" (no .ts extension),
-          // so filter matches the path tail without requiring the extension.
           build.onResolve({ filter: /client-routes$/ }, (args) => ({
             path: args.path,
             namespace: "client-routes",
@@ -169,21 +167,18 @@ export async function buildClientBundle(
         },
       },
       {
-        // Serves per-page compiled MDX (program format) as real modules so
-        // the client hydrates the content island without `new Function`.
-        // client.ts imports `{ mdxModules } from "./mdx-manifest"`.
         name: "mdx-hydrate",
         setup(build) {
-          build.onResolve({ filter: /^mdx-module:/ }, (args) => ({
+          build.onResolve({ filter: /^docubook-mdx-page-[a-f0-9]{16}$/ }, (args) => ({
             path: args.path,
             namespace: "mdx-module",
           }));
           build.onLoad({ filter: /.*/, namespace: "mdx-module" }, (args) => {
-            const slug = args.path.slice("mdx-module:".length);
-            const contents = mdxSources[slug];
+            const entry = mdxEntriesById.get(args.path);
+            const contents = entry == null ? undefined : mdxSources[entry.slug];
             if (contents == null) {
               return {
-                errors: [{ text: `unknown mdx module: ${slug}` }],
+                errors: [{ text: `unknown mdx module: ${args.path}` }],
                 contents: "",
                 loader: "js",
               };
@@ -195,20 +190,11 @@ export async function buildClientBundle(
             namespace: "mdx-manifest",
           }));
           build.onLoad({ filter: /.*/, namespace: "mdx-manifest" }, () => {
-            // Sort keys: the prePass fills mdxSources via Promise.all, so
-            // insertion order = resolution order (non-deterministic across
-            // processes). Stable key order keeps the bundle hash stable so
-            // the build cache (`assetsChanged`) actually hits.
-            const slugs = Object.keys(mdxSources).sort();
-            const imports = slugs
-              .map((slug, i) => {
-                const key = slug.replace(/["\\]/g, "");
-                return `import * as _mdx${i} from "mdx-module:${key}";`;
-              })
-              .join("\n");
-            const map = slugs.map((slug, i) => `${JSON.stringify(slug)}: _mdx${i}`).join(", ");
+            const map = mdxEntries
+              .map(({ slug, id }) => `${JSON.stringify(slug)}: () => import(${JSON.stringify(id)})`)
+              .join(", ");
             return {
-              contents: `${imports}\nexport const mdxModules = { ${map} };\n`,
+              contents: `export const mdxModules = { ${map} };\n`,
               loader: "js",
             };
           });
@@ -222,18 +208,25 @@ export async function buildClientBundle(
     throw new Error("Client bundle failed");
   }
 
-  if (!result.outputs[0]) {
-    throw new Error("Client bundle produced no output files");
+  const entryFiles = result.outputs
+    .filter((output) => output.kind === "entry-point")
+    .map((output) => basename(output.path));
+  const docsJs = entryFiles.find((file) => file.startsWith("client-"));
+  const homeJs = entryFiles.find((file) => file.startsWith("home-client-"));
+  if (!docsJs || !homeJs) {
+    throw new Error("Client bundle produced incomplete entry-point outputs");
   }
-  const entry = result.outputs.find((o) => o.kind === "entry-point");
-  if (!entry) {
-    throw new Error("Client bundle produced no entry-point output");
-  }
-  const jsFile = entry.path.split("/").pop()!;
 
-  const { file: cssFile } = await buildTailwindCss(twKey);
+  const [{ file: docsCss }, { file: siteCss }] = await Promise.all([
+    buildTailwindCss("docs", "globals.css"),
+    buildTailwindCss("site", "site.css"),
+  ]);
 
-  await Bun.write(join(ASSETS_DIR, "manifest.json"), JSON.stringify({ js: jsFile, css: cssFile }));
-
-  return { js: jsFile, css: cssFile };
+  const manifest: AssetManifest = {
+    docs: { js: docsJs, css: docsCss },
+    home: { js: homeJs, css: siteCss },
+    notFound: { css: siteCss },
+  };
+  await Bun.write(join(ASSETS_DIR, "manifest.json"), JSON.stringify(manifest));
+  return manifest;
 }

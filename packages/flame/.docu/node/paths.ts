@@ -1,6 +1,6 @@
 import { resolve, join } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
-import { readdir, rm, unlink } from "node:fs/promises";
+import { readdir, unlink } from "node:fs/promises";
 import type { DocuConfig } from "./types";
 
 /**
@@ -64,21 +64,13 @@ export async function cleanOldBundles(preserve?: Set<string>) {
     const files = await readdir(ASSETS_DIR);
     for (const file of files) {
       if (preserve?.has(file)) continue;
-      if (file.startsWith("client.") || file.startsWith("client-")) {
+      if (/^(client|home-client|docs|site)[.-]/.test(file)) {
         await unlink(join(ASSETS_DIR, file));
       }
     }
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
       console.error("Failed to clean old bundles:", (err as Error).message);
-    }
-  }
-  try {
-    await rm(join(ASSETS_DIR, "chunks"), { recursive: true, force: true });
-  } catch (err) {
-    // chunks dir may not exist, or permission error — log to avoid silent failure
-    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
-      console.warn("[flame] Failed to clean chunks dir:", (err as Error).message);
     }
   }
 }
