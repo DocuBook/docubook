@@ -8,14 +8,10 @@
  */
 
 import { mkdir } from "node:fs/promises";
-import { existsSync, readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
-import { DIST_DIR, PROJECT_ROOT, FRAMEWORK_ROOT } from "./paths";
-import { HEADERS_FILE, NGINX_CONF, DOCKERIGNORE } from "./deploy.shared";
-
-const FLAME_PKG = JSON.parse(readFileSync(resolve(FRAMEWORK_ROOT, "package.json"), "utf-8"));
-const FLAME_VERSION = FLAME_PKG.version;
-const FLAME_MAJOR = FLAME_VERSION.split(".")[0];
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { DIST_DIR, PROJECT_ROOT } from "./paths";
+import { DOCKERFILE, HEADERS_FILE, NGINX_CONF, DOCKERIGNORE } from "./deploy.shared";
 
 export { HEADERS_FILE, NGINX_CONF, DOCKERIGNORE };
 
@@ -49,18 +45,7 @@ async function runBuild() {
   }
 }
 
-export const DOCKERFILE_BUN = `FROM ghcr.io/docubook/flame:${FLAME_MAJOR} AS builder
-ENV NODE_ENV=production
-WORKDIR /app
-COPY . .
-RUN flame build
-
-FROM nginx:alpine
-COPY --from=builder /app/.docu/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-`;
+export const DOCKERFILE_BUN = DOCKERFILE;
 
 async function writeDockerFiles() {
   const dockerDir = PROJECT_ROOT;

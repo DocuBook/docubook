@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createMdxModuleEntries } from "../node/hydrate";
+import { viteChunkFileName } from "../node/hydrate.node";
 
 describe("createMdxModuleEntries", () => {
   it("maps sorted slugs to stable URL-safe virtual module IDs", () => {
@@ -24,5 +25,12 @@ describe("createMdxModuleEntries", () => {
         "getting-started/introduction": "changed",
       }).find(({ slug }) => slug === "getting-started/introduction")?.id
     ).toBe(entries[1]?.id);
+  });
+
+  it("normalizes Vite virtual MDX chunks to Bun-compatible names", () => {
+    expect(viteChunkFileName({ name: "_docubook-mdx-page-41f718ecb92c9fb0" })).toBe(
+      "chunks/docubook-mdx-page-41f718ecb92c9fb0-[hash].js"
+    );
+    expect(viteChunkFileName({ name: "mermaid" })).toBe("chunks/mermaid-[hash].js");
   });
 });

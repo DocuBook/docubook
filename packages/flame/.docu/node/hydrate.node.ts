@@ -33,6 +33,11 @@ function extractConfigIcons(config: DocuConfig): string[] {
 
 export { buildThemeCss, computeInlineThemeCss, getThemeConfig } from "./hydrate";
 
+export function viteChunkFileName(chunk: { name: string }): string {
+  const name = chunk.name.replace(/^_docubook-mdx-page-/, "docubook-mdx-page-");
+  return `chunks/${name}-[hash].js`;
+}
+
 const execFileAsync = promisify(execFile);
 
 function resolveTailwindBin(): string {
@@ -255,7 +260,7 @@ export async function buildClientBundle(
         output: {
           format: "es",
           entryFileNames: "[name]-[hash].js",
-          chunkFileNames: "chunks/[name]-[hash].js",
+          chunkFileNames: viteChunkFileName,
           assetFileNames: "assets/[name]-[hash][extname]",
         },
       },

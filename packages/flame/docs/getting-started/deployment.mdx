@@ -191,11 +191,11 @@ flame deploy --docker
 ```
 
 Generates:
-- `Dockerfile` — multi-stage build using `ghcr.io/docubook/flame:MAJOR`
-- `nginx.conf` — security headers, cache tiers, `try_files $uri $uri.html`
+- `Dockerfile` — multi-stage build pinned to the installed `@docubook/flame` version
+- `nginx.conf` — security headers, cache tiers, clean URLs, and the generated `404.html`
 - `.dockerignore` — optimized for build speed
 
-The generated Dockerfile uses a **major version tag** (`:1`, `:2`, etc.) which means patch and minor updates are automatic on rebuild. The final output is a nginx container serving flat `.html` files with clean URLs.
+The exact builder image tag keeps local CLI output and Docker builds on the same asset-manifest contract. Upgrade `@docubook/flame`, then rerun `flame deploy --docker` when you want a newer builder. The final output is a nginx container serving flat `.html` files with clean URLs.
 
 ### Build locally
 
