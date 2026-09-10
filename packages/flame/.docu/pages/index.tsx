@@ -1,7 +1,7 @@
 import { loadDocuConfig } from "../node/paths";
 import { docsHtmlHref, isExternalUrl } from "../node/utils";
 import { Hero, Features } from "../components/home";
-import { NativeThemeToggle } from "../components/Theme";
+import { ThemeToggle } from "../components/Theme";
 import type { HomeFeature } from "../node/types";
 
 const docuConfig = loadDocuConfig();
@@ -63,7 +63,9 @@ export default function IndexPage() {
   return (
     <div className="bg-base-100 relative isolate min-h-screen overflow-hidden">
       <div className="absolute top-4 right-4 z-10">
-        <NativeThemeToggle />
+        <div id="theme-toggle-island">
+          <ThemeToggle />
+        </div>
       </div>
 
       {/* Background gradient blobs */}
