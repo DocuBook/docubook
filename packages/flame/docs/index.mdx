@@ -26,10 +26,12 @@ description: Documentation for @docubook/flame — a build-time bridge between t
 
 ::warning{title="Performance: v1 vs v2"}
 
-> A same-docs benchmark: the full Flame documentation (27 `.mdx`, 308 KB) built
-> by both versions on Node 22, `NODE_ENV=production`, cold cache. Both are
-> installed from the npm registry (`1.7.2` / `2.0.0-alpha.2`) and measured
-> back-to-back on the same machine — medians of 3 cold builds each.
+> Benchmark setup: the same 27 `.mdx` files (106 KB), npm releases `v1.7.2` and
+> `v2.0.0`, `NODE_ENV=production`, three cold builds on the same machine. v1 ran
+> on Node 22.23.2; v2 ran on Bun 1.4.2. Because v1's mdx-remote interprets
+> directive attributes (`{...}`) as JSX expressions, 19 files were converted to
+> native JSX using the [Formatting](/docs/getting-started/formatting) mapping;
+> v2 built the source unchanged.
 
 ```mermaid
 flowchart LR
@@ -37,62 +39,52 @@ flowchart LR
     classDef v2 fill:#ecfdf5,stroke:#34d399,stroke-width:1px,color:#064e3b
     classDef note fill:#fef2f2,stroke:#f87171,stroke-width:1px,color:#7f1d1d
 
-    RAW["same content · 27 mdx / 308 KB"] --> V1
+    RAW["same content · 27 mdx / 106 KB"] --> V1
     RAW --> V2
 
-    subgraph V1["Flame v1 · 1.7.2"]
+    subgraph V1["Flame v1.7.2"]
         direction TB
         C1["JSX conversion"]
         B1["mdx-remote compile"]
         H1["new Function hydration"]
-        D1["dist 7.0 MB"]
+        D1["dist 7.4 MB"]
         C1 --> B1 --> H1 --> D1
     end
-    subgraph V2["Flame v2 · 2.0.0-alpha.2"]
+    subgraph V2["Flame v2.0.0"]
         direction TB
         B2["common markdown + directives"]
         H2["static ESM hydration"]
-        D2["dist 6.7 MB"]
+        D2["dist 7.8 MB"]
         B2 --> H2 --> D2
     end
 
-    T1["pages: 1732 ms"] -.-> B1
-    T2["pages: 1206 ms"] -.-> B2
+    T1["client bundle: 5092 ms"] -.-> B1
+    T2["client bundle: 3162 ms"] -.-> B2
 
     class E1 note
     class B1,H1,D1 v1
     class B2,H2,D2 v2
 ```
 
-> The same raw content forks at the entry: **v1 cannot parse v2's directive
-> syntax** — 19 of 26 files carry directives and fail with `Could not parse
-> expression with acorn`, because mdx-remote reads `{...}` attribute blocks
-> as JSX. Those files were converted to v1-native JSX (the migration table in
-> [Formatting](/docs/getting-started/formatting)), then both versions build
-> all 26 pages. What differs is the measured compile phase and the output.
 
 ```mermaid
 xychart-beta
     title "Cold build · MDX page compile (ms) — lower is better"
-    x-axis ["v1 1.7.2", "v2 2.0.0-alpha.2"]
-    y-axis "milliseconds" 0 --> 2000
-    bar [1732, 1206]
+    x-axis ["v1.7.2", "v2.0.0"]
+    y-axis "milliseconds" 0 --> 4000
+    bar [3466, 1940]
 ```
 
-| Metric | v1 1.7.2 | v2 2.0.0-alpha.2 | Δ |
-| ------ | -------- | ----------------- | - |
-| MDX page compile | 1732 ms | 1206 ms | **−30%** |
-| Client bundle | 2933 ms | 2560 ms | **−13%** |
-| Total wall | 5.26 s | 6.25 s | +0.99 s |
-| dist size | 7.0 MB | 6.7 MB | **−4%** |
-| client JS | 4.3 MB | 4.8 MB | +12% |
-| Pages built | 26/26 (after conversion) | 26/26 (as-is) | — |
+> The table reports medians from three cold builds. Per-run wall times were
+> **12 / 10 / 12 s** for v1 and **13.71 / 8.00 / 7.67 s** for v2. Because the
+> benchmarks use different runtimes (Node for v1, Bun for v2), the deltas are
+> directional rather than a controlled runtime comparison.
 
-> Reading the numbers: v2 compiles pages **30% faster**, bundles **13%
-> faster**, and ships a **4% smaller dist** — while the raw client JS is 12%
-> larger (eval-free ESM modules + daisyUI runtime). The `+0.99 s` wall is the
-> price of v2's hydration model — a prePass that compiles each page to a
-> static ESM module for eval-free hydration, which v1 does not have (v1
-> re-uses the SSR `compiledSource` via `new Function`). That prePass is the
-> double-parse targeted by the build cache fix: with warm cache, a no-change
-> build skips it entirely.
+| Metric | v1.7.2 | v2.0.0 | Δ |
+| ------ | -------- | ----------------- | - |
+| MDX page compile | 3466 ms | 1940 ms | **−44%** |
+| Client bundle | 5092 ms | 3162 ms | **−38%** |
+| dist size | 7.4 MB | 7.8 MB | **+5%** |
+| client JS | 4.6 MB | 5.7 MB | **+24%** |
+| Pages built | 26/26 (after conversion) | 26/26 (as-is) | — |
+| Total wall | ≈12 s | 8.00 s | **−4 s** |
