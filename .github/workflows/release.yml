@@ -7,6 +7,7 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
 
@@ -61,5 +62,6 @@ jobs:
           git tag -f "$TAG"
           git push origin "$TAG"
           gh release create "$TAG" --title "$TAG" --generate-notes
+          gh workflow run docker-builder.yml --ref "$TAG" --field "version=$VERSION"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
