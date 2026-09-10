@@ -29,6 +29,7 @@ import {
   CACHE_FILE,
   DOCS_ASSETS_DIR,
   PROJECT_ROOT,
+  PAGES_DIR,
   loadDocuConfig,
 } from "./paths";
 import { htmlShell } from "./html.shared";
@@ -232,7 +233,15 @@ async function renderDocsPage(
 
   const body = renderToString(page);
 
-  const ctx: PageContext = { slug, filePath, frontmatter, content, config: docuConfig };
+  const ctx: PageContext = {
+    pageType: "docs",
+    assets: assetManifest.docs,
+    slug,
+    filePath,
+    frontmatter,
+    content,
+    config: docuConfig,
+  };
   const headExtra = builder?.collectHead(ctx);
   const bodyExtra = builder?.collectBody(ctx);
 
@@ -249,8 +258,8 @@ async function renderDocsPage(
     favicon,
     seo,
     csp,
-    css: assetManifest.docs.css,
-    js: assetManifest.docs.js,
+    css: ctx.assets.css,
+    js: ctx.assets.js,
     nonce,
     themeCss: inlineThemeCss,
     depth,
@@ -416,7 +425,7 @@ export async function runBuild(): Promise<void> {
   for (const file of mdxFiles) {
     const rebuildDecision = shouldRebuild(file.path, file.mtime, cache);
 
-    if (rebuildDecision === "no") {
+    if (rebuildDecision === "no" && !builder) {
       const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
       if (existsSync(outputPath) && !assetsChanged) {
         skipped++;
@@ -434,7 +443,7 @@ export async function runBuild(): Promise<void> {
       }
     }
 
-    if (rebuildDecision === "hash_check") {
+    if (rebuildDecision === "hash_check" && !builder) {
       const contentHash = hashContent(rawMdx);
       const cached = cache[file.path];
       if (isCacheEntry(cached) && cached.hash === contentHash) {
@@ -520,38 +529,62 @@ export async function runBuild(): Promise<void> {
     ""
   );
   const landingNonce = generateNonce();
-  const landingHtml = htmlShell({
+  const landingContext: PageContext = {
+    pageType: "home",
+    assets: assetManifest.home,
+    slug: "",
+    filePath: join(PAGES_DIR, "index.tsx"),
+    frontmatter: { ...docuConfig.meta } as unknown as Record<string, unknown>,
+    config: docuConfig,
+  };
+  let landingHtml = htmlShell({
     title: docuConfig.meta?.title || "DocuBook",
     description: docuConfig.meta?.description || "",
     body: renderToString(landingPage),
     favicon: landingFavicon,
     seo: landingSeo,
     csp: cspHeader(landingNonce),
-    css: assetManifest.home.css,
-    js: assetManifest.home.js,
+    css: landingContext.assets.css,
+    js: landingContext.assets.js,
     nonce: landingNonce,
     themeCss: inlineThemeCss,
+    headExtra: builder?.collectHead(landingContext),
+    bodyExtra: builder?.collectBody(landingContext),
   });
+  if (builder) landingHtml = await builder.runTransformHtmlChain(landingHtml, landingContext);
   await writeFile(join(DIST_DIR, "index.html"), landingHtml);
 
   const notFoundPage = React.createElement(NotFoundPage);
   const notFoundFavicon = docuConfig.meta?.favicon || DEFAULT_FAVICON;
   const notFoundNonce = generateNonce();
-  const notFoundHtml = htmlShell({
+  const notFoundContext: PageContext = {
+    pageType: "notFound",
+    assets: assetManifest.notFound,
+    slug: "404",
+    filePath: join(PAGES_DIR, "404.tsx"),
+    frontmatter: {},
+    config: docuConfig,
+  };
+  let notFoundHtml = htmlShell({
     title: "404 - Not Found",
     description: "",
     body: renderToString(notFoundPage),
     favicon: notFoundFavicon,
-    headExtra: ['<meta name="robots" content="noindex,follow">'],
+    headExtra: [
+      '<meta name="robots" content="noindex,follow">',
+      ...(builder?.collectHead(notFoundContext) ?? []),
+    ],
+    bodyExtra: builder?.collectBody(notFoundContext),
     csp: cspHeader(notFoundNonce),
-    css: assetManifest.notFound.css,
-    js: assetManifest.notFound.js,
+    css: notFoundContext.assets.css,
+    js: notFoundContext.assets.js,
     nonce: notFoundNonce,
     themeCss: inlineThemeCss,
     // Served as the static-host fallback at ANY requested path — relative
     // depth can never be right there, so use root-absolute asset URLs.
     absoluteAssets: true,
   });
+  if (builder) notFoundHtml = await builder.runTransformHtmlChain(notFoundHtml, notFoundContext);
   await writeFile(join(DIST_DIR, "404.html"), notFoundHtml);
 
   logger.spinner.stop(
@@ -565,7 +598,7 @@ export async function runBuild(): Promise<void> {
       filePath: join(DOCS_DIR, f.path),
       outputPath: join(DIST_DIR, "docs", `${f.path}.html`),
     }));
-    await builder.runOnEnd(pages);
+    await builder.runOnEnd(pages, { assetManifest, outDir: DIST_DIR });
   }
 
   logger.indexStart();

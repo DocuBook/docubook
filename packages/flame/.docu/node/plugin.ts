@@ -1,5 +1,5 @@
 import type { Pluggable } from "unified";
-import type { DocuConfig } from "./types";
+import type { AssetEntry, AssetManifest, DocuConfig } from "./types";
 
 // ─── Config Types ───────────────────────────────────────
 
@@ -18,14 +18,20 @@ export type PluginEntry = string | [string, Record<string, unknown>];
 /**
  * Context passed to content-transform hooks for a single page.
  */
+export type PageType = keyof AssetManifest;
+
 export interface PageContext {
+  /** Page family used to select the page-specific asset bundle. */
+  pageType: PageType;
+  /** Hashed CSS and optional JavaScript entry used by this page. */
+  assets: Readonly<AssetEntry>;
   /** Relative slug path: "getting-started/introduction" */
   slug: string;
-  /** Absolute file path on disk */
+  /** Absolute or project-relative source file path on disk. */
   filePath: string;
-  /** Parsed frontmatter metadata */
+  /** Parsed frontmatter metadata. Generated pages receive site metadata or an empty object. */
   frontmatter: Record<string, unknown>;
-  /** Raw MDX/MD content (only available in `transformFrontmatter` when enabled) */
+  /** Raw MDX/MD content. Only docs pages provide content. */
   content?: string;
   /** Resolved site configuration */
   config: DocuConfig;
@@ -53,9 +59,21 @@ export interface DevServerContext {
   port: number;
   /** Dev server hostname */
   hostname: string;
+  /** Current page-specific asset manifest, refreshed after HMR rebuilds. */
+  assetManifest: Readonly<AssetManifest>;
 }
 
-export type { DocuConfig };
+/**
+ * Final build metadata passed to `onEnd` after all HTML files are written.
+ */
+export interface BuildEndContext {
+  /** Page-specific hashed assets emitted under `outDir/assets`. */
+  assetManifest: Readonly<AssetManifest>;
+  /** Absolute static output directory. */
+  outDir: string;
+}
+
+export type { AssetEntry, AssetManifest, DocuConfig };
 
 // ─── PluginBuilder Interface ────────────────────────────
 
@@ -95,19 +113,25 @@ export interface PluginBuilder {
    * Register a callback to run once after all pages are built.
    * Use for: generating sitemaps, RSS feeds, manifests, post-build reports.
    *
-   * @param callback - Receives config and aggregated page metadata. May return a Promise.
+   * @param callback - Receives config, aggregated docs metadata, and final build metadata.
    *
    * @example
-   * build.onEnd(async (config, pages) => {
+   * build.onEnd(async (config, pages, { outDir }) => {
    *   const xml = generateSitemap(pages, config.meta.baseURL);
-   *   const out = join(DIST_DIR, "sitemap.xml");
+   *   const out = join(outDir, "sitemap.xml");
    *   // Bun.write on Bun for speed, writeFile on Node/Deno
    *   await (typeof Bun !== "undefined"
    *     ? Bun.write(out, xml)
    *     : writeFile(out, xml));
    * });
    */
-  onEnd(callback: (config: DocuConfig, pages: PageMeta[]) => void | Promise<void>): void;
+  onEnd(
+    callback: (
+      config: DocuConfig,
+      pages: PageMeta[],
+      context: BuildEndContext
+    ) => void | Promise<void>
+  ): void;
 
   // ─── Content Transform ─────────────────────────────────
 

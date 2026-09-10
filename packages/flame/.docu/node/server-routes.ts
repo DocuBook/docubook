@@ -5,9 +5,9 @@ import React, { type ReactNode } from "react";
 import { renderToString } from "react-dom/server";
 import { compileMdx, frontmatterField } from "./mdx";
 import { DEFAULT_FAVICON, getContentType } from "./utils";
-import { DOCS_DIR, DIST_DIR, PROJECT_ROOT } from "./paths";
+import { DOCS_DIR, DIST_DIR, PAGES_DIR, PROJECT_ROOT } from "./paths";
 import { BuildPluginBuilder } from "./plugin-builder";
-import type { PageContext } from "./plugin";
+import type { PageContext, PageType } from "./plugin";
 import type { AssetEntry, AssetManifest, DocuConfig, TocItem } from "./types";
 import DocsPage from "../pages/docs/[[...slug]]";
 import NotFoundPage from "../pages/404";
@@ -23,18 +23,26 @@ export interface ServerState {
   builder: BuildPluginBuilder | null;
 }
 
-function createHtmlResponse(
+async function createHtmlResponse(
   title: string,
   description: string,
   body: string,
   status: number,
   state: ServerState,
-  assets: AssetEntry,
+  pageType: PageType,
+  page: Omit<PageContext, "pageType" | "assets" | "config">,
   depth = 0
-): Response {
+): Promise<Response> {
   const nonce = generateNonce();
   const favicon = state.docuConfig.meta?.favicon || DEFAULT_FAVICON;
-  const html = createHtmlShell({
+  const assets: AssetEntry = state.assetManifest[pageType];
+  const context: PageContext = {
+    ...page,
+    pageType,
+    assets,
+    config: state.docuConfig,
+  };
+  let html = createHtmlShell({
     title,
     description,
     body,
@@ -44,12 +52,15 @@ function createHtmlResponse(
     nonce,
     extraScripts: hmrScript(nonce),
     themeCss: state.inlineThemeCss,
+    headExtra: state.builder?.collectHead(context),
+    bodyExtra: state.builder?.collectBody(context),
     depth,
     // 404 pages can be requested at arbitrary depths (e.g. a noLink section
     // path typed in the address bar) — relative asset paths would resolve
     // against the wrong directory and break CSS/JS.
     absoluteAssets: status === 404,
   });
+  if (state.builder) html = await state.builder.runTransformHtmlChain(html, context);
   /** Dev-only: serves compiledSource → MDXRemote eval path (no CSP in production). */
   return htmlResponse(html, nonce, status, true);
 }
@@ -128,7 +139,7 @@ async function getDocsForSlug(
   let frontmatter = result.frontmatter as Record<string, unknown>;
   if (state.builder) {
     frontmatter = await state.builder.runTransformFrontmatterChain(frontmatter, {
-      slug: slug || "/",
+      slug,
       filePath: relPath,
       content,
     });
@@ -177,41 +188,24 @@ async function renderDocsServerPage(
   // Match build.ts depth calculation: slug.split("/").length, fallback to 1 for empty
   const depth = slug.length || 1;
 
-  if (state.builder) {
-    const ctx: PageContext = {
-      slug: slug.join("/") || "/",
+  return createHtmlResponse(
+    title,
+    description,
+    body,
+    200,
+    state,
+    "docs",
+    {
+      slug: slug.join("/"),
       filePath: doc.filePath,
       frontmatter: doc.frontmatter,
       content: doc.resolvedContent,
-      config: state.docuConfig,
-    };
-    const headExtra = state.builder.collectHead(ctx);
-    const bodyExtra = state.builder.collectBody(ctx);
-    const nonce = generateNonce();
-    const favicon = state.docuConfig.meta?.favicon || DEFAULT_FAVICON;
-    let html = createHtmlShell({
-      title,
-      description,
-      body,
-      favicon,
-      css: state.assetManifest.docs.css,
-      js: state.assetManifest.docs.js,
-      nonce,
-      extraScripts: hmrScript(nonce),
-      themeCss: state.inlineThemeCss,
-      headExtra,
-      bodyExtra,
-      depth,
-    });
-    html = await state.builder.runTransformHtmlChain(html, ctx);
-    /** Dev-only: serves compiledSource → MDXRemote eval path (no CSP in production). */
-    return htmlResponse(html, nonce, 200, true);
-  }
-
-  return createHtmlResponse(title, description, body, 200, state, state.assetManifest.docs, depth);
+    },
+    depth
+  );
 }
 
-function renderPage(
+async function renderPage(
   Component: React.ComponentType<Record<string, unknown>>,
   title: string,
   description: string,
@@ -219,7 +213,7 @@ function renderPage(
   state: ServerState,
   props: Record<string, unknown> = {},
   depth = 0
-): Response {
+): Promise<Response> {
   const body = renderToString(React.createElement(Component, props));
   return createHtmlResponse(
     title,
@@ -227,7 +221,12 @@ function renderPage(
     body,
     status,
     state,
-    state.assetManifest.notFound,
+    "notFound",
+    {
+      slug: "404",
+      filePath: resolve(PAGES_DIR, "404.tsx"),
+      frontmatter: {},
+    },
     depth
   );
 }
@@ -246,7 +245,7 @@ export async function handleDocsRoute(slug: string[], state: ServerState): Promi
   return renderDocsServerPage(doc, slug, `/docs/${path}`, state);
 }
 
-export function handleIndex(state: ServerState): Response {
+export async function handleIndex(state: ServerState): Promise<Response> {
   const page = React.createElement(IndexPage);
   const body = renderToString(page);
   return createHtmlResponse(
@@ -255,11 +254,16 @@ export function handleIndex(state: ServerState): Response {
     body,
     200,
     state,
-    state.assetManifest.home
+    "home",
+    {
+      slug: "",
+      filePath: resolve(PAGES_DIR, "index.tsx"),
+      frontmatter: { ...state.docuConfig.meta } as Record<string, unknown>,
+    }
   );
 }
 
-export function handleNotFound(state: ServerState, depth = 0): Response {
+export async function handleNotFound(state: ServerState, depth = 0): Promise<Response> {
   return renderPage(NotFoundPage, "404 - Not Found", "", 404, state, {}, depth);
 }
 

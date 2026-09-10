@@ -54,6 +54,7 @@ if (builder) {
   for (const plugin of plugins) {
     await plugin.setup(builder);
   }
+  await builder.runOnStart();
 }
 
 const state: ServerState = {
@@ -159,6 +160,7 @@ const server = Bun.serve({
       const pluginResponse = await builder.runHandleRequest(req, {
         port: serverPort,
         hostname: serverHostname,
+        assetManifest: state.assetManifest,
       });
       if (pluginResponse) {
         const securedResponse = wrapPluginResponse(pluginResponse, true);
@@ -200,27 +202,21 @@ const server = Bun.serve({
       const match = router?.match(pathname);
       let response: Response;
 
-      if (match) {
-        const routeName = match.name;
+      const routeName = match?.name;
 
-        if (routeName === "/docs/[[...slug]]") {
-          const slugParam = match.params?.slug;
-          const slug = slugParam ? slugParam.split("/") : [];
+      if (routeName === "/docs/[[...slug]]") {
+        const slugParam = match?.params?.slug;
+        const slug = slugParam ? slugParam.split("/") : [];
 
-          if (slug.length === 0) {
-            response = await handleDocsIndex(state);
-          } else {
-            response = await handleDocsRoute(slug, state);
-          }
-        } else if (routeName === "/404") {
-          response = handleNotFound(state);
-        } else if (routeName === "/") {
-          response = handleIndex(state);
+        if (slug.length === 0) {
+          response = await handleDocsIndex(state);
         } else {
-          response = handleNotFound(state);
+          response = await handleDocsRoute(slug, state);
         }
+      } else if (routeName === "/") {
+        response = await handleIndex(state);
       } else {
-        response = handleNotFound(state);
+        response = await handleNotFound(state);
       }
 
       logger.request(

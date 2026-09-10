@@ -7,6 +7,7 @@
 import { BuildPluginBuilder } from "../node/plugin-builder";
 import type { DocuBookPlugin } from "../node/plugin";
 import type { HtmlShellOptions } from "../node/html.shared";
+import type { AssetManifest } from "../node/types";
 
 // ─── Minimal DocuConfig ─────────────────────────────────
 
@@ -61,12 +62,27 @@ export function htmlOpts(body: string, overrides?: Partial<HtmlShellOptions>): H
   return { ...BASE_HTML_OPTS, body, ...overrides } as HtmlShellOptions;
 }
 
+export const TEST_ASSET_MANIFEST: AssetManifest = {
+  docs: { css: "docs.css", js: "client.js" },
+  home: { css: "site.css", js: "home-client.js" },
+  notFound: { css: "site.css" },
+};
+
 // ─── DevServerContext shortcut ──────────────────────────
 
-import type { DevServerContext } from "../node/plugin";
+import type { BuildEndContext, DevServerContext } from "../node/plugin";
 
 export function devCtx(overrides?: Partial<DevServerContext>): DevServerContext {
-  return { port: 3000, hostname: "localhost", ...overrides };
+  return {
+    port: 3000,
+    hostname: "localhost",
+    assetManifest: TEST_ASSET_MANIFEST,
+    ...overrides,
+  };
+}
+
+export function buildEndCtx(): BuildEndContext {
+  return { assetManifest: TEST_ASSET_MANIFEST, outDir: "/test/.docu/dist" };
 }
 
 // ─── PageContext shortcut ───────────────────────────────
@@ -75,6 +91,8 @@ import type { PageContext } from "../node/plugin";
 
 export function pageCtx(overrides?: Partial<PageContext>): PageContext {
   return {
+    pageType: "docs",
+    assets: TEST_ASSET_MANIFEST.docs,
     slug: "test",
     filePath: "test.mdx",
     frontmatter: {},
