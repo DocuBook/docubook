@@ -1,6 +1,6 @@
 import { resolve, join } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
-import { readdir, unlink } from "node:fs/promises";
+import { readdir, rm, unlink } from "node:fs/promises";
 import type { DocuConfig } from "./types";
 
 /**
@@ -68,6 +68,7 @@ export async function cleanOldBundles(preserve?: Set<string>) {
         await unlink(join(ASSETS_DIR, file));
       }
     }
+    await rm(join(ASSETS_DIR, "chunks"), { recursive: true, force: true });
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
       console.error("Failed to clean old bundles:", (err as Error).message);
