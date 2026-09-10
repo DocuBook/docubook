@@ -1,6 +1,52 @@
-import { describe, expect, it } from "vitest";
+import { join } from "node:path";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const fsMocks = vi.hoisted(() => ({
+  readdir: vi.fn(async () => [] as string[]),
+  rm: vi.fn(async () => undefined),
+  unlink: vi.fn(async () => undefined),
+}));
+
+vi.mock("node:fs/promises", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("node:fs/promises")>()),
+  ...fsMocks,
+}));
+
 import { createMdxModuleEntries } from "../node/hydrate";
 import { viteChunkFileName } from "../node/hydrate.node";
+import { ASSETS_DIR, cleanOldBundles } from "../node/paths";
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+describe("cleanOldBundles", () => {
+  it("removes stale entry assets and the generated chunk directory", async () => {
+    fsMocks.readdir.mockResolvedValue([
+      "client-old.js",
+      "home-client.old.js",
+      "docs-old.css",
+      "site.old.css",
+      "manifest.json",
+      "favicon.ico",
+      "chunks",
+    ]);
+
+    await cleanOldBundles();
+
+    expect(fsMocks.unlink.mock.calls).toEqual([
+      [join(ASSETS_DIR, "client-old.js")],
+      [join(ASSETS_DIR, "home-client.old.js")],
+      [join(ASSETS_DIR, "docs-old.css")],
+      [join(ASSETS_DIR, "site.old.css")],
+    ]);
+    expect(fsMocks.rm).toHaveBeenCalledOnce();
+    expect(fsMocks.rm).toHaveBeenCalledWith(join(ASSETS_DIR, "chunks"), {
+      recursive: true,
+      force: true,
+    });
+  });
+});
 
 describe("createMdxModuleEntries", () => {
   it("maps sorted slugs to stable URL-safe virtual module IDs", () => {

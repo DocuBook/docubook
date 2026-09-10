@@ -3,7 +3,7 @@ import { basename, join } from "node:path";
 import { mkdir, rename, unlink } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { resolveTheme, generateThemeCss, presetRegistry } from "@docubook/themes-colors";
-import { ASSETS_DIR, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
+import { ASSETS_DIR, cleanOldBundles, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
 import { atomicWriteFile, computeTailwindCacheKey, readStyleCss } from "./cache-key";
 import { resolveRoutes } from "./fs-scanner";
 import type { AssetManifest, DocuRoute } from "./types";
@@ -124,6 +124,7 @@ export async function buildClientBundle(
   mdxSources: Record<string, string> = {}
 ): Promise<AssetManifest> {
   await mkdir(ASSETS_DIR, { recursive: true });
+  await cleanOldBundles();
 
   const nodeEnv = process.env.NODE_ENV || "development";
   const mdxEntries = createMdxModuleEntries(mdxSources);

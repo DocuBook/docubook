@@ -7,7 +7,14 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { promisify } from "node:util";
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { build as viteBuild } from "vite";
-import { ASSETS_DIR, FRAMEWORK_ROOT, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
+import {
+  ASSETS_DIR,
+  FRAMEWORK_ROOT,
+  cleanOldBundles,
+  LIB_DIR,
+  STYLES_DIR,
+  loadDocuConfig,
+} from "./paths";
 import { buildThemeCss, createMdxModuleEntries, getThemeConfig } from "./hydrate";
 import { atomicWriteFile, computeTailwindCacheKey, readStyleCss } from "./cache-key";
 import { resolveRoutes } from "./fs-scanner";
@@ -167,6 +174,7 @@ export async function buildClientBundle(
   mdxSources: Record<string, string> = {}
 ): Promise<AssetManifest> {
   await mkdir(ASSETS_DIR, { recursive: true });
+  await cleanOldBundles();
   const nodeEnv = process.env.NODE_ENV || "development";
   const mdxEntries = createMdxModuleEntries(mdxSources);
   const mdxEntriesById = new Map(mdxEntries.map((entry) => [entry.id, entry]));
