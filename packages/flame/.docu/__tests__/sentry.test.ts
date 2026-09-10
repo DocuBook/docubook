@@ -5,6 +5,8 @@ describe("sentry", () => {
   const mockCaptureException = vi.fn();
 
   beforeEach(() => {
+    vi.resetModules();
+    vi.unstubAllEnvs();
     mockInit.mockClear();
     mockCaptureException.mockClear();
     delete process.env.SENTRY_DSN;
@@ -19,7 +21,10 @@ describe("sentry", () => {
 
   afterEach(() => {
     vi.resetModules();
+    vi.unstubAllEnvs();
     delete process.env.SENTRY_DSN;
+    delete process.env.NODE_ENV;
+    delete process.env.SENTRY_RELEASE;
   });
 
   async function importSentry() {
