@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { BuildPluginBuilder } from "../node/plugin-builder";
 import { htmlShell } from "../node/html.shared";
-import { createBuilder, pageCtx, htmlOpts, devCtx } from "./helpers";
+import { buildEndCtx, createBuilder, pageCtx, htmlOpts, devCtx } from "./helpers";
 import type { Pluggable } from "unified";
 
 // ─── PluginBuilder Registration Tests ────────────────────
@@ -99,8 +99,9 @@ describe("BuildPluginBuilder — Execution", () => {
         { slug: "test", title: "Test", filePath: "/test.mdx", outputPath: "/test.html" },
       ];
       builder.onEnd(spy);
-      await builder.runOnEnd(pages);
-      expect(spy).toHaveBeenCalledWith(builder.config, pages);
+      const context = buildEndCtx();
+      await builder.runOnEnd(pages, context);
+      expect(spy).toHaveBeenCalledWith(builder.config, pages, context);
     });
   });
 
@@ -327,10 +328,10 @@ describe("BuildPluginBuilder — Execution", () => {
         new Request("http://test.dev/api"),
         devCtx({ port: 4000, hostname: "0.0.0.0" })
       );
-      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ url: "http://test.dev/api" }), {
-        port: 4000,
-        hostname: "0.0.0.0",
-      });
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({ url: "http://test.dev/api" }),
+        devCtx({ port: 4000, hostname: "0.0.0.0" })
+      );
     });
   });
 });
@@ -419,7 +420,7 @@ describe("Full Plugin Lifecycle", () => {
     builder.collectHead(null as any);
     builder.collectBody(null as any);
     await builder.runTransformHtmlChain("<p>test</p>", null as any);
-    await builder.runOnEnd([]);
+    await builder.runOnEnd([], buildEndCtx());
 
     expect(loadResult?.contents).toBe("CONTENT");
     expect(fmResult).toEqual({ processed: true });

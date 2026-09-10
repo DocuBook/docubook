@@ -17,7 +17,7 @@ export interface HtmlShellOptions {
   body: string;
   favicon: string;
   css: string;
-  js: string;
+  js?: string;
   nonce?: string;
   /**
    * Content-Security-Policy value (from `cspHeader()` in security.ts).
@@ -63,6 +63,9 @@ export function htmlShell(opts: HtmlShellOptions): string {
   const bodyInjection = bodyExtra?.length ? `\n  ${bodyExtra.join("\n  ")}` : "";
   const depthPrefix = depth === 0 ? "" : "../".repeat(depth);
   const assetPrefix = absoluteAssets ? "/assets/" : depthPrefix + "assets/";
+  const clientScript = js
+    ? `\n  <link rel="modulepreload" href="${escapeHtml(assetPrefix + js)}">\n  <script type="module"${nonceAttr} src="${escapeHtml(assetPrefix + js)}"></script>`
+    : "";
   const resolvePath = (path: string) =>
     absoluteAssets ? path : path.startsWith("/") ? depthPrefix + path.slice(1) : path;
 
@@ -92,9 +95,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
   <script${nonceAttr}>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>${headInjection}
 </head>
 <body>
-  <div id="root">${body}</div>
-  <link rel="modulepreload" href="${escapeHtml(assetPrefix + js)}">
-  <script type="module"${nonceAttr} src="${escapeHtml(assetPrefix + js)}"></script>${extraScripts ? `\n  ${extraScripts}` : ""}${bodyInjection}
+  <div id="root">${body}</div>${clientScript}${extraScripts ? `\n  ${extraScripts}` : ""}${bodyInjection}
 </body>
 </html>`;
 }

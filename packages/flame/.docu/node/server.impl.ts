@@ -63,6 +63,7 @@ export async function runServer(adapter: RuntimeAdapter): Promise<ServerHandle> 
     for (const plugin of plugins) {
       await plugin.setup(builder);
     }
+    await builder.runOnStart();
   }
 
   const state: ServerState = {
@@ -155,6 +156,7 @@ export async function runServer(adapter: RuntimeAdapter): Promise<ServerHandle> 
       const pluginResponse = await builder.runHandleRequest(req, {
         port: handle?.port ?? PORT,
         hostname: handle?.hostname ?? "localhost",
+        assetManifest: state.assetManifest,
       });
       if (pluginResponse) {
         const securedResponse = wrapPluginResponse(pluginResponse, true);
@@ -198,7 +200,7 @@ export async function runServer(adapter: RuntimeAdapter): Promise<ServerHandle> 
       // Manual route matching — same routes Bun.FileSystemRouter derives
       // from `.docu/pages/` ("/", "/docs/[[...slug]]", "/404").
       if (pathname === "/") {
-        response = handleIndex(state);
+        response = await handleIndex(state);
       } else if (pathname === "/docs" || pathname === "/docs/") {
         response = await handleDocsIndex(state);
       } else if (pathname.startsWith("/docs/")) {
@@ -206,7 +208,7 @@ export async function runServer(adapter: RuntimeAdapter): Promise<ServerHandle> 
         response =
           slug.length === 0 ? await handleDocsIndex(state) : await handleDocsRoute(slug, state);
       } else {
-        response = handleNotFound(state);
+        response = await handleNotFound(state);
       }
 
       logger.request(

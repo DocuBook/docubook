@@ -6,7 +6,7 @@ import { createMdxComponents } from "@docubook/markdown";
 import { mdxModules } from "./mdx-manifest";
 import Sidebar, { MobileBar } from "../components/Sidebar";
 import Toc from "../components/Toc";
-import { ThemeToggle } from "../components/Theme";
+
 import { safeParseTocs } from "./parse-tocs";
 import type { TocItem } from "./types";
 
@@ -21,14 +21,7 @@ import type { TocItem } from "./types";
  */
 type MountMode = "auto" | "hydrate" | "create";
 
-function mountIsland(
-  id: string,
-  render: (el: HTMLElement) => React.ReactElement | null,
-  mode: MountMode = "auto"
-) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const node = render(el);
+function mountNode(el: HTMLElement, node: React.ReactElement | null, mode: MountMode) {
   if (node === null) return; // island stays as-is (SSR HTML preserved)
   const hydrate = mode === "hydrate" || (mode === "auto" && el.childElementCount > 0);
   if (hydrate) {
@@ -37,6 +30,28 @@ function mountIsland(
     el.innerHTML = "";
     createRoot(el).render(node);
   }
+}
+
+function mountIsland(
+  id: string,
+  render: (el: HTMLElement) => React.ReactElement | null,
+  mode: MountMode = "auto"
+) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  mountNode(el, render(el), mode);
+}
+
+function mountAsyncIsland(
+  id: string,
+  render: (el: HTMLElement) => Promise<React.ReactElement | null>,
+  mode: MountMode = "auto"
+) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  render(el)
+    .then((node) => mountNode(el, node, mode))
+    .catch((error) => console.error(`[${id}]`, error));
 }
 
 function mountIslands() {
@@ -72,8 +87,6 @@ function mountIslands() {
     return React.createElement(Toc, { tocs });
   });
 
-  mountIsland("theme-island", () => React.createElement(ThemeToggle));
-
   // MDX content: SSR renders the full content HTML; the client rebuilds the
   // identical tree. Two sources, same tree shape:
   //  - static build: per-slug compiled ESM module bundled via ./mdx-manifest
@@ -81,30 +94,26 @@ function mountIslands() {
   //    chain, so hydration matches;
   //  - dev: legacy per-page compiledSource script → MDXRemote eval.
   // Hydrate when SSR markup exists, create only when the container is empty.
-  mountIsland(
+  mountAsyncIsland(
     "mdx-content-island",
-    (el) => {
+    async (el) => {
       const sourceEl = document.getElementById("mdx-compiled-source");
       if (sourceEl) {
-        try {
-          const compiledSource = JSON.parse(sourceEl.textContent || "");
-          return React.createElement(MDXRemote, {
-            compiledSource,
-            scope: {},
-            frontmatter: {},
-            components: createMdxComponents(),
-          });
-        } catch (e) {
-          console.error("[mdx-hydrate]", e);
-          return null;
-        }
+        const compiledSource = JSON.parse(sourceEl.textContent || "");
+        return React.createElement(MDXRemote, {
+          compiledSource,
+          scope: {},
+          frontmatter: {},
+          components: createMdxComponents(),
+        });
       }
       const slug = el.dataset.mdxSlug;
       // The docs root (index.mdx) renders with an empty slug — `mdxSlug != null`
       // keeps "" addressable (its module is stored under key ""), while a
       // missing marker stays undefined and skips hydration.
-      const mod = slug != null ? mdxModules[slug] : undefined;
-      if (!mod) return null;
+      const load = slug != null ? mdxModules[slug] : undefined;
+      if (!load) return null;
+      const mod = await load();
       return React.createElement(
         MDXProvider,
         { components: createMdxComponents() },

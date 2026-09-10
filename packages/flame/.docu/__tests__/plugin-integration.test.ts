@@ -1,6 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { htmlShell } from "../node/html.shared";
-import { createBuilder, createMockPlugin, createFaultyPlugin, pageCtx, htmlOpts } from "./helpers";
+import { handleIndex, handleNotFound, type ServerState } from "../node/server-routes";
+import type { PageContext } from "../node/plugin";
+import {
+  buildEndCtx,
+  createBuilder,
+  devCtx,
+  createMockPlugin,
+  createFaultyPlugin,
+  pageCtx,
+  htmlOpts,
+  TEST_ASSET_MANIFEST,
+} from "./helpers";
 
 // ─── Integration: Loader + Builder together ──────────────
 
@@ -54,15 +65,15 @@ describe("Plugin lifecycle — loader + builder integration", () => {
     const pages = [
       { slug: "page", title: "Page", filePath: "page.mdx", outputPath: "dist/page.html" },
     ];
-    await builder.runOnEnd(pages);
+    await builder.runOnEnd(pages, buildEndCtx());
     const onEndLog = plugin.logs.find((l) => l.hook === "onEnd");
     expect(onEndLog!.args[0]).toBe(1);
 
     // [10] handleRequest
-    const result = await builder.runHandleRequest(new Request("http://test.dev/api/plugin"), {
-      port: 3000,
-      hostname: "localhost",
-    });
+    const result = await builder.runHandleRequest(
+      new Request("http://test.dev/api/plugin"),
+      devCtx()
+    );
     expect(result).toBeNull();
 
     // Verify execution order
@@ -123,6 +134,69 @@ describe("Plugin integration — HTML output", () => {
   });
 });
 
+// ─── Integration: dev page routes ──────────────────────
+
+describe("Plugin integration — dev page routes", () => {
+  function createState(builder = createBuilder()): ServerState {
+    return {
+      docuConfig: builder.config,
+      assetManifest: TEST_ASSET_MANIFEST,
+      builder,
+    };
+  }
+
+  function registerHtmlHooks(builder: ReturnType<typeof createBuilder>, contexts: PageContext[]) {
+    builder.injectHead((ctx) => {
+      contexts.push(ctx);
+      return `<meta name="page-type" content="${ctx.pageType}">`;
+    });
+    builder.injectBody((ctx) => `<div data-page-css="${ctx.assets.css}"></div>`);
+    builder.transformHtml((html, ctx) =>
+      html.replace("</body>", `<span data-transformed="${ctx.pageType}"></span></body>`)
+    );
+  }
+
+  it("runs HTML hooks for the home page with home assets", async () => {
+    const builder = createBuilder();
+    const contexts: PageContext[] = [];
+    registerHtmlHooks(builder, contexts);
+
+    const html = await (await handleIndex(createState(builder))).text();
+
+    expect(contexts).toHaveLength(1);
+    expect(contexts[0]).toMatchObject({
+      pageType: "home",
+      slug: "",
+      assets: TEST_ASSET_MANIFEST.home,
+    });
+    expect(html).toContain('<meta name="page-type" content="home">');
+    expect(html).toContain('data-page-css="site.css"');
+    expect(html).toContain('data-transformed="home"');
+    expect(html).toContain("home-client.js");
+  });
+
+  it("runs HTML hooks for the standalone 404 without a module bundle", async () => {
+    const builder = createBuilder();
+    const contexts: PageContext[] = [];
+    registerHtmlHooks(builder, contexts);
+
+    const response = await handleNotFound(createState(builder));
+    const html = await response.text();
+
+    expect(response.status).toBe(404);
+    expect(contexts).toHaveLength(1);
+    expect(contexts[0]).toMatchObject({
+      pageType: "notFound",
+      slug: "404",
+      assets: TEST_ASSET_MANIFEST.notFound,
+    });
+    expect(html).toContain('<meta name="page-type" content="notFound">');
+    expect(html).toContain('data-page-css="site.css"');
+    expect(html).toContain('data-transformed="notFound"');
+    expect(html).not.toContain('<script type="module"');
+  });
+});
+
 // ─── No-op mode: zero plugins ───────────────────────────
 
 describe("Plugin integration — no-op mode", () => {
@@ -135,7 +209,7 @@ describe("Plugin integration — no-op mode", () => {
         await builder.runOnLoad("page.mdx", "content");
         await builder.runTransformFrontmatterChain({}, { slug: "p", filePath: "p.mdx" });
         await builder.runTransformHtmlChain("<p>test</p>", {} as any);
-        await builder.runOnEnd([]);
+        await builder.runOnEnd([], buildEndCtx());
       })()
     ).resolves.toBeUndefined();
   });
@@ -197,10 +271,7 @@ describe("Plugin integration — error isolation", () => {
     await working.setup(builder);
 
     const before = working.logs.length;
-    const result = await builder.runHandleRequest(new Request("http://test.dev"), {
-      port: 3000,
-      hostname: "localhost",
-    });
+    const result = await builder.runHandleRequest(new Request("http://test.dev"), devCtx());
     expect(result).toBeNull();
     expect(working.logs.length).toBeGreaterThan(before);
   });
@@ -230,7 +301,7 @@ describe("Plugin integration — error isolation", () => {
       // This should still run after the error
     });
 
-    await expect(builder.runOnEnd([])).resolves.toBeUndefined();
+    await expect(builder.runOnEnd([], buildEndCtx())).resolves.toBeUndefined();
   });
 
   it("runOnLoad error continues to next matching handler", async () => {
@@ -327,7 +398,10 @@ describe("Plugin integration — error isolation", () => {
       order.push(3);
     });
 
-    await builder.runOnEnd([{ slug: "a", title: "A", filePath: "a.mdx", outputPath: "a.html" }]);
+    await builder.runOnEnd(
+      [{ slug: "a", title: "A", filePath: "a.mdx", outputPath: "a.html" }],
+      buildEndCtx()
+    );
     expect(order).toEqual([1, 2, 3]);
   });
 });

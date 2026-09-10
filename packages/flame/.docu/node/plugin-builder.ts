@@ -1,5 +1,12 @@
 import type { Pluggable } from "unified";
-import type { DocuConfig, PageContext, PageMeta, DevServerContext, PluginBuilder } from "./plugin";
+import type {
+  BuildEndContext,
+  DevServerContext,
+  DocuConfig,
+  PageContext,
+  PageMeta,
+  PluginBuilder,
+} from "./plugin";
 
 type Awaitable<T> = T | Promise<T>;
 
@@ -20,7 +27,9 @@ export class BuildPluginBuilder implements PluginBuilder {
   > = [];
   private _injectBody: Array<(context: PageContext) => string | string[]> = [];
   private _injectHead: Array<(context: PageContext) => string | string[]> = [];
-  private _onEnd: Array<(config: DocuConfig, pages: PageMeta[]) => Awaitable<void>> = [];
+  private _onEnd: Array<
+    (config: DocuConfig, pages: PageMeta[], context: BuildEndContext) => Awaitable<void>
+  > = [];
   private _onLoad: OnLoadHandler[] = [];
   private _onStart: Array<(config: DocuConfig) => Awaitable<void>> = [];
   private _rehypePlugins: Array<() => Pluggable[]> = [];
@@ -185,22 +194,24 @@ export class BuildPluginBuilder implements PluginBuilder {
 
   /**
    * Register a callback to run once after all pages are built.
-   * Receives the resolved config and aggregated page metadata.
-   * Errors thrown by the callback propagate to the caller via `runOnEnd()`.
+   * Receives the resolved config, aggregated docs metadata, and final build metadata.
+   * Callback errors are logged by `runOnEnd()` and do not stop later callbacks.
    *
-   * @param callback - Receives config and page metadata array. May return a Promise.
+   * @param callback - Receives config, page metadata, and emitted assets. May return a Promise.
    *
    * @example
-   * build.onEnd(async (config, pages) => {
+   * build.onEnd(async (config, pages, { outDir }) => {
    *   const xml = generateSitemap(pages, config.meta.baseURL);
-   *   const out = ".docu/dist/sitemap.xml";
+   *   const out = join(outDir, "sitemap.xml");
    *   // Bun.write on Bun for speed, writeFile on Node/Deno
    *   await (typeof Bun !== "undefined"
    *     ? Bun.write(out, xml)
    *     : writeFile(out, xml));
    * });
    */
-  onEnd(callback: (config: DocuConfig, pages: PageMeta[]) => Awaitable<void>): void {
+  onEnd(
+    callback: (config: DocuConfig, pages: PageMeta[], context: BuildEndContext) => Awaitable<void>
+  ): void {
     this._onEnd.push(callback);
   }
 
@@ -208,7 +219,7 @@ export class BuildPluginBuilder implements PluginBuilder {
    * Register a callback to transform raw file content before MDX compilation.
    * Filtered by regex against the file's relative path — only the **first** matching
    * handler's result is used.
-   * Errors thrown by the callback propagate to the caller via `runOnLoad()`.
+   * Callback errors are logged by `runOnLoad()` before trying later matching handlers.
    *
    * @param args.filter - RegExp matched against the file's relative path.
    * @param args.namespace - Optional namespace prefix (reserved for future use).
@@ -232,7 +243,7 @@ export class BuildPluginBuilder implements PluginBuilder {
   /**
    * Register a callback to run once before the build starts.
    * Receives the resolved DocuConfig for validation or resource initialization.
-   * Errors thrown by the callback propagate to the caller via `runOnStart()`.
+   * Callback errors are logged by `runOnStart()` and do not stop later callbacks.
    *
    * @param callback - Receives the resolved config. May return a Promise.
    *
@@ -303,12 +314,13 @@ export class BuildPluginBuilder implements PluginBuilder {
    * Errors inside individual callbacks are caught and logged — execution
    * continues to the next callback without throwing.
    *
-   * @param pages - Array of metadata for every built page.
+   * @param pages - Array of metadata for every built docs page.
+   * @param context - Final output directory and page-specific asset manifest.
    */
-  async runOnEnd(pages: PageMeta[]): Promise<void> {
+  async runOnEnd(pages: PageMeta[], context: BuildEndContext): Promise<void> {
     for (let i = 0; i < this._onEnd.length; i++) {
       try {
-        await this._onEnd[i](this.config, pages);
+        await this._onEnd[i](this.config, pages, context);
       } catch (err) {
         console.error(
           `[plugin] onEnd callback #${i + 1} error: ${err instanceof Error ? err.message : String(err)}`

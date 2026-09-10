@@ -298,7 +298,7 @@ To publish a plugin to npm, choose a **namespace** — `@docubook/plugin-*` for 
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "peerDependencies": {
-    "@docubook/flame": "^1.0.0"
+    "@docubook/flame": "^2.0.0-beta.5"
   },
   "files": ["dist"]
 }
@@ -345,14 +345,15 @@ build.onStart((config) => {
 });
 ```
 
-### onEnd(config, pages)
+### onEnd(config, pages, context)
 
-Called after all pages are built. Generate sitemaps, RSS feeds, or manifests.
+Called after all page HTML has been written. Generate sitemaps, RSS feeds, or other output using the final output directory and page-specific asset manifest.
 
 ```typescript
-build.onEnd((config, pages) => {
+build.onEnd((config, pages, { outDir, assetManifest }) => {
   // pages: { slug, title, filePath, outputPath }[]
-  console.log(`Built ${pages.length} pages`);
+  console.log(`Built ${pages.length} pages to ${outDir}`);
+  console.log(`Docs CSS: ${assetManifest.docs.css}`);
 });
 ```
 
@@ -388,44 +389,71 @@ build.rehypePlugins(() => [require("rehype-autolink-headings")]);
 
 ### injectHead(ctx)
 
-Return HTML strings to inject inside `<head>`. Results from all plugins are merged and deduplicated.
+Return HTML strings to inject inside `<head>`. Results from all plugins are merged and deduplicated. This hook runs for docs, home, and standalone 404 pages.
 
 ```typescript
-build.injectHead(() =>
-  `<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXX"></script>`
+build.injectHead((ctx) =>
+  `<meta name="docubook-page-type" content="${ctx.pageType}">`
 );
 ```
 
 ### injectBody(ctx)
 
-Return HTML strings to inject before `</body>`.
+Return HTML strings to inject before `</body>`. Check `ctx.assets.js` before generating markup that depends on a client bundle because JavaScript is optional, including on the standalone 404 page.
 
 ```typescript
-build.injectBody(() =>
-  `<script>console.log("DocuBook loaded");</script>`
+build.injectBody((ctx) =>
+  ctx.assets.js ? `<script>console.log("Client bundle loaded")</script>` : []
 );
 ```
 
 ### transformHtml(html, ctx)
 
-Transform the final HTML string per page - the last hook before writing to disk.
+Transform the final HTML string for docs, home, and standalone 404 pages. It is the last page hook before writing HTML to disk.
 
 ```typescript
 build.transformHtml((html, ctx) =>
-  html.replace(/https?:\/\/old-domain\.com\//g, "/")
+  html.replace("</body>", `<!-- ${ctx.pageType} -->\n</body>`)
 );
 ```
 
+### Page context and assets
+
+`injectHead`, `injectBody`, and `transformHtml` receive a `PageContext`:
+
+| Field | Description |
+| ----- | ----------- |
+| `pageType` | `"docs"`, `"home"`, or `"notFound"` |
+| `assets` | Hashed `{ css, js? }` entry used by this page |
+| `slug` | Docs slug, an empty string for home, or `"404"` |
+| `filePath` | Source or framework page path |
+| `frontmatter` | Docs frontmatter, site metadata for home, or an empty object for 404 |
+| `content` | Raw MDX/Markdown content when available |
+| `config` | Resolved DocuBook configuration |
+
+The final asset manifest uses the same page families:
+
+```typescript
+{
+  docs: { css: "docs-HASH.css", js: "client-HASH.js" },
+  home: { css: "site-HASH.css", js: "home-client-HASH.js" },
+  notFound: { css: "site-HASH.css" }
+}
+```
+
+Do not parse `manifest.json` as a single `{ js, css }` bundle. Read the entry for the current `pageType`, and treat every `js` field as optional.
+
 ### handleRequest(req, ctx)
 
-Intercept incoming dev server requests. First plugin to return a `Response` short-circuits.
+Intercept incoming dev server requests. First plugin to return a `Response` short-circuits. The context contains `port`, `hostname`, and the current page-specific `assetManifest`, including updates from dev rebuilds.
 
 ```typescript
 build.handleRequest((req, ctx) => {
   const url = new URL(req.url);
   if (url.pathname === "/api/status") {
-    return new Response(JSON.stringify({ ok: true }), {
-      headers: { "Content-Type": "application/json" },
+    return Response.json({
+      ok: true,
+      docsCss: ctx.assetManifest.docs.css,
     });
   }
 });
@@ -441,13 +469,15 @@ build()
 │   ├── onLoad({filter})                    ← transform raw content
 │   ├── transformFrontmatter()              ← mutate frontmatter
 │   ├── compileMdx() ← remark / rehype      ← MDX pipeline
-│   ├── injectHead() / injectBody()         ← inject HTML
-│   └── transformHtml()                     ← final transform
-├─ onEnd(config, pages)                     ← sitemap, RSS, etc.
-└─ write output
+│   ├── injectHead() / injectBody()         ← docs context
+│   ├── transformHtml()                     ← final docs transform
+│   └── write docs HTML
+├─ render home → page hooks → write HTML
+├─ render standalone 404 → page hooks → write HTML
+└─ onEnd(config, pages, context)             ← final output metadata
 ```
 
-Execution is **sequential** (waterfall). Plugins run in `docu.json` order. `handleRequest` is **first-wins**. Errors fail-fast with the plugin name.
+Execution is **sequential** (waterfall). Plugins run in `docu.json` order and `handleRequest` is **first-wins**. Execution-hook errors are logged and isolated; collection hooks such as `injectHead` and `injectBody` throw developer errors.
 
 ## Example Plugins
 
@@ -478,13 +508,13 @@ export default function pluginSitemap(opts?: { hostname?: string }): DocuBookPlu
   return {
     name: "sitemap",
     setup(build) {
-      build.onEnd(async (config, pages) => {
+      build.onEnd(async (config, pages, { outDir }) => {
         const host = opts?.hostname || config.meta.baseURL;
         const urls = pages.map(
           (p) => `<url><loc>${host}/docs/${p.slug}</loc></url>`
         );
         const xml = `<?xml version="1.0"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
-        const out = join(".docu/dist", "sitemap.xml");
+        const out = join(outDir, "sitemap.xml");
         // Bun.write on Bun for speed, writeFile on Node/Deno
         await (typeof Bun !== "undefined"
           ? Bun.write(out, xml)
@@ -555,6 +585,11 @@ import type {
   PluginBuilder,
   PageContext,
   PageMeta,
+  PageType,
+  AssetEntry,
+  AssetManifest,
+  DevServerContext,
+  BuildEndContext,
   PluginEntry,
 } from "@docubook/flame";
 ```

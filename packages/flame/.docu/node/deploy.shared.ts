@@ -13,9 +13,9 @@ import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { DIST_DIR, PROJECT_ROOT, FRAMEWORK_ROOT } from "./paths";
 
-const FLAME_MAJOR = JSON.parse(
+const FLAME_VERSION = JSON.parse(
   readFileSync(resolve(FRAMEWORK_ROOT, "package.json"), "utf-8")
-).version.split(".")[0];
+).version;
 
 const WORKFLOW_DIR = join(PROJECT_ROOT, ".github/workflows");
 const WORKFLOW_FILE = join(WORKFLOW_DIR, "deploy.yml");
@@ -25,6 +25,7 @@ export const NGINX_CONF = `server {
   server_name _;
   root /usr/share/nginx/html;
   index index.html;
+  error_page 404 /404.html;
 
   gzip on;
   gzip_types text/html text/css application/javascript image/svg+xml;
@@ -37,6 +38,16 @@ export const NGINX_CONF = `server {
   add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
   add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'" always;
 
+  # Build metadata and search content use stable URLs, so clients must revalidate them.
+  location = /assets/manifest.json {
+    expires -1;
+  }
+
+  location = /assets/search-index.json {
+    expires -1;
+  }
+
+  # Generated JS, CSS, and chunks include content hashes in their filenames.
   location /assets/ {
     expires 1y;
     add_header Cache-Control "public, immutable";
@@ -59,6 +70,8 @@ export const NGINX_CONF = `server {
     add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'" always;
   }
 
+  location = /404.html { }
+
   location / {
     try_files $uri $uri.html $uri/ =404;
   }
@@ -73,6 +86,19 @@ export const DOCKERIGNORE = `node_modules
 .env.*
 .npmrc
 *.log
+`;
+
+export const DOCKERFILE = `FROM ghcr.io/docubook/flame:${FLAME_VERSION} AS builder
+ENV NODE_ENV=production
+WORKDIR /app
+COPY . .
+RUN flame build --bun
+
+FROM nginx:alpine
+COPY --from=builder /app/.docu/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
 `;
 
 export function detectPkgManager(dir: string): {
@@ -137,8 +163,22 @@ export const HEADERS_FILE = `/*
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'
 
-/assets/*
+/assets/client-*
   Cache-Control: public, max-age=31536000, immutable
+/assets/home-client-*
+  Cache-Control: public, max-age=31536000, immutable
+/assets/docs-*
+  Cache-Control: public, max-age=31536000, immutable
+/assets/site-*
+  Cache-Control: public, max-age=31536000, immutable
+/assets/chunks/*
+  Cache-Control: public, max-age=31536000, immutable
+/assets/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+/assets/manifest.json
+  Cache-Control: no-cache
+/assets/search-index.json
+  Cache-Control: no-cache
 `;
 
 const isDocker = !!process.env.FLAME_DEPLOY_DOCKER;
@@ -169,21 +209,7 @@ async function writeDockerFiles() {
   const dockerDir = PROJECT_ROOT;
 
   if (!existsSync(join(dockerDir, "Dockerfile"))) {
-    await writeFile(
-      join(dockerDir, "Dockerfile"),
-      `FROM ghcr.io/docubook/flame:${FLAME_MAJOR} AS builder
-ENV NODE_ENV=production
-WORKDIR /app
-COPY . .
-RUN flame build
-
-FROM nginx:alpine
-COPY --from=builder /app/.docu/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-`
-    );
+    await writeFile(join(dockerDir, "Dockerfile"), DOCKERFILE);
     log.created("📄 Created Dockerfile");
   }
 

@@ -1,16 +1,20 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { NGINX_CONF, DOCKERFILE_BUN, DOCKERIGNORE, HEADERS_FILE } from "../node/deploy";
 import { detectPkgManager } from "../node/deploy.shared";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 describe("deploy Docker — generated file content", () => {
-  it("Dockerfile uses ghcr.io/docubook/flame:MAJOR tag with ENV NODE_ENV", () => {
-    expect(DOCKERFILE_BUN).toMatch(/ghcr\.io\/docubook\/flame:[0-9]+ AS builder/);
+  it("Dockerfile pins the builder image to the installed Flame version", async () => {
+    const pkg = JSON.parse(
+      await readFile(join(import.meta.dirname, "../../package.json"), "utf-8")
+    ) as { version: string };
+
+    expect(DOCKERFILE_BUN).toContain(`FROM ghcr.io/docubook/flame:${pkg.version} AS builder`);
     expect(DOCKERFILE_BUN).toContain("nginx:alpine");
     expect(DOCKERFILE_BUN).toContain("ENV NODE_ENV=production");
-    expect(DOCKERFILE_BUN).toContain("RUN flame build");
+    expect(DOCKERFILE_BUN).toContain("RUN flame build --bun");
   });
 
   it(".dockerignore excludes build artifacts and secrets", () => {
@@ -37,10 +41,13 @@ describe("deploy Docker — generated file content", () => {
     expect(NGINX_CONF).toContain('add_header Content-Security-Policy "default-src');
   });
 
-  it("NGINX_CONF /assets/ uses 1y immutable cache", () => {
-    expect(NGINX_CONF).toContain("location /assets/");
-    expect(NGINX_CONF).toContain("expires 1y");
-    expect(NGINX_CONF).toContain('add_header Cache-Control "public, immutable"');
+  it("NGINX_CONF caches hashed page-specific assets but revalidates stable JSON", () => {
+    const assetsBlock = NGINX_CONF.split("location /assets/")[1]?.split("location")[0];
+    expect(assetsBlock).toContain("expires 1y");
+    expect(assetsBlock).toContain('add_header Cache-Control "public, immutable"');
+    expect(NGINX_CONF).toContain("location = /assets/manifest.json");
+    expect(NGINX_CONF).toContain("location = /assets/search-index.json");
+    expect(NGINX_CONF.match(/location = \/assets\/(manifest|search-index)\.json/g)).toHaveLength(2);
   });
 
   it("NGINX_CONF /docs/assets/ uses 7d public cache (no immutable)", () => {
@@ -51,15 +58,24 @@ describe("deploy Docker — generated file content", () => {
     expect(docsBlock).not.toContain("immutable");
   });
 
-  it("NGINX_CONF has root location fallback", () => {
+  it("NGINX_CONF serves the generated 404 page while preserving 404 status", () => {
+    expect(NGINX_CONF).toContain("error_page 404 /404.html");
+    expect(NGINX_CONF).toContain("location = /404.html");
     expect(NGINX_CONF).toContain("location /");
     expect(NGINX_CONF).toContain("try_files $uri $uri.html $uri/ =404");
   });
 
-  it("_headers has 1y immutable for /assets/*", () => {
-    expect(HEADERS_FILE).toContain("/assets/*");
+  it("_headers caches every hashed asset family and revalidates stable JSON", () => {
+    expect(HEADERS_FILE).toContain("/assets/client-*");
+    expect(HEADERS_FILE).toContain("/assets/home-client-*");
+    expect(HEADERS_FILE).toContain("/assets/docs-*");
+    expect(HEADERS_FILE).toContain("/assets/site-*");
+    expect(HEADERS_FILE).toContain("/assets/chunks/*");
+    expect(HEADERS_FILE).toContain("/assets/assets/*");
     expect(HEADERS_FILE).toContain("Cache-Control: public, max-age=31536000, immutable");
-    expect(HEADERS_FILE).not.toContain("/assets/chunks/*");
+    expect(HEADERS_FILE).toContain("/assets/manifest.json\n  Cache-Control: no-cache");
+    expect(HEADERS_FILE).toContain("/assets/search-index.json\n  Cache-Control: no-cache");
+    expect(HEADERS_FILE).not.toMatch(/^\/assets\/\*$/m);
   });
 
   it("_headers includes CSP and security headers", () => {
@@ -201,8 +217,18 @@ describe("deploy output — silent mode suppresses logs", () => {
   it("log helper no-ops in silent mode", () => {
     const isSilent = true;
     const log = isSilent
-      ? { info: () => {}, ok: () => {}, created: () => {}, out: () => {} }
-      : { info: () => {}, ok: () => {}, created: () => {}, out: () => {} };
+      ? {
+          info: (_m: string) => {},
+          ok: () => {},
+          created: (_m: string) => {},
+          out: (_m: string) => {},
+        }
+      : {
+          info: (_m: string) => {},
+          ok: () => {},
+          created: (_m: string) => {},
+          out: (_m: string) => {},
+        };
 
     expect(() => {
       log.info("test");

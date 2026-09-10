@@ -120,6 +120,12 @@ describe("htmlShell", () => {
       const html = htmlShell(MINIMAL_OPTS);
       expect(html).toContain('<div id="root"><p>hello</p></div>');
     });
+
+    it("omits module assets when page has no client JavaScript", () => {
+      const html = htmlShell({ ...MINIMAL_OPTS, js: undefined });
+      expect(html).not.toContain('rel="modulepreload"');
+      expect(html).not.toContain('<script type="module"');
+    });
   });
 
   describe("nonce", () => {

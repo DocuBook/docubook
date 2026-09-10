@@ -1,0 +1,7 @@
+@import "tailwindcss" source(none);
+@import "./base.css";
+
+@source "../components/home";
+@source "../components/Theme.tsx";
+@source "../pages/index.tsx";
+@source "../pages/404.tsx";

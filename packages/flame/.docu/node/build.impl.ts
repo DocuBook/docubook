@@ -29,6 +29,7 @@ import {
   CACHE_FILE,
   DOCS_ASSETS_DIR,
   PROJECT_ROOT,
+  PAGES_DIR,
   loadDocuConfig,
 } from "./paths";
 import { htmlShell } from "./html.shared";
@@ -39,7 +40,7 @@ import { initSentry, captureException } from "./sentry";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
 import { scanMdxFiles, resolveDocsIndexSource, DEFAULT_FAVICON } from "./utils";
-import type { BuildCache, BuildCacheMeta, CliArgs } from "./types";
+import type { AssetManifest, BuildCache, BuildCacheMeta, CliArgs } from "./types";
 import { isCacheEntry } from "./types";
 import {
   BUILD_CACHE_VERSION,
@@ -118,7 +119,11 @@ function shouldRebuild(path: string, mtime: number, cache: BuildCache): RebuildD
   return "no";
 }
 
-let assetManifest = { js: "client.js", css: "client.css" };
+let assetManifest: AssetManifest = {
+  docs: { js: "client.js", css: "docs.css" },
+  home: { js: "home-client.js", css: "site.css" },
+  notFound: { css: "site.css" },
+};
 
 /**
  * Reuse manifest.json on bundle cache hit; fall back to a full rebuild
@@ -127,15 +132,20 @@ let assetManifest = { js: "client.js", css: "client.css" };
 async function resolveAssetManifest(
   bundleHit: boolean,
   mdxSources: Record<string, string>
-): Promise<{ js: string; css: string }> {
+): Promise<AssetManifest> {
   if (!bundleHit) return buildClientBundle(mdxSources);
   try {
-    const manifest = JSON.parse(await readFile(join(ASSETS_DIR, "manifest.json"), "utf-8")) as {
-      js?: string;
-      css?: string;
-    };
-    if (typeof manifest.js === "string" && typeof manifest.css === "string") {
-      return { js: manifest.js, css: manifest.css };
+    const manifest = JSON.parse(
+      await readFile(join(ASSETS_DIR, "manifest.json"), "utf-8")
+    ) as Partial<AssetManifest>;
+    if (
+      typeof manifest.docs?.js === "string" &&
+      typeof manifest.docs.css === "string" &&
+      typeof manifest.home?.js === "string" &&
+      typeof manifest.home.css === "string" &&
+      typeof manifest.notFound?.css === "string"
+    ) {
+      return manifest as AssetManifest;
     }
   } catch {
     // corrupt/missing manifest — rebuild below
@@ -223,7 +233,15 @@ async function renderDocsPage(
 
   const body = renderToString(page);
 
-  const ctx: PageContext = { slug, filePath, frontmatter, content, config: docuConfig };
+  const ctx: PageContext = {
+    pageType: "docs",
+    assets: assetManifest.docs,
+    slug,
+    filePath,
+    frontmatter,
+    content,
+    config: docuConfig,
+  };
   const headExtra = builder?.collectHead(ctx);
   const bodyExtra = builder?.collectBody(ctx);
 
@@ -240,8 +258,8 @@ async function renderDocsPage(
     favicon,
     seo,
     csp,
-    css: assetManifest.css,
-    js: assetManifest.js,
+    css: ctx.assets.css,
+    js: ctx.assets.js,
     nonce,
     themeCss: inlineThemeCss,
     depth,
@@ -366,6 +384,9 @@ export async function runBuild(): Promise<void> {
 
   logger.bundleStart();
   let t = performance.now();
+  // Skip the JS bundle when compiled MDX sources are unchanged: the bundle
+  // is shared by every page, so its hash doubles as the content fingerprint.
+  // CSS still builds via its own content-keyed cache inside the hydrator.
   const bundleHash = hashMdxSources(mdxSources);
   const lastBundle = cache["__bundle__"];
   const bundleHit =
@@ -378,14 +399,10 @@ export async function runBuild(): Promise<void> {
   inlineThemeCss = computeInlineThemeCss();
 
   const lastManifest = cache["__assets__"];
-  const assetsChanged =
-    !isCacheEntry(lastManifest) || lastManifest.hash !== `${assetManifest.js}:${assetManifest.css}`;
+  const assetHash = JSON.stringify(assetManifest);
+  const assetsChanged = !isCacheEntry(lastManifest) || lastManifest.hash !== assetHash;
   if (assetsChanged) {
-    cache["__assets__"] = {
-      hash: `${assetManifest.js}:${assetManifest.css}`,
-      mtime: 0,
-      builtAt: Date.now(),
-    };
+    cache["__assets__"] = { hash: assetHash, mtime: 0, builtAt: Date.now() };
   }
   if (!bundleHit) {
     cache["__bundle__"] = { hash: bundleHash, mtime: 0, builtAt: Date.now() };
@@ -408,7 +425,7 @@ export async function runBuild(): Promise<void> {
   for (const file of mdxFiles) {
     const rebuildDecision = shouldRebuild(file.path, file.mtime, cache);
 
-    if (rebuildDecision === "no") {
+    if (rebuildDecision === "no" && !builder) {
       const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
       if (existsSync(outputPath) && !assetsChanged) {
         skipped++;
@@ -426,7 +443,7 @@ export async function runBuild(): Promise<void> {
       }
     }
 
-    if (rebuildDecision === "hash_check") {
+    if (rebuildDecision === "hash_check" && !builder) {
       const contentHash = hashContent(rawMdx);
       const cached = cache[file.path];
       if (isCacheEntry(cached) && cached.hash === contentHash) {
@@ -512,42 +529,62 @@ export async function runBuild(): Promise<void> {
     ""
   );
   const landingNonce = generateNonce();
-  const landingHtml = htmlShell({
+  const landingContext: PageContext = {
+    pageType: "home",
+    assets: assetManifest.home,
+    slug: "",
+    filePath: join(PAGES_DIR, "index.tsx"),
+    frontmatter: { ...docuConfig.meta } as unknown as Record<string, unknown>,
+    config: docuConfig,
+  };
+  let landingHtml = htmlShell({
     title: docuConfig.meta?.title || "DocuBook",
     description: docuConfig.meta?.description || "",
     body: renderToString(landingPage),
     favicon: landingFavicon,
     seo: landingSeo,
     csp: cspHeader(landingNonce),
-    css: assetManifest.css,
-    js: assetManifest.js,
+    css: landingContext.assets.css,
+    js: landingContext.assets.js,
     nonce: landingNonce,
     themeCss: inlineThemeCss,
+    headExtra: builder?.collectHead(landingContext),
+    bodyExtra: builder?.collectBody(landingContext),
   });
+  if (builder) landingHtml = await builder.runTransformHtmlChain(landingHtml, landingContext);
   await writeFile(join(DIST_DIR, "index.html"), landingHtml);
 
-  const notFoundPage = React.createElement(
-    DocsLayout,
-    { repoUrl: docuConfig.repo?.url },
-    React.createElement(NotFoundPage)
-  );
+  const notFoundPage = React.createElement(NotFoundPage);
   const notFoundFavicon = docuConfig.meta?.favicon || DEFAULT_FAVICON;
   const notFoundNonce = generateNonce();
-  const notFoundHtml = htmlShell({
+  const notFoundContext: PageContext = {
+    pageType: "notFound",
+    assets: assetManifest.notFound,
+    slug: "404",
+    filePath: join(PAGES_DIR, "404.tsx"),
+    frontmatter: {},
+    config: docuConfig,
+  };
+  let notFoundHtml = htmlShell({
     title: "404 - Not Found",
     description: "",
     body: renderToString(notFoundPage),
     favicon: notFoundFavicon,
-    headExtra: ['<meta name="robots" content="noindex,follow">'],
+    headExtra: [
+      '<meta name="robots" content="noindex,follow">',
+      ...(builder?.collectHead(notFoundContext) ?? []),
+    ],
+    bodyExtra: builder?.collectBody(notFoundContext),
     csp: cspHeader(notFoundNonce),
-    css: assetManifest.css,
-    js: assetManifest.js,
+    css: notFoundContext.assets.css,
+    js: notFoundContext.assets.js,
     nonce: notFoundNonce,
     themeCss: inlineThemeCss,
     // Served as the static-host fallback at ANY requested path — relative
     // depth can never be right there, so use root-absolute asset URLs.
     absoluteAssets: true,
   });
+  if (builder) notFoundHtml = await builder.runTransformHtmlChain(notFoundHtml, notFoundContext);
   await writeFile(join(DIST_DIR, "404.html"), notFoundHtml);
 
   logger.spinner.stop(
@@ -561,7 +598,7 @@ export async function runBuild(): Promise<void> {
       filePath: join(DOCS_DIR, f.path),
       outputPath: join(DIST_DIR, "docs", `${f.path}.html`),
     }));
-    await builder.runOnEnd(pages);
+    await builder.runOnEnd(pages, { assetManifest, outDir: DIST_DIR });
   }
 
   logger.indexStart();
