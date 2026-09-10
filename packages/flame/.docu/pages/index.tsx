@@ -1,6 +1,6 @@
 import { loadDocuConfig } from "../node/paths";
 import { docsHtmlHref, isExternalUrl } from "../node/utils";
-import { Hero, Features } from "../components/home";
+import { Hero, Features, BackgroundBlobs } from "../components/home";
 import { ThemeToggle } from "../components/Theme";
 import type { HomeFeature } from "../node/types";
 
@@ -68,39 +68,13 @@ export default function IndexPage() {
         </div>
       </div>
 
-      {/* Background gradient blobs */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-40 left-1/2 -z-10 -translate-x-1/2 blur-3xl sm:-top-80"
-      >
-        <div
-          style={{
-            clipPath:
-              "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
-          }}
-          className="from-primary to-accent h-[40rem] w-[80rem] bg-gradient-to-tr opacity-20"
-        />
-      </div>
+      <BackgroundBlobs />
 
       {/* Hero Section */}
       <Hero hero={hero} />
 
       {/* Features Section */}
       <Features features={features} />
-
-      {/* Bottom gradient blob */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute bottom-0 left-1/2 -z-10 translate-x-1/4 blur-3xl"
-      >
-        <div
-          style={{
-            clipPath:
-              "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
-          }}
-          className="from-accent to-primary h-[30rem] w-[70rem] bg-gradient-to-tr opacity-20"
-        />
-      </div>
     </div>
   );
 }
