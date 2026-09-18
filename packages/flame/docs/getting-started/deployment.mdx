@@ -191,11 +191,11 @@ flame deploy --docker
 ```
 
 Generates:
-- `Dockerfile` — multi-stage build pinned to the installed `@docubook/flame` version
+- `Dockerfile` — multi-stage build tailored to the project's package manager
 - `nginx.conf` — security headers, cache tiers, clean URLs, and the generated `404.html`
 - `.dockerignore` — optimized for build speed
 
-The exact builder image tag keeps local CLI output and Docker builds on the same asset-manifest contract. Upgrade `@docubook/flame`, then rerun `flame deploy --docker` when you want a newer builder. The final output is a nginx container serving flat `.html` files with clean URLs.
+The builder stage follows the detected package manager. Bun projects build inside the published `ghcr.io/docubook/flame` builder image pinned to the installed `@docubook/flame` version — the CLI is already global there, so no dependency install step is needed. npm, pnpm, and yarn projects build on `node:22-alpine` and install their locked dependencies (`npm ci`, `pnpm install --frozen-lockfile`, `yarn install --frozen-lockfile`) before running the project's `build` script, so packages your docs import are always available. Detection is lockfile-first; a project without a lockfile falls back to the package manager that invoked the CLI and runs a plain install (`npm install`, `pnpm install`, …). Upgrade `@docubook/flame`, then rerun `flame deploy --docker` when you want a newer builder. The final output is a nginx container serving flat `.html` files with clean URLs.
 
 ### Build locally
 

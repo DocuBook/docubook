@@ -8,12 +8,19 @@
  */
 
 import { mkdir } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DIST_DIR, PROJECT_ROOT } from "./paths";
-import { DOCKERFILE, HEADERS_FILE, NGINX_CONF, DOCKERIGNORE } from "./deploy.shared";
+import {
+  DOCKERFILE_BUN,
+  DOCKERFILE_MARKER,
+  generateDockerfile,
+  HEADERS_FILE,
+  NGINX_CONF,
+  DOCKERIGNORE,
+} from "./deploy.shared";
 
-export { HEADERS_FILE, NGINX_CONF, DOCKERIGNORE };
+export { HEADERS_FILE, NGINX_CONF, DOCKERIGNORE, DOCKERFILE_BUN };
 
 const WORKFLOW_DIR = join(PROJECT_ROOT, ".github/workflows");
 const WORKFLOW_FILE = join(WORKFLOW_DIR, "deploy.yml");
@@ -45,14 +52,20 @@ async function runBuild() {
   }
 }
 
-export const DOCKERFILE_BUN = DOCKERFILE;
-
 async function writeDockerFiles() {
   const dockerDir = PROJECT_ROOT;
 
-  if (!existsSync(join(dockerDir, "Dockerfile"))) {
-    await Bun.write(join(dockerDir, "Dockerfile"), DOCKERFILE_BUN);
+  const dockerfilePath = join(dockerDir, "Dockerfile");
+  if (!existsSync(dockerfilePath)) {
+    await Bun.write(dockerfilePath, generateDockerfile(dockerDir));
     log.created("📄 Created Dockerfile");
+  } else if (readFileSync(dockerfilePath, "utf-8").startsWith(`${DOCKERFILE_MARKER}\n`)) {
+    await Bun.write(dockerfilePath, generateDockerfile(dockerDir));
+    log.created("📄 Updated generated Dockerfile");
+  } else {
+    log.info(
+      "⚠️  Dockerfile already exists; skipped it. Delete it and rerun flame deploy --docker to regenerate."
+    );
   }
 
   if (!existsSync(join(dockerDir, "nginx.conf"))) {

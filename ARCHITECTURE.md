@@ -210,7 +210,13 @@ This repository's production docs use `vercel.json`:
 `flame deploy` first builds the current project and writes `.nojekyll` plus
 `_headers`. Its default output is a GitHub Pages workflow. `flame deploy
 --docker` instead generates `Dockerfile`, `nginx.conf`, and `.dockerignore`;
-adding `--ci` also creates `.github/workflows/deploy-docker.yml` for GHCR.
+adding `--ci` also creates `.github/workflows/deploy-docker.yml` for GHCR. The
+generated Dockerfile follows the detected package manager: Bun projects build
+inside the published `ghcr.io/docubook/flame` builder image (CLI pre-installed,
+no install step), while npm, pnpm, and yarn projects build on `node:22-alpine`
+and install their locked dependencies before running the project's `build`
+script. Lockfiles decide the manager; without one the invoking tool's user agent
+is used and a plain (non-frozen) install runs.
 
 ### Package and Image Release
 
