@@ -1,5 +1,11 @@
 # @docubook/core
 
+## 2.0.3
+
+### Patch Changes
+
+- [#389](https://github.com/DocuBook/docubook/pull/389) [`9ff8745`](https://github.com/DocuBook/docubook/commit/9ff87459929a64615a7bbc7bb19fa6ea1a0808fc) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Fix production MDX program output so Flame deployments use the stable JSX runtime across Bun, Node.js, and Deno.
+
 ## 2.0.2
 
 ### Patch Changes
