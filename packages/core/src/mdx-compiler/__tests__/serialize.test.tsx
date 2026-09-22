@@ -5,6 +5,20 @@ import { serialize } from "../serialize.js";
 // serialize
 // -------------------------------------------------------------------------
 describe("serialize", () => {
+  it("uses production JSX for program output regardless of NODE_ENV", async () => {
+    const previous = process.env.NODE_ENV;
+    process.env.NODE_ENV = "development";
+    try {
+      const result = await serialize("# Hello", { outputFormat: "program" });
+      expect(result.compiledSource).toContain('from "react/jsx-runtime"');
+      expect(result.compiledSource).not.toContain("react/jsx-dev-runtime");
+      expect(result.compiledSource).not.toContain("jsxDEV");
+    } finally {
+      if (previous === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = previous;
+    }
+  });
+
   it("compiles basic MDX", async () => {
     const result = await serialize("# Hello\n\nWorld.", { parseFrontmatter: false });
     expect(result.compiledSource).toContain("MDXContent");
