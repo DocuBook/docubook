@@ -255,4 +255,9 @@ const scriptPath =
     : existsSync(libPath)
       ? libPath
       : nodePath;
+
+// Bun command entries are dynamically imported by this CLI, so import.meta.main
+// is false in deploy.ts. Mark the import as a command entry without making
+// library/test imports execute the deployment as a side effect.
+if (runtime === "bun" && command === "deploy") process.env.FLAME_CLI_ENTRY = "1";
 await import(pathToFileURL(scriptPath).href);
