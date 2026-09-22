@@ -76,7 +76,10 @@ function getCompileOptions(
     format,
     outputFormat,
     providerImportSource: rsc ? undefined : "@mdx-js/react",
-    development: process.env.NODE_ENV !== "production",
+    // Program output is bundled for the browser and must always use the
+    // production JSX runtime. Deploy builds can run under Bun, Node, or Deno,
+    // and dev JSX makes virtual MDX modules fragile in Vite/Rolldown.
+    development: outputFormat !== "program" && process.env.NODE_ENV !== "production",
   };
 }
 
