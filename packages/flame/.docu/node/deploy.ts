@@ -213,7 +213,10 @@ jobs:
         uses: actions/deploy-pages@v4
 `;
 
-if (import.meta.main) {
+// The CLI dynamically imports this entry point, so import.meta.main is false
+// when running `flame deploy` under Bun. The CLI sets FLAME_CLI_ENTRY before
+// importing; direct `bun deploy.ts` still uses Bun's main-module detection.
+if (import.meta.main || process.env.FLAME_CLI_ENTRY === "1") {
   deploy().catch((err) => {
     console.error("Deploy failed:", err);
     process.exit(1);
