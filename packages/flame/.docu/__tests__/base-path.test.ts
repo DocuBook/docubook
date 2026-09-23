@@ -10,12 +10,8 @@ import {
 import { htmlShell } from "../node/html.shared";
 import { buildSeoMeta } from "../node/seo";
 import { buildNginxConf } from "../node/deploy.shared";
-import {
-  stripDocsHtmlSuffix,
-  matchDocsSlug,
-  rebaseContentPath,
-  resolveDocsIndexSource,
-} from "../node/utils";
+import { stripDocsHtmlSuffix, matchDocsSlug, rebaseContentPath } from "../node/utils";
+import { resolveDocsIndexSource } from "../node/server-utils";
 import {
   BUILD_CACHE_VERSION,
   basePathStamp,

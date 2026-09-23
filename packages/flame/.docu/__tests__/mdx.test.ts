@@ -50,6 +50,11 @@ vi.mock("../node/git", () => ({
 import { compileMdx } from "../node/mdx";
 import type { MdxResult } from "../node/mdx";
 
+/** Plugin entries are normalized as `{ name, ... }` objects by compileMdx. */
+function pluginName(plugin: Pluggable): string | undefined {
+  return (plugin as { name?: string }).name;
+}
+
 describe("compileMdx — plugin merging", () => {
   const sampleMdx = "---\ntitle: Test\n---\n\nHello world";
 
@@ -61,11 +66,11 @@ describe("compileMdx — plugin merging", () => {
     await compileMdx(sampleMdx, "test.mdx");
     expect(lastSerializeOptions).not.toBeNull();
     expect(lastSerializeOptions!.remarkPlugins).toHaveLength(2);
-    expect(lastSerializeOptions!.remarkPlugins![0].name).toBe("defaultRemark");
-    expect(lastSerializeOptions!.remarkPlugins![1].name).toBe("remarkMdxJsxDocsHtmlLinks");
+    expect(pluginName(lastSerializeOptions!.remarkPlugins![0])).toBe("defaultRemark");
+    expect(pluginName(lastSerializeOptions!.remarkPlugins![1])).toBe("remarkMdxJsxDocsHtmlLinks");
     expect(lastSerializeOptions!.rehypePlugins).toHaveLength(3);
-    expect(lastSerializeOptions!.rehypePlugins![0].name).toBe("defaultRehype");
-    expect(lastSerializeOptions!.rehypePlugins![1].name).toBe("rehypeDocsHtmlLinks");
+    expect(pluginName(lastSerializeOptions!.rehypePlugins![0])).toBe("defaultRehype");
+    expect(pluginName(lastSerializeOptions!.rehypePlugins![1])).toBe("rehypeDocsHtmlLinks");
   });
 
   it("uses only defaults and built-ins when empty arrays passed", async () => {
@@ -78,18 +83,18 @@ describe("compileMdx — plugin merging", () => {
     const extraRemark: Pluggable[] = [{ name: "customRemark" } as any];
     await compileMdx(sampleMdx, "test.mdx", undefined, extraRemark);
     expect(lastSerializeOptions!.remarkPlugins).toHaveLength(3);
-    expect(lastSerializeOptions!.remarkPlugins![0].name).toBe("defaultRemark");
-    expect(lastSerializeOptions!.remarkPlugins![1].name).toBe("remarkMdxJsxDocsHtmlLinks");
-    expect(lastSerializeOptions!.remarkPlugins![2].name).toBe("customRemark");
+    expect(pluginName(lastSerializeOptions!.remarkPlugins![0])).toBe("defaultRemark");
+    expect(pluginName(lastSerializeOptions!.remarkPlugins![1])).toBe("remarkMdxJsxDocsHtmlLinks");
+    expect(pluginName(lastSerializeOptions!.remarkPlugins![2])).toBe("customRemark");
   });
 
   it("merges rehype plugins after defaults and built-ins", async () => {
     const extraRehype: Pluggable[] = [{ name: "customRehype" } as any];
     await compileMdx(sampleMdx, "test.mdx", undefined, undefined, extraRehype);
     expect(lastSerializeOptions!.rehypePlugins).toHaveLength(4);
-    expect(lastSerializeOptions!.rehypePlugins![0].name).toBe("defaultRehype");
-    expect(lastSerializeOptions!.rehypePlugins![1].name).toBe("rehypeDocsHtmlLinks");
-    expect(lastSerializeOptions!.rehypePlugins![2].name).toBe("customRehype");
+    expect(pluginName(lastSerializeOptions!.rehypePlugins![0])).toBe("defaultRehype");
+    expect(pluginName(lastSerializeOptions!.rehypePlugins![1])).toBe("rehypeDocsHtmlLinks");
+    expect(pluginName(lastSerializeOptions!.rehypePlugins![2])).toBe("customRehype");
   });
 
   it("merges both remark and rehype plugins together", async () => {

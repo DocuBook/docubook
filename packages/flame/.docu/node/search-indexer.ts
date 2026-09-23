@@ -17,7 +17,8 @@ import { getPageContent } from "./mdx";
 import { extractFrontmatterWithContent } from "@docubook/core";
 import { frontmatterField } from "./mdx";
 import { DOCS_DIR, ASSETS_DIR, loadDocuConfig, basePath } from "./paths";
-import { scanMdxFiles, docsHtmlHref } from "./utils";
+import { scanMdxFiles } from "./server-utils";
+import { docsHtmlHref } from "./utils";
 
 const docuConfig = loadDocuConfig();
 

@@ -9,7 +9,7 @@ import { watch, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
 import type { RuntimeAdapter, ServerHandle } from "./runtime";
-import { DOCS_DIR, loadDocuConfig } from "./paths";
+import { DOCS_DIR, loadDocuConfig, resolveBasePath } from "./paths";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
 import { buildClientBundle, computeInlineThemeCss } from "./hydrate.node";
@@ -30,6 +30,7 @@ import { matchDocsSlug, stripDocsHtmlSuffix } from "./utils";
 
 export async function runServer(adapter: RuntimeAdapter): Promise<ServerHandle> {
   const docuConfig = loadDocuConfig();
+  const resolvedBasePath = resolveBasePath(docuConfig);
 
   const parsedPort = parseInt(process.env.PORT ?? "3000", 10);
   const PORT =
@@ -149,7 +150,7 @@ export async function runServer(adapter: RuntimeAdapter): Promise<ServerHandle> 
     const url = new URL(req.url);
     // Generated links carry `.html` (matching the static build output);
     // route them to the same handler as their extensionless form.
-    const pathname = stripDocsHtmlSuffix(url.pathname);
+    const pathname = stripDocsHtmlSuffix(url.pathname, resolvedBasePath);
     const startTime = performance.now();
 
     if (builder) {
@@ -205,7 +206,7 @@ export async function runServer(adapter: RuntimeAdapter): Promise<ServerHandle> 
       if (pathname === "/") {
         response = await handleIndex(state);
       } else {
-        const docsSlug = matchDocsSlug(pathname);
+        const docsSlug = matchDocsSlug(pathname, resolvedBasePath);
         if (docsSlug) {
           response =
             docsSlug.length === 0

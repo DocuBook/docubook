@@ -9,7 +9,7 @@ import { resolve } from "node:path";
 import type { RuntimeAdapter, ServerHandle } from "./runtime";
 import { logger } from "./logger";
 import { DIST_DIR } from "./paths";
-import { getContentType } from "./utils";
+import { getContentType } from "./server-utils";
 import { SECURITY_HEADERS, generateNonce, cspHeader, injectNonce } from "./security";
 
 function resolveFile(pathname: string): string | null {

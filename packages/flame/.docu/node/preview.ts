@@ -2,7 +2,7 @@ import { existsSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import { logger } from "./logger";
 import { DIST_DIR } from "./paths";
-import { getContentType } from "./utils";
+import { getContentType } from "./server-utils";
 import { SECURITY_HEADERS, generateNonce, cspHeader, injectNonce } from "./security";
 
 const PORT = process.env.PORT || "4173";

@@ -33,7 +33,8 @@ import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
-import { scanMdxFiles, resolveDocsIndexSource, defaultFavicon } from "./utils";
+import { scanMdxFiles, resolveDocsIndexSource } from "./server-utils";
+import { defaultFavicon } from "./paths";
 import type { AssetManifest, BuildCache, BuildCacheMeta, CliArgs } from "./types";
 import { isCacheEntry } from "./types";
 import {
