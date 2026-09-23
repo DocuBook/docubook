@@ -11,7 +11,7 @@
 import { writeFile, mkdir } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { DIST_DIR, PROJECT_ROOT, FRAMEWORK_ROOT } from "./paths";
+import { DIST_DIR, PROJECT_ROOT, FRAMEWORK_ROOT, servedBasePath } from "./paths";
 
 const FLAME_VERSION = JSON.parse(
   readFileSync(resolve(FRAMEWORK_ROOT, "package.json"), "utf-8")
@@ -20,7 +20,49 @@ const FLAME_VERSION = JSON.parse(
 const WORKFLOW_DIR = join(PROJECT_ROOT, ".github/workflows");
 const WORKFLOW_FILE = join(WORKFLOW_DIR, "deploy.yml");
 
-export const NGINX_CONF = `server {
+/**
+ * Nginx content-assets block.
+ *
+ * Two distinct asset trees:
+ *  - `/assets/` — hash-named client bundles, written to the dist root, immutable.
+ *  - `<prefix>/assets/` — user content assets copied from `docs/assets`,
+ *    revalidated after 7d.
+ *
+ * When the prefix is empty (root deployment) both trees land on `/assets/`, and
+ * nginx rejects duplicate location blocks — so the content tree is omitted and
+ * the immutable bundle rules win. Non-hashed content assets then inherit the
+ * 1y immutable header; that is a deliberate trade for a valid config, and root
+ * deployments are the uncommon case.
+ */
+export function buildNginxConf(basePath: string): string {
+  // nginx `location` names must be plain URI prefixes; anything else (spaces,
+  // braces, semicolons) fails `nginx -t` and the container never starts.
+  // Unsafe prefixes simply lose the content-assets cache block — the default
+  // location still serves the files, the same trade root deployments make.
+  const safePrefix = /^\/[A-Za-z0-9._-]+(\/[A-Za-z0-9._-]+)*$/.test(basePath);
+  if (basePath.length > 0 && !safePrefix) {
+    console.warn(
+      `[flame] basePath "${basePath}" contains characters nginx cannot use in a location block; ` +
+        "omitting the content-assets caching block (assets still served)"
+    );
+  }
+  const contentAssetsBlock =
+    safePrefix && basePath.length > 0
+      ? `
+  location ${basePath}/assets/ {
+    expires 7d;
+    add_header Cache-Control "public";
+    add_header X-Frame-Options "DENY" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'" always;
+  }
+`
+      : "";
+
+  return `server {
   listen 80;
   server_name _;
   root /usr/share/nginx/html;
@@ -58,18 +100,7 @@ export const NGINX_CONF = `server {
     add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
     add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'" always;
   }
-
-  location /docs/assets/ {
-    expires 7d;
-    add_header Cache-Control "public";
-    add_header X-Frame-Options "DENY" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'" always;
-  }
-
+${contentAssetsBlock}
   location = /404.html { }
 
   location / {
@@ -77,6 +108,10 @@ export const NGINX_CONF = `server {
   }
 }
 `;
+}
+
+/** Backward-compatible default config (root-level `/docs` prefix). */
+export const NGINX_CONF = buildNginxConf("/docs");
 
 export const DOCKERIGNORE = `node_modules
 *.DS_Store
@@ -260,6 +295,7 @@ export const HEADERS_FILE = `/*
 `;
 
 const isDocker = !!process.env.FLAME_DEPLOY_DOCKER;
+
 const isSilent = !!process.env.FLAME_DEPLOY_SILENT;
 const isCi = !!process.env.FLAME_DEPLOY_CI;
 
@@ -300,7 +336,7 @@ async function writeDockerFiles() {
   }
 
   if (!existsSync(join(dockerDir, "nginx.conf"))) {
-    await writeFile(join(dockerDir, "nginx.conf"), NGINX_CONF);
+    await writeFile(join(dockerDir, "nginx.conf"), buildNginxConf(servedBasePath()));
     log.created("📄 Created nginx.conf");
   }
 

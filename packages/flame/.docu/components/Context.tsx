@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { cn, docsHtmlHref } from "../node/utils";
 import { Dropdown, DropdownItem } from "@docubook/ui-react/dropdown";
-import { routes, config as docuConfig } from "../node/client-routes";
+import { routes, config as docuConfig, basePath } from "../node/client-routes";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { renderLucideIcon } from "./Lucide";
 
@@ -21,7 +21,7 @@ function getFirstItemHref(route: { href: string; items?: { href: string }[] }): 
 }
 
 function getActiveContextRoute(path: string) {
-  const docPath = path.replace(/^\/docs/, "");
+  const docPath = basePath.length > 0 ? path.replace(new RegExp(`^${basePath}`), "") : path;
   return getContextRoutes().find((route) => docPath.startsWith(route.href));
 }
 
@@ -33,12 +33,13 @@ export function Context({ className }: ContextProps) {
 
   const mode = docuConfig.sidebar?.context || "dropdown";
   if (mode === "separator") return null;
-  const activeRoute = pathname.startsWith("/docs") ? getActiveContextRoute(pathname) : undefined;
+  const isDocsPath = basePath.length === 0 || pathname.startsWith(basePath);
+  const activeRoute = isDocsPath ? getActiveContextRoute(pathname) : undefined;
   const contextRoutes = getContextRoutes();
   const fallbackRoute = routes[0];
   const displayRoute = activeRoute || fallbackRoute;
 
-  if (!mounted || !pathname.startsWith("/docs") || contextRoutes.length === 0) {
+  if (!mounted || !isDocsPath || contextRoutes.length === 0) {
     return null;
   }
 
@@ -68,7 +69,7 @@ export function Context({ className }: ContextProps) {
       {contextRoutes.map((route) => {
         const isActive = activeRoute?.href === route.href;
         const firstItemPath = getFirstItemHref(route);
-        const contextPath = docsHtmlHref(`/docs${firstItemPath}`);
+        const contextPath = docsHtmlHref(`${basePath}${firstItemPath}`);
 
         return (
           <DropdownItem

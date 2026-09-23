@@ -25,12 +25,14 @@ import {
 import {
   DOCS_DIR,
   DIST_DIR,
+  DOCS_OUT_DIR,
   ASSETS_DIR,
   CACHE_FILE,
   DOCS_ASSETS_DIR,
   PROJECT_ROOT,
   PAGES_DIR,
   loadDocuConfig,
+  servedBasePath,
 } from "./paths";
 import { htmlShell } from "./html.shared";
 import { generateSearchIndex } from "./search-indexer";
@@ -39,7 +41,7 @@ import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
-import { scanMdxFiles, resolveDocsIndexSource, DEFAULT_FAVICON } from "./utils";
+import { scanMdxFiles, resolveDocsIndexSource, defaultFavicon } from "./utils";
 import type { AssetManifest, BuildCache, BuildCacheMeta, CliArgs } from "./types";
 import { isCacheEntry } from "./types";
 import {
@@ -47,6 +49,7 @@ import {
   atomicWriteFile,
   hashMdxSources,
   hookMemoryPressure,
+  renderToolchainStamp,
   runtimeStamp,
 } from "./cache-key";
 import { clearDerivedPageCaches } from "./mdx";
@@ -76,7 +79,15 @@ async function readCache(): Promise<BuildCache> {
       const data = await readFile(CACHE_FILE, "utf-8");
       const parsed = JSON.parse(data) as BuildCache;
       const meta = parsed.__meta__ as BuildCacheMeta | undefined;
-      if (!meta || meta.version !== BUILD_CACHE_VERSION || meta.runtime !== runtimeStamp()) {
+      // `render` covers the framework's own rendering sources: a template or
+      // meta-tag edit changes output without touching any MDX file, so an
+      // older cache must not be trusted after one.
+      if (
+        !meta ||
+        meta.version !== BUILD_CACHE_VERSION ||
+        meta.runtime !== runtimeStamp() ||
+        meta.render !== renderToolchainStamp()
+      ) {
         return {};
       }
       return parsed;
@@ -94,6 +105,7 @@ function stampCache(cache: BuildCache): void {
     builtAt: Date.now(),
     version: BUILD_CACHE_VERSION,
     runtime: runtimeStamp(),
+    render: renderToolchainStamp(),
   };
 }
 
@@ -246,7 +258,7 @@ async function renderDocsPage(
   const bodyExtra = builder?.collectBody(ctx);
 
   const depth = slug ? slug.split("/").length : 1;
-  const favicon = docuConfig.meta?.favicon || DEFAULT_FAVICON;
+  const favicon = docuConfig.meta?.favicon || defaultFavicon();
   const seo = buildSeoMeta(docuConfig, frontmatter, slug || "");
   // MDX content hydrates from the bundled ESM module (mdx-hydrate), not
   // new Function — no 'unsafe-eval' needed in the CSP.
@@ -263,6 +275,7 @@ async function renderDocsPage(
     nonce,
     themeCss: inlineThemeCss,
     depth,
+    basePath: servedBasePath(),
     headExtra,
     bodyExtra,
   });
@@ -309,7 +322,7 @@ export async function runBuild(): Promise<void> {
   await mkdir(DIST_DIR, { recursive: true });
   await mkdir(ASSETS_DIR, { recursive: true });
 
-  await copyDirectoryRecursive(DOCS_ASSETS_DIR, join(DIST_DIR, "docs", "assets"));
+  await copyDirectoryRecursive(DOCS_ASSETS_DIR, join(DOCS_OUT_DIR, "assets"));
 
   const mdxFiles = await scanMdxFiles(DOCS_DIR);
   const cache = args.force ? {} : await readCache();
@@ -363,6 +376,13 @@ export async function runBuild(): Promise<void> {
   // key so the index page hydrates too. Its render has its own try/catch; skip
   // on error.
   const indexSource = resolveDocsIndexSource(DOCS_DIR);
+  const docsIndexPath = join(DOCS_OUT_DIR, "index.html");
+  // If the source was removed since the previous build, don't ship stale docs
+  // output. At the deployment root, this path belongs to the landing page.
+  if (!indexSource && DOCS_OUT_DIR !== DIST_DIR) {
+    const { rm } = await import("node:fs/promises");
+    await rm(docsIndexPath, { force: true });
+  }
   if (indexSource) {
     try {
       const indexRaw = await readFile(indexSource, "utf-8");
@@ -426,7 +446,7 @@ export async function runBuild(): Promise<void> {
     const rebuildDecision = shouldRebuild(file.path, file.mtime, cache);
 
     if (rebuildDecision === "no" && !builder) {
-      const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
+      const outputPath = join(DOCS_OUT_DIR, `${file.path}.html`);
       if (existsSync(outputPath) && !assetsChanged) {
         skipped++;
         continue;
@@ -448,7 +468,7 @@ export async function runBuild(): Promise<void> {
       const cached = cache[file.path];
       if (isCacheEntry(cached) && cached.hash === contentHash) {
         if (!assetsChanged) {
-          const outputPath = join(DIST_DIR, "docs", `${file.path}.html`);
+          const outputPath = join(DOCS_OUT_DIR, `${file.path}.html`);
           if (existsSync(outputPath)) {
             cache[file.path] = { ...cached, mtime: file.mtime, builtAt: Date.now() };
             skipped++;
@@ -474,7 +494,7 @@ export async function runBuild(): Promise<void> {
           builder,
           pageNonce
         );
-        const outputPath = join(DIST_DIR, "docs", `${capturedFile.path}.html`);
+        const outputPath = join(DOCS_OUT_DIR, `${capturedFile.path}.html`);
         await mkdir(dirname(outputPath), { recursive: true });
         await writeFile(outputPath, html);
         cache[capturedFile.path] = {
@@ -508,21 +528,19 @@ export async function runBuild(): Promise<void> {
         builder,
         generateNonce()
       );
-      await mkdir(join(DIST_DIR, "docs"), { recursive: true });
-      await writeFile(join(DIST_DIR, "docs", "index.html"), indexHtml);
+      if (DOCS_OUT_DIR !== DIST_DIR) {
+        await mkdir(DOCS_OUT_DIR, { recursive: true });
+        await writeFile(docsIndexPath, indexHtml);
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       errors.push(`index: ${msg}`);
       console.error(`\n❌ Failed to build index: ${msg}\n`);
     }
-  } else {
-    const msg = "docs root index: docs/index.mdx (or docs/index.md) not found";
-    errors.push(`index: ${msg}`);
-    console.error(`\n❌ Failed to build index: ${msg}\n`);
   }
 
   const landingPage = React.createElement(IndexPage);
-  const landingFavicon = docuConfig.meta?.favicon || DEFAULT_FAVICON;
+  const landingFavicon = docuConfig.meta?.favicon || defaultFavicon();
   const landingSeo = buildSeoMeta(
     docuConfig,
     docuConfig.meta as unknown as Record<string, unknown>,
@@ -548,14 +566,18 @@ export async function runBuild(): Promise<void> {
     js: landingContext.assets.js,
     nonce: landingNonce,
     themeCss: inlineThemeCss,
+    basePath: servedBasePath(),
     headExtra: builder?.collectHead(landingContext),
     bodyExtra: builder?.collectBody(landingContext),
   });
   if (builder) landingHtml = await builder.runTransformHtmlChain(landingHtml, landingContext);
+  // The landing page always owns `/`. At a root deployment the docs index
+  // would collide with it, so the index write above is skipped there — the
+  // docs root page simply does not exist.
   await writeFile(join(DIST_DIR, "index.html"), landingHtml);
 
   const notFoundPage = React.createElement(NotFoundPage);
-  const notFoundFavicon = docuConfig.meta?.favicon || DEFAULT_FAVICON;
+  const notFoundFavicon = docuConfig.meta?.favicon || defaultFavicon();
   const notFoundNonce = generateNonce();
   const notFoundContext: PageContext = {
     pageType: "notFound",
@@ -583,6 +605,7 @@ export async function runBuild(): Promise<void> {
     // Served as the static-host fallback at ANY requested path — relative
     // depth can never be right there, so use root-absolute asset URLs.
     absoluteAssets: true,
+    basePath: servedBasePath(),
   });
   if (builder) notFoundHtml = await builder.runTransformHtmlChain(notFoundHtml, notFoundContext);
   await writeFile(join(DIST_DIR, "404.html"), notFoundHtml);
@@ -596,7 +619,7 @@ export async function runBuild(): Promise<void> {
       slug: f.path,
       title: f.path.split("/").pop() || f.path,
       filePath: join(DOCS_DIR, f.path),
-      outputPath: join(DIST_DIR, "docs", `${f.path}.html`),
+      outputPath: join(DOCS_OUT_DIR, `${f.path}.html`),
     }));
     await builder.runOnEnd(pages, { assetManifest, outDir: DIST_DIR });
   }

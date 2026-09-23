@@ -12,18 +12,31 @@ import {
 } from "@docubook/core";
 import { createMdxComponents } from "@docubook/markdown";
 import { getGitLastModified, getGitLastModifiedBatch, getFilesystemMtime } from "./git";
+import { basePath } from "./paths";
 
 /**
  * Return the value with `.html` appended, or null if the value should be left
  * unchanged.  Rules:
  *  - Must be a string
- *  - Must start with /docs/  (the /docs root index needs no suffix)
+ *  - Must be an internal href under the configured base path (`/docs` by
+ *    default, or any path at all when the site is served from the root).
+ *    The bare prefix itself is the index and needs no suffix.
  *  - Must not be an external URL, contain a fragment, or already end in .html
+ *
+ * The prefix is read per call so it tracks `meta.basePath`; a module-level
+ * snapshot would freeze the `/docs` default before config is loaded.
  */
 function appendHtml(value: unknown): string | null {
   if (typeof value !== "string") return null;
   if (/^https?:\/\//.test(value)) return null;
-  if (!value.startsWith("/docs/")) return null;
+  const prefix = basePath();
+  if (prefix.length === 0) {
+    // Root deployment: every in-site absolute path is a candidate, but the
+    // root index ("/") and bare "/index" need no suffix.
+    if (!value.startsWith("/") || value === "/") return null;
+  } else {
+    if (!value.startsWith(`${prefix}/`)) return null;
+  }
   if (value.includes("#")) return null;
   if (value.endsWith(".html")) return null;
   return `${value}.html`;
@@ -44,13 +57,13 @@ interface MdastNode {
 }
 
 /**
- * Rehype plugin: append `.html` to internal `/docs/` hrefs on HTML `<a>` nodes.
+ * Rehype plugin: append `.html` to internal docs hrefs on HTML `<a>` nodes.
  *
  * This covers standard markdown links: `[text](/docs/page)` → `<a href="…">`.
  * It runs in the HAST (HTML AST) phase, where `<a>` elements are real nodes.
  *
  * Skips: external URLs, anchor-only links, paths that already end in `.html`,
- * and the `/docs` root index (no trailing slash segment).
+ * and the base-path root index (no trailing slash segment).
  */
 function rehypeDocsHtmlLinks() {
   return (tree: HastNode) => {
@@ -69,7 +82,7 @@ function rehypeDocsHtmlLinks() {
 }
 
 /**
- * Remark plugin: append `.html` to internal `/docs/` hrefs on MDX JSX nodes.
+ * Remark plugin: append `.html` to internal docs hrefs on MDX JSX nodes.
  *
  * MDX JSX elements (`<Card href="…">`, `<LinkCard href="…">`, etc.) live in
  * the MDAST as `mdxJsxFlowElement` / `mdxJsxTextElement` nodes.  They are

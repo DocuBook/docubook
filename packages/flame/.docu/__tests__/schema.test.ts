@@ -48,6 +48,45 @@ describe("docu.schema.json — sidebar field", () => {
   });
 });
 
+describe("docu.schema.json — meta.basePath field", () => {
+  const schemaPath = join(import.meta.dirname, "..", "..", "docu.schema.json");
+  const schema: Record<string, unknown> = JSON.parse(readFileSync(schemaPath, "utf-8"));
+
+  const metaProps = ((schema.properties as Record<string, unknown>).meta as Record<string, unknown>)
+    .properties as Record<string, unknown>;
+
+  it("has a basePath property", () => {
+    expect(metaProps.basePath).toBeDefined();
+  });
+
+  it("defines basePath as string type", () => {
+    const basePath = metaProps.basePath as Record<string, unknown>;
+    expect(basePath.type).toBe("string");
+  });
+
+  it("documents the default and the empty-string root case", () => {
+    const basePath = metaProps.basePath as Record<string, unknown>;
+    const desc = basePath.description as string;
+    expect(desc).toContain("/docs");
+    expect(desc.toLowerCase()).toContain("empty");
+  });
+
+  it("warns that basePath is configured independently of baseURL", () => {
+    // The prefix is appended to baseURL when building canonical/OG urls, so a
+    // baseURL that already carries the path would double-count it.
+    const basePath = metaProps.basePath as Record<string, unknown>;
+    expect(basePath.description as string).toContain("baseURL");
+  });
+
+  it("is accepted — meta does not reject additional properties", () => {
+    const meta = (schema.properties as Record<string, unknown>).meta as Record<string, unknown>;
+    // additionalProperties: false means an undeclared field would be flagged by
+    // editors; declaring basePath is what makes the config valid.
+    expect(meta.additionalProperties).toBe(false);
+    expect(Object.keys(metaProps)).toContain("basePath");
+  });
+});
+
 describe("docu.schema.json — plugins field", () => {
   const schemaPath = join(import.meta.dirname, "..", "..", "docu.schema.json");
   const schema: Record<string, unknown> = JSON.parse(readFileSync(schemaPath, "utf-8"));

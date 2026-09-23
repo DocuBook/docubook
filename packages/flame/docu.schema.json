@@ -14,7 +14,14 @@
       "properties": {
         "title": { "type": "string", "description": "Site title" },
         "description": { "type": "string", "description": "Site description" },
-        "baseURL": { "type": "string", "description": "Base URL for the site" },
+        "baseURL": {
+          "type": "string",
+          "description": "Origin (and deployment root) of the site, e.g. 'https://docubook.pro' or 'https://user.github.io'."
+        },
+        "basePath": {
+          "type": "string",
+          "description": "URL prefix the docs site is served under, e.g. '/docs' (default) or '/repo' for a GitHub Pages project site. Empty string serves from the deployment root. Configure independently of baseURL: the prefix is appended to baseURL when building canonical/OG URLs, so baseURL should not already include it."
+        },
         "favicon": { "type": "string", "description": "Path to favicon" },
         "ogImage": {
           "type": "string",

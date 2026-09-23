@@ -18,7 +18,15 @@ export interface DocuRoute {
 export interface DocuMeta {
   title: string;
   description: string;
+  /** Origin + deployment root, e.g. `https://docubook.pro` or `https://user.github.io`. */
   baseURL: string;
+  /**
+   * URL prefix the docs site is served under, e.g. "/docs" (default) or
+   * "/repo" for a GitHub Pages project site. An empty string serves the site
+   * from the deployment root. Set it independently of `baseURL`: the prefix is
+   * appended to `baseURL` when building canonical/OG URLs.
+   */
+  basePath?: string;
   favicon?: string;
   /** Default OG image path (e.g. /docs/assets/images/og.png). Used when page frontmatter has no image. */
   ogImage?: string;
@@ -114,6 +122,11 @@ export interface BuildCacheEntry {
 export interface BuildCacheMeta extends BuildCacheEntry {
   version: number;
   runtime: string;
+  /**
+   * Fingerprint of the framework's rendering sources. Optional so a cache file
+   * written before this field existed is treated as a mismatch and discarded.
+   */
+  render?: string;
 }
 
 export interface BuildCache {

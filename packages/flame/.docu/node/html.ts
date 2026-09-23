@@ -1,6 +1,8 @@
 import type { HtmlShellOptions } from "./html.shared";
 export type { HtmlShellOptions };
 import { cspMeta } from "./security";
+import { rebaseContentPath } from "./utils";
+import { DEFAULT_BASE_PATH } from "./paths";
 
 export function htmlShell(opts: HtmlShellOptions): string {
   const {
@@ -18,18 +20,28 @@ export function htmlShell(opts: HtmlShellOptions): string {
     headExtra,
     bodyExtra,
     absoluteAssets = false,
+    basePath = DEFAULT_BASE_PATH,
   } = opts;
   const nonceAttr = nonce ? ` nonce="${Bun.escapeHTML(nonce)}"` : "";
   const themeStyle = themeCss ? `\n  <style${nonceAttr}>${Bun.escapeHTML(themeCss)}</style>` : "";
   const headInjection = headExtra?.length ? `\n  ${headExtra.join("\n  ")}` : "";
   const bodyInjection = bodyExtra?.length ? `\n  ${bodyExtra.join("\n  ")}` : "";
   const depthPrefix = depth === 0 ? "" : "../".repeat(depth);
+  // Bundle assets (JS, CSS, chunks) are written to the dist root and are
+  // independent of the docs prefix; pages climb out of the prefix with `../`.
   const assetPrefix = absoluteAssets ? "/assets/" : depthPrefix + "assets/";
   const clientScript = js
     ? `\n  <link rel="modulepreload" href="${Bun.escapeHTML(assetPrefix + js)}">\n  <script type="module"${nonceAttr} src="${Bun.escapeHTML(assetPrefix + js)}"></script>`
     : "";
-  const resolvePath = (path: string) =>
-    absoluteAssets ? path : path.startsWith("/") ? depthPrefix + path.slice(1) : path;
+  const resolvePath = (path: string) => {
+    if (!path.startsWith("/")) return path;
+    // Author-written content paths (favicon, logo) are root-relative as they
+    // appear on disk, e.g. "/docs/assets/images/favicon.ico". Re-base a leading
+    // default prefix onto the configured one, otherwise the asset 404s at the
+    // old path after a subpath change.
+    const rebased = rebaseContentPath(path, basePath);
+    return absoluteAssets ? rebased : depthPrefix + rebased.slice(1);
+  };
 
   // Build SEO meta tags (OG, Twitter, canonical)
   let seoTags = "";

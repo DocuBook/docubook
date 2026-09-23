@@ -1,5 +1,7 @@
 import type { DocuConfig } from "./types";
 import { frontmatterField } from "./mdx";
+import { resolveBasePath } from "./paths";
+import { rebaseContentPath } from "./utils";
 
 export interface SeoMeta {
   /** Absolute canonical URL */
@@ -13,6 +15,9 @@ export interface SeoMeta {
 /**
  * Build SEO metadata from config and per-page frontmatter.
  * All fields are derived from existing data — no extra config required.
+ *
+ * All paths are prefixed with the configured base path so canonical and OG
+ * URLs stay correct when the site is served under a subpath.
  */
 export function buildSeoMeta(
   config: DocuConfig,
@@ -20,7 +25,8 @@ export function buildSeoMeta(
   slug: string
 ): SeoMeta {
   const baseURL = config.meta?.baseURL?.replace(/\/+$/, "") || "";
-  const url = slug ? `${baseURL}/docs/${slug}` : `${baseURL}/`;
+  const prefix = resolveBasePath(config);
+  const url = slug ? `${baseURL}${prefix}/${slug}` : `${baseURL}/`;
 
   const result: SeoMeta = {
     url,
@@ -30,13 +36,31 @@ export function buildSeoMeta(
   // Per-page image from frontmatter, fallback to global default from config
   const image = frontmatterField(frontmatter, "image") || config.meta?.ogImage;
   if (image) {
-    // Resolve using URL constructor — handles absolute, root-relative, and relative paths
-    try {
-      result.image = new URL(image, image.startsWith("/") ? baseURL : `${baseURL}/docs/`).href;
-    } catch {
-      result.image = image;
-    }
+    result.image = resolveOgImage(image, baseURL, prefix);
   }
 
   return result;
+}
+
+/**
+ * Resolve an OG image path to an absolute URL.
+ *
+ * Handles four shapes:
+ *  - absolute (`https://…`) — used verbatim
+ *  - root-relative already carrying the prefix (`/repo/assets/og.png`) — used as is
+ *  - root-relative still carrying the default prefix (`/docs/assets/og.png`) —
+ *    re-based onto `prefix`, so an existing `docu.json` keeps working after the
+ *    site moves to a different subpath
+ *  - bare relative (`og.png`) — resolved against the prefix directory
+ */
+function resolveOgImage(image: string, baseURL: string, prefix: string): string {
+  try {
+    if (/^[a-zA-Z][a-zA-Z\d+.-]*:\/\//.test(image)) return new URL(image).href;
+    if (image.startsWith("/")) {
+      return new URL(rebaseContentPath(image, prefix), baseURL).href;
+    }
+    return new URL(image, `${baseURL}${prefix}/`).href;
+  } catch {
+    return image;
+  }
 }

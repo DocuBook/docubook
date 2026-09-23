@@ -5,7 +5,7 @@ import Sublink, { GroupAccordionProvider } from "./Sublink";
 import SidebarGroupHeader from "./SidebarGroupHeader";
 import type { DocuRoute } from "../node/types";
 import { cn } from "../node/utils";
-import { config as docuConfig } from "../node/client-routes";
+import { config as docuConfig, basePath } from "../node/client-routes";
 
 interface MenuProps {
   onNavigate?: () => void;
@@ -15,8 +15,8 @@ interface MenuProps {
 }
 
 function getCurrentContext(path: string): string | undefined {
-  if (!path.startsWith("/docs")) return undefined;
-  const match = path.match(/^\/docs\/([^/]+)/);
+  if (!path.startsWith(basePath)) return undefined;
+  const match = path.match(new RegExp(`^${basePath}/([^/]+)`));
   return match ? match[1] : undefined;
 }
 
@@ -30,10 +30,11 @@ function getContextRoute(contextPath: string, routeList: DocuRoute[]): DocuRoute
 export default function Menu({ onNavigate, className = "", pathname, routes = [] }: MenuProps) {
   const menuRoutes = routes;
   const [currentPath] = useState(
-    () => pathname || (typeof window !== "undefined" ? window.location.pathname : "/docs")
+    () => pathname || (typeof window !== "undefined" ? window.location.pathname : basePath)
   );
 
-  if (!currentPath.startsWith("/docs")) return null;
+  // Root deployment has no prefix to match against: every path belongs to docs.
+  if (basePath.length > 0 && !currentPath.startsWith(basePath)) return null;
 
   const mode = docuConfig.sidebar?.context || "dropdown";
   const navProps = {
@@ -43,7 +44,7 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
 
   // Shared nav item with border-left overlap wrapper
   const renderBorderItem = (item: DocuRoute, parentRouteHref: string, key: string) => {
-    const fullHref = `/docs${parentRouteHref}${item.href}`;
+    const fullHref = `${basePath}${parentRouteHref}${item.href}`;
     const isActive = currentPath === fullHref || currentPath === `${fullHref}.html`;
     return (
       <li key={key}>
@@ -59,7 +60,7 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
               href={item.href}
               level={0}
               onNavigate={onNavigate}
-              parentHref={`/docs${parentRouteHref}`}
+              parentHref={`${basePath}${parentRouteHref}`}
             />
           </div>
         </div>
@@ -106,7 +107,7 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
   }
 
   // Dropdown mode: render only the active context section
-  const isDocsRoot = currentPath === "/docs" || currentPath === "/docs/";
+  const isDocsRoot = currentPath === basePath || currentPath === `${basePath}/`;
   const currentContext = isDocsRoot
     ? menuRoutes[0]?.href.replace(/^\/+|\/+$/, "")
     : getCurrentContext(currentPath);
@@ -132,7 +133,7 @@ export default function Menu({ onNavigate, className = "", pathname, routes = []
               href={contextRoute.href}
               level={0}
               onNavigate={onNavigate}
-              parentHref="/docs"
+              parentHref={basePath}
             />
           </li>
         </ul>

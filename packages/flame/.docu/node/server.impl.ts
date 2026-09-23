@@ -26,7 +26,7 @@ import {
   type ServerState,
 } from "./server-routes";
 import { wrapPluginResponse } from "./security";
-import { stripDocsHtmlSuffix } from "./utils";
+import { matchDocsSlug, stripDocsHtmlSuffix } from "./utils";
 
 export async function runServer(adapter: RuntimeAdapter): Promise<ServerHandle> {
   const docuConfig = loadDocuConfig();
@@ -197,18 +197,23 @@ export async function runServer(adapter: RuntimeAdapter): Promise<ServerHandle> 
 
       let response: Response;
 
-      // Manual route matching — same routes Bun.FileSystemRouter derives
-      // from `.docu/pages/` ("/", "/docs/[[...slug]]", "/404").
+      // The landing page owns `/` in every deployment. At the deployment root
+      // (`meta.basePath: ""`) docs would otherwise claim it, but the build
+      // skips the docs index there — so dev must not serve it either.
+      // Static assets were already handled above, so a root deployment may
+      // still match every other path as a docs route.
       if (pathname === "/") {
         response = await handleIndex(state);
-      } else if (pathname === "/docs" || pathname === "/docs/") {
-        response = await handleDocsIndex(state);
-      } else if (pathname.startsWith("/docs/")) {
-        const slug = pathname.slice("/docs/".length).split("/").filter(Boolean);
-        response =
-          slug.length === 0 ? await handleDocsIndex(state) : await handleDocsRoute(slug, state);
       } else {
-        response = await handleNotFound(state);
+        const docsSlug = matchDocsSlug(pathname);
+        if (docsSlug) {
+          response =
+            docsSlug.length === 0
+              ? await handleDocsIndex(state)
+              : await handleDocsRoute(docsSlug, state);
+        } else {
+          response = await handleNotFound(state);
+        }
       }
 
       logger.request(
