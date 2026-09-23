@@ -1,8 +1,9 @@
 import React from "react";
-import { loadDocuConfig } from "../node/paths";
+import { loadDocuConfig, resolveBasePath } from "../node/paths";
 import Menu from "./Menu";
 
 const docuConfig = loadDocuConfig();
+const basePath = resolveBasePath(docuConfig);
 
 interface DocsLayoutProps {
   children?: React.ReactNode;
@@ -10,7 +11,7 @@ interface DocsLayoutProps {
   pathname?: string;
 }
 
-export function DocsLayout({ children, repoUrl, pathname = "/docs" }: DocsLayoutProps) {
+export function DocsLayout({ children, repoUrl, pathname = basePath }: DocsLayoutProps) {
   return React.createElement(
     "div",
     { className: "docs-layout flex flex-col min-h-screen w-full" },
@@ -45,7 +46,7 @@ export function DocsLayout({ children, repoUrl, pathname = "/docs" }: DocsLayout
             { className: "flex items-center gap-6 text-sm font-medium text-base-content/80" },
             ...(docuConfig.navbar?.menu || []).map((item: { title: string; href: string }) => {
               const isExternal = /^https?:\/\//.test(item.href);
-              const isDocsActive = item.href === "/docs";
+              const isDocsActive = item.href === basePath;
               return React.createElement(
                 "a",
                 {

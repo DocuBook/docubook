@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
 import Anchor from "./Anchor";
-import { cn } from "../node/utils";
-import { config as docuConfig } from "../node/client-routes";
+import { cn, rebaseContentPath } from "../node/utils";
+import { config as docuConfig, basePath } from "../node/client-routes";
 import {
   Navbar as BaseNavbar,
   Logo as BaseLogo,
@@ -27,7 +27,11 @@ interface NavbarProps {
 }
 
 function AppLogo({ logo, logoText }: { logo?: { src?: string; alt?: string }; logoText?: string }) {
-  return <BaseLogo src={logo?.src} alt={logo?.alt} text={logoText} href="/docs" />;
+  // `logo.src` is authored as a root-relative path on disk (e.g.
+  // "/docs/assets/images/docu.svg"); re-base it onto the configured prefix so
+  // the logo keeps resolving after a subpath change.
+  const src = logo?.src ? rebaseContentPath(logo.src, basePath) : undefined;
+  return <BaseLogo src={src} alt={logo?.alt} text={logoText} href={basePath || "/"} />;
 }
 
 function AppNavMenu({ menu, currentPath }: { menu: AppNavMenuItem[]; currentPath?: string }) {

@@ -14,6 +14,7 @@ import {
   LIB_DIR,
   STYLES_DIR,
   loadDocuConfig,
+  resolveBasePath,
 } from "./paths";
 import { buildThemeCss, createMdxModuleEntries, getThemeConfig } from "./hydrate";
 import { atomicWriteFile, computeTailwindCacheKey, readStyleCss } from "./cache-key";
@@ -232,6 +233,7 @@ export async function buildClientBundle(
             `const docuConfig = ${JSON.stringify(resolved)};`,
             `export const routes = docuConfig.routes || [];`,
             `export const config = docuConfig;`,
+            `export const basePath = ${JSON.stringify(resolveBasePath(config))};`,
           ].join("\n");
         },
       },

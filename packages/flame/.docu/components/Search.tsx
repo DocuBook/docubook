@@ -48,6 +48,9 @@ let cmdKRegistered = false;
 
 async function loadIndex(): Promise<SearchRecord[]> {
   if (indexCache) return indexCache;
+  // The search index is generated into the dist-root assets tree — next to
+  // the hash-named bundles, not under the docs prefix (nginx serves it at
+  // `location = /assets/search-index.json`).
   const res = await fetch("/assets/search-index.json");
   indexCache = await res.json();
   return indexCache!;

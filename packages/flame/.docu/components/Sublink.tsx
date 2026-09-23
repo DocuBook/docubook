@@ -13,7 +13,7 @@ import { ChevronDown } from "lucide-react";
 import Anchor from "./Anchor";
 import type { DocuRoute } from "../node/types";
 import { cn, docsHtmlHref } from "../node/utils";
-import { config as docuConfig } from "../node/client-routes";
+import { config as docuConfig, basePath } from "../node/client-routes";
 
 /** Exclusive accordion for level >= 2 sidebar groups — opening one group
  * closes the previously open one. All level >= 2 groups default to closed
@@ -55,9 +55,9 @@ export default function Sublink({
   parentHref = "",
   pathname: pathnameProp,
 }: SublinkProps) {
-  const fullHref = parentHref ? `${parentHref}${href}` : `/docs${href}`;
+  const fullHref = parentHref ? `${parentHref}${href}` : `${basePath}${href}`;
   const currentPathname =
-    pathnameProp || (typeof window !== "undefined" ? window.location.pathname : "/docs");
+    pathnameProp || (typeof window !== "undefined" ? window.location.pathname : basePath);
 
   // Groups with children are exclusive accordions (default closed, expand on
   // click). In separator mode every nav item renders at level 0 (sections are

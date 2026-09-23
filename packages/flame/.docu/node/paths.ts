@@ -84,3 +84,84 @@ export function loadDocuConfig(): DocuConfig {
   _config = JSON.parse(readFileSync(DOCU_CONFIG_PATH, "utf-8"));
   return _config!;
 }
+
+/**
+ * Default URL prefix the docs site is served under. Kept as `/docs` so
+ * existing deployments keep byte-identical output.
+ */
+export const DEFAULT_BASE_PATH = "/docs";
+
+/**
+ * Normalize a configured base path into `/prefix` form with no trailing
+ * slash. `""`, `"/"`, and undefined all mean "served at the domain root".
+ * Absolute URLs (`https://host/x`) contribute only their pathname, so a
+ * `meta.baseURL` can be passed straight in.
+ */
+export function normalizeBasePath(value: string | undefined | null): string {
+  if (typeof value !== "string") return DEFAULT_BASE_PATH;
+  let path = value.trim();
+  if (path.length === 0 || path === "/") return "";
+  try {
+    if (/^[a-zA-Z][a-zA-Z\d+.-]*:\/\//.test(path)) path = new URL(path).pathname;
+  } catch {
+    // malformed URL — fall through and treat the raw value as a path
+  }
+  path = `/${path.replace(/^\/+|\/+$/g, "")}`;
+  return path === "/" ? "" : path;
+}
+
+/**
+ * Resolve the docs URL prefix from config.
+ *
+ * An explicit `meta.basePath` wins, including `""` for a root deployment.
+ * Otherwise `/docs` (the historical behaviour).
+ *
+ * Deliberately NOT derived from `meta.baseURL`'s pathname: `baseURL` is the
+ * origin + deployment root and `basePath` is the prefix beneath it. Deriving
+ * one from the other's pathname double-counts that path — the SEO/canonical
+ * builder appends the prefix to `baseURL`, so `baseURL: ".../repo"` deriving
+ * `basePath: "/repo"` produced `.../repo/repo/...`. They must be configured
+ * independently; the schema documents both.
+ */
+export function resolveBasePath(config?: DocuConfig | null): string {
+  const meta = config?.meta;
+  if (typeof meta?.basePath === "string") return normalizeBasePath(meta.basePath);
+  return DEFAULT_BASE_PATH;
+}
+
+/**
+ * Cached base path for the current project. Callers that already hold a config
+ * may pass it in; otherwise the config singleton is loaded on first use.
+ *
+ * Safe to read eagerly at module scope even though `loadDocuConfig()` is only
+ * invoked inside a build: `PROJECT_ROOT` is resolved at import time, and the
+ * fallback (missing or malformed docu.json) is the `/docs` default, so the
+ * value never depends on call order.
+ */
+export function basePath(): string {
+  let config: DocuConfig | null = null;
+  try {
+    config = loadDocuConfig();
+  } catch {
+    // config absent/unreadable (tests, ad-hoc scripts) — use the default
+  }
+  return resolveBasePath(config);
+}
+
+/** Build-output directory for docs pages, e.g. `.docu/dist/docs` or `dist/` at the root. */
+export function docsOutDir(distDir: string, resolvedBasePath: string = basePath()): string {
+  return resolvedBasePath.length === 0 ? distDir : join(distDir, resolvedBasePath.slice(1));
+}
+
+/** Serve-prefix counterpart of {@link docsOutDir}: `""` at the root, else
+ * `/prefix` with no trailing slash. */
+export function servedBasePath(resolvedBasePath: string = basePath()): string {
+  return resolvedBasePath;
+}
+
+/**
+ * Build-output directory for docs pages — derived from `meta.basePath`.
+ * Declared after the resolver above: `const` bindings initialize in order, and
+ * `DOCS_OUT_DIR` reads `DEFAULT_BASE_PATH` through the chain.
+ */
+export const DOCS_OUT_DIR = docsOutDir(DIST_DIR);

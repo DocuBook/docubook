@@ -1,16 +1,36 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { FRAMEWORK_ROOT, STYLES_DIR, resolveProjectFile } from "./paths";
+import { FRAMEWORK_ROOT, STYLES_DIR, resolveProjectFile, basePath } from "./paths";
 
 /**
  * Build cache version — bump when the toolchain output contract changes
  * (e.g. Bun.build barrel optimization, Tailwind CLI upgrade). Old caches
  * with a mismatched version are discarded on read (see build.ts readCache).
+ *
+ * v6: pages became base-path aware (`meta.basePath`), and the resolved value
+ * is folded into `basePathStamp()` below. Bumping here also invalidates any
+ * cache written by an earlier config, so a base-path edit can never be
+ * silently skipped as "unchanged".
  */
-export const BUILD_CACHE_VERSION = 5;
+export const BUILD_CACHE_VERSION = 6;
 
-/** Toolchain fingerprint: Bun version on Bun, Deno version on Deno, Node elsewhere. */
+/**
+ * Resolved docs URL prefix, part of every cache key.
+ *
+ * The page cache is keyed by relative MDX path and the bundle/asset slots are
+ * hashed from MDX source alone — neither changes when only `meta.basePath`
+ * changes. Without this stamp, editing the prefix would leave every key
+ * untouched and the build would skip every page, emitting HTML that still
+ * points at the old prefix.
+ */
+export function basePathStamp(): string {
+  return basePath();
+}
+
+/**
+ * Toolchain fingerprint: Bun version on Bun, Deno version on Deno, Node elsewhere.
+ */
 export function runtimeStamp(): string {
   const g = globalThis as Record<string, unknown>;
   const bun = g.Bun as { version?: string } | undefined;
@@ -21,6 +41,57 @@ export function runtimeStamp(): string {
   const proc = g.process as { version?: string } | undefined;
   if (typeof proc?.version === "string" && proc.version.length > 0) return `node-${proc.version}`;
   return "node-unknown";
+}
+
+/**
+ * Framework source files that shape rendered HTML.
+ *
+ * Page cache entries are keyed by MDX source alone, so editing the renderer
+ * (a template tweak, a new meta tag, base-path plumbing) would otherwise leave
+ * every page a cache hit and keep serving HTML built by the old code. Hashing
+ * these sources makes a framework edit invalidate the pages it affects.
+ */
+const RENDER_SOURCE_FILES = [
+  ".docu/node/html.ts",
+  ".docu/node/html.shared.ts",
+  ".docu/node/seo.ts",
+  ".docu/node/utils.ts",
+  ".docu/node/paths.ts",
+  ".docu/node/mdx.ts",
+  ".docu/node/build.ts",
+  ".docu/node/build.impl.ts",
+  ".docu/node/server-routes.ts",
+  ".docu/components/DocsLayout.tsx",
+  ".docu/components/Navbar.tsx",
+  ".docu/pages/index.tsx",
+  ".docu/pages/404.tsx",
+  ".docu/pages/docs/[[...slug]].tsx",
+] as const;
+
+let renderStampCache: string | null = null;
+
+/**
+ * Fingerprint of the framework's rendering sources.
+ *
+ * Memoized per process — the files cannot change mid-build, and hashing them
+ * on every page would dominate build time. A missing file contributes nothing
+ * so a partial install still yields a stable (if weaker) stamp.
+ */
+export function renderToolchainStamp(): string {
+  if (renderStampCache !== null) return renderStampCache;
+  const h = createHash("sha256");
+  h.update(`v${BUILD_CACHE_VERSION}`);
+  for (const rel of RENDER_SOURCE_FILES) {
+    const file = join(FRAMEWORK_ROOT, rel);
+    try {
+      if (!existsSync(file)) continue;
+      h.update(rel).update("\0").update(readFileSync(file, "utf-8"));
+    } catch {
+      // unreadable source — skip it rather than break the build
+    }
+  }
+  renderStampCache = h.digest("hex").slice(0, 16);
+  return renderStampCache;
 }
 
 /**
@@ -230,6 +301,8 @@ export function computeTailwindCacheKey(
   h.update("\0");
   h.update(runtimeStamp());
   h.update("\0");
+  h.update(basePathStamp());
+  h.update("\0");
   h.update(`v${BUILD_CACHE_VERSION}`);
   return h.digest("hex").slice(0, 16);
 }
@@ -304,7 +377,9 @@ export function hookMemoryPressure(clear: () => void): void {
 export function hashMdxSources(mdxSources: Record<string, string>): string {
   const h = createHash("sha256");
   const slugs = Object.keys(mdxSources).sort();
-  h.update(`v${BUILD_CACHE_VERSION}:${runtimeStamp()}:`);
+  h.update(
+    `v${BUILD_CACHE_VERSION}:${runtimeStamp()}:${basePathStamp()}:${renderToolchainStamp()}:`
+  );
   for (const slug of slugs) {
     h.update(slug);
     h.update("\0");

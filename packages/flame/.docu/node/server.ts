@@ -1,7 +1,7 @@
 import { watch, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
-import { DOCS_DIR, PAGES_DIR, loadDocuConfig } from "./paths";
+import { DOCS_DIR, loadDocuConfig } from "./paths";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
 import { buildClientBundle, computeInlineThemeCss } from "./hydrate";
@@ -18,7 +18,7 @@ import {
   type ServerState,
 } from "./server-routes";
 import { wrapPluginResponse } from "./security";
-import { stripDocsHtmlSuffix } from "./utils";
+import { matchDocsSlug, stripDocsHtmlSuffix } from "./utils";
 
 const docuConfig = loadDocuConfig();
 
@@ -63,16 +63,6 @@ const state: ServerState = {
   inlineThemeCss,
   builder,
 };
-
-let router: InstanceType<typeof Bun.FileSystemRouter> | null = null;
-try {
-  router = new Bun.FileSystemRouter({
-    style: "nextjs",
-    dir: PAGES_DIR,
-  });
-} catch (e) {
-  logger.warn(`FileSystemRouter failed: ${e instanceof Error ? e.message : String(e)}`);
-}
 
 const hmrClients = new Set<ReadableStreamDefaultController>();
 
@@ -199,24 +189,25 @@ const server = Bun.serve({
         if (staticRes) return staticRes;
       }
 
-      const match = router?.match(pathname);
       let response: Response;
 
-      const routeName = match?.name;
-
-      if (routeName === "/docs/[[...slug]]") {
-        const slugParam = match?.params?.slug;
-        const slug = slugParam ? slugParam.split("/") : [];
-
-        if (slug.length === 0) {
-          response = await handleDocsIndex(state);
-        } else {
-          response = await handleDocsRoute(slug, state);
-        }
-      } else if (routeName === "/") {
+      // The landing page owns `/` in every deployment. At the deployment root
+      // (`meta.basePath: ""`) docs would otherwise claim it, but the build
+      // skips the docs index there — so dev must not serve it either.
+      // Static assets were already handled above, so a root deployment may
+      // still match every other path as a docs route.
+      if (pathname === "/") {
         response = await handleIndex(state);
       } else {
-        response = await handleNotFound(state);
+        const docsSlug = matchDocsSlug(pathname);
+        if (docsSlug) {
+          response =
+            docsSlug.length === 0
+              ? await handleDocsIndex(state)
+              : await handleDocsRoute(docsSlug, state);
+        } else {
+          response = await handleNotFound(state);
+        }
       }
 
       logger.request(

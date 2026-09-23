@@ -3,7 +3,14 @@ import { basename, join } from "node:path";
 import { mkdir, rename, unlink } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { resolveTheme, generateThemeCss, presetRegistry } from "@docubook/themes-colors";
-import { ASSETS_DIR, cleanOldBundles, LIB_DIR, STYLES_DIR, loadDocuConfig } from "./paths";
+import {
+  ASSETS_DIR,
+  cleanOldBundles,
+  LIB_DIR,
+  STYLES_DIR,
+  loadDocuConfig,
+  resolveBasePath,
+} from "./paths";
 import { atomicWriteFile, computeTailwindCacheKey, readStyleCss } from "./cache-key";
 import { resolveRoutes } from "./fs-scanner";
 import type { AssetManifest, DocuRoute } from "./types";
@@ -161,6 +168,10 @@ export async function buildClientBundle(
                 `const docuConfig = ${JSON.stringify(resolved)};`,
                 `export const routes = docuConfig.routes || [];`,
                 `export const config = docuConfig;`,
+                // The client bundle cannot read docu.json at runtime, so the
+                // resolved prefix is inlined here — same value the server-side
+                // render and the static build use.
+                `export const basePath = ${JSON.stringify(resolveBasePath(config))};`,
               ].join("\n"),
               loader: "ts",
             };

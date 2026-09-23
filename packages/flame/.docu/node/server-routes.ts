@@ -4,8 +4,8 @@ import { readFileSync, statSync } from "node:fs";
 import React, { type ReactNode } from "react";
 import { renderToString } from "react-dom/server";
 import { compileMdx, frontmatterField } from "./mdx";
-import { DEFAULT_FAVICON, getContentType } from "./utils";
-import { DOCS_DIR, DIST_DIR, PAGES_DIR, PROJECT_ROOT } from "./paths";
+import { defaultFavicon, getContentType } from "./utils";
+import { DOCS_DIR, DIST_DIR, PAGES_DIR, PROJECT_ROOT, servedBasePath } from "./paths";
 import { BuildPluginBuilder } from "./plugin-builder";
 import type { PageContext, PageType } from "./plugin";
 import type { AssetEntry, AssetManifest, DocuConfig, TocItem } from "./types";
@@ -34,7 +34,7 @@ async function createHtmlResponse(
   depth = 0
 ): Promise<Response> {
   const nonce = generateNonce();
-  const favicon = state.docuConfig.meta?.favicon || DEFAULT_FAVICON;
+  const favicon = state.docuConfig.meta?.favicon || defaultFavicon();
   const assets: AssetEntry = state.assetManifest[pageType];
   const context: PageContext = {
     ...page,
@@ -55,6 +55,7 @@ async function createHtmlResponse(
     headExtra: state.builder?.collectHead(context),
     bodyExtra: state.builder?.collectBody(context),
     depth,
+    basePath: servedBasePath(),
     // 404 pages can be requested at arbitrary depths (e.g. a noLink section
     // path typed in the address bar) — relative asset paths would resolve
     // against the wrong directory and break CSS/JS.
@@ -234,7 +235,7 @@ async function renderPage(
 export async function handleDocsIndex(state: ServerState): Promise<Response> {
   const doc = await getDocsForSlug("", state);
   if (!doc) return renderPage(NotFoundPage, "404 - Not Found", "", 404, state, {}, 1);
-  return renderDocsServerPage(doc, [], "/docs", state);
+  return renderDocsServerPage(doc, [], servedBasePath() || "/", state);
 }
 
 export async function handleDocsRoute(slug: string[], state: ServerState): Promise<Response> {
@@ -242,7 +243,7 @@ export async function handleDocsRoute(slug: string[], state: ServerState): Promi
   const doc = await getDocsForSlug(path, state);
   if (!doc)
     return renderPage(NotFoundPage, "404 - Not Found", "", 404, state, {}, slug.length || 1);
-  return renderDocsServerPage(doc, slug, `/docs/${path}`, state);
+  return renderDocsServerPage(doc, slug, `${servedBasePath()}/${path}`, state);
 }
 
 export async function handleIndex(state: ServerState): Promise<Response> {
@@ -287,9 +288,10 @@ export function serveStatic(pathname: string): Response | null {
     if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
   }
 
-  if (decoded.startsWith("/docs/assets/")) {
+  const docsAssetsPrefix = `${servedBasePath()}/assets/`;
+  if (decoded.startsWith(docsAssetsPrefix)) {
     const docsAssetsDir = resolve(DOCS_DIR, "assets");
-    const requestedRelative = decoded.slice("/docs/assets/".length);
+    const requestedRelative = decoded.slice(docsAssetsPrefix.length);
     const docsAsset = resolve(docsAssetsDir, requestedRelative);
     const docsAssetsDirWithSep = docsAssetsDir.endsWith("/") ? docsAssetsDir : docsAssetsDir + "/";
     if (docsAsset !== docsAssetsDir && !docsAsset.startsWith(docsAssetsDirWithSep)) return null;

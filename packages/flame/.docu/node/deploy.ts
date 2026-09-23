@@ -10,11 +10,12 @@
 import { mkdir } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { DIST_DIR, PROJECT_ROOT } from "./paths";
+import { DIST_DIR, PROJECT_ROOT, servedBasePath } from "./paths";
 import {
   DOCKERFILE_BUN,
   DOCKERFILE_MARKER,
   generateDockerfile,
+  buildNginxConf,
   HEADERS_FILE,
   NGINX_CONF,
   DOCKERIGNORE,
@@ -69,7 +70,7 @@ async function writeDockerFiles() {
   }
 
   if (!existsSync(join(dockerDir, "nginx.conf"))) {
-    await Bun.write(join(dockerDir, "nginx.conf"), NGINX_CONF);
+    await Bun.write(join(dockerDir, "nginx.conf"), buildNginxConf(servedBasePath()));
     log.created("📄 Created nginx.conf");
   }
 

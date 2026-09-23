@@ -16,7 +16,7 @@ import { resolve, join } from "node:path";
 import { getPageContent } from "./mdx";
 import { extractFrontmatterWithContent } from "@docubook/core";
 import { frontmatterField } from "./mdx";
-import { DOCS_DIR, ASSETS_DIR, loadDocuConfig } from "./paths";
+import { DOCS_DIR, ASSETS_DIR, loadDocuConfig, basePath } from "./paths";
 import { scanMdxFiles, docsHtmlHref } from "./utils";
 
 const docuConfig = loadDocuConfig();
@@ -75,7 +75,9 @@ export function stripJsx(content: string): string {
 export function extractRecords(filePath: string, raw: string): SearchRecord[] {
   const { frontmatter, strippedContent: content } = extractFrontmatterWithContent<Frontmatter>(raw);
   const records: SearchRecord[] = [];
-  const url = docsHtmlHref(`/docs/${filePath}`);
+  // Records are clicked straight from the search modal, so they must be
+  // absolute paths that include the configured prefix.
+  const url = docsHtmlHref(`${basePath()}/${filePath}`);
   const lvl0 = getSectionTitle(filePath);
   const lvl1 = frontmatterField(frontmatter, "title") || null;
 

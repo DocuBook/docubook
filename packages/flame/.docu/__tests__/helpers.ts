@@ -12,7 +12,7 @@ import type { AssetManifest } from "../node/types";
 // ─── Minimal DocuConfig ─────────────────────────────────
 
 export interface TestDocuConfig {
-  meta: { title: string; description: string; baseURL: string };
+  meta: { title: string; description: string; baseURL: string; basePath?: string };
   navbar: { logoText: string; menu: never[] };
   footer: { social: never[] };
   repo: { url: string; path: string; edit: boolean };
