@@ -2,6 +2,9 @@ import { resolve, join } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 import { readdir, rm, unlink } from "node:fs/promises";
 import type { DocuConfig } from "./types";
+import { resolveBasePath } from "./base-path";
+
+export { DEFAULT_BASE_PATH, normalizeBasePath, resolveBasePath } from "./base-path";
 
 /**
  * FRAMEWORK_ROOT: Where the package code lives (.docu/components, .docu/pages, .docu/styles, .docu/node)
@@ -85,49 +88,17 @@ export function loadDocuConfig(): DocuConfig {
   return _config!;
 }
 
-/**
- * Default URL prefix the docs site is served under. Kept as `/docs` so
- * existing deployments keep byte-identical output.
- */
-export const DEFAULT_BASE_PATH = "/docs";
-
-/**
- * Normalize a configured base path into `/prefix` form with no trailing
- * slash. `""`, `"/"`, and undefined all mean "served at the domain root".
- * Absolute URLs (`https://host/x`) contribute only their pathname, so a
- * `meta.baseURL` can be passed straight in.
- */
-export function normalizeBasePath(value: string | undefined | null): string {
-  if (typeof value !== "string") return DEFAULT_BASE_PATH;
-  let path = value.trim();
-  if (path.length === 0 || path === "/") return "";
-  try {
-    if (/^[a-zA-Z][a-zA-Z\d+.-]*:\/\//.test(path)) path = new URL(path).pathname;
-  } catch {
-    // malformed URL — fall through and treat the raw value as a path
-  }
-  path = `/${path.replace(/^\/+|\/+$/g, "")}`;
-  return path === "/" ? "" : path;
+/** Default favicon — resolves against the runtime `meta.basePath`. Lives here
+ *  (not in `./base-path`) because it needs the config-loaded `basePath()`. */
+export function defaultFavicon(): string {
+  return `${basePath()}/assets/images/favicon.ico`;
 }
 
 /**
- * Resolve the docs URL prefix from config.
- *
- * An explicit `meta.basePath` wins, including `""` for a root deployment.
- * Otherwise `/docs` (the historical behaviour).
- *
- * Deliberately NOT derived from `meta.baseURL`'s pathname: `baseURL` is the
- * origin + deployment root and `basePath` is the prefix beneath it. Deriving
- * one from the other's pathname double-counts that path — the SEO/canonical
- * builder appends the prefix to `baseURL`, so `baseURL: ".../repo"` deriving
- * `basePath: "/repo"` produced `.../repo/repo/...`. They must be configured
- * independently; the schema documents both.
+ * @deprecated Read the value at call time via {@link defaultFavicon} — this
+ * constant is frozen at import and cannot follow `meta.basePath`.
  */
-export function resolveBasePath(config?: DocuConfig | null): string {
-  const meta = config?.meta;
-  if (typeof meta?.basePath === "string") return normalizeBasePath(meta.basePath);
-  return DEFAULT_BASE_PATH;
-}
+export const DEFAULT_FAVICON = "/docs/assets/images/favicon.ico";
 
 /**
  * Cached base path for the current project. Callers that already hold a config

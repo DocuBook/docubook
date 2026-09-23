@@ -23,7 +23,8 @@ import {
   generateNonce,
   cspHeader,
 } from "../node/security";
-import { getContentType, stripDocsHtmlSuffix } from "../node/utils";
+import { getContentType } from "../node/server-utils";
+import { stripDocsHtmlSuffix } from "../node/utils";
 import { errorHtml, hmrScript, htmlShell } from "../node/html.shared";
 
 // ─── Helpers ────────────────────────────────────────────

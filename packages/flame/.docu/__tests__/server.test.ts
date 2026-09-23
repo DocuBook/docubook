@@ -8,7 +8,7 @@ import {
   isSlugSafe,
   injectNonce,
 } from "../node/security";
-import { getContentType } from "../node/utils";
+import { getContentType } from "../node/server-utils";
 import { hmrScript } from "../node/html.shared";
 import { resolve } from "node:path";
 

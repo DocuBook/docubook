@@ -81,7 +81,11 @@ describe("getGitLastModifiedBatch", () => {
 });
 
 // Import after mock setup
-import { getGitLastModifiedBatch, resolveDocsIndexSource, scanMdxFiles } from "../node/utils";
+import {
+  getGitLastModifiedBatch,
+  resolveDocsIndexSource,
+  scanMdxFiles,
+} from "../node/server-utils";
 
 describe("scanMdxFiles", () => {
   let tmpDir: string;

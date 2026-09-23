@@ -66,12 +66,18 @@ describe("sentry", () => {
 
     it("handles missing @sentry/bun gracefully", async () => {
       process.env.SENTRY_DSN = "https://key@sentry.io/123";
-      vi.doMock("@sentry/bun", () => {
-        throw new Error("Cannot find module");
-      });
+      // Simulate an absent optional dependency: the mocked module throws as
+      // soon as a property is used, like a failed dynamic import would.
+      vi.doMock("@sentry/bun", () => ({
+        get init() {
+          throw new Error("Cannot find module");
+        },
+        captureException: mockCaptureException,
+      }));
       const { initSentry, isEnabled } = await importSentry();
       await initSentry();
       expect(isEnabled()).toBe(false);
+      expect(mockCaptureException).not.toHaveBeenCalled();
     });
   });
 

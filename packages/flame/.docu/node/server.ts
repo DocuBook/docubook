@@ -1,7 +1,7 @@
 import { watch, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
-import { DOCS_DIR, loadDocuConfig } from "./paths";
+import { DOCS_DIR, loadDocuConfig, resolveBasePath } from "./paths";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
 import { buildClientBundle, computeInlineThemeCss } from "./hydrate";
@@ -21,6 +21,7 @@ import { wrapPluginResponse } from "./security";
 import { matchDocsSlug, stripDocsHtmlSuffix } from "./utils";
 
 const docuConfig = loadDocuConfig();
+const resolvedBasePath = resolveBasePath(docuConfig);
 
 const parsedPort = parseInt(process.env.PORT ?? "3000", 10);
 const PORT =
@@ -141,7 +142,7 @@ const server = Bun.serve({
     const url = new URL(req.url);
     // Generated links carry `.html` (matching the static build output);
     // route them to the same handler as their extensionless form.
-    const pathname = stripDocsHtmlSuffix(url.pathname);
+    const pathname = stripDocsHtmlSuffix(url.pathname, resolvedBasePath);
     const startTime = performance.now();
 
     if (builder) {
@@ -199,7 +200,7 @@ const server = Bun.serve({
       if (pathname === "/") {
         response = await handleIndex(state);
       } else {
-        const docsSlug = matchDocsSlug(pathname);
+        const docsSlug = matchDocsSlug(pathname, resolvedBasePath);
         if (docsSlug) {
           response =
             docsSlug.length === 0
