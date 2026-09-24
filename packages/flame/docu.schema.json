@@ -16,11 +16,13 @@
         "description": { "type": "string", "description": "Site description" },
         "baseURL": {
           "type": "string",
-          "description": "Origin (and deployment root) of the site, e.g. 'https://docubook.pro' or 'https://user.github.io'."
+          "description": "Origin plus deployment root of the site, e.g. 'https://docubook.pro' or for a GitHub Pages project site 'https://user.github.io/repo'. Its pathname is the prefix the host serves the built dist under, so root-absolute requests (search index, 404 assets) are built from it. Do not repeat the docs prefix from basePath here."
         },
         "basePath": {
           "type": "string",
-          "description": "URL prefix the docs site is served under, e.g. '/docs' (default) or '/repo' for a GitHub Pages project site. Empty string serves from the deployment root. Configure independently of baseURL: the prefix is appended to baseURL when building canonical/OG URLs, so baseURL should not already include it."
+          "pattern": "^(|/|/[a-z0-9._~-]+(/[a-z0-9._~-]+)*)$",
+          "maxLength": 128,
+          "description": "URL prefix the docs site is served under inside the deployment root, e.g. '/docs' (default) or '/repo'. Empty string serves from the deployment root. The pattern is the canonical form: the build normalizes '/DOCS', '/Docs' and '/docs me' to '/docs', '/docs' and '/docs-me' and warns, so an editor flag here means docu.json should be updated. Configure independently of baseURL: the prefix is appended to baseURL when building canonical/OG URLs."
         },
         "favicon": { "type": "string", "description": "Path to favicon" },
         "ogImage": {

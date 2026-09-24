@@ -16,7 +16,7 @@ import { resolve, join } from "node:path";
 import { getPageContent } from "./mdx";
 import { extractFrontmatterWithContent } from "@docubook/core";
 import { frontmatterField } from "./mdx";
-import { DOCS_DIR, ASSETS_DIR, loadDocuConfig, basePath } from "./paths";
+import { DOCS_DIR, ASSETS_DIR, loadDocuConfig, basePath, deployPath } from "./paths";
 import { scanMdxFiles } from "./server-utils";
 import { docsHtmlHref } from "./utils";
 
@@ -73,12 +73,26 @@ export function stripJsx(content: string): string {
   return result;
 }
 
+/**
+ * Absolute URL for a search record.
+ *
+ * Records are clicked straight from the search modal, so they must carry both
+ * prefixes: the docs prefix inside the dist and the host's deployment path
+ * (e.g. `/repo` on a GitHub Pages project site), which no relative depth can
+ * express.
+ */
+export function searchRecordUrl(
+  filePath: string,
+  resolvedBasePath: string = basePath(),
+  deploymentPath: string = deployPath()
+): string {
+  return docsHtmlHref(`${deploymentPath}${resolvedBasePath}/${filePath}`);
+}
+
 export function extractRecords(filePath: string, raw: string): SearchRecord[] {
   const { frontmatter, strippedContent: content } = extractFrontmatterWithContent<Frontmatter>(raw);
   const records: SearchRecord[] = [];
-  // Records are clicked straight from the search modal, so they must be
-  // absolute paths that include the configured prefix.
-  const url = docsHtmlHref(`${basePath()}/${filePath}`);
+  const url = searchRecordUrl(filePath);
   const lvl0 = getSectionTitle(filePath);
   const lvl1 = frontmatterField(frontmatter, "title") || null;
 

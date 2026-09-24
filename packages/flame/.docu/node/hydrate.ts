@@ -10,6 +10,7 @@ import {
   STYLES_DIR,
   loadDocuConfig,
   resolveBasePath,
+  resolveDeployPath,
 } from "./paths";
 import { atomicWriteFile, computeTailwindCacheKey, readStyleCss } from "./cache-key";
 import { resolveRoutes } from "./fs-scanner";
@@ -172,6 +173,11 @@ export async function buildClientBundle(
                 // resolved prefix is inlined here — same value the server-side
                 // render and the static build use.
                 `export const basePath = ${JSON.stringify(resolveBasePath(config))};`,
+                // Dev serves the project from the origin root, so the host's
+                // deployment path only applies to the production bundle.
+                `export const deployPath = ${JSON.stringify(
+                  nodeEnv === "production" ? resolveDeployPath(config) : ""
+                )};`,
               ].join("\n"),
               loader: "ts",
             };

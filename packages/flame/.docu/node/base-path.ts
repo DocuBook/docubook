@@ -14,10 +14,11 @@ import type { DocuConfig } from "./types";
 export const DEFAULT_BASE_PATH = "/docs";
 
 /**
- * Normalize a configured base path into `/prefix` form with no trailing
- * slash. `""`, `"/"`, and undefined all mean "served at the domain root".
- * Absolute URLs (`https://host/x`) contribute only their pathname, so a
- * `meta.baseURL` can be passed straight in.
+ * Normalize a configured base path into `/prefix` form with no trailing slash.
+ * `""` and `"/"` mean "served at the domain root"; a missing value is not
+ * handled here — `resolveBasePath` owns the default. Absolute URLs
+ * (`https://host/x`) contribute only their pathname, so a `meta.baseURL` can be
+ * passed straight in.
  */
 export function normalizeBasePath(value: string | undefined | null): string {
   if (typeof value !== "string") return DEFAULT_BASE_PATH;
@@ -47,8 +48,122 @@ export function normalizeBasePath(value: string | undefined | null): string {
  */
 export function resolveBasePath(config?: DocuConfig | null): string {
   const meta = config?.meta;
-  if (typeof meta?.basePath === "string") return normalizeBasePath(meta.basePath);
-  return DEFAULT_BASE_PATH;
+  if (typeof meta?.basePath !== "string") return DEFAULT_BASE_PATH;
+  // Root forms (`""`, `"/"`, `"///"`) stay root. Everything else is
+  // canonicalized so routing, output directories and every generated URL agree
+  // on one spelling — `"/Docs"` and `"/docs me"` are honored as `"/docs"`
+  // and `"/docs-me"` (reported by `validateBasePath`).
+  if (normalizeBasePath(meta.basePath) === "") return "";
+  return canonicalBasePath(meta.basePath) || DEFAULT_BASE_PATH;
+}
+
+/**
+ * Deployment-root path contributed by the host, taken from `meta.baseURL`:
+ * `""` when the origin serves the dist at `/`, `/repo` for a GitHub Pages
+ * project site (which serves the artifact under `<origin>/repo/`).
+ *
+ * Distinct from the base path — `basePath` is the prefix *inside* the dist,
+ * this is the prefix *above* it. Only root-absolute references need it (the 404
+ * fallback and the search index); relative ones line up already because pages
+ * and assets share the deployment root.
+ */
+export function resolveDeployPath(config?: DocuConfig | null): string {
+  const raw = config?.meta?.baseURL;
+  if (typeof raw !== "string") return "";
+  try {
+    return normalizeBasePath(new URL(raw).pathname);
+  } catch {
+    // Not an absolute URL. A root-relative value is still a usable path; a bare
+    // hostname without a scheme is a config mistake, not a prefix — ignore it.
+    return raw.startsWith("/") ? normalizeBasePath(raw) : "";
+  }
+}
+
+export interface BasePathIssue {
+  /** `error` blocks the build; `warning` only reports. */
+  level: "error" | "warning";
+  message: string;
+}
+
+/**
+ * Canonical prefix form: lowercase segments with whitespace collapsed to dashes
+ * and characters a static host cannot serve dropped (`"/Docs"` → `"/docs"`,
+ * `"/docs me"` → `"/docs-me"`). Structural normalization runs first, so an
+ * absolute value (`https://host/x`) works too. Returns `""` when nothing
+ * servable is left, which callers treat as a config mistake rather than a
+ * silent root deployment.
+ */
+export function canonicalBasePath(value: string): string {
+  const structural = normalizeBasePath(value);
+  if (structural === "") return "";
+  const cleaned = structural
+    .replace(/\s+/g, "-")
+    .replace(/[^A-Za-z0-9\-._~/]+/g, "")
+    .replace(/-{2,}/g, "-")
+    .replace(/\/{2,}/g, "/")
+    .replace(/^\/+|\/+$/g, "")
+    .toLowerCase();
+  return cleaned.length > 0 ? `/${cleaned}` : "";
+}
+
+/**
+ * Validate an authored `meta.basePath`.
+ *
+ * `resolveBasePath` normalizes what a static host cannot serve, so this reports
+ * what it had to change instead of blocking the build: only a non-string value
+ * (which cannot be normalized) is an error. Warnings name the reasons and the
+ * canonical value, so the author can fix `docu.json` and keep the editor schema
+ * — which only accepts the canonical form — quiet.
+ */
+export function validateBasePath(value: unknown): BasePathIssue[] {
+  if (value === undefined) return [];
+  if (typeof value !== "string") {
+    return [
+      {
+        level: "error",
+        message: `must be a string (received ${
+          value === null ? "null" : typeof value
+        }) — remove it or set "${DEFAULT_BASE_PATH}"`,
+      },
+    ];
+  }
+
+  // `""`, `"/"`, `"///"` and whitespace-only values all mean the deployment
+  // root, which is always servable.
+  const structural = normalizeBasePath(value);
+  if (structural === "") return [];
+
+  const canonical = canonicalBasePath(value);
+  if (canonical === "") {
+    return [
+      {
+        level: "warning",
+        message: `"${value}" has no characters a static host can serve — falling back to "${DEFAULT_BASE_PATH}"`,
+      },
+    ];
+  }
+  if (canonical === structural) return [];
+
+  const segments = structural.replace(/^\/+/, "");
+  const reasons: string[] = [];
+  if (/\s/.test(segments)) reasons.push("whitespace");
+  // Whitespace is already reported above — list only the other unservable
+  // characters here, or the message prints a blank `( )`.
+  const invalid = [
+    ...new Set(segments.replace(/[\s]/g, "").replace(/[A-Za-z0-9\-._~/]/g, "")),
+  ].join(" ");
+  if (invalid.length > 0) reasons.push(`characters that need percent-encoding (${invalid})`);
+  if (segments !== segments.toLowerCase()) reasons.push("non-lowercase letters");
+  if (/\.\.|--|\/\//.test(segments)) reasons.push("non-canonical separators");
+
+  return [
+    {
+      level: "warning",
+      message: `"${value}" ${
+        reasons.length > 0 ? `contains ${reasons.join(", ")}` : "is not canonical"
+      } — normalized to "${canonical}"; update docu.json to match`,
+    },
+  ];
 }
 
 /** Join a serve-prefix with a slash-relative path, keeping exactly one slash. */
@@ -147,4 +262,19 @@ export function matchDocsSlug(
       .split("/")
       .filter(Boolean);
   return null;
+}
+
+/**
+ * Relative climb from a built page to the dist root — the `../` count the HTML
+ * shell needs for bundle assets.
+ *
+ * A page lands at `<dist>/<basePath>/<slug>.html`, so it reaches the dist root
+ * through the slug's own directories plus every prefix segment. The host's
+ * deployment path is deliberately not counted: pages and assets share it (both
+ * resolve under `<deployPath>/`), so it cancels out of the relative math.
+ */
+export function docsDepth(slug: string, resolvedBasePath: string = DEFAULT_BASE_PATH): number {
+  const pageDirs = slug ? slug.split("/").filter(Boolean).length - 1 : 0;
+  const prefixSegments = resolvedBasePath.split("/").filter(Boolean).length;
+  return Math.max(0, pageDirs) + prefixSegments;
 }

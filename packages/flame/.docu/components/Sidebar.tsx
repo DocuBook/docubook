@@ -10,7 +10,7 @@ import {
   FileText,
 } from "lucide-react";
 import { Dropdown } from "@docubook/ui-react/dropdown";
-import { cn } from "../node/utils";
+import { cn, docsNavActive, docsNavHref, rebaseContentPath } from "../node/utils";
 import Anchor from "./Anchor";
 import { Context } from "./Context";
 import Menu from "./Menu";
@@ -18,7 +18,7 @@ import { ThemeToggle } from "./Theme";
 import { GitHubLink } from "./Navbar";
 import Search from "./Search";
 import type { TocItem } from "../node/types";
-import { config as docuConfig, routes } from "../node/client-routes";
+import { config as docuConfig, routes, basePath } from "../node/client-routes";
 
 interface SidebarProps {
   tocs?: TocItem[];
@@ -41,10 +41,10 @@ function DesktopSidebar({ className, repoUrl }: { className?: string; repoUrl?: 
     <div className={cn("flex h-full flex-col", className)}>
       {/* Logo */}
       <div className="flex h-14 shrink-0 items-center px-5">
-        <a href="/" className="flex items-center gap-2">
+        <a href={basePath || "/"} className="flex items-center gap-2">
           {docuConfig.navbar?.logo?.src && (
             <img
-              src={docuConfig.navbar.logo.src}
+              src={rebaseContentPath(docuConfig.navbar.logo.src, basePath)}
               alt={docuConfig.navbar.logo.alt || ""}
               className="h-6 w-6"
             />
@@ -154,24 +154,25 @@ export function MobileBar({
               </span>
             }
           >
-            {(docuConfig.navbar?.menu || []).map((item) => (
-              <li
-                key={item.href}
-                role="menuitem"
-                className="text-base-content/80 hover:text-base-content hover:bg-base-200 cursor-pointer"
-              >
-                <Anchor
-                  href={item.href}
-                  activeWhen={(path: string) =>
-                    path === item.href || path.startsWith(item.href + "/")
-                  }
-                  activeClassName="text-primary font-semibold"
-                  className="block rounded px-2 py-2 text-sm"
+            {(docuConfig.navbar?.menu || []).map((item) => {
+              const href = docsNavHref(item.href, basePath);
+              return (
+                <li
+                  key={item.href}
+                  role="menuitem"
+                  className="text-base-content/80 hover:text-base-content hover:bg-base-200 cursor-pointer"
                 >
-                  {item.title}
-                </Anchor>
-              </li>
-            ))}
+                  <Anchor
+                    href={href}
+                    activeWhen={(path: string) => docsNavActive(path, href)}
+                    activeClassName="text-primary font-semibold"
+                    className="block rounded px-2 py-2 text-sm"
+                  >
+                    {item.title}
+                  </Anchor>
+                </li>
+              );
+            })}
           </Dropdown>
 
           <button

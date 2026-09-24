@@ -15,6 +15,7 @@ import {
   STYLES_DIR,
   loadDocuConfig,
   resolveBasePath,
+  resolveDeployPath,
 } from "./paths";
 import { buildThemeCss, createMdxModuleEntries, getThemeConfig } from "./hydrate";
 import { atomicWriteFile, computeTailwindCacheKey, readStyleCss } from "./cache-key";
@@ -234,6 +235,11 @@ export async function buildClientBundle(
             `export const routes = docuConfig.routes || [];`,
             `export const config = docuConfig;`,
             `export const basePath = ${JSON.stringify(resolveBasePath(config))};`,
+            // Dev serves the project from the origin root, so the host's
+            // deployment path only applies to the production bundle.
+            `export const deployPath = ${JSON.stringify(
+              nodeEnv === "production" ? resolveDeployPath(config) : ""
+            )};`,
           ].join("\n");
         },
       },

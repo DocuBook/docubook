@@ -37,6 +37,7 @@ FnKey.configure({
 });
 import { cn } from "../node/utils";
 import { search, type SearchResult } from "../node/search";
+import { deployPath } from "../node/client-routes";
 import type { SearchRecord } from "../node/search-indexer";
 
 interface SearchProps {
@@ -48,10 +49,11 @@ let cmdKRegistered = false;
 
 async function loadIndex(): Promise<SearchRecord[]> {
   if (indexCache) return indexCache;
-  // The search index is generated into the dist-root assets tree — next to
-  // the hash-named bundles, not under the docs prefix (nginx serves it at
-  // `location = /assets/search-index.json`).
-  const res = await fetch("/assets/search-index.json");
+  // The search index is generated into the dist-root assets tree — next to the
+  // hash-named bundles, not under the docs prefix. A host that serves the dist
+  // from a subpath (GitHub Pages project site) contributes `meta.baseURL`'s
+  // path, which no relative depth can express.
+  const res = await fetch(`${deployPath}/assets/search-index.json`);
   indexCache = await res.json();
   return indexCache!;
 }

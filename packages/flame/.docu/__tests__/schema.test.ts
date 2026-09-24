@@ -85,6 +85,20 @@ describe("docu.schema.json — meta.basePath field", () => {
     expect(meta.additionalProperties).toBe(false);
     expect(Object.keys(metaProps)).toContain("basePath");
   });
+
+  it("pins the canonical form so editors flag unnormalized prefixes", () => {
+    const pattern = metaProps.basePath as Record<string, unknown>;
+    const regex = new RegExp(pattern.pattern as string);
+
+    for (const valid of ["", "/", "/docs", "/repo/docs", "/docs-me", "/v1.2_beta~x"]) {
+      expect(regex.test(valid)).toBe(true);
+    }
+    // The build normalizes these and warns; the schema makes the editor say so
+    // before the build has to.
+    for (const invalid of ["/DOCS", "/Docs", "/docs me", "/docs/", "docs", "/docs%20me"]) {
+      expect(regex.test(invalid)).toBe(false);
+    }
+  });
 });
 
 describe("docu.schema.json — plugins field", () => {

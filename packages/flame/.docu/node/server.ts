@@ -1,7 +1,7 @@
 import { watch, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
-import { DOCS_DIR, loadDocuConfig, resolveBasePath } from "./paths";
+import { DOCS_DIR, loadDocuConfig, resolveBasePath, assertValidBasePath } from "./paths";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
 import { buildClientBundle, computeInlineThemeCss } from "./hydrate";
@@ -22,6 +22,10 @@ import { matchDocsSlug, stripDocsHtmlSuffix } from "./utils";
 
 const docuConfig = loadDocuConfig();
 const resolvedBasePath = resolveBasePath(docuConfig);
+
+// Report normalized prefixes (and stop on a value that cannot be honored)
+// before the server announces a site that would be built somewhere else.
+for (const warning of assertValidBasePath()) logger.warn(warning.message);
 
 const parsedPort = parseInt(process.env.PORT ?? "3000", 10);
 const PORT =

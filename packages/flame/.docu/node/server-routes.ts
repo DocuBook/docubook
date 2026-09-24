@@ -6,7 +6,7 @@ import { renderToString } from "react-dom/server";
 import { compileMdx, frontmatterField } from "./mdx";
 import { getContentType } from "./server-utils";
 import { defaultFavicon } from "./paths";
-import { DOCS_DIR, DIST_DIR, PAGES_DIR, PROJECT_ROOT, servedBasePath } from "./paths";
+import { DOCS_DIR, DIST_DIR, PAGES_DIR, PROJECT_ROOT, servedBasePath, docsDepth } from "./paths";
 import { BuildPluginBuilder } from "./plugin-builder";
 import type { PageContext, PageType } from "./plugin";
 import type { AssetEntry, AssetManifest, DocuConfig, TocItem } from "./types";
@@ -57,6 +57,9 @@ async function createHtmlResponse(
     bodyExtra: state.builder?.collectBody(context),
     depth,
     basePath: servedBasePath(),
+    // Dev serves the project from the origin root, so the host's deployment
+    // path never applies here — only the static build writes it into HTML.
+    deployPath: "",
     // 404 pages can be requested at arbitrary depths (e.g. a noLink section
     // path typed in the address bar) — relative asset paths would resolve
     // against the wrong directory and break CSS/JS.
@@ -187,8 +190,8 @@ async function renderDocsServerPage(
 
   const body = renderToString(page);
 
-  // Match build.ts depth calculation: slug.split("/").length, fallback to 1 for empty
-  const depth = slug.length || 1;
+  // Same relative climb as the static build — see docsDepth.
+  const depth = docsDepth(slug.join("/"), servedBasePath());
 
   return createHtmlResponse(
     title,
@@ -235,7 +238,16 @@ async function renderPage(
 
 export async function handleDocsIndex(state: ServerState): Promise<Response> {
   const doc = await getDocsForSlug("", state);
-  if (!doc) return renderPage(NotFoundPage, "404 - Not Found", "", 404, state, {}, 1);
+  if (!doc)
+    return renderPage(
+      NotFoundPage,
+      "404 - Not Found",
+      "",
+      404,
+      state,
+      {},
+      docsDepth("", servedBasePath())
+    );
   return renderDocsServerPage(doc, [], servedBasePath() || "/", state);
 }
 
@@ -243,7 +255,15 @@ export async function handleDocsRoute(slug: string[], state: ServerState): Promi
   const path = slug.join("/");
   const doc = await getDocsForSlug(path, state);
   if (!doc)
-    return renderPage(NotFoundPage, "404 - Not Found", "", 404, state, {}, slug.length || 1);
+    return renderPage(
+      NotFoundPage,
+      "404 - Not Found",
+      "",
+      404,
+      state,
+      {},
+      docsDepth(path, servedBasePath())
+    );
   return renderDocsServerPage(doc, slug, `${servedBasePath()}/${path}`, state);
 }
 

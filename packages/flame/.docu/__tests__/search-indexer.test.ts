@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { stripJsx, extractRecords } from "../node/search-indexer";
+import { stripJsx, extractRecords, searchRecordUrl } from "../node/search-indexer";
 
 // Mock external & internal path modules to prevent extractRecords from throwing errors
 vi.mock("@docubook/core", () => ({
@@ -202,6 +202,20 @@ title: Integration Guide
 
       const headingRecord = records.find((r) => r.type === "lvl2");
       expect(headingRecord?.url).toBe("/docs/getting-started/integration.html#final-subheading");
+    });
+
+    it("should keep the host's deployment path in the record url", () => {
+      // A GitHub Pages project site serves the dist under `<origin>/repo/`, so
+      // records must resolve beneath that path rather than the origin root.
+      expect(searchRecordUrl("getting-started/x", "", "/repo")).toBe(
+        "/repo/getting-started/x.html"
+      );
+      expect(searchRecordUrl("getting-started/x", "/docs", "/repo")).toBe(
+        "/repo/docs/getting-started/x.html"
+      );
+      expect(searchRecordUrl("getting-started/x", "/docs", "")).toBe(
+        "/docs/getting-started/x.html"
+      );
     });
   });
 });

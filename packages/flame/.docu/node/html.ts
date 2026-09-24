@@ -21,6 +21,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
     bodyExtra,
     absoluteAssets = false,
     basePath = DEFAULT_BASE_PATH,
+    deployPath = "",
   } = opts;
   const nonceAttr = nonce ? ` nonce="${Bun.escapeHTML(nonce)}"` : "";
   const themeStyle = themeCss ? `\n  <style${nonceAttr}>${Bun.escapeHTML(themeCss)}</style>` : "";
@@ -29,7 +30,9 @@ export function htmlShell(opts: HtmlShellOptions): string {
   const depthPrefix = depth === 0 ? "" : "../".repeat(depth);
   // Bundle assets (JS, CSS, chunks) are written to the dist root and are
   // independent of the docs prefix; pages climb out of the prefix with `../`.
-  const assetPrefix = absoluteAssets ? "/assets/" : depthPrefix + "assets/";
+  // Depth-independent URLs (404 fallback) still carry the host's deployment
+  // path, which relative climbs cancel out.
+  const assetPrefix = absoluteAssets ? `${deployPath}/assets/` : depthPrefix + "assets/";
   const clientScript = js
     ? `\n  <link rel="modulepreload" href="${Bun.escapeHTML(assetPrefix + js)}">\n  <script type="module"${nonceAttr} src="${Bun.escapeHTML(assetPrefix + js)}"></script>`
     : "";
@@ -40,7 +43,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
     // default prefix onto the configured one, otherwise the asset 404s at the
     // old path after a subpath change.
     const rebased = rebaseContentPath(path, basePath);
-    return absoluteAssets ? rebased : depthPrefix + rebased.slice(1);
+    return absoluteAssets ? `${deployPath}${rebased}` : depthPrefix + rebased.slice(1);
   };
 
   // Build SEO meta tags (OG, Twitter, canonical)
