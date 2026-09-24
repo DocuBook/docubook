@@ -718,6 +718,15 @@ describe("resolveContentHref / resolveContentSrc — authored content paths", ()
     expect(resolveContentHref("/docs/assets/report.pdf", "", "")).toBe("/assets/report.pdf");
     expect(resolveContentSrc("/docs/assets/img.png?v=2", "", "")).toBe("/assets/img.png?v=2");
   });
+
+  it("applies the historical docs-own-the-root rule at a root deployment", () => {
+    // Content keeps the pre-existing rule (any in-site path is a candidate),
+    // while nav links stay gated to the docs prefix — see docsNavHref.
+    expect(resolveContentHref("/getting-started/overview", "", "")).toBe(
+      "/getting-started/overview.html"
+    );
+    expect(docsNavHref("/getting-started/overview", "")).toBe("/getting-started/overview");
+  });
 });
 
 describe("buildSeoMeta — og:image under a host path", () => {
@@ -791,6 +800,19 @@ describe("docsNavHref — authored nav links", () => {
 
   it("leaves non-HTML files alone", () => {
     expect(docsNavHref("/docs/feed.xml")).toBe("/docs/feed.xml");
+  });
+
+  it("preserves root-relative routes outside the docs prefix", () => {
+    // Sibling routes on the same origin are not docs pages: suffixing them (or
+    // re-basing them) would break navigation to an app, a status page, etc.
+    expect(docsNavHref("/app/dashboard", "/docs")).toBe("/app/dashboard");
+    expect(docsNavHref("/app/dashboard", "/repo")).toBe("/app/dashboard");
+    expect(docsNavHref("/status", "/repo")).toBe("/status");
+    // A longer sibling that merely starts with the prefix text.
+    expect(docsNavHref("/docs-extra/page", "/repo")).toBe("/docs-extra/page");
+    // At a root deployment nav links stay gated too — author them under the
+    // `/docs` prefix, which is the path this resolver re-bases.
+    expect(docsNavHref("/getting-started/overview", "")).toBe("/getting-started/overview");
   });
 });
 

@@ -13,23 +13,17 @@ import {
 import { createMdxComponents } from "@docubook/markdown";
 import { getGitLastModified, getGitLastModifiedBatch, getFilesystemMtime } from "./git";
 import { basePath, servedDeployPath } from "./paths";
-import { DEFAULT_BASE_PATH, rebaseContentPath } from "./base-path";
+import { isDocsPath, rebaseContentPath } from "./base-path";
 
 /**
  * Does an author-written absolute path belong to the docs site?
  *
- * At a root deployment every in-site path does (docs own `/`); otherwise a path
- * has to sit under the configured prefix — or still carry the authored default
- * one, which is what gets re-based. Anything else (an app route on the same
- * origin, say) is none of our business and stays untouched.
- *
- * Read per call so it tracks `meta.basePath`; a module-level snapshot would
- * freeze the `/docs` default before config is loaded.
+ * At a root deployment the docs own `/`, so every in-site path is a candidate
+ * (the historical rule for authored content); otherwise the shared
+ * {@link isDocsPath} gate applies and sibling app routes stay untouched.
  */
 function isContentPath(pathname: string, resolvedBasePath: string): boolean {
-  if (resolvedBasePath.length === 0) return true;
-  if (pathname === resolvedBasePath || pathname.startsWith(`${resolvedBasePath}/`)) return true;
-  return pathname === DEFAULT_BASE_PATH || pathname.startsWith(`${DEFAULT_BASE_PATH}/`);
+  return resolvedBasePath.length === 0 || isDocsPath(pathname, resolvedBasePath);
 }
 
 /** Split an authored value into its pathname and any `?query`/`#fragment`. */

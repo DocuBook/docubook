@@ -195,6 +195,27 @@ export function applyBasePath(path: string, resolvedBasePath: string = DEFAULT_B
 }
 
 /**
+ * Is `pathname` inside the docs site?
+ *
+ * True under the configured prefix (when there is one) and for paths still
+ * authored with the default `/docs` prefix — those are what callers re-base.
+ * Anything else is a sibling route on the same origin (an app at `/app`, a
+ * status page) and has to be left exactly as the author wrote it.
+ */
+export function isDocsPath(
+  pathname: string,
+  resolvedBasePath: string = DEFAULT_BASE_PATH
+): boolean {
+  if (
+    resolvedBasePath.length > 0 &&
+    (pathname === resolvedBasePath || pathname.startsWith(`${resolvedBasePath}/`))
+  ) {
+    return true;
+  }
+  return pathname === DEFAULT_BASE_PATH || pathname.startsWith(`${DEFAULT_BASE_PATH}/`);
+}
+
+/**
  * Point an author-written root-relative content path at the configured prefix.
  *
  * Authors reference content assets as they appear on disk
