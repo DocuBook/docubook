@@ -60,9 +60,28 @@ Site-wide metadata used for page `<title>`, `<meta name="description">`, Open Gr
 | ------------- | ------ | -------- | ------------------------------------------------------------ |
 | `title`       | string | **Yes**  | Site title, used as `<title>` suffix                         |
 | `description` | string | No       | Site description for SEO                                     |
-| `baseURL`     | string | No       | Canonical URL for sitemaps and RSS                           |
+| `baseURL`     | string | No       | Origin plus deployment root of the site, e.g. `https://book.acme.dev` or `https://acme.github.io/repo` for a GitHub Pages project site. Used to build canonical and Open Graph URLs (and by plugins that need absolute URLs), and its pathname (`/repo`) is the prefix the host serves the dist under |
+| `basePath`    | string | No       | URL prefix the docs site is served under **inside** the deployment root (default: `/docs`). Empty string `""` serves the docs from the deployment root |
 | `favicon`     | string | No       | Path to favicon (default: `/docs/assets/images/favicon.ico`) |
 | `ogImage`     | string | No       | Global fallback OG image URL for social sharing (per-page override via frontmatter `image` field) |
+
+### Base path
+
+`basePath` controls where the docs live — in the build output, in the URL, and in every generated link, canonical tag, search record and nginx location block. `baseURL` is a separate concern: it is the origin plus the deployment root the artifact is published under.
+
+```json
+{
+  "meta": {
+    "title": "Acme Docs",
+    "baseURL": "https://acme.github.io/handbook",
+    "basePath": "/docs"
+  }
+}
+```
+
+That configuration serves the docs at `https://acme.github.io/handbook/docs/…` and writes pages to `.docu/dist/docs/…`. Setting `"basePath": ""` serves them at `https://acme.github.io/handbook/…` and writes them to the dist root.
+
+Non-canonical values (`/Docs`, `/docs me`, `/docs//guide`) are normalized by the build, which logs a warning naming the canonical form. A non-string value fails the build. Full rules and worked hosting examples: [Base Path & Subpaths](/docs/getting-started/base-path).
 
 ## navbar
 

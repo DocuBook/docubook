@@ -17,7 +17,7 @@ After `flame init`, your project looks like:
 ```
 my-docs/
 ├── docs/
-│   ├── index.mdx          # Home page
+│   ├── index.mdx          # Home page (optional)
 │   └── guide/
 │       └── index.mdx      # Example section
 ├── docu.json               # Site configuration
@@ -26,6 +26,11 @@ my-docs/
 ```
 
 On Deno, an additional `deno.json` is generated with `nodeModulesDir: "auto"`.
+
+The landing page always owns `/` and `docs/index.mdx` is optional — without it
+the build simply has no docs index page. Where the docs live in URLs and in the
+build output comes from `meta.basePath` (default `/docs`) — see
+[Base Path & Subpaths](/docs/getting-started/base-path).
 
 ## Add Content
 
@@ -66,7 +71,7 @@ Edit `docu.json` to set your site title, navigation menu, and theme:
 }
 ```
 
-See the [Configuration reference](/docs/getting-started/configuration) for all available options.
+See the [Configuration reference](/docs/getting-started/configuration) for all available options. `meta.basePath` defaults to `/docs`; set it to serve the docs under a different prefix, or to `""` to serve them from the deployment root.
 
 ## Build & Deploy
 
@@ -97,5 +102,3 @@ deno task deploy   # Build + prepare for GitHub Pages
 ::::
 
 The output is a fully static site in `.docu/dist/` — no server runtime required. Deploy to any CDN or static host.
-
-

@@ -151,6 +151,10 @@
           "href": "/deployment"
         },
         {
+          "title": "Base Path & Subpaths",
+          "href": "/base-path"
+        },
+        {
           "title": "Search",
           "href": "/search",
           "noLink": true,

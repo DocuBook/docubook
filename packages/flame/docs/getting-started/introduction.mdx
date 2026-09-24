@@ -38,9 +38,10 @@ The direction of v2: **the framework adapts to markdown, not the author to the f
 - **React-first** — JSX/TSX, hooks, component composition (in your own pages and components, not in content)
 - **Directives** — the v2 component system: callouts, tabs, cards, accordions, steps, ASCII trees, and more, written as markdown
 - **Eval-free hydration** — content compiles to static ESM modules; production runs without `new Function`, so the CSP needs no `'unsafe-eval'`
-- **Fast incremental builds** — deterministic bundle hashing and a content-hash build cache: only changed pages recompile
+- **Fast incremental builds** — deterministic bundle hashing and a content-hash build cache: only changed pages recompile, and a prefix or framework change invalidates it automatically
 - **Fast dev server** — memoized MDX compilation: repeat navigations don't re-parse content
 - **Filesystem routing** — auto-discover pages from `docs/`
+- **Subpath-ready** — serve the docs at `/docs` (default), a custom prefix, or the deployment root; links, canonical URLs, search records, and generated nginx rules follow the configuration
 - **Lightweight SSR** — server-side rendering without a heavy framework
 - **HMR** — instant reload on content changes during development
 - **Static build** — pre-render all pages to static HTML for deployment

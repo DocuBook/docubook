@@ -31,11 +31,11 @@ Below is a table of available frontmatter fields for documentation pages:
 # Absolute URL — always works, no resolution needed
 image: https://example.com/images/og.png
 
-# Root-relative — resolves against meta.baseURL
+# Root-relative — resolves against the deployment root in meta.baseURL
 # e.g. baseURL=https://docs.example.com → https://docs.example.com/assets/og.png
 image: /assets/og.png
 
-# Relative to /docs/ — resolves against baseURL + /docs/
+# Relative to the docs prefix — resolves against baseURL + meta.basePath (default /docs)
 # e.g. baseURL=https://docs.example.com → https://docs.example.com/docs/images/card.png
 image: ./images/card.png
 

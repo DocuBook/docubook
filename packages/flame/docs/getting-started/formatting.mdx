@@ -73,6 +73,32 @@ This is the second paragraph, separated by a blank line.
 Links, tables, and images use their standard GFM syntax — the framework
 styles them; no component syntax needed.
 
+## Internal Links & Assets
+
+Author internal references with the `/docs/` prefix, exactly as they sit on
+disk:
+
+````markdown
+[Configuration](/docs/getting-started/configuration)
+
+![Diagram](/docs/assets/images/diagram.png)
+````
+
+Flame resolves them for the deployment at compile time:
+
+| Reference | Result |
+| --------- | ------ |
+| `/docs/guide/routing` (page) | Re-based onto `meta.basePath` and given the `.html` suffix the static build serves — `/handbook/guide/routing.html` at prefix `/handbook` |
+| `/docs/guide/routing#options` | Same re-basing, but stays extensionless so the fragment resolves on the page |
+| `/docs/assets/images/x.png` (image, media `src`) | Re-based onto the prefix, no `.html` suffix — assets are files, not routes |
+| `/docs/page.html`, `/docs/` | Already a file or the directory index — left as written |
+| `https://…`, `//cdn…`, `#section`, `/app` | External, protocol-relative, anchor-only, or a sibling route outside the docs prefix — passed through untouched |
+
+Because the `/docs/` prefix is re-based rather than matched literally, one
+`docu.json` keeps working at the default `/docs`, at a custom prefix, and at the
+deployment root. See [Base Path & Subpaths](/docs/getting-started/base-path) for
+how the prefix and the host's deployment root are configured.
+
 ## Fenced Code
 
 Fenced code blocks are delimited by backticks and render as code — the
