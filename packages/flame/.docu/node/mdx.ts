@@ -12,35 +12,98 @@ import {
 } from "@docubook/core";
 import { createMdxComponents } from "@docubook/markdown";
 import { getGitLastModified, getGitLastModifiedBatch, getFilesystemMtime } from "./git";
-import { basePath } from "./paths";
+import { basePath, servedDeployPath } from "./paths";
+import { DEFAULT_BASE_PATH, rebaseContentPath } from "./base-path";
 
 /**
- * Return the value with `.html` appended, or null if the value should be left
- * unchanged.  Rules:
- *  - Must be a string
- *  - Must be an internal href under the configured base path (`/docs` by
- *    default, or any path at all when the site is served from the root).
- *    The bare prefix itself is the index and needs no suffix.
- *  - Must not be an external URL, contain a fragment, or already end in .html
+ * Does an author-written absolute path belong to the docs site?
  *
- * The prefix is read per call so it tracks `meta.basePath`; a module-level
- * snapshot would freeze the `/docs` default before config is loaded.
+ * At a root deployment every in-site path does (docs own `/`); otherwise a path
+ * has to sit under the configured prefix — or still carry the authored default
+ * one, which is what gets re-based. Anything else (an app route on the same
+ * origin, say) is none of our business and stays untouched.
+ *
+ * Read per call so it tracks `meta.basePath`; a module-level snapshot would
+ * freeze the `/docs` default before config is loaded.
  */
-function appendHtml(value: unknown): string | null {
-  if (typeof value !== "string") return null;
-  if (/^https?:\/\//.test(value)) return null;
-  const prefix = basePath();
-  if (prefix.length === 0) {
-    // Root deployment: every in-site absolute path is a candidate, but the
-    // root index ("/") and bare "/index" need no suffix.
-    if (!value.startsWith("/") || value === "/") return null;
-  } else {
-    if (!value.startsWith(`${prefix}/`)) return null;
-  }
-  if (value.includes("#")) return null;
-  if (value.endsWith(".html")) return null;
-  return `${value}.html`;
+function isContentPath(pathname: string, resolvedBasePath: string): boolean {
+  if (resolvedBasePath.length === 0) return true;
+  if (pathname === resolvedBasePath || pathname.startsWith(`${resolvedBasePath}/`)) return true;
+  return pathname === DEFAULT_BASE_PATH || pathname.startsWith(`${DEFAULT_BASE_PATH}/`);
 }
+
+/** Split an authored value into its pathname and any `?query`/`#fragment`. */
+function splitContentPath(value: string): { pathname: string; suffix: string } {
+  const cut = value.search(/[?#]/);
+  if (cut === -1) return { pathname: value.replace(/\/+$/, "") || "/", suffix: "" };
+  return {
+    pathname: value.slice(0, cut).replace(/\/+$/, "") || "/",
+    suffix: value.slice(cut),
+  };
+}
+
+/**
+ * Resolve an author-written content **link** for the deployment.
+ *
+ * Authors link to sibling pages the way they sit on disk (`/docs/guide/y`). The
+ * static build serves those pages as flat `.html` files, and a non-default
+ * `meta.basePath` — or a host that publishes the dist under a path (a GitHub
+ * Pages project site) — moves the authored segment. Re-base it onto the
+ * configured prefix, add the deployment path, and keep the `.html` suffix on
+ * page links. Returns null when nothing moves, so the default `/docs`
+ * deployment keeps emitting the same HTML.
+ */
+export function resolveContentHref(
+  value: unknown,
+  resolvedBasePath: string = basePath(),
+  deploymentPath: string = servedDeployPath()
+): string | null {
+  if (typeof value !== "string") return null;
+  if (/^[a-z][a-z\d+.-]*:|^\/\//i.test(value)) return null; // external / protocol-relative
+  if (!value.startsWith("/") || value === "/") return null;
+
+  const { pathname, suffix } = splitContentPath(value);
+  if (!isContentPath(pathname, resolvedBasePath)) return null;
+
+  const rebased = rebaseContentPath(pathname, resolvedBasePath);
+  // The docs root is a directory index, fragments keep the authored
+  // extensionless form (hosts with `try_files` serve the pair), and files keep
+  // their own suffix.
+  const isDirectory =
+    rebased === "/" || rebased === resolvedBasePath || /\.[a-z0-9]+$/i.test(rebased);
+  const target = isDirectory || suffix.includes("#") ? rebased : `${rebased}.html`;
+  const resolved = `${deploymentPath}${target}${suffix}`;
+  return resolved === value ? null : resolved;
+}
+
+/**
+ * Resolve an author-written content **asset** path (`![alt](/docs/assets/x.png)`)
+ * for the deployment. Same re-basing rules as {@link resolveContentHref}, minus
+ * the `.html` suffix — assets are files, not routes.
+ */
+export function resolveContentSrc(
+  value: unknown,
+  resolvedBasePath: string = basePath(),
+  deploymentPath: string = servedDeployPath()
+): string | null {
+  if (typeof value !== "string") return null;
+  if (/^[a-z][a-z\d+.-]*:|^\/\//i.test(value)) return null;
+  if (!value.startsWith("/") || value === "/") return null;
+
+  const { pathname, suffix } = splitContentPath(value);
+  if (!isContentPath(pathname, resolvedBasePath)) return null;
+
+  const resolved = `${deploymentPath}${rebaseContentPath(pathname, resolvedBasePath)}${suffix}`;
+  return resolved === value ? null : resolved;
+}
+
+/** Element → attribute pairs whose author-written values are content assets. */
+const CONTENT_ASSET_ATTRS: Record<string, string> = {
+  img: "src",
+  source: "src",
+  video: "src",
+  audio: "src",
+};
 
 interface HastNode {
   type: string;
@@ -57,20 +120,28 @@ interface MdastNode {
 }
 
 /**
- * Rehype plugin: append `.html` to internal docs hrefs on HTML `<a>` nodes.
+ * Rehype plugin: point author-written hrefs at the deployed docs paths, and
+ * author-written asset paths at the deployed asset tree.
  *
- * This covers standard markdown links: `[text](/docs/page)` → `<a href="…">`.
- * It runs in the HAST (HTML AST) phase, where `<a>` elements are real nodes.
- *
- * Skips: external URLs, anchor-only links, paths that already end in `.html`,
- * and the base-path root index (no trailing slash segment).
+ * Links cover both shapes — plain markdown `[text](/docs/page)` and images and
+ * media (`![alt](/docs/assets/x.png)` → `<img src>`) — which only exist in the
+ * HAST phase. Skips: external URLs, anchors, the root index, and anything the
+ * resolver leaves unchanged.
  */
 function rehypeDocsHtmlLinks() {
   return (tree: HastNode) => {
     function walk(node: HastNode): void {
-      if (node.type === "element" && node.tagName === "a") {
-        const fixed = appendHtml(node.properties?.href);
-        if (fixed) node.properties!.href = fixed;
+      if (node.type === "element" && node.properties) {
+        if (node.tagName === "a") {
+          const fixed = resolveContentHref(node.properties.href);
+          if (fixed) node.properties.href = fixed;
+        } else {
+          const attr = node.tagName ? CONTENT_ASSET_ATTRS[node.tagName] : undefined;
+          if (attr) {
+            const fixed = resolveContentSrc(node.properties[attr]);
+            if (fixed) node.properties[attr] = fixed;
+          }
+        }
       }
       if (node.children) {
         for (const child of node.children) walk(child);
@@ -91,7 +162,8 @@ function rehypeDocsHtmlLinks() {
  * intercepts them at the MDAST phase where their `attributes` array is still
  * accessible and mutable.
  *
- * Skips: same rules as `appendHtml` (external URLs, anchors, already `.html`).
+ * Skips: same rules as `resolveContentHref` (external URLs, anchors, already
+ * resolved paths).
  */
 function remarkMdxJsxDocsHtmlLinks() {
   return (tree: MdastNode) => {
@@ -102,7 +174,7 @@ function remarkMdxJsxDocsHtmlLinks() {
       ) {
         for (const attr of node.attributes) {
           if (attr.type === "mdxJsxAttribute" && attr.name === "href") {
-            const fixed = appendHtml(attr.value);
+            const fixed = resolveContentHref(attr.value);
             if (fixed) attr.value = fixed;
           }
         }

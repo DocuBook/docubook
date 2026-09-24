@@ -156,6 +156,16 @@ export function deployPath(): string {
 }
 
 /**
+ * {@link deployPath} for the current mode: a host path only exists in built
+ * output. Dev serves the project from the origin root, so writing it into dev
+ * HTML (or a dev client bundle) would point at directories the dev server does
+ * not own.
+ */
+export function servedDeployPath(): string {
+  return process.env.NODE_ENV === "production" ? deployPath() : "";
+}
+
+/**
  * Fail fast on a `meta.basePath` that cannot be honored (a non-string value) and
  * hand back the normalization warnings for the caller to log — case, whitespace
  * and unservable characters are normalized by `resolveBasePath`, not rejected.

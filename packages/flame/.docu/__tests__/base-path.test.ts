@@ -21,6 +21,7 @@ import {
   docsNavActive,
   docsNavHref,
 } from "../node/utils";
+import { resolveContentHref, resolveContentSrc } from "../node/mdx";
 import { resolveDocsIndexSource } from "../node/server-utils";
 import {
   BUILD_CACHE_VERSION,
@@ -581,6 +582,15 @@ describe("canonicalBasePath — normalization", () => {
     expect(canonicalBasePath("")).toBe("");
   });
 
+  it("drops dot segments so a prefix cannot escape the dist", () => {
+    expect(canonicalBasePath("/..")).toBe("");
+    expect(canonicalBasePath("/./docs")).toBe("/docs");
+    expect(canonicalBasePath("/a/../b")).toBe("/a/b");
+    expect(resolveBasePath(makeConfig({ basePath: "/.." }))).toBe(DEFAULT_BASE_PATH);
+    // The prefix is also an output directory: `join(dist, "..")` would climb out.
+    expect(docsOutDir(".docu/dist", canonicalBasePath("/.."))).toBe(".docu/dist");
+  });
+
   it("is what resolveBasePath hands to the rest of the build", () => {
     expect(resolveBasePath(makeConfig({ basePath: "/DOCS" }))).toBe("/docs");
     expect(resolveBasePath(makeConfig({ basePath: "/docs me" }))).toBe("/docs-me");
@@ -658,6 +668,88 @@ describe("validateBasePath — normalization guard", () => {
     expect(issues).toHaveLength(1);
     expect(issues[0].level).toBe("warning");
     expect(issues[0].message).toContain(DEFAULT_BASE_PATH);
+  });
+
+  it("warns about dot segments and names the collapsed result", () => {
+    const issues = validateBasePath("/a/../b");
+    expect(issues).toHaveLength(1);
+    expect(issues[0].level).toBe("warning");
+    expect(issues[0].message).toContain("dot segments");
+    expect(issues[0].message).toContain("/a/b");
+  });
+});
+
+describe("resolveContentHref / resolveContentSrc — authored content paths", () => {
+  it("leaves the default deployment byte-identical", () => {
+    expect(resolveContentHref("/docs/guide/routing", "/docs", "")).toBe("/docs/guide/routing.html");
+    expect(resolveContentHref("/docs/guide/routing.html", "/docs", "")).toBeNull();
+    expect(resolveContentHref("/docs/guide/routing#setup", "/docs", "")).toBeNull();
+    expect(resolveContentSrc("/docs/assets/img.png", "/docs", "")).toBeNull();
+  });
+
+  it("leaves paths outside the docs site alone", () => {
+    expect(resolveContentHref("/app/dashboard", "/docs", "")).toBeNull();
+    expect(resolveContentSrc("/favicon.ico", "/docs", "")).toBeNull();
+    expect(resolveContentHref("https://example.com/docs/x", "/docs", "")).toBeNull();
+    expect(resolveContentSrc("//cdn.example.com/x.js", "/docs", "")).toBeNull();
+    expect(resolveContentHref("#install", "/docs", "")).toBeNull();
+  });
+
+  it("re-bases authored paths onto another prefix", () => {
+    expect(resolveContentHref("/docs/guide/routing", "/repo", "")).toBe("/repo/guide/routing.html");
+    expect(resolveContentHref("/docs", "/repo", "")).toBe("/repo");
+    expect(resolveContentSrc("/docs/assets/img.png", "/repo", "")).toBe("/repo/assets/img.png");
+  });
+
+  it("collapses the authored prefix at a root deployment", () => {
+    expect(resolveContentHref("/docs/guide/routing", "", "")).toBe("/guide/routing.html");
+    expect(resolveContentHref("/docs", "", "")).toBe("/");
+    expect(resolveContentSrc("/docs/assets/img.png", "", "")).toBe("/assets/img.png");
+  });
+
+  it("adds the host's deployment path for project sites", () => {
+    expect(resolveContentSrc("/docs/assets/img.png", "", "/Docs")).toBe("/Docs/assets/img.png");
+    expect(resolveContentHref("/docs/guide/routing", "", "/Docs")).toBe("/Docs/guide/routing.html");
+    expect(resolveContentHref("/guide/routing", "", "/Docs")).toBe("/Docs/guide/routing.html");
+  });
+
+  it("keeps fragments, files and query strings intact", () => {
+    expect(resolveContentHref("/docs/guide/routing#setup", "", "")).toBe("/guide/routing#setup");
+    expect(resolveContentHref("/docs/assets/report.pdf", "", "")).toBe("/assets/report.pdf");
+    expect(resolveContentSrc("/docs/assets/img.png?v=2", "", "")).toBe("/assets/img.png?v=2");
+  });
+});
+
+describe("buildSeoMeta — og:image under a host path", () => {
+  it("keeps the deployment path in the image URL", () => {
+    const config = makeConfig({
+      baseURL: "https://user.github.io/Docs",
+      basePath: "",
+      ogImage: "/docs/assets/images/og.png",
+    });
+    expect(buildSeoMeta(config, {}, "intro").image).toBe(
+      "https://user.github.io/Docs/assets/images/og.png"
+    );
+  });
+
+  it("resolves a relative image against the deployment root", () => {
+    const config = makeConfig({
+      baseURL: "https://user.github.io/Docs",
+      basePath: "",
+      ogImage: "og.png",
+    });
+    expect(buildSeoMeta(config, {}, "intro").image).toBe("https://user.github.io/Docs/og.png");
+  });
+
+  it("does not repeat a deployment path the author already wrote", () => {
+    const config = makeConfig({
+      baseURL: "https://user.github.io/Docs",
+      basePath: "",
+      ogImage: "/Docs/assets/images/og.png",
+    });
+    expect(buildSeoMeta(config, {}, "intro").image).toBe(
+      "https://user.github.io/Docs/assets/images/og.png"
+    );
   });
 });
 

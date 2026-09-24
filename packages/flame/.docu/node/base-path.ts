@@ -96,12 +96,16 @@ export interface BasePathIssue {
 export function canonicalBasePath(value: string): string {
   const structural = normalizeBasePath(value);
   if (structural === "") return "";
+  // Whitespace and unservable characters fold away, then dot segments are
+  // dropped: a prefix is a URL path *and* an output directory, so `.`/`..`
+  // would either escape the dist or resolve differently than the URL does.
   const cleaned = structural
     .replace(/\s+/g, "-")
     .replace(/[^A-Za-z0-9\-._~/]+/g, "")
+    .split("/")
+    .filter((segment) => segment.length > 0 && segment !== "." && segment !== "..")
+    .join("/")
     .replace(/-{2,}/g, "-")
-    .replace(/\/{2,}/g, "/")
-    .replace(/^\/+|\/+$/g, "")
     .toLowerCase();
   return cleaned.length > 0 ? `/${cleaned}` : "";
 }
@@ -154,7 +158,8 @@ export function validateBasePath(value: unknown): BasePathIssue[] {
   ].join(" ");
   if (invalid.length > 0) reasons.push(`characters that need percent-encoding (${invalid})`);
   if (segments !== segments.toLowerCase()) reasons.push("non-lowercase letters");
-  if (/\.\.|--|\/\//.test(segments)) reasons.push("non-canonical separators");
+  if (/\.\.|(^|\/)\.(\/|$)|--|\/\//.test(segments))
+    reasons.push("dot segments or doubled separators");
 
   return [
     {
