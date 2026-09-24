@@ -6,6 +6,15 @@ import { cpSync, existsSync, readFileSync, writeFileSync, renameSync } from "nod
 import { spawnSync } from "node:child_process";
 
 const __dirname = import.meta.dirname;
+const command = process.argv[2];
+
+// Set this before re-exec so Bun selects the production JSX transform at startup.
+if (
+  (command === "build" || command === "preview" || command === "deploy") &&
+  !process.env.NODE_ENV
+) {
+  process.env.NODE_ENV = "production";
+}
 
 // Detect the package manager that invoked this binary. npm, pnpm, bun, and
 // yarn set npm_config_user_agent when they run a bin; fall back to lockfiles
@@ -52,15 +61,9 @@ else if (
 )
   runtime = "bun";
 
-// Re-exec under `bun` when selected but this process is node. One spawn per
-// command; FLAME_REEXEC guards the loop; silent node fallback when `bun` is
-// missing unless explicitly requested.
-if (
-  runtime === "bun" &&
-  typeof Bun === "undefined" &&
-  !process.execPath.includes("deno") &&
-  !process.env.FLAME_REEXEC
-) {
+// Re-exec under `bun` when selected but this process is node. The actual
+// runtime prevents a loop, even when a nested invocation inherits FLAME_REEXEC.
+if (runtime === "bun" && typeof Bun === "undefined" && !process.execPath.includes("deno")) {
   const result = spawnSync("bun", [process.argv[1], ...process.argv.slice(2)], {
     stdio: "inherit",
     env: { ...process.env, FLAME_REEXEC: "1" },
@@ -103,8 +106,6 @@ if (!COMMAND_MAP) {
   process.exit(1);
 }
 
-const command = process.argv[2];
-
 // Parse flags
 const themeIndex = process.argv.indexOf("--theme");
 if (themeIndex !== -1 && themeIndex + 1 < process.argv.length) {
@@ -116,16 +117,6 @@ const hasCi = process.argv.includes("--ci");
 if (hasDocker) process.env.FLAME_DEPLOY_DOCKER = "1";
 if (hasSilent) process.env.FLAME_DEPLOY_SILENT = "1";
 if (hasCi) process.env.FLAME_DEPLOY_CI = "1";
-
-// Production mode for build/preview/deploy — ensures minified client bundle
-// on all platforms (Coolify, Vercel, etc.) without requiring the user to
-// set NODE_ENV manually.
-if (
-  (command === "build" || command === "preview" || command === "deploy") &&
-  !process.env.NODE_ENV
-) {
-  process.env.NODE_ENV = "production";
-}
 
 if (!command || command === "--help" || command === "-h") {
   console.log(`
