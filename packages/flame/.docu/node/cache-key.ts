@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { FRAMEWORK_ROOT, STYLES_DIR, resolveProjectFile, basePath } from "./paths";
+import { FRAMEWORK_ROOT, STYLES_DIR, resolveProjectFile, basePath, deployPath } from "./paths";
 
 /**
  * Build cache version — bump when the toolchain output contract changes
@@ -16,16 +16,27 @@ import { FRAMEWORK_ROOT, STYLES_DIR, resolveProjectFile, basePath } from "./path
 export const BUILD_CACHE_VERSION = 6;
 
 /**
- * Resolved docs URL prefix, part of every cache key.
+ * Resolved docs URL prefix and deployment path, part of every cache key.
  *
  * The page cache is keyed by relative MDX path and the bundle/asset slots are
- * hashed from MDX source alone — neither changes when only `meta.basePath`
- * changes. Without this stamp, editing the prefix would leave every key
- * untouched and the build would skip every page, emitting HTML that still
- * points at the old prefix.
+ * hashed from MDX source alone — neither changes when only `meta.basePath` or
+ * `meta.baseURL`'s path changes. Without this stamp, editing either would leave
+ * every key untouched and the build would skip every page, emitting HTML that
+ * still points at the old prefix.
  */
 export function basePathStamp(): string {
-  return basePath();
+  return prefixStamp(basePath(), deployPath());
+}
+
+/**
+ * Compose the cache stamp from both prefixes that shape generated URLs: the
+ * docs prefix and the host's deployment path (from `meta.baseURL`). Either one
+ * changing has to invalidate the cache, or a warm cache keeps serving HTML that
+ * points at the old location.
+ */
+export function prefixStamp(resolvedBasePath: string, deploymentPath: string): string {
+  if (deploymentPath.length === 0) return resolvedBasePath;
+  return `${resolvedBasePath || "/"}@${deploymentPath}`;
 }
 
 /**
@@ -57,7 +68,9 @@ const RENDER_SOURCE_FILES = [
   ".docu/node/seo.ts",
   ".docu/node/utils.ts",
   ".docu/node/paths.ts",
+  ".docu/node/base-path.ts",
   ".docu/node/mdx.ts",
+  ".docu/node/search-indexer.ts",
   ".docu/node/build.ts",
   ".docu/node/build.impl.ts",
   ".docu/node/server-routes.ts",

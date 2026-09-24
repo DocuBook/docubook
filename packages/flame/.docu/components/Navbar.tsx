@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
 import Anchor from "./Anchor";
-import { cn, rebaseContentPath } from "../node/utils";
+import { cn, docsNavActive, docsNavHref, rebaseContentPath } from "../node/utils";
 import { config as docuConfig, basePath } from "../node/client-routes";
 import {
   Navbar as BaseNavbar,
@@ -87,9 +87,11 @@ export function NavMenuLink({ item, isActive }: { item: BaseNavMenuItem; isActiv
 }
 
 export function NavItem({ item }: { item: BaseNavMenuItem }) {
+  const href = docsNavHref(item.href, basePath);
   return (
     <Anchor
-      href={item.href}
+      href={href}
+      activeWhen={(path: string) => docsNavActive(path, href)}
       activeClassName="text-primary font-semibold"
       className="text-sm font-medium"
     >
@@ -127,24 +129,20 @@ export function MobileMenuToggle({
           tabIndex={0}
           className="dropdown-content menu bg-base-200 rounded-box z-[1] mt-2 w-52 p-2 shadow"
         >
-          {menu.map((item) => (
-            <li key={item.title + item.href}>
-              <Anchor
-                href={item.href}
-                activeWhen={
-                  currentPath
-                    ? (path: string) =>
-                        path === item.href ||
-                        path.startsWith(item.href + "/") ||
-                        path.endsWith(item.href + ".html")
-                    : undefined
-                }
-                activeClassName="text-primary font-semibold"
-              >
-                {item.title}
-              </Anchor>
-            </li>
-          ))}
+          {menu.map((item) => {
+            const href = docsNavHref(item.href, basePath);
+            return (
+              <li key={item.title + item.href}>
+                <Anchor
+                  href={href}
+                  activeWhen={currentPath ? (path: string) => docsNavActive(path, href) : undefined}
+                  activeClassName="text-primary font-semibold"
+                >
+                  {item.title}
+                </Anchor>
+              </li>
+            );
+          })}
         </ul>
       </details>
     </div>

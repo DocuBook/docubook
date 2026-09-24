@@ -1,10 +1,11 @@
-import { loadDocuConfig } from "../node/paths";
-import { docsHtmlHref, isExternalUrl } from "../node/utils";
+import { loadDocuConfig, resolveBasePath } from "../node/paths";
+import { docsNavHref } from "../node/utils";
 import { Hero, Features, BackgroundBlobs } from "../components/home";
 import { ThemeToggle } from "../components/Theme";
 import type { HomeFeature } from "../node/types";
 
 const docuConfig = loadDocuConfig();
+const basePath = resolveBasePath(docuConfig);
 
 interface RouteContext {
   icon?: string;
@@ -23,19 +24,11 @@ export default function IndexPage() {
   const { meta, home } = docuConfig;
   const routes = (docuConfig.routes as RouteItem[]) || [];
 
-  // Docs pages under /docs/ are flat .html files; the root /docs is
-  // docs/index.html via directory index — no .html suffix needed.
-  const linkWithHtml = (link: string) => {
-    if (isExternalUrl(link)) return link;
-    if (link.startsWith("/docs/")) return `${link}.html`;
-    return link;
-  };
-
   // Use home.features if configured, otherwise fallback to routes with context
   const features: HomeFeature[] =
     home?.features?.map((f) => ({
       ...f,
-      link: f.link ? linkWithHtml(f.link) : undefined,
+      link: f.link ? docsNavHref(f.link, basePath) : undefined,
     })) ||
     routes
       .filter((r) => r.context)
@@ -43,7 +36,7 @@ export default function IndexPage() {
         icon: route.context?.icon,
         title: route.context?.title || route.title,
         description: route.context?.description || "",
-        link: docsHtmlHref(`/docs${route.href}${route.items?.[0]?.href || ""}`),
+        link: docsNavHref(`/docs${route.href}${route.items?.[0]?.href || ""}`, basePath),
       }));
 
   // Use home.hero if configured, otherwise fallback to meta
@@ -52,7 +45,7 @@ export default function IndexPage() {
         ...home.hero,
         actions: home.hero.actions?.map((a) => ({
           ...a,
-          link: linkWithHtml(a.link),
+          link: docsNavHref(a.link, basePath),
         })),
       }
     : {

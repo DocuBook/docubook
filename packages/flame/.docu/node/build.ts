@@ -25,6 +25,9 @@ import {
   PAGES_DIR,
   loadDocuConfig,
   servedBasePath,
+  docsDepth,
+  deployPath,
+  assertValidBasePath,
 } from "./paths";
 import { htmlShell } from "./html";
 import { generateSearchIndex } from "./search-indexer";
@@ -256,7 +259,7 @@ async function renderDocsPage(
   const headExtra = builder?.collectHead(ctx);
   const bodyExtra = builder?.collectBody(ctx);
 
-  const depth = slug ? slug.split("/").length : 1;
+  const depth = docsDepth(slug, servedBasePath());
   const favicon = docuConfig.meta?.favicon || defaultFavicon();
   const seo = buildSeoMeta(docuConfig, frontmatter, slug || "");
   // Parity with build.impl.ts: static hosts without header control (GitHub
@@ -307,6 +310,11 @@ async function build() {
   // Bun 1.4 `process.on("memoryPressure")`: drop parsed page maps when the
   // OS runs low on memory (long CI builds). No-op on older runtimes.
   hookMemoryPressure(clearDerivedPageCaches);
+
+  // Normalized prefixes (case, whitespace, unservable characters) and values
+  // that cannot be honored would otherwise only surface after the whole build —
+  // report them, or stop before anything is written.
+  for (const warning of assertValidBasePath()) logger.warn(warning.message);
 
   logger.buildStart();
 
@@ -604,6 +612,7 @@ async function build() {
     // depth can never be right there, so use root-absolute asset URLs.
     absoluteAssets: true,
     basePath: servedBasePath(),
+    deployPath: deployPath(),
   });
   if (builder) notFoundHtml = await builder.runTransformHtmlChain(notFoundHtml, notFoundContext);
   await writeFile(join(DIST_DIR, "404.html"), notFoundHtml);

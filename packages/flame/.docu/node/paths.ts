@@ -2,9 +2,19 @@ import { resolve, join } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 import { readdir, rm, unlink } from "node:fs/promises";
 import type { DocuConfig } from "./types";
-import { resolveBasePath } from "./base-path";
+import { resolveBasePath, resolveDeployPath, validateBasePath } from "./base-path";
+import type { BasePathIssue } from "./base-path";
 
-export { DEFAULT_BASE_PATH, normalizeBasePath, resolveBasePath } from "./base-path";
+export {
+  DEFAULT_BASE_PATH,
+  normalizeBasePath,
+  canonicalBasePath,
+  resolveBasePath,
+  resolveDeployPath,
+  docsDepth,
+  validateBasePath,
+} from "./base-path";
+export type { BasePathIssue } from "./base-path";
 
 /**
  * FRAMEWORK_ROOT: Where the package code lives (.docu/components, .docu/pages, .docu/styles, .docu/node)
@@ -128,6 +138,59 @@ export function docsOutDir(distDir: string, resolvedBasePath: string = basePath(
  * `/prefix` with no trailing slash. */
 export function servedBasePath(resolvedBasePath: string = basePath()): string {
   return resolvedBasePath;
+}
+
+/**
+ * Deployment-root path contributed by the host — `""` when the origin serves
+ * the dist at `/`, `/repo` for a GitHub Pages project site. Root-absolute
+ * references (404 fallback assets, the search index) are built from it.
+ */
+export function deployPath(): string {
+  let config: DocuConfig | null = null;
+  try {
+    config = loadDocuConfig();
+  } catch {
+    // config absent/unreadable (tests, ad-hoc scripts) — assume an origin root
+  }
+  return resolveDeployPath(config);
+}
+
+/**
+ * {@link deployPath} for the current mode: a host path only exists in built
+ * output. Dev serves the project from the origin root, so writing it into dev
+ * HTML (or a dev client bundle) would point at directories the dev server does
+ * not own.
+ */
+export function servedDeployPath(): string {
+  return process.env.NODE_ENV === "production" ? deployPath() : "";
+}
+
+/**
+ * Fail fast on a `meta.basePath` that cannot be honored (a non-string value) and
+ * hand back the normalization warnings for the caller to log — case, whitespace
+ * and unservable characters are normalized by `resolveBasePath`, not rejected.
+ * Called from the build and dev-server entries so the message lands before any
+ * output is written.
+ */
+export function assertValidBasePath(): BasePathIssue[] {
+  let config: DocuConfig | null = null;
+  try {
+    config = loadDocuConfig();
+  } catch {
+    return [];
+  }
+
+  const issues = validateBasePath(config?.meta?.basePath);
+  const errors = issues.filter((issue) => issue.level === "error");
+  if (errors.length > 0) {
+    throw new Error(
+      [
+        `Invalid "meta.basePath" in ${DOCU_CONFIG_PATH}:`,
+        ...errors.map((issue) => `  • ${issue.message}`),
+      ].join("\n")
+    );
+  }
+  return issues.filter((issue) => issue.level === "warning");
 }
 
 /**

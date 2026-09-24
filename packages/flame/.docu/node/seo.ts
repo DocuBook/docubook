@@ -1,6 +1,6 @@
 import type { DocuConfig } from "./types";
 import { frontmatterField } from "./mdx";
-import { resolveBasePath } from "./paths";
+import { resolveBasePath, resolveDeployPath } from "./paths";
 import { rebaseContentPath } from "./utils";
 
 export interface SeoMeta {
@@ -36,7 +36,7 @@ export function buildSeoMeta(
   // Per-page image from frontmatter, fallback to global default from config
   const image = frontmatterField(frontmatter, "image") || config.meta?.ogImage;
   if (image) {
-    result.image = resolveOgImage(image, baseURL, prefix);
+    result.image = resolveOgImage(image, baseURL, prefix, resolveDeployPath(config));
   }
 
   return result;
@@ -53,13 +53,23 @@ export function buildSeoMeta(
  *    site moves to a different subpath
  *  - bare relative (`og.png`) — resolved against the prefix directory
  */
-function resolveOgImage(image: string, baseURL: string, prefix: string): string {
+function resolveOgImage(
+  image: string,
+  baseURL: string,
+  prefix: string,
+  deploymentPath: string
+): string {
   try {
     if (/^[a-zA-Z][a-zA-Z\d+.-]*:\/\//.test(image)) return new URL(image).href;
-    if (image.startsWith("/")) {
-      return new URL(rebaseContentPath(image, prefix), baseURL).href;
-    }
-    return new URL(image, `${baseURL}${prefix}/`).href;
+    // Content assets live under the docs prefix *inside* the deployment root,
+    // which `baseURL` already spells out (schema: "origin plus deployment
+    // root"), so resolve the path relative to it. The deployment path is only
+    // used to spot an author who spelled the host's segment out themselves.
+    const rebased = rebaseContentPath(image.startsWith("/") ? image : `${prefix}/${image}`, prefix);
+    const withinRoot = rebased.startsWith(`${deploymentPath}/`)
+      ? rebased.slice(deploymentPath.length)
+      : rebased;
+    return new URL(withinRoot.replace(/^\/+/, ""), `${baseURL}/`).href;
   } catch {
     return image;
   }

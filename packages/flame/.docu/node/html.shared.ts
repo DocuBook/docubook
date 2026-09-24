@@ -49,6 +49,12 @@ export interface HtmlShellOptions {
    * historical output byte-identical.
    */
   basePath?: string;
+  /**
+   * Path the host serves the dist root under (`""` at an origin root, `/repo`
+   * for a GitHub Pages project site). Only root-absolute references need it —
+   * relative ones already line up because pages and assets share it.
+   */
+  deployPath?: string;
 }
 
 export function htmlShell(opts: HtmlShellOptions): string {
@@ -68,6 +74,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
     bodyExtra,
     absoluteAssets = false,
     basePath = DEFAULT_BASE_PATH,
+    deployPath = "",
   } = opts;
   const nonceAttr = nonce ? ` nonce="${escapeHtml(nonce)}"` : "";
   const themeStyle = themeCss ? `\n  <style${nonceAttr}>${escapeHtml(themeCss)}</style>` : "";
@@ -76,7 +83,9 @@ export function htmlShell(opts: HtmlShellOptions): string {
   const depthPrefix = depth === 0 ? "" : "../".repeat(depth);
   // Bundle assets (JS, CSS, chunks) are written to the dist root and are
   // independent of the docs prefix; pages climb out of the prefix with `../`.
-  const assetPrefix = absoluteAssets ? "/assets/" : depthPrefix + "assets/";
+  // Depth-independent URLs (404 fallback) still carry the host's deployment
+  // path, which relative climbs cancel out.
+  const assetPrefix = absoluteAssets ? `${deployPath}/assets/` : depthPrefix + "assets/";
   const clientScript = js
     ? `\n  <link rel="modulepreload" href="${escapeHtml(assetPrefix + js)}">\n  <script type="module"${nonceAttr} src="${escapeHtml(assetPrefix + js)}"></script>`
     : "";
@@ -87,7 +96,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
     // default prefix onto the configured one, otherwise the asset 404s at the
     // old path after a subpath change.
     const rebased = rebaseContentPath(path, basePath);
-    return absoluteAssets ? rebased : depthPrefix + rebased.slice(1);
+    return absoluteAssets ? `${deployPath}${rebased}` : depthPrefix + rebased.slice(1);
   };
 
   // Build SEO meta tags (OG, Twitter, canonical)
