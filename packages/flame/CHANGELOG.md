@@ -1,5 +1,11 @@
 # @docubook/flame
 
+## 2.1.1
+
+### Patch Changes
+
+- [#401](https://github.com/DocuBook/docubook/pull/401) [`a6c3fe9`](https://github.com/DocuBook/docubook/commit/a6c3fe9fe28ee39de9e074a62ad3c1c0a7f2a9ca) Thanks [@pullfrog](https://github.com/apps/pullfrog)! - Set production mode before Bun starts for build, preview, and deploy commands, preventing cold builds from using the development JSX runtime.
+
 ## 2.1.0
 
 ### Minor Changes
