@@ -1,6 +1,6 @@
 # @docubook/mdx-content
 
-## 3.0.0
+## 2.1.0
 
 ### Minor Changes
 
@@ -25,7 +25,7 @@
 ### Patch Changes
 
 - Updated dependencies [[`a0e326e`](https://github.com/DocuBook/docubook/commit/a0e326e5a67b0641df47fa7f16adc641a5ac293c)]:
-  - @docubook/core@3.0.0
+  - @docubook/core@2.1.0
 
 ## 2.0.3
 
