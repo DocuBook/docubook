@@ -47,8 +47,18 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           HUSKY: "0"
 
-      - name: Create single GitHub Release (v<flame version>)
+      # `published` is true for any published package, so check flame
+      # specifically before creating a product release: a release that ships
+      # other packages only must not re-tag flame's unchanged version.
+      - name: Detect whether flame was published
+        id: flame
         if: steps.changesets.outputs.published == 'true'
+        env:
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+        run: node scripts/published-packages.mjs @docubook/flame >> "$GITHUB_OUTPUT"
+
+      - name: Create single GitHub Release (v<flame version>)
+        if: steps.flame.outputs.released == 'true'
         run: |
           VERSION=$(node -p "require('./packages/flame/package.json').version")
           TAG="v${VERSION}"
@@ -59,6 +69,18 @@ jobs:
             git tag -d "$T"
             git push origin --delete "$T" 2>/dev/null || true
           done
+          # `v<flame version>` has to be a new tag. One that already exists on a
+          # different commit means this release does not match the published
+          # flame version, which must fail loudly instead of re-pointing a
+          # published tag (and the Docker image built from it) to other code.
+          if git rev-parse --verify --quiet "refs/tags/${TAG}" >/dev/null; then
+            EXISTING=$(git rev-list -n 1 "$TAG")
+            HEAD_SHA=$(git rev-parse HEAD)
+            if [ "$EXISTING" != "$HEAD_SHA" ]; then
+              echo "::error::${TAG} already exists at ${EXISTING}, not ${HEAD_SHA}; refusing to move a published tag." >&2
+              exit 1
+            fi
+          fi
           git tag -f "$TAG"
           git push origin "$TAG"
           gh release create "$TAG" --title "$TAG" --generate-notes
