@@ -15,16 +15,11 @@
 ## Architecture
 
 ```mermaid
-sequenceDiagram
-    participant Author as 📝 Author
-    participant Flame as DocuBook Flame 🔥
-    participant Host as 📦 Static host
-    participant Browser as 🌐 Browser
-
-    Author->>Flame: writes markdown (.md)
-    Flame->>Host: compiles to flat .html
-    Browser->>Host: requests page
-    Host-->>Browser: serves static HTML
+flowchart TD
+    Author["📝 Author<br/>writes markdown (.md)"] --> Flame["DocuBook Flame 🔥<br/>compiles to flat .html"]
+    Flame --> Host["📦 Static host"]
+    Host -->|serves static HTML| Browser["🌐 Browser"]
+    Browser -->|requests page| Host
 ```
 
 ## Quick Start
