@@ -402,6 +402,10 @@ based on flame's version:
 v<flame version>
 ```
 
+That product release runs only when `@docubook/flame` is part of the published
+packages; a release that ships other packages only stops after the npm publish,
+so flame's unchanged version is never retagged.
+
 It then triggers `.github/workflows/docker-builder.yml`, which publishes the
 flame builder image to GHCR as `<version>`, `<major>`, and `latest` from
 `packages/flame/docker/Dockerfile.builder`.
