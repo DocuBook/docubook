@@ -59,10 +59,26 @@ The five published packages are linked in `.changeset/config.json`:
 - `@docubook/themes-colors`
 - `@docubook/ui-react`
 
-As a result, a release affecting one of these packages may version and publish
-all linked packages together. The repository is currently in stable release
-mode: `.changeset/pre.json` is absent. Prerelease mode must be entered
-explicitly when another prerelease series is needed.
+Linking aligns versions between the packages that belong to the same release; it
+does not version and publish the whole group. Only packages present in a release
+plan are published — the ones carrying a changeset, plus any package pulled in
+because a dependency's new version leaves the range it declares. A package with
+no changeset and no broken range keeps its current version.
+
+Dependents are pulled in when their declared range is left. Peer dependencies
+behave the same way because
+`___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH.onlyUpdatePeerDependentsWhenOutOfRange`
+is enabled: without it, a `minor` bump of `@docubook/core` would force a major
+release of the peer-dependent `@docubook/markdown`, which then drags the whole
+linked group to a major version.
+
+Releases that move all five packages together therefore come from changesets
+that list every package explicitly — a convention, not a property of linking.
+`pnpm test:release-plan` asserts the release-plan matrix this implies.
+
+The repository is currently in stable release mode: `.changeset/pre.json` is
+absent. Prerelease mode must be entered explicitly when another prerelease
+series is needed.
 
 ## High-Level Data Flow
 

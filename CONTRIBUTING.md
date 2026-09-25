@@ -94,6 +94,7 @@ pnpm install
 | `pnpm lint` | Run the root Oxlint configuration across the repository |
 | `pnpm typecheck` | Type-check the workspace through Turborepo |
 | `pnpm test` | Run workspace tests through Turborepo |
+| `pnpm test:release-plan` | Verify the read-only release-plan matrix from `.changeset/config.json` |
 | `pnpm clean` | Run every package's clean script through Turborepo |
 | `pnpm commit` | Open the interactive commit prompt |
 | `pnpm changeset` | Create a changeset |
@@ -328,10 +329,16 @@ or publishing another prerelease series.
 
 Practical consequence:
 
-- a user-facing change in one linked package may cause **all linked packages**
-  to version and publish together
-- release scope is determined by Changesets + linked versioning, not by the
-  touched files alone
+- linking aligns versions between the packages that belong to the **same**
+  release; it does not version and publish the whole group
+- a package without a changeset is published only when a dependency's new
+  version leaves the range it declares; peer dependencies are pulled in only
+  when their range is left
+  (`___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH.onlyUpdatePeerDependentsWhenOutOfRange`)
+- release scope is determined by the changesets plus dependency propagation, not
+  by the touched files alone
+- the resulting plan can be inspected before opening a PR with
+  `pnpm test:release-plan` (read-only; it never versions or publishes)
 
 ### When to Add a Changeset
 

@@ -12,7 +12,8 @@
     "publish-packages": "pnpm build && changeset publish",
     "prepare": "husky",
     "commit": "czg",
-    "test": "turbo test"
+    "test": "turbo test",
+    "test:release-plan": "node scripts/check-release-plan.mjs"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.7.0",

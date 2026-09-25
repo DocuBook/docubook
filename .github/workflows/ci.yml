@@ -34,6 +34,30 @@ jobs:
       - name: ${{ matrix.task }}
         run: pnpm turbo ${{ matrix.task }}
 
+  release-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # `changeset status` reads baseBranch (main) from .changeset/config.json,
+      # and pull-request checkouts are detached, so make sure the ref exists.
+      - name: Ensure the base branch ref is available
+        run: git show-ref --verify --quiet refs/heads/main || git fetch --no-tags origin main:refs/heads/main
+
+      - name: Verify the release-plan matrix
+        run: pnpm test:release-plan
+
   runtime-smoke:
     runs-on: ubuntu-latest
     strategy:
