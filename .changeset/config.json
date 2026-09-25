@@ -16,6 +16,9 @@
       "@docubook/ui-react"
     ]
   ],
+  "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
+    "onlyUpdatePeerDependentsWhenOutOfRange": true
+  },
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",

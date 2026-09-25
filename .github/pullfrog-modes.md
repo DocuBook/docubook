@@ -38,7 +38,7 @@ Historical names must NOT reappear as active packages: `mdx-content` → `markdo
 - **New deps** — check `pnpm-workspace.yaml` overrides (CVE pins: flatted, postcss, esbuild, undici, fast-uri, dompurify, …) and `allowBuilds` for install-script deps.
 
 ### Versioning & validation
-- All five packages are public and **linked** in `.changeset/config.json` (core, flame, markdown, themes-colors, ui-react): one public-facing change may version/publish all. Ship a `.changeset/*.md` for user-facing changes.
+- All five packages are public and **linked** in `.changeset/config.json` (core, flame, markdown, themes-colors, ui-react): linking aligns versions within one release plan, so only packages with a changeset (plus dependents whose declared range is left) version and publish. `pnpm test:release-plan` asserts that matrix. Ship a `.changeset/*.md` for user-facing changes.
 - React 19.2 pinned via overrides; TypeScript 7 strict (no `as any`); no new deps if stdlib or an existing dep works.
 - Validation: `pnpm lint` (oxlint), `pnpm typecheck`, `pnpm build` (flame needs Bun ≥1.4), `pnpm test` — vitest 4 per package. flame tests in `.docu/__tests__/**/*.test.ts`, aliased to `ui-react/dist` (run `turbo test` for build ordering). Bug fix → regression test.
 
