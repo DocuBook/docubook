@@ -40,15 +40,15 @@ keyboard (←/→ collapse/expand, Enter/Space toggle).
 ```md
 ::::tree
 build()
-├─ loadPlugins → plugin.setup(build)        ← hooks registered
-├─ onStart(config)                          ← validate
+├─ loadPlugins → plugin.setup(build)
+├─ onStart(config)
 ├─ for each MDX file:
-│   ├── onLoad({filter})                    ← transform raw content
-│   ├── transformFrontmatter()              ← mutate frontmatter
-│   ├── compileMdx() ← remark / rehype      ← MDX pipeline
-│   ├── injectHead() / injectBody()         ← inject HTML
-│   └── transformHtml()                     ← final transform
-├─ onEnd(config, pages)                     ← sitemap, RSS, etc.
+│   ├── onLoad({filter})
+│   ├── transformFrontmatter()
+│   ├── compileMdx()
+│   ├── injectHead() / injectBody()
+│   └── transformHtml()
+├─ onEnd(config, pages)
 └─ write output
 ::::
 ```
@@ -57,15 +57,15 @@ Render as:
 
 ::::tree
 build()
-├─ loadPlugins → plugin.setup(build)        ← hooks registered
-├─ onStart(config)                          ← validate
+├─ loadPlugins → plugin.setup(build)
+├─ onStart(config)
 ├─ for each MDX file:
-│   ├── onLoad({filter})                    ← transform raw content
-│   ├── transformFrontmatter()              ← mutate frontmatter
-│   ├── compileMdx() ← remark / rehype      ← MDX pipeline
-│   ├── injectHead() / injectBody()         ← inject HTML
-│   └── transformHtml()                     ← final transform
-├─ onEnd(config, pages)                     ← sitemap, RSS, etc.
+│   ├── onLoad({filter})
+│   ├── transformFrontmatter()
+│   ├── compileMdx()
+│   ├── injectHead() / injectBody()
+│   └── transformHtml()
+├─ onEnd(config, pages)
 └─ write output
 ::::
 

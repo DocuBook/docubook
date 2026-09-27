@@ -3,14 +3,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/DocuBook/docubook/releases"><img alt="version" src="https://shieldcn.dev/npm/v/@docubook/flame.svg?split=true&amp;label=release" /></a>
+  <a href="https://github.com/DocuBook/docubook/releases"><img alt="version" src="https://shieldcn.dev/npm/v/@docubook/flame.svg?label=release" /></a>
   <a href="https://github.com/DocuBook/docubook/actions"><img alt="CI" src="https://shieldcn.dev/github/DocuBook/docubook/ci.svg?split=true" /></a>
   <a href="https://www.npmjs.com/package/@docubook/flame"><img alt="badge" src="https://shieldcn.dev/npm/dt/@docubook/flame.svg" /></a>
+  <a href="#"><img alt="badge" src="https://shieldcn.dev/badge/Battery Included.svg?logo=lu%3ABatteryCharging" /></a>
 </p>
 
-> An open-source alternative to Mintlify or GitBook. Write documentation in markdown and directives.
->
-> The toolchain runs on Bun, Node.js, or Deno — output is flat static HTML, no server required.
+> An open-source alternative to Mintlify or GitBook. Write documentation in markdown and directives. The toolchain runs on Bun, Node.js, or Deno — output is flat static HTML, no server required.
 
 ## Architecture
 
