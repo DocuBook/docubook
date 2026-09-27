@@ -9,6 +9,7 @@ import {
   hashMdxSources,
   hookMemoryPressure,
   isTailwindRelevantCss,
+  readStyleCss,
   runtimeStamp,
   tailwindExtraInputs,
 } from "../node/cache-key";
@@ -199,6 +200,75 @@ describe("cache-key (Tailwind v4 CSS-first)", () => {
     const b = hashMdxSources({ a: "1", b: "2" });
     expect(a).toBe(b);
     expect(hashMdxSources({ a: "1", b: "changed" })).not.toBe(a);
+  });
+
+  it("folds a style stamp into the bundle hash when one is passed", () => {
+    const sources = { intro: "export default function MDXContent(){}" };
+    expect(hashMdxSources(sources, "css-a")).not.toBe(hashMdxSources(sources, "css-b"));
+    expect(hashMdxSources(sources, "css-a")).toBe(hashMdxSources(sources, "css-a"));
+  });
+
+  it("keeps plain CSS from the entry stylesheet and its package imports", () => {
+    // The bug this guards: Tailwind copies plain rules from the entry graph
+    // (including package stylesheets like @docubook/markdown/styles.css) into
+    // the emitted CSS, so editing them has to invalidate the stylesheet cache.
+    const root = makeProject({
+      "styles/globals.css": '@import "@docubook/markdown/styles.css";\n.entry{color:red}',
+      "node_modules/@docubook/markdown/styles.css": ".pkg{color:red}",
+    });
+    const dir = join(root, "styles");
+    try {
+      const before = readStyleCss("globals.css", dir, root);
+      expect(before).toContain(".entry{color:red}");
+      expect(before).toContain(".pkg{color:red}");
+
+      writeFileSync(join(root, "node_modules/@docubook/markdown/styles.css"), ".pkg{color:blue}");
+      expect(readStyleCss("globals.css", dir, root)).not.toBe(before);
+    } finally {
+      cleanup(root);
+    }
+  });
+
+  it("busts on a plain rule change in the entry stylesheet", () => {
+    const root = makeProject({ "styles/globals.css": ".entry{color:red}" });
+    const dir = join(root, "styles");
+    try {
+      const before = computeTailwindCacheKey(readStyleCss("globals.css", dir, root), "", root);
+      writeFileSync(join(root, "styles/globals.css"), ".entry{color:blue}");
+      expect(computeTailwindCacheKey(readStyleCss("globals.css", dir, root), "", root)).not.toBe(
+        before
+      );
+    } finally {
+      cleanup(root);
+    }
+  });
+
+  it("finds a package stylesheet nested the way pnpm stores dependencies", () => {
+    const store = "node_modules/.pnpm/@docubook+flame@1/node_modules";
+    const root = makeProject({
+      [`${store}/@docubook/markdown/styles.css`]: ".pkg{color:red}",
+      [`${store}/@docubook/flame/styles/globals.css`]: '@import "@docubook/markdown/styles.css";',
+    });
+    try {
+      const css = readStyleCss("globals.css", join(root, store, "@docubook/flame/styles"), root);
+      expect(css).toContain(".pkg{color:red}");
+    } finally {
+      cleanup(root);
+    }
+  });
+
+  it("does not fold the tailwind package tree into the entry key", () => {
+    const root = makeProject({
+      "styles/globals.css": '@import "tailwindcss";\n@theme { --x: 1; }',
+      "node_modules/tailwindcss/package.json": JSON.stringify({ name: "tailwindcss" }),
+    });
+    try {
+      const css = readStyleCss("globals.css", join(root, "styles"), root);
+      expect(css).toContain("@theme");
+      expect(css).not.toContain("tailwindcss/package.json");
+    } finally {
+      cleanup(root);
+    }
   });
 
   it("atomicWriteFile never leaves a corrupt target", async () => {

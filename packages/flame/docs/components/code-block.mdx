@@ -65,6 +65,19 @@ function isRocketAboutToCrash() {
 | **gitignore**        | `gitignore:.git`         |
 | **bash**             | `bash:install.sh`        |
 | **markdown**         | `md:readme.md`           |
+| **env** / **dotenv** | `env:.env`               |
+| **mdx**              | `mdx:page.mdx`           |
+| **vue**              | `vue:App.vue`            |
+| **svelte**           | `svelte:App.svelte`      |
+| **astro**            | `astro:index.astro`      |
+| **prisma**           | `prisma:schema.prisma`   |
+| **jsonc**            | `jsonc:config.jsonc`     |
+| **hcl**              | `hcl:main.hcl`           |
+| **terraform**        | `terraform:main.tf`      |
+
+Languages that Prism has no grammar for (such as `env`, `mdx`, `vue`, `svelte`, `astro`) still
+render with their icon and title — the code is shown unhighlighted instead of failing the build.
+Aliases: `dotenv` for `env`, `tf` for `terraform`.
 
 ## Expandable Code
 

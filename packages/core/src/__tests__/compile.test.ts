@@ -5,6 +5,7 @@ import {
   postProcess,
   createDefaultRehypePlugins,
   createDefaultRemarkPlugins,
+  serialize,
 } from "../compile";
 import type { ElementNode } from "../utils";
 
@@ -88,6 +89,17 @@ describe("createDefaultRehypePlugins", () => {
     const plugins = createDefaultRehypePlugins();
     expect(Array.isArray(plugins)).toBe(true);
     expect(plugins.length).toBeGreaterThan(0);
+  });
+
+  it("does not throw on a fence language refractor does not register", async () => {
+    const result = await serialize("```env\nAPI_URL=https://example.com\n```\n", {
+      mdxOptions: {
+        rehypePlugins: createDefaultRehypePlugins(),
+        remarkPlugins: createDefaultRemarkPlugins(),
+      },
+    });
+
+    expect(result.compiledSource).toContain("API_URL");
   });
 });
 

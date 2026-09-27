@@ -78,6 +78,9 @@
     --input: 210 20% 88%;
     --ring: 210 81% 56%;
     --radius: 0.5rem;
+    /* Docs content gutter (`px-4` on the page wrapper, `lg:px-12` above) —
+       markdown components pull back by it to bleed edge to edge on phones. */
+    --docubook-content-gutter: 1rem;
   }
 
   .dark {

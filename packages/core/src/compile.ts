@@ -79,7 +79,9 @@ export function createDefaultRehypePlugins(): Pluggable[] {
     rehypeCodeTitles,
     handleCodeTitles,
     handleCodeExpandable, // Copy expandable metadata from <code> to <pre> before prism transforms nodes.
-    rehypePrism,
+    // ignoreMissing: a fence language refractor does not know (e.g. `env`, `mdx`)
+    // must render as plain code, not abort the whole build.
+    [rehypePrism, { ignoreMissing: true }],
     handleCodeExpandable, // Re-apply expandable attrs after prism tokenization.
     rehypeSlug,
     rehypeAutolinkHeadings,

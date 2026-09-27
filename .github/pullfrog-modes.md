@@ -27,7 +27,7 @@ Historical names must NOT reappear as active packages: `mdx-content` → `markdo
 
 ### Config, cache & authoring
 - `docu.json` changes → `.docu/node/types.ts` + `docu.schema.json`, validated by zod.
-- **Build cache** — `BUILD_CACHE_VERSION` (currently v6, `cache-key.ts`); bump when the output contract changes (cache keys: globals.css, theme, Tailwind inputs, runtime stamp, basePath).
+- **Build cache** — `BUILD_CACHE_VERSION` (currently v7, `cache-key.ts`); bump when the output contract changes (cache keys: globals.css, theme, Tailwind inputs, stylesheet fingerprint, runtime stamp, basePath).
 - **Tailwind CLI only** — `@tailwindcss/cli` in flame (Bun + Node/Deno); no PostCSS/Next.js pipeline in-repo.
 - **Markdown/directive-first** authoring — no authored JSX.
 

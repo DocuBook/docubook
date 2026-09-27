@@ -31,7 +31,7 @@ import {
 } from "./paths";
 import { htmlShell } from "./html";
 import { generateSearchIndex } from "./search-indexer";
-import { buildClientBundle, computeInlineThemeCss } from "./hydrate";
+import { buildClientBundle, computeInlineThemeCss, cssBundleStamp } from "./hydrate";
 import { logger } from "./logger";
 import { initSentry, captureException } from "./sentry";
 import { loadPlugins } from "./plugin-loader";
@@ -412,10 +412,10 @@ async function build() {
 
   logger.bundleStart();
   let t = performance.now();
-  // Skip the JS bundle when compiled MDX sources are unchanged: the bundle
-  // is shared by every page, so its hash doubles as the content fingerprint.
-  // CSS still builds via its own content-keyed cache inside the hydrator.
-  const bundleHash = hashMdxSources(mdxSources);
+  // Skip the JS bundle when the compiled MDX sources *and* the stylesheet
+  // fingerprint are unchanged: the bundle is shared by every page, so its hash
+  // doubles as the content fingerprint.
+  const bundleHash = hashMdxSources(mdxSources, cssBundleStamp());
   const lastBundle = cache["__bundle__"];
   const bundleHit =
     isCacheEntry(lastBundle) &&

@@ -58,6 +58,39 @@ describe("CodeBlock", () => {
     expect(container!.textContent).toContain("python");
   });
 
+  it("renders a dedicated header icon instead of the generic fallback", async () => {
+    const renderIcon = async (language: string) => {
+      let container: HTMLElement;
+      await act(async () => {
+        ({ container } = render(
+          <CodeBlock raw="x" data-language={language}>
+            <code>x</code>
+          </CodeBlock>
+        ));
+      });
+      return container!.querySelector(".code-block-header svg")?.innerHTML ?? "";
+    };
+
+    const fallback = await renderIcon("cobol");
+    expect(fallback).not.toBe("");
+
+    for (const language of [
+      "env",
+      "dotenv",
+      "mdx",
+      "vue",
+      "svelte",
+      "astro",
+      "prisma",
+      "jsonc",
+      "tf",
+      "terraform",
+      "hcl",
+    ]) {
+      expect(await renderIcon(language)).not.toBe(fallback);
+    }
+  });
+
   it("does not crash with no children", async () => {
     let container: HTMLElement;
     await act(async () => {

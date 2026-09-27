@@ -21,6 +21,14 @@ import {
   SiGit,
   SiGnubash,
   SiMarkdown,
+  SiDotenv,
+  SiMdx,
+  SiVuedotjs,
+  SiSvelte,
+  SiAstro,
+  SiPrisma,
+  SiTerraform,
+  SiHcl,
 } from "react-icons/si";
 import { FaJava, FaCode, FaRegFileAlt } from "react-icons/fa";
 import { TbJson } from "react-icons/tb";
@@ -77,9 +85,22 @@ function getLanguageIcon(language: string) {
     yaml: <SiYaml {...iconProps} />,
     yml: <SiYaml {...iconProps} />,
     toml: <SiToml {...iconProps} />,
+    hcl: <SiHcl {...iconProps} />,
     json: <TbJson {...iconProps} />,
+    jsonc: <TbJson {...iconProps} />,
     md: <SiMarkdown {...iconProps} />,
     markdown: <SiMarkdown {...iconProps} />,
+    // Languages prism/refractor does not register render unhighlighted, but
+    // still get a real header icon instead of the generic code fallback.
+    mdx: <SiMdx {...iconProps} />,
+    env: <SiDotenv {...iconProps} />,
+    dotenv: <SiDotenv {...iconProps} />,
+    vue: <SiVuedotjs {...iconProps} />,
+    svelte: <SiSvelte {...iconProps} />,
+    astro: <SiAstro {...iconProps} />,
+    prisma: <SiPrisma {...iconProps} />,
+    tf: <SiTerraform {...iconProps} />,
+    terraform: <SiTerraform {...iconProps} />,
     bash: <SiGnubash {...iconProps} />,
     sh: <SiGnubash {...iconProps} />,
     shell: <SiGnubash {...iconProps} />,
