@@ -15,17 +15,31 @@
  * fixture is written to `.changeset/release-plan-check.md` for the duration of
  * the run and removed afterwards, so do not run it alongside `version-packages`.
  *
+ * `changeset status` unions every pending changeset, so any real changeset in
+ * the tree would leak into the fixture's matrix (and fail a legitimate PR).
+ * Pending changesets are parked in a temp directory for the duration of the run
+ * and restored afterwards — the matrix here only ever reflects the fixture.
+ *
  * `changeset status` resolves the base branch from `.changeset/config.json`
  * (`main`), so that ref has to exist in the local clone.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
 const root = path.resolve(import.meta.dirname, "..");
 const cli = path.join(root, "node_modules", "@changesets", "cli", "bin.js");
-const fixture = path.join(root, ".changeset", "release-plan-check.md");
+const changesetDir = path.join(root, ".changeset");
+const fixture = path.join(changesetDir, "release-plan-check.md");
 const scratch = mkdtempSync(path.join(tmpdir(), "docubook-release-plan-"));
 const planFile = path.join(scratch, "plan.json");
 
@@ -72,10 +86,34 @@ const scenarios = [
   },
 ];
 
+/** Pending changesets that would otherwise join every fixture's matrix. */
+const isPendingChangeset = (file) =>
+  file.endsWith(".md") && file !== "README.md" && file !== "release-plan-check.md";
+
+const stash = mkdtempSync(path.join(tmpdir(), "docubook-changeset-stash-"));
+let parked = [];
+
+const parkPendingChangesets = () => {
+  for (const file of readdirSync(changesetDir).filter(isPendingChangeset)) {
+    renameSync(path.join(changesetDir, file), path.join(stash, file));
+    parked.push(file);
+  }
+};
+
+const restorePendingChangesets = () => {
+  for (const file of parked) {
+    const stashed = path.join(stash, file);
+    if (existsSync(stashed)) renameSync(stashed, path.join(changesetDir, file));
+  }
+  parked = [];
+};
+
 const removeFixture = () => rmSync(fixture, { force: true });
 const cleanup = () => {
   removeFixture();
+  restorePendingChangesets();
   rmSync(scratch, { recursive: true, force: true });
+  rmSync(stash, { recursive: true, force: true });
 };
 
 process.on("SIGINT", () => {
@@ -103,6 +141,7 @@ let failures = 0;
 console.log("release-plan check (.changeset/config.json)");
 
 try {
+  parkPendingChangesets();
   for (const { pkg, bump, expected } of scenarios) {
     const label = `${pkg}: ${bump}`;
     if (existsSync(fixture)) {

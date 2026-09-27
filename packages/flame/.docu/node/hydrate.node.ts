@@ -70,6 +70,16 @@ function tailwindCacheKey(styleFile: string): string {
   return computeTailwindCacheKey(readStyleCss(styleFile), `${styleFile}\0${themeCacheSuffix()}`);
 }
 
+/**
+ * Fingerprint of every style input that shapes the emitted CSS: the route
+ * entries (`globals.css`, `site.css`) plus everything they import — relative
+ * files and package stylesheets — and the resolved theme. Mirrors
+ * `hydrate.ts` so both runtimes agree on when the bundle must rebuild.
+ */
+export function cssBundleStamp(): string {
+  return `${tailwindCacheKey("globals.css")}\0${tailwindCacheKey("site.css")}`;
+}
+
 async function buildTailwindCss(
   name: string,
   styleFile: string

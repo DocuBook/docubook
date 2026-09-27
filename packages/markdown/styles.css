@@ -8,6 +8,18 @@
   overscroll-behavior-x: contain;
 }
 
+/* Phones: code blocks bleed over the content gutter so the card spans the full
+   screen width. The host layout declares how wide that gutter is via
+   `--docubook-content-gutter` (1rem fallback); we pull back by it and drop the
+   radius and side borders that would otherwise float inside the screen. */
+@media (max-width: 639.98px) {
+  .code-block-container {
+    margin-inline: calc(-1 * var(--docubook-content-gutter, 1rem)) !important;
+    border-radius: 0 !important;
+    border-inline: 0 !important;
+  }
+}
+
 [data-card-hover]:hover {
   border-color: hsl(var(--primary, 210 81% 56%)) !important;
   box-shadow: 0 11px 28px rgba(34, 129, 227, 0.15) !important;

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { FRAMEWORK_ROOT, STYLES_DIR, resolveProjectFile, basePath, deployPath } from "./paths";
@@ -12,8 +12,13 @@ import { FRAMEWORK_ROOT, STYLES_DIR, resolveProjectFile, basePath, deployPath } 
  * is folded into `basePathStamp()` below. Bumping here also invalidates any
  * cache written by an earlier config, so a base-path edit can never be
  * silently skipped as "unchanged".
+ *
+ * v7: stylesheet fingerprints entered the key material — the bundle hash folds
+ * `cssBundleStamp()`, and the stylesheet key hashes the entry's whole import
+ * graph (plain CSS plus package stylesheets), so a CSS-only edit invalidates
+ * the assets it changes instead of waiting for `--force`.
  */
-export const BUILD_CACHE_VERSION = 6;
+export const BUILD_CACHE_VERSION = 7;
 
 /**
  * Resolved docs URL prefix and deployment path, part of every cache key.
@@ -133,7 +138,7 @@ export function isTailwindRelevantCss(content: string): boolean {
 const IMPORT_RE = /@import\s+(?:url\()?["']([^"']+)["']/g;
 const MAX_IMPORT_DEPTH = 10;
 
-/** Resolve `./` + `../` imports only — bare specifiers are version-pinned deps. */
+/** Resolve `./` + `../` imports (bare specifiers go through the package resolver). */
 function resolveRelativeImport(spec: string, fromDir: string): string | undefined {
   if (!spec.startsWith(".")) return undefined;
   const clean = spec.split("?")[0]!.split("#")[0]!;
@@ -142,12 +147,73 @@ function resolveRelativeImport(spec: string, fromDir: string): string | undefine
 }
 
 /**
- * Read a CSS file plus transitively imported relative files.
- * Non-relevant files contribute "" themselves, but their imports are still
+ * Resolve a bare specifier (`@docubook/markdown/styles.css`) to the file it
+ * names in `node_modules`.
+ *
+ * A package stylesheet imported by the entry is emitted verbatim, so its
+ * content belongs in the cache key — otherwise editing the package's CSS keeps
+ * serving the previous bundle. The lookup walks up from the file that wrote the
+ * `@import`, checking `node_modules` at each level (Node's own order), which
+ * covers both the flat layout and pnpm's virtual store, where a package sits at
+ * `.../.pnpm/@docubook+flame@1/node_modules/@docubook/flame` and its deps
+ * resolve from the store directory above it. Directory targets such as
+ * `@import "tailwindcss"` are not files and resolve to undefined, so the
+ * vendored Tailwind tree never enters the key.
+ */
+function resolvePackageImport(spec: string, fromDir: string, root: string): string | undefined {
+  if (spec.startsWith(".")) return undefined;
+  const clean = spec.split("?")[0]!.split("#")[0]!;
+  if (clean.length === 0) return undefined;
+
+  const isFile = (candidate: string): boolean => {
+    try {
+      return existsSync(candidate) && statSync(candidate).isFile();
+    } catch {
+      return false;
+    }
+  };
+
+  const bases: string[] = [];
+  let dir = fromDir;
+  for (let depth = 0; depth < 12; depth++) {
+    bases.push(dir);
+    const parent = join(dir, "..");
+    if (parent === dir) break;
+    dir = parent;
+  }
+  bases.push(root, FRAMEWORK_ROOT);
+
+  for (const base of bases) {
+    const candidate = join(base, "node_modules", clean);
+    if (isFile(candidate)) return candidate;
+  }
+  return undefined;
+}
+
+interface CssReadOptions {
+  /** Root used to resolve bare package imports under `node_modules`. */
+  root: string;
+  /**
+   * Keep plain CSS as well as v4 directives. True for the entry stylesheet and
+   * everything it imports: Tailwind copies those rules into the output as-is,
+   * so any edit there changes the emitted bundle. False for project CSS the
+   * entry never imports, where only v4 directives can matter.
+   */
+  keepPlain: boolean;
+}
+
+/**
+ * Read a CSS file plus transitively imported files.
+ * Filtered files contribute "" themselves, but their imports are still
  * followed (nested file may carry `@theme`). `visited` breaks import cycles.
  * Missing/unreadable files resolve to "" — never throws.
  */
-function readCssWithImports(path: string, visited: Set<string>, depth = 0): string {
+function readCssWithImports(
+  path: string,
+  visited: Set<string>,
+  opts: CssReadOptions,
+  depth = 0
+): string {
   if (depth > MAX_IMPORT_DEPTH || visited.has(path)) return "";
   visited.add(path);
   let content = "";
@@ -157,12 +223,14 @@ function readCssWithImports(path: string, visited: Set<string>, depth = 0): stri
   } catch {
     return "";
   }
-  let out = isTailwindRelevantCss(content) ? content : "";
+  let out = opts.keepPlain || isTailwindRelevantCss(content) ? content : "";
   try {
     const dir = join(path, "..");
     for (const m of content.matchAll(IMPORT_RE)) {
-      const resolved = resolveRelativeImport(m[1] ?? "", dir);
-      if (resolved) out += readCssWithImports(resolved, visited, depth + 1);
+      const spec = m[1] ?? "";
+      const resolved =
+        resolveRelativeImport(spec, dir) ?? resolvePackageImport(spec, dir, opts.root);
+      if (resolved) out += readCssWithImports(resolved, visited, opts, depth + 1);
     }
   } catch {
     // import scan failed — keep what we have
@@ -170,7 +238,7 @@ function readCssWithImports(path: string, visited: Set<string>, depth = 0): stri
   return out;
 }
 
-function scanCssDir(dir: string, visited: Set<string>): string {
+function scanCssDir(dir: string, visited: Set<string>, opts: CssReadOptions): string {
   let out = "";
   try {
     const entries = readdirSync(dir, { withFileTypes: true });
@@ -178,9 +246,9 @@ function scanCssDir(dir: string, visited: Set<string>): string {
       const full = join(dir, e.name);
       if (e.isDirectory()) {
         if (e.name === "assets" || e.name.startsWith(".") || e.name === "node_modules") continue;
-        out += scanCssDir(full, visited);
+        out += scanCssDir(full, visited, opts);
       } else if (e.name.endsWith(".css")) {
-        out += readCssWithImports(full, visited);
+        out += readCssWithImports(full, visited, opts);
       }
     }
   } catch {
@@ -189,13 +257,13 @@ function scanCssDir(dir: string, visited: Set<string>): string {
   return out;
 }
 
-function scanRootCss(root: string, visited: Set<string>): string {
+function scanRootCss(root: string, visited: Set<string>, opts: CssReadOptions): string {
   let out = "";
   try {
     const entries = readdirSync(root, { withFileTypes: true });
     for (const e of entries) {
       if (e.isFile() && e.name.endsWith(".css")) {
-        out += readCssWithImports(join(root, e.name), visited);
+        out += readCssWithImports(join(root, e.name), visited, opts);
       }
     }
   } catch {
@@ -207,7 +275,8 @@ function scanRootCss(root: string, visited: Set<string>): string {
 /** Hash @theme/@source/@plugin-bearing CSS in project docs/ + root *.css. */
 function tailwindCssThemeInputs(root: string): string {
   const visited = new Set<string>();
-  return scanCssDir(join(root, "docs"), visited) + scanRootCss(root, visited);
+  const opts: CssReadOptions = { root, keepPlain: false };
+  return scanCssDir(join(root, "docs"), visited, opts) + scanRootCss(root, visited, opts);
 }
 
 const TAILWIND_CONFIG_FILES = [
@@ -320,9 +389,21 @@ export function computeTailwindCacheKey(
   return h.digest("hex").slice(0, 16);
 }
 
-/** Read a Tailwind entry plus relative imports for cache invalidation. */
-export function readStyleCss(file = "globals.css"): string {
-  return readCssWithImports(join(STYLES_DIR, file), new Set());
+/**
+ * Read a Tailwind entry plus everything it imports for cache invalidation.
+ *
+ * `keepPlain`: the entry graph is hashed verbatim (Tailwind copies its plain
+ * rules into the output), and bare package imports are followed into
+ * `node_modules` — a stylesheet shipped by a dependency, e.g.
+ * `@docubook/markdown/styles.css`, changes the bundle like any other input.
+ * `dir`/`root` are overridable for tests.
+ */
+export function readStyleCss(
+  file = "globals.css",
+  dir: string = STYLES_DIR,
+  root: string = resolveProjectFile()
+): string {
+  return readCssWithImports(join(dir, file), new Set(), { root, keepPlain: true });
 }
 
 /** Backward-compatible alias for the docs stylesheet entry. */
@@ -386,12 +467,15 @@ export function hookMemoryPressure(clear: () => void): void {
 /**
  * Hash of compiled MDX module sources (sorted keys + content).
  * Used to skip the JS bundle rebuild when no page content changed.
+ *
+ * `extraStamp` folds inputs the MDX sources cannot see — the stylesheet
+ * fingerprint (`cssBundleStamp()`) — so a CSS-only edit still rebuilds assets.
  */
-export function hashMdxSources(mdxSources: Record<string, string>): string {
+export function hashMdxSources(mdxSources: Record<string, string>, extraStamp = ""): string {
   const h = createHash("sha256");
   const slugs = Object.keys(mdxSources).sort();
   h.update(
-    `v${BUILD_CACHE_VERSION}:${runtimeStamp()}:${basePathStamp()}:${renderToolchainStamp()}:`
+    `v${BUILD_CACHE_VERSION}:${runtimeStamp()}:${basePathStamp()}:${renderToolchainStamp()}:${extraStamp}:`
   );
   for (const slug of slugs) {
     h.update(slug);

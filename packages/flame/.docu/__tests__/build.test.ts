@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { readFileSync } from "node:fs";
 import { parseConcurrency, shouldRebuild } from "../node/build";
 
 describe("build pipeline", () => {
@@ -81,6 +82,27 @@ describe("build pipeline", () => {
     it("returns 'no' when mtime equals builtAt", () => {
       const cache = { "docs/intro": { hash: "abc123", mtime: 1000, builtAt: 1000 } };
       expect(shouldRebuild("docs/intro", 1000, cache)).toBe("no");
+    });
+  });
+
+  describe("stylesheet cache invalidation", () => {
+    // The bug this guards: the bundle hash came from MDX sources alone, and the
+    // per-route Tailwind cache is only consulted inside the bundle step — so a
+    // CSS-only edit hit the bundle cache, skipped the Tailwind run and kept
+    // serving the previous bundle until --force.
+    it("folds the stylesheet stamp into the bundle hash in both build entries", () => {
+      for (const file of ["../node/build.ts", "../node/build.impl.ts"]) {
+        const src = readFileSync(new URL(file, import.meta.url), "utf-8");
+        expect(src).toMatch(/hashMdxSources\(mdxSources, cssBundleStamp\(\)\)/);
+      }
+    });
+
+    it("exposes the stamp from both runtime mirrors over both route stylesheets", () => {
+      for (const file of ["../node/hydrate.ts", "../node/hydrate.node.ts"]) {
+        const src = readFileSync(new URL(file, import.meta.url), "utf-8");
+        expect(src).toMatch(/export function cssBundleStamp/);
+        expect(src).toMatch(/tailwindCacheKey\("site\.css"\)/);
+      }
     });
   });
 });

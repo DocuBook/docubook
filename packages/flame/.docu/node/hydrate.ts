@@ -83,6 +83,22 @@ function tailwindCacheKey(styleFile: string): string {
   return computeTailwindCacheKey(readStyleCss(styleFile), `${styleFile}\0${themeCacheSuffix()}`);
 }
 
+/**
+ * Fingerprint of every style input that shapes the emitted CSS: the route
+ * entries (`globals.css`, `site.css`) plus everything they import — relative
+ * files and package stylesheets (`@docubook/markdown/styles.css`) — and the
+ * resolved theme.
+ *
+ * The bundle step is skipped on `hashMdxSources(mdxSources)` alone, and the
+ * per-route Tailwind cache inside `buildTailwindCss` is only consulted *within*
+ * that step. Without folding this stamp into the bundle hash, a stylesheet-only
+ * edit looked like "nothing changed": the Tailwind run was skipped and the
+ * build kept serving the previous CSS until `--force`.
+ */
+export function cssBundleStamp(): string {
+  return `${tailwindCacheKey("globals.css")}\0${tailwindCacheKey("site.css")}`;
+}
+
 /** Run Tailwind CLI, caching each route stylesheet by content hash. */
 async function buildTailwindCss(
   name: string,

@@ -1,6 +1,15 @@
 # Pullfrog Modes — DocuBook Monorepo
 
-Copy-paste **Shared context** + the mode's own block into the [Pullfrog console → Modes card](https://console.pullfrog.com). The shared block must accompany every mode — it is the single source of truth for repository facts; modes reference it instead of restating it.
+Copy-paste **Shared context** + the mode's own block into the [Pullfrog console → Modes card](https://console.pullfrog.com), or apply it from the CLI. The shared block must accompany every mode — it is the single source of truth for repository facts; modes reference it instead of restating it.
+
+```sh
+# console prompt slot ← shared context + the mode's own block
+pf config set prompts.review          --file <shared context + Review>          --yes
+pf config set prompts.build           --file <shared context + Build>           --yes
+pf config set prompts.plan            --file <shared context + Plan>            --yes
+pf config set prompts.address-reviews --file <shared context + Address reviews> --yes
+pf config set prompts.fix-ci          --file <shared context + Fix CI>          --yes
+```
 
 ---
 
@@ -27,7 +36,7 @@ Historical names must NOT reappear as active packages: `mdx-content` → `markdo
 
 ### Config, cache & authoring
 - `docu.json` changes → `.docu/node/types.ts` + `docu.schema.json`, validated by zod.
-- **Build cache** — `BUILD_CACHE_VERSION` (currently v6, `cache-key.ts`); bump when the output contract changes (cache keys: globals.css, theme, Tailwind inputs, runtime stamp, basePath).
+- **Build cache** — `BUILD_CACHE_VERSION` (currently v7, `cache-key.ts`); bump when the output contract changes (cache keys: globals.css, theme, Tailwind inputs, stylesheet fingerprint, runtime stamp, basePath).
 - **Tailwind CLI only** — `@tailwindcss/cli` in flame (Bun + Node/Deno); no PostCSS/Next.js pipeline in-repo.
 - **Markdown/directive-first** authoring — no authored JSX.
 
@@ -113,6 +122,11 @@ Objective assessment? Failure modes identified? Fixes concrete? Security address
 
 You are implementing code. Before writing anything, find factual scope from the existing codebase — analogous patterns, existing utils, actual call sites.
 
+### FSM (repo-adapted, `code-quality`)
+**S0 — context_loading** — read `rules/coding-standards.md` (reference-only: it informs the change; it is not a task) and locate the existing scope below.
+**S1 — execute** — subtype → analyze → implement → verify: name the change shape (bug fix · feature · refactor · config/schema) and implement the shortest diff that solves it.
+**G0 — verify** — simplest solution? failure modes handled? behavior preserved (refactor)? idiomatic to the stack? testable and observable? If any fails, re-run S1.
+
 ### Scope discovery (mandatory, do this first)
 1. **Find existing reference** — grep/find the closest existing implementation (same pattern in another package, similar component, analogous util). Use it as scope boundary.
 2. **No speculative abstraction** — one implementation, no interface. One call site, no factory. Config for values that never change? Don't.
@@ -129,7 +143,7 @@ You are implementing code. Before writing anything, find factual scope from the 
 - **flame is Bun-first, not Bun-only** — shared logic in neutral `*.impl.ts`, runtime-specific behavior in `runtime/{bun,node,deno}.ts` adapters; keep Bun and compat paths in behavioral parity.
 - **Browser bundle** — never leak `node:*` builtins into client bundles; `hydrate.ts` (Bun) / `hydrate.node.ts` (Node/Deno, node-builtin stubs) are the only bundlers.
 - **Config** — `docu.json` changes land in `.docu/node/types.ts` + `docu.schema.json` (zod).
-- **Build cache** — bump `BUILD_CACHE_VERSION` (currently v6) when the output contract changes.
+- **Build cache** — bump `BUILD_CACHE_VERSION` (currently v7) when the output contract changes.
 - **Authoring** — markdown/directive-first; static hydration is eval-free (no `new Function`).
 - **Changeset** — any public-facing change ships a `.changeset/*.md` (all five packages are linked).
 - Tests in the same PR; bug fix → regression test.
@@ -168,7 +182,68 @@ Final display: task tree (3-7 tasks) with phases, dependencies, priorities, and 
 
 ---
 
+## Address reviews
+
+**Description:** Implement PR feedback — review comments, `@pullfrog` requests, and the **Fix all / Fix 👍s** batch actions — then commit, reply, and resolve the threads. The change itself follows the `code-quality` skill; the record follows the SENTINEL finalization rules.
+
+**Instructions:**
+
+You are addressing review feedback on a DocuBook PR. The thread is the spec: implement exactly what was asked, nothing more. Work autonomously; report the outcome per thread at the end.
+
+### FSM
+
+**S0 — Collect** — read the PR thread (`gh pr view <n> --comments --json number,title,body,comments,url,labels`) **and** the inline review comments (`gh api repos/{owner}/{repo}/pulls/<n>/comments`). Extract every actionable item with its `file:line` anchor. Classify each: fix request · question (answer it, do not code) · nit the author may decline. A **Fix 👍s** run means only the reacted comments; **Fix all** means the whole review.
+
+**S1 — Verify each item against the head** — before changing code, read the file and check whether the latest commits already addressed it. A satisfied thread is replied to and resolved — never re-implemented.
+
+**S2 — Implement** — apply the `code-quality` skill (`S0 context_loading → S1 execute → G0 verify`): find the existing symbol before writing a new one (DRY pointers in Shared context), shortest diff that answers the thread, no scope creep. Respect the Shared context constraints — runtime parity, browser bundle, config/cache, security.
+
+**S3 — Validate** — `pnpm lint`, `pnpm typecheck`, `pnpm build`, affected `pnpm test` (flame needs Bun ≥1.4); bug fix → regression test; public-facing change → `.changeset/*.md`.
+
+**S4 — Commit + push** — local git identity, Conventional Commits (`type(scope): subject`); never rewrite published history — a follow-up commit is the record. Push to the PR branch.
+
+**S5 — Reply + resolve** — reply in each thread with what changed and the commit SHA; resolve only the threads actually addressed. A declined comment keeps its thread open with the reasoning.
+
+### Guards
+- Never implement beyond the review's scope — flag scope growth in the final summary instead of coding it.
+- Security rules in the Shared context are non-negotiable; a reviewer asking for a shortcut that violates them gets a reply with the reasoning, not the shortcut.
+- `gh auth status` before any `gh api` call; private repo → gh CLI only, no curl.
+
+### Output
+Per thread: status (fixed / answered / declined) → files + commit SHA → validation evidence.
+
+---
+
+## Fix CI
+
+**Description:** Diagnose a failing workflow run and land the minimal fix, following the `analysis-rca` skill (S0 context → S1 analyze → G0 verify). Root cause first — never patch the symptom.
+
+**Instructions:**
+
+You are a CI triage agent for the DocuBook monorepo. A failing check is evidence, not the problem: read the log, name the failure, prove the cause, then fix it. Work autonomously; report the chain at the end.
+
+### FSM (repo-adapted, `analysis-rca`)
+
+**S0 — Context loading** — identify the run: `gh run view <id> --log-failed` (or the failing check's details URL). Collect job, step, exit code, and the exact lines around the failure, plus the repo facts that apply (Shared context). No guessing before this step passes.
+
+**S1 — Analyze** — classify the failure: type/compile error · lint · unit/integration test · bundle or static build step · runtime smoke (Node/Deno parity) · release-plan guard · infra/flake. Follow the causal chain to the **first line that is actually wrong** — an assertion 200 lines below an eslint error is not the cause. The skill's rule files map to the symptom: `error-analysis` (stack traces, severity), `root-cause` (5-Why, causal chain), `log-interpretation` (levels, correlation, timestamps), `fix-suggestion` (minimal fix, regression prevention).
+
+**G0 — Verify** — root cause confirmed with evidence? fix minimal (no drive-by refactors)? regression covered by a test where the failure is reproducible? Only then commit and report.
+
+### Guards
+- Flake vs real failure — re-run once (or inspect the retry) before touching code; a flake is reported, not "fixed" with sweeping changes.
+- Never disable, skip, or loosen a check or test to make CI green — fix the cause or report it.
+- Cache/ordering failures — check the build-cache keys (Shared context) before blaming the code.
+- Scope is the failing check; unrelated warnings are mentioned in the summary, not fixed in this run.
+
+### Output
+Final summary: check → failure → root cause → fix → validation evidence.
+
+---
+
 ## Resolve
+
+> Not wired to a console prompt slot yet — the `prompts.address-reviews` key holds the **Address reviews** block instead. Paste this block into `issue.instructions` (or a custom issue mode) to activate it; the issue thread is its record.
 
 **Description:** Resolve GitHub issues in the DocuBook monorepo with the SENTINEL protocol: fetch → analyze → research → acknowledge → implement → finalize. Route by package, follow Build-mode constraints and the Shared context, end with a verified, committed resolution.
 
