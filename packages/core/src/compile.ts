@@ -10,6 +10,7 @@ import { handleCodeTitles } from "./plugins/handleCodeTitles";
 import { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/handleCodeExpandable";
 import { rehypeMermaid } from "./plugins/rehypeMermaid";
 import { remarkDirectiveToMdx } from "./plugins/remarkDirectiveToMdx";
+import { remarkGithubAlert } from "./plugins/remarkGithubAlert";
 import remarkDirective from "remark-directive";
 import type { ElementNode } from "./utils";
 import type { Pluggable } from "unified";
@@ -90,5 +91,11 @@ export function createDefaultRehypePlugins(): Pluggable[] {
 }
 
 export function createDefaultRemarkPlugins(): Pluggable[] {
-  return [remarkGfm, handleCodeExpandableRemark, remarkDirective, remarkDirectiveToMdx];
+  return [
+    remarkGfm,
+    remarkGithubAlert,
+    handleCodeExpandableRemark,
+    remarkDirective,
+    remarkDirectiveToMdx,
+  ];
 }

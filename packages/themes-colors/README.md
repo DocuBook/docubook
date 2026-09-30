@@ -2,7 +2,7 @@
 
 > Theme color presets and color utilities for DocuBook Flame.
 
-This package powers the config-driven theme system in `@docubook/flame`. Themes can be set via `docu.json` → `theme.colors` using a preset name or custom hex values.
+This package powers the config-driven theme system in `@docubook/flame`. Themes can be set via `docu.json` → `themes.colors` using a preset name or custom hex values.
 
 ## Preset Themes
 
@@ -32,6 +32,7 @@ Theme data is distributed as plain JSON files, making it CDN-friendly:
     ├── hex-to-hsl.ts       ← Color conversion utilities
     ├── resolve.ts          ← Theme resolver (preset or custom hex)
     ├── generate-css.ts     ← CSS generator
+    ├── registry.ts         ← Preset registry (presetRegistry)
     ├── types.ts            ← TypeScript types
     └── index.ts            ← Public API exports
 ```
