@@ -13,6 +13,7 @@ export { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/hand
 export { rehypeMermaid } from "./plugins/rehypeMermaid";
 export { rehypeCollectTocs } from "./plugins/rehypeCollectTocs";
 export { remarkDirectiveToMdx } from "./plugins/remarkDirectiveToMdx";
+export { remarkGithubAlert } from "./plugins/remarkGithubAlert";
 export {
   extractFrontmatter,
   extractFrontmatterWithContent,

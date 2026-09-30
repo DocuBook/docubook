@@ -3,10 +3,10 @@
 import type { CSSProperties, HTMLAttributes, ReactNode } from "react";
 import { type IconName, resolveLucideIcon } from "../utils/Icon";
 
-export type CalloutType = "tip" | "info" | "danger" | "warning" | "success";
+export type CalloutType = "tip" | "info" | "danger" | "warning" | "success" | "important";
 
 type CalloutProps = HTMLAttributes<HTMLElement> & {
-  /** Internal — set by the registry variant (Tip/Info/Danger/Warning/Success). */
+  /** Internal — set by the registry variant (Tip/Info/Danger/Warning/Success/GfmImportant). */
   type: CalloutType;
   /** Optional; falls back to the callout label (Tip, Info, …). */
   title?: string;
@@ -42,11 +42,11 @@ const palette: Record<
     defaultIcon: "TriangleAlert",
   },
   success: {
-    border: "hsl(137 50% 35%)",
-    bg: "hsl(137 50% 35% / 0.16)",
+    border: "hsl(160 84% 30%)",
+    bg: "hsl(160 84% 30% / 0.16)",
     text: "hsl(var(--foreground, 220 30% 15%))",
-    header: "hsl(137 50% 35%)",
-    content: "hsl(137 50% 35% / 0.75)",
+    header: "hsl(160 84% 30%)",
+    content: "hsl(160 84% 30% / 0.75)",
     defaultIcon: "CircleCheck",
   },
   info: {
@@ -65,6 +65,15 @@ const palette: Record<
     content: "hsl(137 50% 35% / 0.75)",
     defaultIcon: "Lightbulb",
   },
+  important: {
+    // GitHub's IMPORTANT accent (#8250df) — GFM alerts only, no `:::important` directive.
+    border: "hsl(261 69% 59%)",
+    bg: "hsl(261 69% 59% / 0.16)",
+    text: "hsl(var(--foreground, 220 30% 15%))",
+    header: "hsl(261 69% 59%)",
+    content: "hsl(261 69% 59% / 0.75)",
+    defaultIcon: "MessageSquareWarning",
+  },
 };
 
 const LABEL: Record<CalloutType, string> = {
@@ -73,6 +82,7 @@ const LABEL: Record<CalloutType, string> = {
   danger: "Danger",
   warning: "Warning",
   success: "Success",
+  important: "Important",
 };
 
 export function Callout({ type, title, children, style, className, ...props }: CalloutProps) {

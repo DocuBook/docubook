@@ -52,6 +52,38 @@ This is a success message to inform the user of successful actions.
 :::
 ```
 
+## GFM alerts
+
+GitHub-style alert blockquotes render as the same callouts, so pages ported
+from GitHub keep working. The marker must be the first line of the blockquote
+and the title is the GitHub label:
+
+| GFM alert        | Renders as            | Title     |
+| ---------------- | --------------------- | --------- |
+| `> [!NOTE]`      | `:::info`             | Note      |
+| `> [!TIP]`       | `:::tip`              | Tip       |
+| `> [!IMPORTANT]` | GitHub style (purple) | Important |
+| `> [!WARNING]`   | `:::warning`          | Warning   |
+| `> [!CAUTION]`   | `:::danger`           | Caution   |
+
+```md
+> [!NOTE]
+> Useful information users should know.
+```
+
+Rendered:
+
+> [!NOTE]
+> Useful information users should know.
+
+> [!IMPORTANT]
+> Key information users need to know to achieve their goal.
+
+The marker is case-insensitive, and the body keeps full markdown support
+(inline markup, lists, multiple paragraphs). A blockquote whose marker is not
+on the first line stays a plain quote. `IMPORTANT` is alert-only: it keeps
+GitHub's purple accent and icon, and there is no `:::important` directive.
+
 ## Props
 
 | Prop    | Type   | Default                          | Description                    |

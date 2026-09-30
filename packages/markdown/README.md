@@ -1,6 +1,6 @@
 # @docubook/markdown
 
-Portable MDX components and framework adapters for [DocuBook](https://docubook.pro/). Provides a collection of ready-to-use React components designed for MDX-based documentation sites, with built-in support for Next.js adapters.
+Portable MDX components and the component registry for [DocuBook](https://docubook.pro/). Components are authored as markdown directives, not JSX — the registry maps directive names to React components and is consumed by the Flame build (or any MDX renderer that accepts a components map).
 
 ## Installation
 
@@ -20,138 +20,83 @@ bun add @docubook/markdown
 
 ## Usage
 
-### 1. Create a custom components registry
+### 1. Create the components map
 
-Create `lib/mdx/index.ts` to register your custom MDX components:
-
-```ts
-// lib/mdx/index.ts
-import type { MdxComponentMap } from "@docubook/markdown";
-
-export const customMdxComponents: MdxComponentMap = {
-  // add your custom components here
-};
-```
-
-### 2. Create the MDX components map
-
-Create `lib/mdx-components.ts` to define the full component map. Import built-in components individually and merge them with your custom ones via `createMdxComponents`:
+`createMdxComponents` returns the built-in component map; pass your own components to extend or override it:
 
 ```ts
 // lib/mdx-components.ts
-import {
-    createMdxComponents,
-    type MdxComponentMap,
-    AccordionsMdx,
-    AccordionMdx,
-    CardsMdx,
-    ChangesMdx,
-    CodeBlock,
-    FileMdx,
-    FilesMdx,
-    FolderMdx,
-    KbdMdx,
-    NoteMdx,
-    ReleaseMdx,
-    StepsMdx,
-    StepMdx,
-    TabMdx,
-    TabsMdx,
-    TableBodyMdx,
-    TableCellMdx,
-    TableFooterMdx,
-    TableHeadMdx,
-    TableHeaderMdx,
-    TableMdx,
-    TableRowMdx,
-    MermaidMdx,
-    TooltipMdx,
-    YoutubeMdx,
-} from "@docubook/markdown";
-// Note: the Next.js adapter (`@docubook/markdown/next`) has been removed.
-// Use the base components from `@docubook/markdown` instead.
-import { customMdxComponents } from "@/lib/mdx";
+import { createMdxComponents, type MdxComponentMap } from "@docubook/markdown";
 
-const builtInOverrides: MdxComponentMap = {
-    Tabs: TabsMdx,
-    Tab: TabMdx,
-    table: TableMdx,
-    thead: TableHeaderMdx,
-    tbody: TableBodyMdx,
-    tfoot: TableFooterMdx,
-    tr: TableRowMdx,
-    th: TableHeadMdx,
-    td: TableCellMdx,
-    pre: CodeBlock,
-    Button: ButtonMdx,
-    Note: NoteMdx,
-    Step: StepMdx,
-    Steps: StepsMdx,
-    Accordion: AccordionMdx,
-    Accordions: AccordionsMdx,
-    Card: CardMdx,
-    Cards: CardsMdx,
-    Kbd: KbdMdx,
-    Release: ReleaseMdx,
-    Changes: ChangesMdx,
-    File: FileMdx,
-    Files: FilesMdx,
-    Folder: FolderMdx,
-    Youtube: YoutubeMdx,
-    Tooltip: TooltipMdx,
-    Mermaid: MermaidMdx,
-    img: ImageMdx,
-    a: LinkMdx,
-    Link: LinkMdx,
+const customComponents: MdxComponentMap = {
+  // optional: add or override components here
 };
 
-export const mdxComponents = createMdxComponents({
-    ...builtInOverrides,
-    ...customMdxComponents,
-});
+export const mdxComponents = createMdxComponents(customComponents);
 ```
 
-> The Next.js adapter (`@docubook/markdown/next`) has been removed. Use the base components from `@docubook/markdown`.
+### 2. Pass the map when rendering MDX
 
-### 3. Use the components map when rendering MDX
+```tsx
+// e.g. with @docubook/core's MDXRemote
+import { MDXRemote } from "@docubook/core";
+import { mdxComponents } from "@/lib/mdx-components";
 
-Pass `mdxComponents` to `createMdxContentService` from `@docubook/core`:
+export function Doc({ serialized }) {
+  return <MDXRemote {...serialized} components={mdxComponents} />;
+}
+```
+
+### 3. Import the stylesheet
+
+Required — import it in your app's root layout or global CSS entry point:
 
 ```ts
-// lib/markdown.ts
-import { createMdxContentService } from "@docubook/core";
-import { cache } from "react";
-import { mdxComponents as components } from "@/lib/mdx-components";
-
-const docsService = createMdxContentService({
-  parseOptions: { components },
-  cacheFn: cache,
-});
+import "@docubook/markdown/styles.css";
 ```
 
 ### Available import paths
 
-|              Path              |                          Description                           |
-| ------------------------------ | -------------------------------------------------------------- |
-| `@docubook/markdown`        | All server-safe components + `createMdxComponents` registry    |
-| `@docubook/markdown/client` | Client-only components (accordion, tabs, tooltip, mermaid, etc.)        |
-| `@docubook/markdown/server` | Server-side components                                         |
-| ~~`@docubook/markdown/next`~~ | Removed — Next.js adapter was deleted. Use base components. |
-| `@docubook/markdown/styles.css` | Stylesheet for MDX components (required)                   |
+|                Path                |                     Description                      |
+| ---------------------------------- | ---------------------------------------------------- |
+| `@docubook/markdown`               | The registry (`createMdxComponents`, `MdxComponentMap`) |
+| `@docubook/markdown/styles.css`    | Stylesheet for the built-in components (required)    |
 
-> **Important:** You must import the stylesheet in your app's root layout or global CSS entry point:
->
-> ```ts
-> import "@docubook/markdown/styles.css";
-> ```
+## Built-in components
 
----
+Built-ins are registered under these keys and authored as directives (the v2 authoring contract — no JSX tags):
 
-## Custom Components
+| Registry key                          | Authored as                                                                 |
+| ------------------------------------- | --------------------------------------------------------------------------- |
+| `Tab` / `Tabs`                        | `:::tab` / `::::tabs`                                                       |
+| `Accordion` / `Accordions`            | `:::accordion` / `::::accordions`                                           |
+| `Card` / `Cards`                      | `:::card` / `::::cards`                                                     |
+| `Step` / `Steps`                      | `:::step` / `::::steps`                                                     |
+| `Tree`                                | `::::tree`                                                                  |
+| `Youtube`                             | `::youtube{videoId="…"}`                                                    |
+| `Tooltip`                             | `:tooltip[label]{tip="…"}`                                                  |
+| `Mermaid`                             | fenced `mermaid` code block                                                 |
+| `Tip` / `Info` / `Warning` / `Danger` / `Success` | `:::tip` / `:::info` / `:::warning` / `:::danger` / `:::success` |
+| `pre` / `img` / `Image` / `a` / `Link` | markdown elements — rendered as `CodeBlock`, `ImageMdx`, `LinkMdx`         |
+| `table` / `thead` / `tbody` / `tfoot` / `tr` / `th` / `td` | markdown tables — rendered as the table components       |
 
-### 1. Create your component
+### GFM alerts
 
-Add a new file under `lib/mdx/`:
+GitHub alert blockquotes render through the same callout components, with the GitHub label as title:
+
+| Markdown          | Renders as                        |
+| ----------------- | --------------------------------- |
+| `> [!NOTE]`       | `Info`                            |
+| `> [!TIP]`        | `Tip`                             |
+| `> [!IMPORTANT]`  | `GfmImportant` (GitHub purple)    |
+| `> [!WARNING]`    | `Warning`                         |
+| `> [!CAUTION]`    | `Danger`                          |
+
+`GfmImportant` exists for GFM alerts only — deliberately not registered as `Important`, so `:::important` is not a directive.
+
+## Custom components
+
+Add a component and register it through the map:
 
 ```tsx
 // lib/mdx/Callout.tsx
@@ -164,27 +109,19 @@ export default function Callout({ children }: { children: React.ReactNode }) {
 }
 ```
 
-### 2. Register your component
-
-Import and add it to `customMdxComponents` in `lib/mdx/index.ts`:
-
 ```ts
-// lib/mdx/index.ts
-import type { MdxComponentMap } from "@docubook/markdown";
+// lib/mdx-components.ts
+import { createMdxComponents, type MdxComponentMap } from "@docubook/markdown";
 import Callout from "@/lib/mdx/Callout";
 
-export const customMdxComponents: MdxComponentMap = {
+const customComponents: MdxComponentMap = {
   Callout,
 };
+
+export const mdxComponents = createMdxComponents(customComponents);
 ```
 
-`customMdxComponents` is already spread into `createMdxComponents` in `lib/mdx-components.ts`, so no further changes are needed. You can now use `<Callout>` in any `.mdx` file:
-
-```mdx
-<Callout>
-  This is a custom callout component.
-</Callout>
-```
+The component is now available in `.mdx` files, and custom entries override built-ins on key conflicts.
 
 ---
 
@@ -219,39 +156,6 @@ All components expose stable CSS class names you can target for style overrides.
 |             Variable             | Component |                       Description                        |
 | -------------------------------- | --------- | -------------------------------------------------------- |
 | `--docubook-card-group-template` | `Cards`   | Grid column template (set automatically via `cols` prop) |
-
----
-
-## API Migration Policy
-
-The current rename rollout uses a migration phase, not an immediate hard-breaking change:
-
-- New tags are the primary API (`Accordions`, `Cards`, `Steps`, `Step`).
-- Legacy tags are still supported as deprecated aliases for backward compatibility `only v2`(`AccordionGroup`, `CardGroup`, `Stepper`, `StepperItem`).
-- A true breaking change happens when deprecated aliases are removed in a future major release. `v3 remove legacy API`
-
----
-
-## Available Components
-
-Components included out of the box:
-
-- `Accordion` / `Accordions`
-- `Button`
-- `Card` / `Cards`
-- Code Block (`pre`)
-- `Files` / `Folder` / `File`
-- `Image` / `img`
-- `Kbd`
-- `Link` / `a`
-- `Note`
-- `Release` / `Changes`
-- `Steps` / `Step`
-- `Tabs` / `Tab`
-- `Tooltip`
-- `Mermaid` — renders Mermaid.js diagrams (flowchart, sequence, class, state, gantt, pie, ER) from ` ```mermaid ` fenced code blocks, with GFM-style pan/zoom/fullscreen controls (button and keyboard driven)
-- `Youtube`
-- Table (`table`, `thead`, `tbody`, `tfoot`, `tr`, `th`, `td`)
 
 ---
 

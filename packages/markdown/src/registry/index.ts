@@ -52,6 +52,9 @@ export function createMdxComponents(customComponents: MdxComponentMap = {}): Mdx
     Danger: callout("danger"),
     Warning: callout("warning"),
     Success: callout("success"),
+    // GFM `[!IMPORTANT]` only — deliberately not registered as `Important`, so
+    // `:::important` stays an unknown directive.
+    GfmImportant: callout("important"),
     Steps: StepsMdx,
     Step: StepMdx,
     Accordion: AccordionMdx,
