@@ -3,7 +3,7 @@
   "meta": {
     "title": "DocuBook Flame",
     "description": "A markdown-first documentation framework. Write with directives, compile to flat static HTML — no runtime, no server, no lock-in. Runs on Bun, Node.js, or Deno.",
-    "baseURL": "https://docubook.pro",
+    "baseURL": "https://docs.docubook.pro/",
     "favicon": "/docs/assets/images/favicon.ico",
     "ogImage": "/docs/assets/images/og.png"
   },
