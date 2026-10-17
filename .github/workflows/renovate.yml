@@ -1,0 +1,49 @@
+name: Renovate
+
+on:
+  schedule:
+    # Run weekly every Monday at 03:00 UTC
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: "Dry Run mode"
+        type: choice
+        default: "disabled"
+        options:
+          - "disabled"
+          - "full"
+          - "lookup"
+          - "extract"
+      logLevel:
+        description: "Log Level"
+        type: choice
+        default: "info"
+        options:
+          - "info"
+          - "debug"
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Renovate
+        uses: renovatebot/github-action@v41.0.14
+        with:
+          configurationFile: .github/renovate.json
+          token: ${{ secrets.RENOVATE_TOKEN || secrets.GITHUB_TOKEN }}
+        env:
+          LOG_LEVEL: ${{ inputs.logLevel || 'info' }}
+          RENOVATE_DRY_RUN: ${{ inputs.dryRun != 'disabled' && inputs.dryRun || '' }}
