@@ -109,7 +109,7 @@ export async function serialize(
     compiledSource = String(
       await compile(vfile, getCompileOptions(mdxOptions, rsc, blockJS, outputFormat, format))
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw createFormattedMDXError(error, String(vfile));
   }
 
