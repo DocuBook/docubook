@@ -9,7 +9,7 @@ import {
 } from "../compile";
 import type { ElementNode } from "../utils";
 
-function buildPreTree(lang: string, code: string): Node {
+function buildPreTree(lang: string, code: string, meta?: string): Node {
   return {
     type: "element",
     tagName: "pre",
@@ -19,6 +19,7 @@ function buildPreTree(lang: string, code: string): Node {
         type: "element",
         tagName: "code",
         properties: { className: [`language-${lang}`] },
+        ...(meta ? { data: { meta } } : {}),
         children: [{ type: "text", value: code }],
       },
     ],
@@ -39,6 +40,55 @@ describe("preProcess", () => {
     preProcess()(tree);
     const el = tree as ElementNode;
     expect(el.language).toBe("js");
+  });
+
+  it("extracts title from meta as a fallback", () => {
+    const tree = buildPreTree("python", "print('hi')", 'title="main.py"');
+    preProcess()(tree);
+    const el = tree as ElementNode;
+    expect(el.language).toBe("python");
+    expect(el.codeTitle).toBe("main.py");
+  });
+
+  it("extracts single-quoted meta title", () => {
+    const tree = buildPreTree("python", "print('hi')", "title='main.py'");
+    preProcess()(tree);
+    expect((tree as ElementNode).codeTitle).toBe("main.py");
+  });
+
+  it("keeps other meta options intact when extracting title", () => {
+    const meta = 'title="main.py" showLineNumbers {3-4} Expandable';
+    const tree = buildPreTree("python", "print('hi')", meta);
+    preProcess()(tree);
+    const el = tree as ElementNode;
+    expect(el.codeTitle).toBe("main.py");
+    expect(el.children?.[0]).toMatchObject({ data: { meta } });
+  });
+
+  it("extracts title inside braces", () => {
+    const tree = buildPreTree("python", "print('hi')", '{title="main.py"}');
+    preProcess()(tree);
+    expect((tree as ElementNode).codeTitle).toBe("main.py");
+  });
+
+  it("extracts title with spaces around the equals sign", () => {
+    const tree = buildPreTree("python", "print('hi')", 'title = "main.py"');
+    preProcess()(tree);
+    expect((tree as ElementNode).codeTitle).toBe("main.py");
+  });
+
+  it("unescapes quotes inside the title", () => {
+    const tree = buildPreTree("python", "print('hi')", 'title="a\\"b.py"');
+    preProcess()(tree);
+    expect((tree as ElementNode).codeTitle).toBe('a"b.py');
+  });
+
+  it("ignores malformed title syntax without throwing", () => {
+    for (const meta of ['title="main.py', "title='main.py", "title=", "title", '{title="}']) {
+      const tree = buildPreTree("python", "print('hi')", meta);
+      expect(() => preProcess()(tree)).not.toThrow();
+      expect((tree as ElementNode).codeTitle).toBeUndefined();
+    }
   });
 
   it("skips non-pre elements", () => {
@@ -100,6 +150,44 @@ describe("createDefaultRehypePlugins", () => {
     });
 
     expect(result.compiledSource).toContain("API_URL");
+  });
+
+  it("supports title attribute as a fence meta fallback", async () => {
+    const result = await serialize(
+      '```python title="main.py" showLineNumbers {1}\nprint("hi")\n```\n',
+      {
+        mdxOptions: {
+          rehypePlugins: createDefaultRehypePlugins(),
+          remarkPlugins: createDefaultRemarkPlugins(),
+        },
+      }
+    );
+
+    expect(result.compiledSource).toContain("main.py");
+    expect(result.compiledSource).toContain("python");
+  });
+
+  it("keeps lang:title syntax as the primary title source", async () => {
+    const result = await serialize('```python:app.py title="main.py"\nprint("hi")\n```\n', {
+      mdxOptions: {
+        rehypePlugins: createDefaultRehypePlugins(),
+        remarkPlugins: createDefaultRemarkPlugins(),
+      },
+    });
+
+    expect(result.compiledSource).toContain("app.py");
+    expect(result.compiledSource).not.toContain("main.py");
+  });
+
+  it("still compiles when the title meta is malformed", async () => {
+    const result = await serialize('```python title="main.py\nprint("hi")\n```\n', {
+      mdxOptions: {
+        rehypePlugins: createDefaultRehypePlugins(),
+        remarkPlugins: createDefaultRemarkPlugins(),
+      },
+    });
+
+    expect(result.compiledSource).toContain("print");
   });
 });
 
