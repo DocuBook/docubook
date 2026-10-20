@@ -26,6 +26,21 @@ interface TextNode extends Node {
   value: string;
 }
 
+/**
+ * Extract a fallback title from fence meta, e.g. ```python title="main.py"
+ * Only reads the attribute; the meta string is left untouched so other
+ * options (showLineNumbers, {1,3}, Expandable, ...) keep their order.
+ */
+function extractMetaTitle(meta: unknown): string | undefined {
+  if (typeof meta !== "string") return undefined;
+  // Guard: only accept a well-formed quoted value. Malformed input (unclosed
+  // quote, empty value) is ignored so a fence typo never breaks compilation.
+  const match = meta.match(/(?:^|[\s{])title\s*=\s*(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)')/);
+  const raw = match?.[1] ?? match?.[2];
+  if (!raw) return undefined;
+  return raw.replace(/\\(["'\\])/g, "$1") || undefined;
+}
+
 export const preProcess = () => (tree: Node) => {
   visit(tree, (node: Node) => {
     const element = node as ElementNode;
@@ -48,6 +63,13 @@ export const preProcess = () => (tree: Node) => {
       const textNode = firstChild?.type === "text" ? (firstChild as TextNode) : undefined;
       if (textNode?.value) {
         element.raw = textNode.value;
+      }
+
+      // Fallback title syntax: ```python title="main.py". The `lang:title`
+      // syntax stays primary; postProcess never overwrites an existing data-title.
+      const metaTitle = extractMetaTitle(codeEl.data?.["meta"]);
+      if (metaTitle) {
+        element.codeTitle = metaTitle;
       }
     }
   });
