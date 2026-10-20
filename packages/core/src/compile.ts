@@ -31,7 +31,7 @@ export const preProcess = () => (tree: Node) => {
     const element = node as ElementNode;
     if (element?.type === "element" && element?.tagName === "pre" && element.children) {
       const [codeEl] = element.children as ElementNode[];
-      if (codeEl.tagName !== "code" || !codeEl.children?.[0]) return;
+      if (!codeEl || codeEl.tagName !== "code" || !codeEl.children?.[0]) return;
 
       const className = codeEl.properties?.className;
       const classList = Array.isArray(className)
@@ -44,8 +44,9 @@ export const preProcess = () => (tree: Node) => {
         element.language = languageClass.replace("language-", "").split(":")[0];
       }
 
-      const textNode = codeEl.children[0] as TextNode;
-      if (textNode.type === "text" && textNode.value) {
+      const firstChild = codeEl.children[0];
+      const textNode = firstChild?.type === "text" ? (firstChild as TextNode) : undefined;
+      if (textNode?.value) {
         element.raw = textNode.value;
       }
     }

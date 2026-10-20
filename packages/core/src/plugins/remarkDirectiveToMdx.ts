@@ -1,4 +1,4 @@
-import type { Node } from "unist";
+import type { Node, Parent } from "unist";
 import type { VFile } from "vfile";
 
 /**
@@ -25,8 +25,10 @@ import type { VFile } from "vfile";
 export function remarkDirectiveToMdx() {
   return (tree: Node, file: VFile) => {
     const source = String(file);
-    const root = tree as unknown as { children: Node[] };
-    root.children = root.children.map((node) => transform(node, source));
+    const root = tree as Parent;
+    if (Array.isArray(root.children)) {
+      root.children = root.children.map((node) => transform(node, source));
+    }
     return tree;
   };
 }
@@ -51,11 +53,9 @@ function isDirective(node: Node): node is DirectiveNode {
 
 function transform(node: Node, source: string): Node {
   if (!isDirective(node)) {
-    const children = (node as unknown as { children?: Node[] }).children;
-    if (Array.isArray(children)) {
-      (node as unknown as { children: Node[] }).children = children.map((child) =>
-        transform(child, source)
-      );
+    const parent = node as Parent;
+    if (Array.isArray(parent.children)) {
+      parent.children = parent.children.map((child) => transform(child, source));
     }
     return node;
   }
