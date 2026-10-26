@@ -71,13 +71,23 @@ const pages = [
 
 /** Resolve a URL path to a file in distDir, mirroring clean-URL static hosts. */
 function resolveFile(urlPath) {
-  const decoded = decodeURIComponent(urlPath.split("?")[0]);
-  const target = path.normalize(path.join(distDir, decoded));
-  if (target !== distDir && !target.startsWith(distDir + path.sep)) return null;
+  let decoded;
+  try {
+    decoded = decodeURIComponent(urlPath.split("?")[0]);
+  } catch {
+    return null;
+  }
   const candidates = decoded.endsWith("/")
-    ? [path.join(target, "index.html")]
-    : [target, `${target}.html`, path.join(target, "index.html")];
-  return candidates.find((file) => existsSync(file) && statSync(file).isFile()) ?? null;
+    ? [`${decoded}index.html`]
+    : [decoded, `${decoded}.html`, `${decoded}/index.html`];
+  for (const candidate of candidates) {
+    // Resolve each candidate and confirm it stays inside distDir before any
+    // filesystem access, so request paths cannot escape the served directory.
+    const file = path.resolve(distDir, `.${path.posix.normalize(`/${candidate}`)}`);
+    if (!file.startsWith(distDir + path.sep)) continue;
+    if (existsSync(file) && statSync(file).isFile()) return file;
+  }
+  return null;
 }
 
 function startServer() {
