@@ -82,7 +82,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",
-    "dev": "vite build --watch",
+    "dev": "vite build --watch --emptyOutDir=false",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint src",
     "test": "vitest run",

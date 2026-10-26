@@ -247,6 +247,21 @@ const scriptPath =
       ? libPath
       : nodePath;
 
+// In a workspace checkout, run `dev` under a supervisor that restarts it when
+// a linked @docubook package is rebuilt (see bin/dev-supervisor.mjs).
+// FLAME_DEV_SUPERVISE=0 opts out, =1 forces it; a supervised child never nests.
+if (command === "dev" && !process.env.FLAME_DEV_SUPERVISED) {
+  const { hasWorkspacePackages, superviseDev } = await import("./dev-supervisor.mjs");
+  const mode = process.env.FLAME_DEV_SUPERVISE;
+  if (mode === "1" || (mode !== "0" && hasWorkspacePackages(import.meta.url))) {
+    const args = runtime === "deno" ? ["run", "-A", scriptPath] : [...process.execArgv, scriptPath];
+    const code = await superviseDev(process.execPath, args, {
+      onRestart: () => console.log("flame: restarting the dev server…"),
+    });
+    process.exit(code);
+  }
+}
+
 // Bun command entries are dynamically imported by this CLI, so import.meta.main
 // is false in deploy.ts. Mark the import as a command entry without making
 // library/test imports execute the deployment as a side effect.

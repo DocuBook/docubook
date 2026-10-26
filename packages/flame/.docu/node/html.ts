@@ -107,7 +107,19 @@ export function hmrScript(nonce: string): string {
   es.onmessage = function(e) {
     if (e.data === "reload") window.location.reload();
   };
-  es.onerror = function() { es.close(); setTimeout(() => { window.location.reload(); }, 2000); };
+  // The dev server may be restarting (e.g. after a rebuilt workspace package)
+  // and can take a few seconds to rebuild before it listens again: wait until
+  // it answers, then reload once.
+  es.onerror = function() {
+    es.close();
+    (function retry(attempt) {
+      setTimeout(function() {
+        fetch(window.location.href, { method: "HEAD", cache: "no-store" })
+          .then(function() { window.location.reload(); })
+          .catch(function() { retry(attempt + 1); });
+      }, Math.min(250 * (attempt + 1), 2000));
+    })(0);
+  };
 })();
 </script>`;
 }

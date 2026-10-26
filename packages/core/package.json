@@ -27,6 +27,7 @@
   ],
   "scripts": {
     "build": "pnpm run clean && vite build && tsc -p tsconfig.build.json",
+    "dev": "vite build --watch --emptyOutDir=false",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",

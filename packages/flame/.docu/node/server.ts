@@ -1,12 +1,16 @@
-import { watch, existsSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { createRequire } from "node:module";
+import { watch } from "node:fs";
 import { DOCS_DIR, loadDocuConfig, resolveBasePath, assertValidBasePath } from "./paths";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
 import { buildClientBundle, computeInlineThemeCss } from "./hydrate";
 import { generateSearchIndex } from "./search-indexer";
 import { logger } from "./logger";
+import {
+  DEV_RESTART_EXIT_CODE,
+  DEV_SUPERVISED_ENV,
+  resolveWorkspacePackages,
+  watchWorkspacePackages,
+} from "./dev-watch";
 import { initSentry, captureException } from "./sentry";
 import {
   serveStatic,
@@ -71,18 +75,6 @@ const state: ServerState = {
 
 const hmrClients = new Set<ReadableStreamDefaultController>();
 
-const require = createRequire(import.meta.url);
-/** Locate the installed @docubook/markdown source dir (workspace link), if any. */
-function resolveMdxContentSrc(): string | null {
-  try {
-    const pkgDir = dirname(require.resolve("@docubook/markdown/package.json"));
-    const src = join(pkgDir, "src");
-    return existsSync(src) ? src : null;
-  } catch {
-    return null;
-  }
-}
-
 let hmrTimeout: ReturnType<typeof setTimeout> | null = null;
 const watcher = watch(DOCS_DIR, { recursive: true }, (_event, filename) => {
   if (!filename || (!filename.endsWith(".mdx") && !filename.endsWith(".md"))) return;
@@ -98,42 +90,27 @@ const watcher = watch(DOCS_DIR, { recursive: true }, (_event, filename) => {
   }, 300);
 });
 
-// Rebuild the client bundle when component sources change (e.g. the
-// @docubook/markdown workspace package) so interactive islands pick up
-// edits, then reload connected clients. MDX edits are handled by the watcher
-// above — no rebuild needed, content recompiles per request.
-let srcHmrTimeout: ReturnType<typeof setTimeout> | null = null;
-const mdxContentSrc = resolveMdxContentSrc();
-const srcWatcher = mdxContentSrc
-  ? watch(mdxContentSrc, { recursive: true }, (_event, filename) => {
-      if (!filename || !/\.(ts|tsx|js|jsx|css)$/.test(filename)) return;
-      if (srcHmrTimeout) clearTimeout(srcHmrTimeout);
-      srcHmrTimeout = setTimeout(async () => {
-        try {
-          state.assetManifest = await buildClientBundle();
-          logger.warn("[hmr] client bundle rebuilt (component change)");
-        } catch (e) {
-          logger.warn(`[hmr] bundle rebuild failed: ${e instanceof Error ? e.message : String(e)}`);
-        }
-        for (const client of [...hmrClients]) {
-          try {
-            client.enqueue(new TextEncoder().encode("data: reload\n\n"));
-          } catch {
-            hmrClients.delete(client);
-          }
-        }
-      }, 300);
-    })
-  : null;
+// Workspace-linked @docubook packages are loaded from their built dist by both
+// the server renderer and the client bundle, so a rebuild needs a fresh
+// process: exit with DEV_RESTART_EXIT_CODE and let the supervisor respawn.
+const stopPackageWatch = watchWorkspacePackages(resolveWorkspacePackages(), (pkg) => {
+  if (process.env[DEV_SUPERVISED_ENV] === "1") {
+    logger.warn(`[dev] ${pkg.name} rebuilt — restarting the dev server`);
+    watcher.close();
+    stopPackageWatch();
+    process.exit(DEV_RESTART_EXIT_CODE);
+  }
+  logger.warn(`[dev] ${pkg.name} rebuilt — restart \`flame dev\` to load it`);
+});
 
 process.on("SIGINT", () => {
   watcher.close();
-  srcWatcher?.close();
+  stopPackageWatch();
   process.exit(0);
 });
 process.on("SIGTERM", () => {
   watcher.close();
-  srcWatcher?.close();
+  stopPackageWatch();
   process.exit(0);
 });
 

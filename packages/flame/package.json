@@ -27,7 +27,7 @@
     "bun": ">=1.4.0"
   },
   "scripts": {
-    "dev": "bun .docu/node/server.ts",
+    "dev": "bun bin/cli.js dev",
     "build": "NODE_ENV=production bun .docu/node/build.ts",
     "clean": "bun .docu/node/clean.ts",
     "preview": "bun .docu/node/preview.ts",

@@ -91,6 +91,7 @@ pnpm install
 | Command | Purpose |
 |---|---|
 | `pnpm build` | Build the full workspace via Turborepo |
+| `pnpm dev` | Build flame's workspace dependencies, then watch-rebuild them and run the flame dev server (restarts when a dependency rebuilds) |
 | `pnpm lint` | Run the root Oxlint configuration across the repository |
 | `pnpm typecheck` | Type-check the workspace through Turborepo |
 | `pnpm test` | Run workspace tests through Turborepo |
@@ -123,6 +124,29 @@ Notes:
   (`compile:lib`) and the Node/Deno browser-bundle path.
 - Turbo `typecheck` and `test` tasks depend on workspace dependency builds;
   direct package commands bypass that ordering.
+
+### Live Development Across Packages
+
+`pnpm dev` runs `turbo dev --filter=@docubook/flame...`: it builds `core`,
+`markdown`, `themes-colors` and `ui-react` once, then starts
+`vite build --watch --emptyOutDir=false` in each of them (so `tsc`
+declarations stay in `dist/`) next to the flame dev server.
+
+Flame loads those packages from their built `dist/`, both for server
+rendering and for the browser bundle. When one of them is rebuilt with
+different output, the dev server restarts so both sides pick up the change,
+and open pages reload once it answers again. Rebuilds that produce identical
+output are ignored.
+
+- The restart is handled by `flame dev` itself (`bin/dev-supervisor.mjs`) and
+  is only enabled when a sibling package is linked from the workspace, as in
+  this repository. Projects that install flame from npm run unchanged.
+- `FLAME_DEV_SUPERVISE=0` keeps the dev server in a single process; it then
+  logs a hint instead of restarting. `FLAME_DEV_SUPERVISE=1` forces the
+  supervisor on.
+- Running one watcher by hand works too, e.g.
+  `pnpm --filter @docubook/markdown run dev` next to
+  `pnpm --filter @docubook/flame run dev`.
 - `pnpm-workspace.yaml` is the source of truth for shared dependency overrides
   and native `allowBuilds`. Call out any new install script and required
   `allowBuilds` entry in the PR.
