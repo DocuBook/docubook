@@ -25,6 +25,7 @@
  */
 import { execFileSync } from "node:child_process";
 import {
+  copyFileSync,
   existsSync,
   mkdtempSync,
   readFileSync,
@@ -93,9 +94,24 @@ const isPendingChangeset = (file) =>
 const stash = mkdtempSync(path.join(tmpdir(), "docubook-changeset-stash-"));
 let parked = [];
 
+/**
+ * The temp dir is often a separate filesystem from the checkout (GitHub-hosted
+ * runners, tmpfs `/tmp`), where `rename` fails with EXDEV. Fall back to
+ * copy + remove so parking works on any layout.
+ */
+const moveFile = (from, to) => {
+  try {
+    renameSync(from, to);
+  } catch (error) {
+    if (error.code !== "EXDEV") throw error;
+    copyFileSync(from, to);
+    rmSync(from);
+  }
+};
+
 const parkPendingChangesets = () => {
   for (const file of readdirSync(changesetDir).filter(isPendingChangeset)) {
-    renameSync(path.join(changesetDir, file), path.join(stash, file));
+    moveFile(path.join(changesetDir, file), path.join(stash, file));
     parked.push(file);
   }
 };
@@ -103,7 +119,7 @@ const parkPendingChangesets = () => {
 const restorePendingChangesets = () => {
   for (const file of parked) {
     const stashed = path.join(stash, file);
-    if (existsSync(stashed)) renameSync(stashed, path.join(changesetDir, file));
+    if (existsSync(stashed)) moveFile(stashed, path.join(changesetDir, file));
   }
   parked = [];
 };

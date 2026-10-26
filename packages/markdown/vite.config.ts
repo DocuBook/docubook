@@ -15,6 +15,7 @@ export default defineConfig({
         /^react-dom(?:\/|$)/,
         /^mermaid(?:\/|$)/,
         /^clsx(?:\/|$)/,
+        /^lucide-react(?:\/|$)/,
         /^react-icons(?:\/|$)/,
         /^rehype-autolink-headings(?:\/|$)/,
         /^rehype-code-titles(?:\/|$)/,
