@@ -1,5 +1,20 @@
 # @docubook/flame
 
+## 2.2.4
+
+### Patch Changes
+
+- [#425](https://github.com/DocuBook/docubook/pull/425) [`fc1f434`](https://github.com/DocuBook/docubook/commit/fc1f434035a44727c2e8ab7e28622c562f28e531) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Fix navigation on sites hosted under a path, such as a GitHub Pages project site (`meta.baseURL: "https://acme.github.io/handbook"`). Sidebar, navbar, pagination, logo, landing and 404 links now include the deployment path instead of pointing at the origin root, the client sidebar renders and highlights the active page again, and the dev server keeps serving deployment-free links. Node and Deno builds now fail with a clear error if a server module leaks into the browser bundle, instead of shipping pages that crash on load.
+
+- [#427](https://github.com/DocuBook/docubook/pull/427) [`ee4e10e`](https://github.com/DocuBook/docubook/commit/ee4e10e2108bd89fbecc0de0d3cb272025855d75) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - `flame dev` in a workspace checkout now restarts itself when a linked `@docubook/*` package is rebuilt (for example by its `vite build --watch`), so server rendering and the browser bundle pick up the new code together. The previous component watcher never started. Open pages now wait for a restarting dev server and reload once it answers, instead of reloading after a fixed 2 seconds. Projects that install flame from npm keep a single-process dev server; set `FLAME_DEV_SUPERVISE=0` to opt out.
+
+- [#418](https://github.com/DocuBook/docubook/pull/418) [`7bb59b5`](https://github.com/DocuBook/docubook/commit/7bb59b56f267471144ce2eb527663f7bb1b0f3d7) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Fix hydration of sites built with Node or Deno. The client bundle pulled in the server-side `client-routes` module (and with it `paths.ts` and Node built-ins) instead of the generated virtual module, so every page threw `resolve is not a function` on load and interactive components such as accordions and tabs stopped working. Bun builds were not affected.
+
+- [#420](https://github.com/DocuBook/docubook/pull/420) [`13724c5`](https://github.com/DocuBook/docubook/commit/13724c5fe8bbab480e8c585465a3a6c70e05d148) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Fix module preloading for sites built with Node or Deno. The client bundle requested preloaded chunks from the site root (`/chunks/…`) instead of the assets directory, so every docs page fired dozens of 404 requests and lost chunk preloading. Bun builds were not affected.
+
+- Updated dependencies [[`bf50301`](https://github.com/DocuBook/docubook/commit/bf5030139398f34aa407d9a8514c5fb03bde6de5), [`7bb59b5`](https://github.com/DocuBook/docubook/commit/7bb59b56f267471144ce2eb527663f7bb1b0f3d7)]:
+  - @docubook/markdown@2.2.4
+
 ## 2.2.1
 
 ### Patch Changes
