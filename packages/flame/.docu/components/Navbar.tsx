@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
 import Anchor from "./Anchor";
-import { cn, docsNavActive, docsNavHref, rebaseContentPath } from "../node/utils";
-import { config as docuConfig, basePath } from "../node/client-routes";
+import { cn, docsAssetSrc, docsNavActive, docsNavHref, withDeployPath } from "../node/utils";
+import { config as docuConfig, basePath, deployPath } from "../node/client-routes";
 import {
   Navbar as BaseNavbar,
   Logo as BaseLogo,
@@ -28,14 +28,27 @@ interface NavbarProps {
 
 function AppLogo({ logo, logoText }: { logo?: { src?: string; alt?: string }; logoText?: string }) {
   // `logo.src` is authored as a root-relative path on disk (e.g.
-  // "/docs/assets/images/docu.svg"); re-base it onto the configured prefix so
-  // the logo keeps resolving after a subpath change.
-  const src = logo?.src ? rebaseContentPath(logo.src, basePath) : undefined;
-  return <BaseLogo src={src} alt={logo?.alt} text={logoText} href={basePath || "/"} />;
+  // "/docs/assets/images/docu.svg"); re-base it onto the configured prefix and
+  // the deployment path so the logo keeps resolving after a subpath change.
+  const src = logo?.src ? docsAssetSrc(logo.src, basePath, deployPath) : undefined;
+  return (
+    <BaseLogo
+      src={src}
+      alt={logo?.alt}
+      text={logoText}
+      href={withDeployPath(basePath || "/", deployPath)}
+    />
+  );
 }
 
 function AppNavMenu({ menu, currentPath }: { menu: AppNavMenuItem[]; currentPath?: string }) {
-  return <BaseNavMenu items={menu} activePath={currentPath} />;
+  // Resolve authored links like the mobile menu does: re-based, `.html`
+  // suffixed, and under the deployment path.
+  const items = menu.map((item) => ({
+    ...item,
+    href: docsNavHref(item.href, basePath, deployPath),
+  }));
+  return <BaseNavMenu items={items} activePath={currentPath} />;
 }
 
 export function Navbar({ logo, logoText, menu, id = "navbar", className }: NavbarProps) {
@@ -87,7 +100,7 @@ export function NavMenuLink({ item, isActive }: { item: BaseNavMenuItem; isActiv
 }
 
 export function NavItem({ item }: { item: BaseNavMenuItem }) {
-  const href = docsNavHref(item.href, basePath);
+  const href = docsNavHref(item.href, basePath, deployPath);
   return (
     <Anchor
       href={href}
@@ -130,7 +143,7 @@ export function MobileMenuToggle({
           className="dropdown-content menu bg-base-200 rounded-box z-[1] mt-2 w-52 p-2 shadow"
         >
           {menu.map((item) => {
-            const href = docsNavHref(item.href, basePath);
+            const href = docsNavHref(item.href, basePath, deployPath);
             return (
               <li key={item.title + item.href}>
                 <Anchor

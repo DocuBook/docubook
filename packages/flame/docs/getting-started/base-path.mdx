@@ -61,7 +61,7 @@ You do not have to rewrite your content when you change it: links authored as `/
 }
 ```
 
-Only root-absolute references need it — the `404.html` fallback's bundle assets and the search index records, which are clicked directly from the modal and cannot be expressed as a relative climb. It is also the base canonical and Open Graph URLs are resolved against. Everything else already lines up, because pages and assets share the deployment root.
+Flame prepends it to every root-absolute URL that points into the build: sidebar, navbar and pagination links, the logo, the landing page link, the `404.html` fallback's bundle assets and the search index records. It is also the base canonical and Open Graph URLs are resolved against. Page stylesheets and scripts are linked relatively, so they line up on their own. The dev server always serves from the origin root and leaves the deployment path out.
 
 :::warning{title="Do not repeat the docs prefix"}
 `baseURL` stops at the deployment root; `basePath` adds the docs prefix on top. With `basePath: "/docs"` and `baseURL: "https://acme.github.io/handbook"`, canonical URLs become `https://acme.github.io/handbook/docs/…`. Writing the prefix into both produces `/handbook/docs/docs/…`.

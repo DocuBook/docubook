@@ -1,4 +1,4 @@
-import { loadDocuConfig, resolveBasePath } from "../node/paths";
+import { loadDocuConfig, resolveBasePath, servedDeployPath } from "../node/paths";
 import { docsNavHref } from "../node/utils";
 import { Hero, Features, BackgroundBlobs } from "../components/home";
 import { ThemeToggle } from "../components/Theme";
@@ -6,6 +6,7 @@ import type { HomeFeature } from "../node/types";
 
 const docuConfig = loadDocuConfig();
 const basePath = resolveBasePath(docuConfig);
+const deployPath = servedDeployPath();
 
 interface RouteContext {
   icon?: string;
@@ -28,7 +29,7 @@ export default function IndexPage() {
   const features: HomeFeature[] =
     home?.features?.map((f) => ({
       ...f,
-      link: f.link ? docsNavHref(f.link, basePath) : undefined,
+      link: f.link ? docsNavHref(f.link, basePath, deployPath) : undefined,
     })) ||
     routes
       .filter((r) => r.context)
@@ -36,7 +37,11 @@ export default function IndexPage() {
         icon: route.context?.icon,
         title: route.context?.title || route.title,
         description: route.context?.description || "",
-        link: docsNavHref(`/docs${route.href}${route.items?.[0]?.href || ""}`, basePath),
+        link: docsNavHref(
+          `/docs${route.href}${route.items?.[0]?.href || ""}`,
+          basePath,
+          deployPath
+        ),
       }));
 
   // Use home.hero if configured, otherwise fallback to meta
@@ -45,7 +50,7 @@ export default function IndexPage() {
         ...home.hero,
         actions: home.hero.actions?.map((a) => ({
           ...a,
-          link: docsNavHref(a.link, basePath),
+          link: docsNavHref(a.link, basePath, deployPath),
         })),
       }
     : {

@@ -12,8 +12,8 @@ import {
 import { ChevronDown } from "lucide-react";
 import Anchor from "./Anchor";
 import type { DocuRoute } from "../node/types";
-import { cn, docsHtmlHref } from "../node/utils";
-import { config as docuConfig, basePath } from "../node/client-routes";
+import { cn, docsHtmlHref, stripDeployPath, withDeployPath } from "../node/utils";
+import { config as docuConfig, basePath, deployPath } from "../node/client-routes";
 
 /** Exclusive accordion for level >= 2 sidebar groups — opening one group
  * closes the previously open one. All level >= 2 groups default to closed
@@ -56,8 +56,18 @@ export default function Sublink({
   pathname: pathnameProp,
 }: SublinkProps) {
   const fullHref = parentHref ? `${parentHref}${href}` : `${basePath}${href}`;
+  // Routes are compared deployment-free; the browser path includes the host's
+  // deployment path on a subpath deployment.
   const currentPathname =
-    pathnameProp || (typeof window !== "undefined" ? window.location.pathname : basePath);
+    pathnameProp ||
+    (typeof window !== "undefined"
+      ? stripDeployPath(window.location.pathname, deployPath)
+      : basePath);
+  const linkHref = withDeployPath(docsHtmlHref(fullHref), deployPath);
+  const isLinkActive = (path: string) => {
+    const route = stripDeployPath(path, deployPath);
+    return route === fullHref || route === `${fullHref}.html`;
+  };
 
   // Groups with children are exclusive accordions (default closed, expand on
   // click). In separator mode every nav item renders at level 0 (sections are
@@ -107,10 +117,10 @@ export default function Sublink({
   if (!items) {
     const link = (
       <Anchor
-        href={docsHtmlHref(fullHref)}
+        href={linkHref}
         className="text-foreground hover:text-foreground/80 text-sm transition-colors"
         activeClassName="text-primary font-medium"
-        activeWhen={(path) => path === fullHref || path === `${fullHref}.html`}
+        activeWhen={isLinkActive}
         onClick={onNavigate}
       >
         {title}
@@ -186,10 +196,10 @@ export default function Sublink({
           <span>{title}</span>
         ) : (
           <Anchor
-            href={docsHtmlHref(fullHref)}
+            href={linkHref}
             className="text-foreground hover:text-foreground/80 transition-colors"
             activeClassName="text-primary"
-            activeWhen={(path) => path === fullHref || path === `${fullHref}.html`}
+            activeWhen={isLinkActive}
             onClick={onNavigate}
           >
             {title}

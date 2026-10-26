@@ -20,6 +20,9 @@ import {
   rebaseContentPath,
   docsNavActive,
   docsNavHref,
+  docsAssetSrc,
+  withDeployPath,
+  stripDeployPath,
 } from "../node/utils";
 import { resolveContentHref, resolveContentSrc } from "../node/mdx";
 import { resolveDocsIndexSource } from "../node/server-utils";
@@ -813,6 +816,83 @@ describe("docsNavHref — authored nav links", () => {
     // At a root deployment nav links stay gated too — author them under the
     // `/docs` prefix, which is the path this resolver re-bases.
     expect(docsNavHref("/getting-started/overview", "")).toBe("/getting-started/overview");
+  });
+
+  it("places dist links under the host's deployment path", () => {
+    // GitHub Pages project site: the dist is served under /handbook.
+    expect(docsNavHref("/docs/guide/routing", "/docs", "/handbook")).toBe(
+      "/handbook/docs/guide/routing.html"
+    );
+    expect(docsNavHref("/docs", "/docs", "/handbook")).toBe("/handbook/docs");
+    expect(docsNavHref("/docs/guide/routing", "", "/handbook")).toBe(
+      "/handbook/guide/routing.html"
+    );
+    expect(docsNavHref("/docs", "", "/handbook")).toBe("/handbook/");
+    // The landing page lives at the dist root too.
+    expect(docsNavHref("/", "/docs", "/handbook")).toBe("/handbook/");
+    expect(docsNavHref("/#features", "/docs", "/handbook")).toBe("/handbook/#features");
+  });
+
+  it("leaves non-dist links alone under a deployment path", () => {
+    expect(docsNavHref("/app/dashboard", "/docs", "/handbook")).toBe("/app/dashboard");
+    expect(docsNavHref("https://github.com/x", "/docs", "/handbook")).toBe("https://github.com/x");
+    expect(docsNavHref("#install", "/docs", "/handbook")).toBe("#install");
+  });
+
+  it("is unchanged without a deployment path", () => {
+    expect(docsNavHref("/docs/guide/routing", "/docs", "")).toBe("/docs/guide/routing.html");
+    expect(docsNavHref("/", "/docs", "")).toBe("/");
+  });
+});
+
+describe("withDeployPath / stripDeployPath — host deployment path", () => {
+  it("prefixes root-absolute URLs once", () => {
+    expect(withDeployPath("/docs/guide.html", "/repo")).toBe("/repo/docs/guide.html");
+    expect(withDeployPath("/", "/repo")).toBe("/repo/");
+    // Not idempotent on purpose: a route may start with the deployment segment.
+    expect(withDeployPath("/docs/x.html", "/docs")).toBe("/docs/docs/x.html");
+  });
+
+  it("passes through without a deployment path or for non-root-absolute URLs", () => {
+    expect(withDeployPath("/docs/guide.html", "")).toBe("/docs/guide.html");
+    expect(withDeployPath("https://x.dev/a", "/repo")).toBe("https://x.dev/a");
+    expect(withDeployPath("//cdn.x.dev/a", "/repo")).toBe("//cdn.x.dev/a");
+    expect(withDeployPath("guide.html", "/repo")).toBe("guide.html");
+    expect(withDeployPath("#top", "/repo")).toBe("#top");
+  });
+
+  it("strips the deployment path from a browser pathname", () => {
+    expect(stripDeployPath("/repo/docs/guide.html", "/repo")).toBe("/docs/guide.html");
+    expect(stripDeployPath("/repo/", "/repo")).toBe("/");
+    expect(stripDeployPath("/repo", "/repo")).toBe("/");
+    expect(stripDeployPath("/docs/guide.html", "")).toBe("/docs/guide.html");
+    // Only whole segments match.
+    expect(stripDeployPath("/repository/x", "/repo")).toBe("/repository/x");
+  });
+
+  it("round-trips routes", () => {
+    for (const route of ["/", "/docs", "/docs/guide/routing.html", "/handbook/a.html"]) {
+      expect(stripDeployPath(withDeployPath(route, "/repo"), "/repo")).toBe(route);
+    }
+  });
+});
+
+describe("docsAssetSrc — docu.json content assets (logo)", () => {
+  it("re-bases docs assets and adds the deployment path", () => {
+    const logo = "/docs/assets/images/logo.svg";
+    expect(docsAssetSrc(logo)).toBe(logo);
+    expect(docsAssetSrc(logo, "/handbook")).toBe("/handbook/assets/images/logo.svg");
+    expect(docsAssetSrc(logo, "", "")).toBe("/assets/images/logo.svg");
+    expect(docsAssetSrc(logo, "/docs", "/repo")).toBe("/repo/docs/assets/images/logo.svg");
+    expect(docsAssetSrc(logo, "", "/repo")).toBe("/repo/assets/images/logo.svg");
+  });
+
+  it("leaves external and non-docs paths alone", () => {
+    expect(docsAssetSrc("https://cdn.x.dev/logo.svg", "/docs", "/repo")).toBe(
+      "https://cdn.x.dev/logo.svg"
+    );
+    expect(docsAssetSrc("/brand/logo.svg", "/docs", "/repo")).toBe("/brand/logo.svg");
+    expect(docsAssetSrc("logo.svg", "/docs", "/repo")).toBe("logo.svg");
   });
 });
 
