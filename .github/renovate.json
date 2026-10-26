@@ -1,21 +1,29 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", ":dependencyDashboard"],
-  "schedule": ["before 4am on monday"],
+  "extends": ["config:recommended"],
   "timezone": "UTC",
+  "schedule": ["on monday"],
+  "minimumReleaseAge": "3 days",
+  "internalChecksFilter": "strict",
   "semanticCommits": "enabled",
   "semanticCommitType": "chore",
   "semanticCommitScope": "deps",
   "labels": ["dependencies", "renovate"],
+  "osvVulnerabilityAlerts": true,
+  "dependencyDashboardOSVVulnerabilitySummary": "all",
+  "vulnerabilityAlerts": {
+    "addLabels": ["security"],
+    "rangeStrategy": "bump"
+  },
   "packageRules": [
     {
       "description": "Ignore internal monorepo workspace packages",
-      "matchPackagePatterns": ["^@docubook/"],
+      "matchPackageNames": ["@docubook/**"],
       "enabled": false
     },
     {
-      "description": "Group minor and patch dependencies in packages/",
-      "matchFileNames": ["packages/**"],
+      "description": "Group minor and patch dependencies in packages/, with the pnpm overrides that pin the same packages (react, react-dom)",
+      "matchFileNames": ["packages/**", "pnpm-workspace.yaml"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "packages minor and patch dependencies"
     },
@@ -26,9 +34,32 @@
       "groupName": "packages major dependencies"
     },
     {
-      "description": "Group root devDependencies",
+      "description": "Group minor and patch root devDependencies; majors get their own PR",
       "matchFileNames": ["package.json"],
+      "matchUpdateTypes": ["minor", "patch"],
       "groupName": "root devDependencies"
+    },
+    {
+      "description": "Keep vitest and @vitest/* in one PR across root and packages/; @vitest/coverage-v8 requires the exact vitest version",
+      "matchPackageNames": ["vitest", "@vitest/**"],
+      "groupName": "vitest"
+    },
+    {
+      "description": "Group minor and patch GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "github actions"
+    },
+    {
+      "description": "pnpm overrides are security floors scoped to one major line (undici@7, js-yaml@4) or one consumer (mermaid>katex); a major bump would break the package that needs that line",
+      "matchDepTypes": ["pnpm-workspace.overrides"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "mermaid 11 supports katex up to 0.18; 0.x minors are breaking",
+      "matchDepNames": ["mermaid>katex"],
+      "allowedVersions": "<0.19.0"
     }
   ]
 }
