@@ -232,6 +232,11 @@ export async function buildClientBundle(
   const bundle = await viteBuild({
     configFile: false,
     publicDir: false,
+    // outDir is the assets directory itself, so emitted paths ("chunks/x.js")
+    // are relative to it. The default base "/" made Vite's preload helper
+    // request "/chunks/x.js" (404). A relative base resolves preloads from the
+    // importing chunk's URL instead of the site root.
+    base: "./",
     define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
     plugins: [
       {
