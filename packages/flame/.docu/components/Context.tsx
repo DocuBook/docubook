@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { cn, docsHtmlHref } from "../node/utils";
+import { cn, docsHtmlHref, stripDeployPath, withDeployPath } from "../node/utils";
 import { Dropdown, DropdownItem } from "@docubook/ui-react/dropdown";
-import { routes, config as docuConfig, basePath } from "../node/client-routes";
+import { routes, config as docuConfig, basePath, deployPath } from "../node/client-routes";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { renderLucideIcon } from "./Lucide";
 
@@ -27,7 +27,7 @@ function getActiveContextRoute(path: string) {
 
 export function Context({ className }: ContextProps) {
   const [pathname] = useState(() =>
-    typeof window !== "undefined" ? window.location.pathname : "/"
+    typeof window !== "undefined" ? stripDeployPath(window.location.pathname, deployPath) : "/"
   );
   const mounted = typeof window !== "undefined";
 
@@ -69,7 +69,7 @@ export function Context({ className }: ContextProps) {
       {contextRoutes.map((route) => {
         const isActive = activeRoute?.href === route.href;
         const firstItemPath = getFirstItemHref(route);
-        const contextPath = docsHtmlHref(`${basePath}${firstItemPath}`);
+        const contextPath = withDeployPath(docsHtmlHref(`${basePath}${firstItemPath}`), deployPath);
 
         return (
           <DropdownItem

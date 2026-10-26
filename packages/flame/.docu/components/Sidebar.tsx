@@ -10,7 +10,7 @@ import {
   FileText,
 } from "lucide-react";
 import { Dropdown } from "@docubook/ui-react/dropdown";
-import { cn, docsNavActive, docsNavHref, rebaseContentPath } from "../node/utils";
+import { cn, docsAssetSrc, docsNavActive, docsNavHref, withDeployPath } from "../node/utils";
 import Anchor from "./Anchor";
 import { Context } from "./Context";
 import Menu from "./Menu";
@@ -18,7 +18,7 @@ import { ThemeToggle } from "./Theme";
 import { GitHubLink } from "./Navbar";
 import Search from "./Search";
 import type { TocItem } from "../node/types";
-import { config as docuConfig, routes, basePath } from "../node/client-routes";
+import { config as docuConfig, routes, basePath, deployPath } from "../node/client-routes";
 
 interface SidebarProps {
   tocs?: TocItem[];
@@ -41,10 +41,10 @@ function DesktopSidebar({ className, repoUrl }: { className?: string; repoUrl?: 
     <div className={cn("flex h-full flex-col", className)}>
       {/* Logo */}
       <div className="flex h-14 shrink-0 items-center px-5">
-        <a href={basePath || "/"} className="flex items-center gap-2">
+        <a href={withDeployPath(basePath || "/", deployPath)} className="flex items-center gap-2">
           {docuConfig.navbar?.logo?.src && (
             <img
-              src={rebaseContentPath(docuConfig.navbar.logo.src, basePath)}
+              src={docsAssetSrc(docuConfig.navbar.logo.src, basePath, deployPath)}
               alt={docuConfig.navbar.logo.alt || ""}
               className="h-6 w-6"
             />
@@ -155,7 +155,7 @@ export function MobileBar({
             }
           >
             {(docuConfig.navbar?.menu || []).map((item) => {
-              const href = docsNavHref(item.href, basePath);
+              const href = docsNavHref(item.href, basePath, deployPath);
               return (
                 <li
                   key={item.href}

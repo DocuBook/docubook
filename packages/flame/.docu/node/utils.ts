@@ -6,9 +6,11 @@ export {
   rebaseContentPath,
   stripDocsHtmlSuffix,
   matchDocsSlug,
+  withDeployPath,
+  stripDeployPath,
 } from "./base-path";
 
-import { DEFAULT_BASE_PATH, isDocsPath, rebaseContentPath } from "./base-path";
+import { DEFAULT_BASE_PATH, isDocsPath, rebaseContentPath, withDeployPath } from "./base-path";
 
 /**
  * Client-safe utilities shared by SSR and the browser bundle.
@@ -37,13 +39,25 @@ export function docsHtmlHref(path: string): string {
  * configured prefix, so one `docu.json` keeps working at a custom subpath
  * (`/repo`) or at a root deployment (`""`). External URLs, hash targets and
  * paths that already name a file pass through untouched.
+ *
+ * `deploymentPath` (see `withDeployPath`) is prepended to links that point
+ * into the dist — docs pages and the landing page `/` — so they keep working
+ * when the host serves the dist under a path. Omit it to get the
+ * deployment-free route, e.g. for active-state comparisons.
  */
-export function docsNavHref(link: string, resolvedBasePath: string = DEFAULT_BASE_PATH): string {
+export function docsNavHref(
+  link: string,
+  resolvedBasePath: string = DEFAULT_BASE_PATH,
+  deploymentPath: string = ""
+): string {
   if (isExternalUrl(link) || !link.startsWith("/")) return link;
 
   const cut = link.search(/[?#]/);
   const suffix = cut === -1 ? "" : link.slice(cut);
   const pathname = (cut === -1 ? link : link.slice(0, cut)).replace(/\/+$/, "") || "/";
+
+  // The landing page lives at the dist root.
+  if (pathname === "/") return withDeployPath(`/${suffix}`, deploymentPath);
 
   // Sibling routes on the same origin are not docs pages — leave them verbatim.
   if (!isDocsPath(pathname, resolvedBasePath)) return link;
@@ -53,9 +67,24 @@ export function docsNavHref(link: string, resolvedBasePath: string = DEFAULT_BAS
   // The docs root is a directory index, and anything with an extension is
   // already a file — neither takes the `.html` suffix.
   if (rebased === "/" || rebased === resolvedBasePath || /\.[a-z0-9]+$/i.test(rebased)) {
-    return `${rebased}${suffix}`;
+    return withDeployPath(`${rebased}${suffix}`, deploymentPath);
   }
-  return `${rebased}.html${suffix}`;
+  return withDeployPath(`${rebased}.html${suffix}`, deploymentPath);
+}
+
+/**
+ * Resolve an authored content asset path from `docu.json` (e.g. the navbar
+ * logo, `/docs/assets/images/logo.svg`) for the deployment: re-based onto the
+ * configured prefix and placed under the deployment path. Same rules as
+ * content images in MDX; external URLs and non-docs paths pass through.
+ */
+export function docsAssetSrc(
+  src: string,
+  resolvedBasePath: string = DEFAULT_BASE_PATH,
+  deploymentPath: string = ""
+): string {
+  if (isExternalUrl(src) || !src.startsWith("/") || !isDocsPath(src, resolvedBasePath)) return src;
+  return withDeployPath(rebaseContentPath(src, resolvedBasePath), deploymentPath);
 }
 
 /**

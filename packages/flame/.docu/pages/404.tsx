@@ -1,5 +1,5 @@
 import { BackgroundBlobs, Hero } from "../components/home";
-import { servedBasePath } from "../node/paths";
+import { servedBasePath, servedDeployPath } from "../node/paths";
 
 export default function NotFoundPage() {
   return (
@@ -9,7 +9,7 @@ export default function NotFoundPage() {
         hero={{
           headline: "404",
           description: "Page not found",
-          actions: [{ text: "Go to Docs", link: `${servedBasePath()}/` }],
+          actions: [{ text: "Go to Docs", link: `${servedDeployPath()}${servedBasePath()}/` }],
         }}
       />
     </main>

@@ -63,9 +63,10 @@ export function resolveBasePath(config?: DocuConfig | null): string {
  * project site (which serves the artifact under `<origin>/repo/`).
  *
  * Distinct from the base path — `basePath` is the prefix *inside* the dist,
- * this is the prefix *above* it. Only root-absolute references need it (the 404
- * fallback and the search index); relative ones line up already because pages
- * and assets share the deployment root.
+ * this is the prefix *above* it. Every root-absolute reference into the dist
+ * needs it — nav and pagination links, the logo, the 404 fallback, the search
+ * index (see {@link withDeployPath}); relative ones line up already because
+ * pages and assets share the deployment root.
  */
 export function resolveDeployPath(config?: DocuConfig | null): string {
   const raw = config?.meta?.baseURL;
@@ -245,6 +246,34 @@ export function rebaseContentPath(
     return `${resolvedBasePath}${path.slice(DEFAULT_BASE_PATH.length)}`;
   }
   return path;
+}
+
+/**
+ * Prefix a root-absolute URL that points into the dist with the deployment
+ * path (`/repo` on a GitHub Pages project site, `""` otherwise).
+ *
+ * Routes stay deployment-free everywhere else — matching, active state, the
+ * route tree — and gain the prefix only where they are written into an
+ * `href`/`src`. Apply it exactly once at that boundary: it is not idempotent,
+ * because a docs route may legitimately start with the same segment as the
+ * deployment path. External, protocol-relative and relative URLs pass through.
+ */
+export function withDeployPath(url: string, deploymentPath: string): string {
+  if (deploymentPath.length === 0 || !url.startsWith("/") || url.startsWith("//")) return url;
+  return `${deploymentPath}${url}`;
+}
+
+/**
+ * Inverse of {@link withDeployPath} for a browser `location.pathname`, which
+ * includes the deployment path, so it can be compared with deployment-free
+ * routes.
+ */
+export function stripDeployPath(pathname: string, deploymentPath: string): string {
+  if (deploymentPath.length === 0) return pathname;
+  if (pathname === deploymentPath) return "/";
+  return pathname.startsWith(`${deploymentPath}/`)
+    ? pathname.slice(deploymentPath.length)
+    : pathname;
 }
 
 /** Map an `/{basePath}` request back to its extensionless route (dev server).

@@ -1,5 +1,5 @@
 import React from "react";
-import { loadDocuConfig, resolveBasePath } from "../node/paths";
+import { loadDocuConfig, resolveBasePath, servedDeployPath } from "../node/paths";
 import { docsNavHref } from "../node/utils";
 import Menu from "./Menu";
 
@@ -47,8 +47,10 @@ export function DocsLayout({ children, repoUrl, pathname = basePath }: DocsLayou
             { className: "flex items-center gap-6 text-sm font-medium text-base-content/80" },
             ...(docuConfig.navbar?.menu || []).map((item: { title: string; href: string }) => {
               const isExternal = /^https?:\/\//.test(item.href);
-              const href = isExternal ? item.href : docsNavHref(item.href, basePath);
-              const isDocsActive = href === basePath;
+              const href = isExternal
+                ? item.href
+                : docsNavHref(item.href, basePath, servedDeployPath());
+              const isDocsActive = !isExternal && docsNavHref(item.href, basePath) === basePath;
               return React.createElement(
                 "a",
                 {

@@ -4,8 +4,8 @@ import { useState } from "react";
 import Sublink, { GroupAccordionProvider } from "./Sublink";
 import SidebarGroupHeader from "./SidebarGroupHeader";
 import type { DocuRoute } from "../node/types";
-import { cn } from "../node/utils";
-import { config as docuConfig, basePath } from "../node/client-routes";
+import { cn, stripDeployPath } from "../node/utils";
+import { config as docuConfig, basePath, deployPath } from "../node/client-routes";
 
 interface MenuProps {
   onNavigate?: () => void;
@@ -30,7 +30,11 @@ function getContextRoute(contextPath: string, routeList: DocuRoute[]): DocuRoute
 export default function Menu({ onNavigate, className = "", pathname, routes = [] }: MenuProps) {
   const menuRoutes = routes;
   const [currentPath] = useState(
-    () => pathname || (typeof window !== "undefined" ? window.location.pathname : basePath)
+    () =>
+      pathname ||
+      (typeof window !== "undefined"
+        ? stripDeployPath(window.location.pathname, deployPath)
+        : basePath)
   );
 
   // Root deployment has no prefix to match against: every path belongs to docs.

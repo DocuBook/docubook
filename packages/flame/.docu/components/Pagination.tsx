@@ -2,8 +2,8 @@
 
 import type { ReactNode } from "react";
 import { getPreviousNext } from "../node/route";
-import { docsHtmlHref } from "../node/utils";
-import { basePath } from "../node/client-routes";
+import { docsHtmlHref, withDeployPath } from "../node/utils";
+import { basePath, deployPath } from "../node/client-routes";
 import { PaginationDocs } from "@docubook/ui-react/pagination";
 
 interface PaginationProps {
@@ -35,7 +35,7 @@ export default function Pagination({
       prev={
         prev
           ? {
-              href: docsHtmlHref(`${basePath}${prev.href}`),
+              href: withDeployPath(docsHtmlHref(`${basePath}${prev.href}`), deployPath),
               title: prev.title,
               description: prev.description,
             }
@@ -44,7 +44,7 @@ export default function Pagination({
       next={
         next
           ? {
-              href: docsHtmlHref(`${basePath}${next.href}`),
+              href: withDeployPath(docsHtmlHref(`${basePath}${next.href}`), deployPath),
               title: next.title,
               description: next.description,
             }
