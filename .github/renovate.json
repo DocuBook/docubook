@@ -28,8 +28,8 @@
       "groupName": "packages minor and patch dependencies"
     },
     {
-      "description": "Separate major updates in packages/",
-      "matchFileNames": ["packages/**"],
+      "description": "Separate major updates in packages/, with the pnpm overrides that pin the same packages (react, react-dom)",
+      "matchFileNames": ["packages/**", "pnpm-workspace.yaml"],
       "matchUpdateTypes": ["major"],
       "groupName": "packages major dependencies"
     },
@@ -51,8 +51,9 @@
       "groupName": "github actions"
     },
     {
-      "description": "pnpm overrides are security floors scoped to one major line (undici@7, js-yaml@4) or one consumer (mermaid>katex); a major bump would break the package that needs that line",
+      "description": "pnpm overrides are security floors scoped to one major line (undici@7, js-yaml@4) or one consumer (mermaid>katex); a major bump would break the package that needs that line. The React pins follow packages/ instead",
       "matchDepTypes": ["pnpm-workspace.overrides"],
+      "matchDepNames": ["!react", "!react-dom", "!@types/react", "!@types/react-dom"],
       "matchUpdateTypes": ["major"],
       "enabled": false
     },
