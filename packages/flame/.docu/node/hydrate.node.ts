@@ -2,14 +2,13 @@
 
 import { execFile } from "node:child_process";
 import { builtinModules, createRequire } from "node:module";
-import { dirname, join, resolve } from "node:path";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
 import { promisify } from "node:util";
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { build as viteBuild, type Plugin } from "vite";
 import {
   ASSETS_DIR,
-  FRAMEWORK_ROOT,
   cleanOldBundles,
   LIB_DIR,
   STYLES_DIR,
@@ -20,25 +19,7 @@ import {
 import { buildThemeCss, createMdxModuleEntries, getThemeConfig } from "./hydrate";
 import { atomicWriteFile, computeTailwindCacheKey, readStyleCss } from "./cache-key";
 import { resolveRoutes } from "./fs-scanner";
-import { normalizeImporterPath } from "./security";
-import type { AssetManifest, DocuConfig, DocuRoute } from "./types";
-
-/** Extract Lucide icon names from user docu.json configuration. */
-function extractConfigIcons(config: DocuConfig): string[] {
-  const icons: string[] = [];
-  const pushIf = (value: string | undefined) => {
-    if (value) icons.push(value);
-  };
-  config.home?.hero?.actions?.forEach((action) => pushIf(action.icon));
-  config.home?.features?.forEach((feature) => pushIf(feature.icon));
-  (function walk(routes: DocuRoute[]) {
-    for (const route of routes) {
-      pushIf(route.context?.icon);
-      if (route.items) walk(route.items);
-    }
-  })(config.routes ?? []);
-  return [...new Set(icons.filter((name) => /^[A-Z]/.test(name)))];
-}
+import type { AssetManifest, DocuRoute } from "./types";
 
 export { buildThemeCss, computeInlineThemeCss, getThemeConfig } from "./hydrate";
 
@@ -127,60 +108,6 @@ const NODE_BUILTINS_RE = new RegExp(
   `^(node:.*|${builtinModules.map((module) => module.replace(/\//g, "\\/")).join("|")})$`
 );
 
-let lucideRealEntry: string | undefined;
-
-function getLucideRealEntry(): string {
-  if (!lucideRealEntry) {
-    lucideRealEntry = createRequire(import.meta.url).resolve("lucide-react");
-  }
-  return lucideRealEntry;
-}
-
-const LUCIDE_IMPORT_RE = /import\s*\{([^}]+)\}\s*from\s*["']lucide-react["']/g;
-const LUCIDE_ICON_RE = /^[A-Z]/;
-
-function scanDirLucideIcons(dir: string, set: Set<string>): void {
-  if (!existsSync(dir)) return;
-  try {
-    const entries = readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) {
-        if (entry.name !== "node_modules") scanDirLucideIcons(full, set);
-      } else if (/\.(js|ts|tsx)$/.test(entry.name)) {
-        const content = readFileSync(full, "utf-8");
-        for (const match of content.matchAll(LUCIDE_IMPORT_RE)) {
-          for (const specifier of match[1].split(",")) {
-            const name = specifier
-              .trim()
-              .split(/\s+as\s+/)[0]
-              .trim();
-            if (LUCIDE_ICON_RE.test(name)) set.add(name);
-          }
-        }
-      }
-    }
-  } catch (err) {
-    console.warn(
-      `[flame] Failed to scan lucide icons: ${err instanceof Error ? err.message : String(err)}`
-    );
-  }
-}
-
-function collectAllLucideIcons(): string[] {
-  const icons = new Set<string>();
-  scanDirLucideIcons(join(FRAMEWORK_ROOT, ".docu/components"), icons);
-  scanDirLucideIcons(join(FRAMEWORK_ROOT, ".docu/pages"), icons);
-  const dependencyDirs = [
-    join(FRAMEWORK_ROOT, "..", "mdx-content", "dist"),
-    join(FRAMEWORK_ROOT, "..", "ui-react", "dist"),
-    join(FRAMEWORK_ROOT, "..", "core", "dist"),
-    join(FRAMEWORK_ROOT, "..", "themes-colors", "dist"),
-  ];
-  for (const dir of dependencyDirs) scanDirLucideIcons(resolve(dir), icons);
-  return [...icons];
-}
-
 /**
  * Serves `node/client-routes` as a virtual module built from `docu.json`, so the
  * browser bundle gets resolved config values instead of the server-side file.
@@ -248,24 +175,6 @@ export async function buildClientBundle(
         load(id) {
           if (!id.startsWith("\0node-stub:")) return null;
           return "export default {}; export {};";
-        },
-      },
-      {
-        name: "lucide-optimize",
-        resolveId(id, importer) {
-          if (id !== "lucide-react") return null;
-          if (importer) {
-            const normalized = normalizeImporterPath(importer);
-            if (normalized.includes("/markdown/dist/")) return null;
-          }
-          return "\0lucide-virt";
-        },
-        load(id) {
-          if (id !== "\0lucide-virt") return null;
-          const scanned = collectAllLucideIcons();
-          const configured = extractConfigIcons(loadDocuConfig());
-          const allIcons = [...new Set([...scanned, ...configured])];
-          return `export { ${allIcons.join(", ")} } from ${JSON.stringify(getLucideRealEntry())};`;
         },
       },
       docuConfigPlugin(),
