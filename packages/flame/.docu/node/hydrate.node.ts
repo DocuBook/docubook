@@ -109,10 +109,40 @@ const NODE_BUILTINS_RE = new RegExp(
 );
 
 /**
+ * Stubs Node built-ins in the browser bundle with an empty default export.
+ *
+ * Runs before core resolution, or Vite swaps in its own browser externals and
+ * this never runs. The stub has no named exports on purpose: a server module
+ * leaking into the client graph (`import { resolve } from "node:path"`) then
+ * fails the build with MISSING_EXPORT instead of crashing every page at
+ * runtime. Default imports in browser-safe dependencies (gray-matter's
+ * `fs`) still get an empty object.
+ */
+export function nodeBuiltinStubPlugin(): Plugin {
+  return {
+    name: "node-builtin-stub",
+    enforce: "pre",
+    resolveId(id) {
+      if (NODE_BUILTINS_RE.test(id)) return `\0node-stub:${id}`;
+      return null;
+    },
+    load(id) {
+      if (!id.startsWith("\0node-stub:")) return null;
+      return "export default {}; export {};";
+    },
+  };
+}
+
+/**
  * Serves `node/client-routes` as a virtual module built from `docu.json`, so the
  * browser bundle gets resolved config values instead of the server-side file.
+ *
+ * `deploymentPath` is resolved by the caller before the Vite build starts:
+ * Vite sets `process.env.NODE_ENV` to "production" while it builds, so a
+ * `servedDeployPath()` evaluated in `load()` would bake the production path
+ * into a dev bundle.
  */
-export function docuConfigPlugin(): Plugin {
+export function docuConfigPlugin(deploymentPath: string = servedDeployPath()): Plugin {
   return {
     name: "docu-config",
     // `node/client-routes.ts` is a real (server-side) file, so Vite's own
@@ -138,85 +168,114 @@ export function docuConfigPlugin(): Plugin {
         `export const basePath = ${JSON.stringify(resolveBasePath(config))};`,
         // Dev serves the project from the origin root, so the host's
         // deployment path only reaches the production bundle.
-        `export const deployPath = ${JSON.stringify(servedDeployPath())};`,
+        `export const deployPath = ${JSON.stringify(deploymentPath)};`,
       ].join("\n");
     },
   };
 }
 
-export async function buildClientBundle(
+let clientBuildQueue: Promise<void> = Promise.resolve();
+
+/**
+ * Run client builds one at a time. The dev server rebuilds on file changes
+ * with only a debounce, so two builds could overlap — and each one saves and
+ * restores `process.env.NODE_ENV` around Vite (see `runClientBuild`). An
+ * overlapping build would capture the "production" value a sibling build has
+ * just leaked and pin it for the rest of the process. A failed build does not
+ * block the next one.
+ *
+ * @internal Exported for tests.
+ */
+export function enqueueClientBuild<T>(task: () => Promise<T>): Promise<T> {
+  const result = clientBuildQueue.then(task);
+  clientBuildQueue = result.then(
+    () => undefined,
+    () => undefined
+  );
+  return result;
+}
+
+export function buildClientBundle(
   /** slug → compiled MDX ESM module source (program format) for static hydration. */
   mdxSources: Record<string, string> = {}
 ): Promise<AssetManifest> {
+  return enqueueClientBuild(() => runClientBuild(mdxSources));
+}
+
+async function runClientBuild(mdxSources: Record<string, string>): Promise<AssetManifest> {
   await mkdir(ASSETS_DIR, { recursive: true });
   await cleanOldBundles();
   const nodeEnv = process.env.NODE_ENV || "development";
+  // Vite assigns process.env.NODE_ENV = "production" when it is unset and
+  // leaves it that way. Under the dev server that flips servedDeployPath()
+  // (and anything else keyed on NODE_ENV) to production for the rest of the
+  // process, so capture what this build needs first and restore it after.
+  const envBeforeBuild = process.env.NODE_ENV;
+  const servedDeploy = servedDeployPath();
   const mdxEntries = createMdxModuleEntries(mdxSources);
   const mdxEntriesById = new Map(mdxEntries.map((entry) => [entry.id, entry]));
   const docsEntryPath = join(LIB_DIR, "client.ts");
   const homeEntryPath = join(LIB_DIR, "home-client.ts");
 
-  const bundle = await viteBuild({
-    configFile: false,
-    publicDir: false,
-    // outDir is the assets directory itself, so emitted paths ("chunks/x.js")
-    // are relative to it. The default base "/" made Vite's preload helper
-    // request "/chunks/x.js" (404). A relative base resolves preloads from the
-    // importing chunk's URL instead of the site root.
-    base: "./",
-    define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
-    plugins: [
-      {
-        name: "node-builtin-stub",
-        resolveId(id) {
-          if (NODE_BUILTINS_RE.test(id)) return `\0node-stub:${id}`;
-          return null;
+  let bundle: Awaited<ReturnType<typeof viteBuild>>;
+  try {
+    bundle = await viteBuild({
+      configFile: false,
+      publicDir: false,
+      // outDir is the assets directory itself, so emitted paths ("chunks/x.js")
+      // are relative to it. The default base "/" made Vite's preload helper
+      // request "/chunks/x.js" (404). A relative base resolves preloads from the
+      // importing chunk's URL instead of the site root.
+      base: "./",
+      define: { "process.env.NODE_ENV": JSON.stringify(nodeEnv) },
+      plugins: [
+        nodeBuiltinStubPlugin(),
+        docuConfigPlugin(servedDeploy),
+        {
+          name: "mdx-hydrate",
+          resolveId(id) {
+            if (/mdx-manifest$/.test(id)) return "\0mdx-manifest";
+            if (/^docubook-mdx-page-[a-f0-9]{16}$/.test(id)) return `\0${id}`;
+            return null;
+          },
+          load(id) {
+            if (id === "\0mdx-manifest") {
+              const map = mdxEntries
+                .map(
+                  ({ slug, id }) => `${JSON.stringify(slug)}: () => import(${JSON.stringify(id)})`
+                )
+                .join(", ");
+              return `export const mdxModules = { ${map} };\n`;
+            }
+            if (!id.startsWith("\0docubook-mdx-page-")) return null;
+            const entry = mdxEntriesById.get(id.slice(1));
+            const contents = entry == null ? undefined : mdxSources[entry.slug];
+            if (contents == null) throw new Error(`unknown mdx module: ${id}`);
+            return contents;
+          },
         },
-        load(id) {
-          if (!id.startsWith("\0node-stub:")) return null;
-          return "export default {}; export {};";
-        },
-      },
-      docuConfigPlugin(),
-      {
-        name: "mdx-hydrate",
-        resolveId(id) {
-          if (/mdx-manifest$/.test(id)) return "\0mdx-manifest";
-          if (/^docubook-mdx-page-[a-f0-9]{16}$/.test(id)) return `\0${id}`;
-          return null;
-        },
-        load(id) {
-          if (id === "\0mdx-manifest") {
-            const map = mdxEntries
-              .map(({ slug, id }) => `${JSON.stringify(slug)}: () => import(${JSON.stringify(id)})`)
-              .join(", ");
-            return `export const mdxModules = { ${map} };\n`;
-          }
-          if (!id.startsWith("\0docubook-mdx-page-")) return null;
-          const entry = mdxEntriesById.get(id.slice(1));
-          const contents = entry == null ? undefined : mdxSources[entry.slug];
-          if (contents == null) throw new Error(`unknown mdx module: ${id}`);
-          return contents;
-        },
-      },
-    ],
-    build: {
-      outDir: ASSETS_DIR,
-      emptyOutDir: false,
-      sourcemap: true,
-      minify: nodeEnv === "production",
-      target: "es2020",
-      rollupOptions: {
-        input: { client: docsEntryPath, "home-client": homeEntryPath },
-        output: {
-          format: "es",
-          entryFileNames: "[name]-[hash].js",
-          chunkFileNames: viteChunkFileName,
-          assetFileNames: "assets/[name]-[hash][extname]",
+      ],
+      build: {
+        outDir: ASSETS_DIR,
+        emptyOutDir: false,
+        sourcemap: true,
+        minify: nodeEnv === "production",
+        target: "es2020",
+        rollupOptions: {
+          input: { client: docsEntryPath, "home-client": homeEntryPath },
+          output: {
+            format: "es",
+            entryFileNames: "[name]-[hash].js",
+            chunkFileNames: viteChunkFileName,
+            assetFileNames: "assets/[name]-[hash][extname]",
+          },
         },
       },
-    },
-  });
+    });
+  } finally {
+    if (envBeforeBuild === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = envBeforeBuild;
+  }
 
   const outputs = Array.isArray(bundle) ? bundle : [bundle];
   let docsJs: string | undefined;
