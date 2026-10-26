@@ -25,11 +25,30 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Lint commits
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          OUTPUT=$(pnpm exec commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose 2>&1)
+          OUTPUT=$(pnpm exec commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose 2>&1) && STATUS=0 || STATUS=$?
           echo "$OUTPUT"
-          PROBLEMS=$(echo "$OUTPUT" | grep -oP 'found \K[1-9]\d*' | head -1 || echo "0")
-          if [ "$PROBLEMS" -gt 0 ] 2>/dev/null; then
+          # The exit code alone is not trusted (it has reported 1 with 0
+          # problems), so count problems from commitlint's per-commit summary
+          # lines ("✔/✖   found N problems, M warnings"). --verbose also echoes
+          # every commit message, which may itself contain "found <number>",
+          # so only whole summary lines count.
+          SUMMARIES=$(printf '%s\n' "$OUTPUT" | sed 's/\x1b\[[0-9;]*m//g' \
+            | grep -E '^(✔|✖|⚠)[[:space:]]+found [0-9]+ problems?, [0-9]+ warnings?$' || true)
+          if [ -z "$SUMMARIES" ]; then
+            if [ "$STATUS" -ne 0 ]; then
+              echo "::error::commitlint exited with $STATUS and reported no results"
+              exit 1
+            fi
+            echo "::notice::commitlint reported no commits to check"
+            exit 0
+          fi
+          PROBLEMS=$(printf '%s\n' "$SUMMARIES" | sed -E 's/.*found ([0-9]+) problems?.*/\1/' \
+            | awk '{ total += $1 } END { print total + 0 }')
+          if [ "$PROBLEMS" -gt 0 ]; then
             echo "::error::commitlint found $PROBLEMS problem(s)"
             exit 1
           fi
