@@ -61,13 +61,13 @@ const scenarios = [
     expected: [["@docubook/core", "minor"]],
   },
   {
-    // Every dependent range is left, so the cascade is the expected behaviour.
+    // flame's dependency range is left, so it follows. markdown no longer
+    // declares core as a peer and stays out of the plan.
     pkg: "@docubook/core",
     bump: "major",
     expected: [
       ["@docubook/core", "major"],
       ["@docubook/flame", "major"],
-      ["@docubook/markdown", "major"],
     ],
   },
   {

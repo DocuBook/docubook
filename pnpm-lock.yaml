@@ -340,9 +340,6 @@ importers:
 
   packages/markdown:
     dependencies:
-      "@docubook/core":
-        specifier: workspace:^
-        version: link:../core
       mermaid:
         specifier: ^11.17.2
         version: 11.17.2
