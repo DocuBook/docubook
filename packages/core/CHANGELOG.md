@@ -1,5 +1,11 @@
 # @docubook/core
 
+## 2.2.5
+
+### Patch Changes
+
+- [#430](https://github.com/DocuBook/docubook/pull/430) [`0956fdf`](https://github.com/DocuBook/docubook/commit/0956fdfc1f62eb362efc0dca36dd5e82f2ef7394) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Raise the `zod` dependency floor to `^4.6.7` in `@docubook/core` and `@docubook/flame`, and `vite` to `^8.3.5` in `@docubook/flame`, so installs no longer resolve versions with known security advisories.
+
 ## 2.2.2
 
 ### Patch Changes
