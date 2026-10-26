@@ -6,7 +6,7 @@ import { dirname, join } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 import { promisify } from "node:util";
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
-import { build as viteBuild, type Plugin } from "vite";
+import { build as viteBuild, type Plugin, type Rollup } from "vite";
 import {
   ASSETS_DIR,
   cleanOldBundles,
@@ -26,6 +26,25 @@ export { buildThemeCss, computeInlineThemeCss, getThemeConfig } from "./hydrate"
 export function viteChunkFileName(chunk: { name: string }): string {
   const name = chunk.name.replace(/^_docubook-mdx-page-/, "docubook-mdx-page-");
   return `chunks/${name}-[hash].js`;
+}
+
+/**
+ * Drop Rolldown's MODULE_LEVEL_DIRECTIVE warning for directives that mean
+ * nothing in this client-only bundle: `"use client"` (our components and
+ * @docubook/ui-react's) and the empty `''` statement left by JSDoc-only
+ * `@import` blocks in @mdx-js/mdx and hast-util-to-estree. Each printed a
+ * multi-line diagnostic on every build. Other warnings pass through.
+ */
+export function clientBuildOnWarn(
+  warning: Rollup.RollupLog,
+  warn: (warning: Rollup.RollupLog) => void
+): void {
+  if (
+    warning.code === "MODULE_LEVEL_DIRECTIVE" &&
+    /module level directive "(use client)?" in /.test(warning.message)
+  )
+    return;
+  warn(warning);
 }
 
 const execFileAsync = promisify(execFile);
@@ -263,6 +282,7 @@ async function runClientBuild(mdxSources: Record<string, string>): Promise<Asset
         target: "es2020",
         rollupOptions: {
           input: { client: docsEntryPath, "home-client": homeEntryPath },
+          onwarn: clientBuildOnWarn,
           output: {
             format: "es",
             entryFileNames: "[name]-[hash].js",
