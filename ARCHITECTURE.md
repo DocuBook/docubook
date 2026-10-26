@@ -68,9 +68,11 @@ no changeset and no broken range keeps its current version.
 Dependents are pulled in when their declared range is left. Peer dependencies
 behave the same way because
 `___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH.onlyUpdatePeerDependentsWhenOutOfRange`
-is enabled: without it, a `minor` bump of `@docubook/core` would force a major
-release of the peer-dependent `@docubook/markdown`, which then drags the whole
-linked group to a major version.
+is enabled: without it, any bump of a package forces a major release of its
+peer dependents, which then drags the whole linked group to a major version
+(#403). No published package currently declares another `@docubook/*` package
+as a peer, so the option only guards future internal peers. Only flame depends
+on the other packages.
 
 Releases that move all five packages together therefore come from changesets
 that list every package explicitly — a convention, not a property of linking.

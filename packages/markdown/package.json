@@ -46,7 +46,6 @@
     "mermaid": "^11.17.2"
   },
   "peerDependencies": {
-    "@docubook/core": "workspace:^",
     "lucide-react": "^1.7.0",
     "react": ">=18",
     "react-dom": ">=18",
