@@ -19,6 +19,7 @@
   ],
   "scripts": {
     "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && tsc -p tsconfig.build.json",
+    "dev": "vite build --watch --emptyOutDir=false",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",

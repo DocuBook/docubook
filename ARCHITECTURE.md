@@ -108,6 +108,11 @@ override detection, and `--bun` requests Bun explicitly.
   `deploy.shared.ts`, and adapters under `runtime/`.
 - `bin/compile-lib.mjs` builds the compatibility entries with Vite. In a source
   checkout, the CLI compiles `.docu/lib/` lazily when it is missing.
+- In a workspace checkout (sibling `@docubook/*` packages linked rather than
+  installed), `flame dev` runs the dev server under `bin/dev-supervisor.mjs`.
+  `.docu/node/dev-watch.ts` watches those packages' built output and exits
+  with code 75 when it changes, and the supervisor starts a fresh server so
+  SSR and the client bundle load the new code together.
 
 Bun uses standalone implementations rather than delegating to the neutral
 `*.impl.ts` files. Both paths maintain the same behavior and output contract.

@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
+    "dev": "turbo dev --filter=@docubook/flame...",
     "lint": "oxlint",
     "clean": "turbo clean",
     "typecheck": "turbo typecheck",

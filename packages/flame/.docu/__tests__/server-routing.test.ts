@@ -12,7 +12,7 @@
  * server.ts has module-level side effects (config loading, Bun.build, watcher),
  * so we test the routing patterns and logic directly rather than importing the module.
  */
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync, statSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -554,10 +554,45 @@ describe("HMR stream lifecycle", () => {
       expect(script).toContain("window.location.reload()");
     });
 
-    it("reconnects on error after 2s timeout", () => {
-      const script = hmrScript("n");
-      expect(script).toContain("es.onerror");
-      expect(script).toContain("2000");
+    it("waits for a restarting dev server before reloading once", async () => {
+      vi.useFakeTimers();
+      try {
+        const body = hmrScript("n")
+          .replace(/^<script[^>]*>/, "")
+          .replace(/<\/script>$/, "");
+        let source: { onerror?: () => void; close: () => void } | undefined;
+        class FakeEventSource {
+          onmessage?: (e: { data: string }) => void;
+          onerror?: () => void;
+          constructor() {
+            source = this as unknown as typeof source;
+          }
+          close() {}
+        }
+        // The server is down for two probes, then answers.
+        const fetchMock = vi
+          .fn()
+          .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+          .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+          .mockResolvedValue(new Response(null, { status: 200 }));
+        const reload = vi.fn();
+        const window = { location: { href: "http://localhost:3000/docs/x.html", reload } };
+        new Function("EventSource", "fetch", "window", body)(FakeEventSource, fetchMock, window);
+
+        source!.onerror!();
+        await vi.advanceTimersByTimeAsync(250 + 500 + 750);
+        expect(fetchMock).toHaveBeenCalledTimes(3);
+        expect(fetchMock).toHaveBeenCalledWith(window.location.href, {
+          method: "HEAD",
+          cache: "no-store",
+        });
+        expect(reload).toHaveBeenCalledTimes(1);
+
+        await vi.advanceTimersByTimeAsync(10_000);
+        expect(reload).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 });
