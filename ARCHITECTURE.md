@@ -278,8 +278,11 @@ Package-level validation:
 CI runs Turbo `lint`, `typecheck`, `build`, and `test` jobs on Node.js 22, plus
 runtime smoke tests for flame on Node and Deno. The smoke jobs build workspace
 dependencies, then exercise `bin/cli.js`; missing `.docu/lib` output is compiled
-lazily before the compatibility build runs. A separate workflow validates every
-commit in pull requests with commitlint.
+lazily before the compatibility build runs. Each smoke job then serves the
+output and loads pages in headless Chrome (`scripts/flame-browser-smoke.mjs`),
+failing on uncaught errors, failed same-origin scripts or stylesheets, or
+islands that do not hydrate. A separate workflow validates every commit in pull
+requests with commitlint.
 
 ## Trade-offs and Limitations
 

@@ -95,6 +95,7 @@ pnpm install
 | `pnpm typecheck` | Type-check the workspace through Turborepo |
 | `pnpm test` | Run workspace tests through Turborepo |
 | `pnpm test:release-plan` | Verify the read-only release-plan matrix from `.changeset/config.json` |
+| `pnpm test:browser-smoke` | Load a built flame site (`packages/flame/.docu/dist`) in headless Chrome and check pages hydrate; set `CHROME_PATH` if Google Chrome is not installed |
 | `pnpm clean` | Run every package's clean script through Turborepo |
 | `pnpm commit` | Open the interactive commit prompt |
 | `pnpm changeset` | Create a changeset |
@@ -168,7 +169,8 @@ message.
 Pull requests and pushes to `main` run the Turbo `lint`, `typecheck`, `build`,
 and `test` matrix on Node.js 22. Build and test jobs install Bun. Separate smoke
 jobs build flame through Node and Deno, including the lazy `.docu/lib`
-compilation path. `commitlint.yml` validates every commit in a pull request.
+compilation path, then run `pnpm test:browser-smoke` to load the built site in
+headless Chrome. `commitlint.yml` validates every commit in a pull request.
 
 ## Branch Naming
 
