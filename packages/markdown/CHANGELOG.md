@@ -1,5 +1,13 @@
 # @docubook/mdx-content
 
+## 2.2.4
+
+### Patch Changes
+
+- [#424](https://github.com/DocuBook/docubook/pull/424) [`bf50301`](https://github.com/DocuBook/docubook/commit/bf5030139398f34aa407d9a8514c5fb03bde6de5) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Drop the unused `@docubook/core` peer dependency. The package never imports it, so installing `@docubook/markdown` no longer pulls in core's MDX pipeline, and a major release of core no longer forces a major release of markdown. Use any MDX renderer, including `MDXRemote` from `@docubook/core`.
+
+- [#418](https://github.com/DocuBook/docubook/pull/418) [`7bb59b5`](https://github.com/DocuBook/docubook/commit/7bb59b56f267471144ce2eb527663f7bb1b0f3d7) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Keep code blocks inside steps and accordions inset on phones. The full-bleed mobile layout now applies only outside these wrappers, so nested blocks keep their rounded border instead of overflowing the step indent or getting clipped by the accordion panel. Steps also no longer overflow their list by the item's left margin.
+
 ## 2.2.3
 
 ### Patch Changes
