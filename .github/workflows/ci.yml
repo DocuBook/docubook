@@ -95,3 +95,8 @@ jobs:
         if: matrix.runtime == 'deno'
         run: NODE_ENV=production deno run -A bin/cli.js build
         working-directory: packages/flame
+
+      # A build that exits 0 can still ship a client bundle that crashes on
+      # load. Serve the output and check pages load and islands hydrate.
+      - name: Browser smoke (built site loads and hydrates)
+        run: pnpm test:browser-smoke
