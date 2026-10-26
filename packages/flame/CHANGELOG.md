@@ -1,5 +1,16 @@
 # @docubook/flame
 
+## 2.2.5
+
+### Patch Changes
+
+- [#430](https://github.com/DocuBook/docubook/pull/430) [`0956fdf`](https://github.com/DocuBook/docubook/commit/0956fdfc1f62eb362efc0dca36dd5e82f2ef7394) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Raise the `zod` dependency floor to `^4.6.7` in `@docubook/core` and `@docubook/flame`, and `vite` to `^8.3.5` in `@docubook/flame`, so installs no longer resolve versions with known security advisories.
+
+- [#428](https://github.com/DocuBook/docubook/pull/428) [`06a0b63`](https://github.com/DocuBook/docubook/commit/06a0b6369012095730ac97d824bd8c9f7a422a2a) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Quieter `flame build` output on Node and Deno. The client bundle no longer prints a multi-line Rolldown `MODULE_LEVEL_DIRECTIVE` warning for every `"use client"` component, or for the empty `''` statements in the MDX toolchain. Both are meaningless in a browser-only bundle. Building without git history (no `.git` in the CI checkout, a repository with no commits yet, or git not installed) no longer dumps the full page list and a stack trace. Page dates fall back to file mtime silently, and build no longer spawns a failing `git log` for each page. Other git failures are reported in one line.
+
+- Updated dependencies [[`0956fdf`](https://github.com/DocuBook/docubook/commit/0956fdfc1f62eb362efc0dca36dd5e82f2ef7394)]:
+  - @docubook/core@2.2.5
+
 ## 2.2.4
 
 ### Patch Changes
