@@ -3,6 +3,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 describe("sentry", () => {
   const mockInit = vi.fn();
   const mockCaptureException = vi.fn();
+  // The mock is registered once per test and resolves through this factory,
+  // so a test can swap the module without a second vi.doMock for the same
+  // path (re-registering raced with the first mock and made the "missing"
+  // case flaky).
+  let sentryModule: () => object;
 
   beforeEach(() => {
     vi.resetModules();
@@ -13,10 +18,11 @@ describe("sentry", () => {
     delete process.env.NODE_ENV;
     delete process.env.SENTRY_RELEASE;
 
-    vi.doMock("@sentry/bun", () => ({
+    sentryModule = () => ({
       init: mockInit,
       captureException: mockCaptureException,
-    }));
+    });
+    vi.doMock("@sentry/bun", () => sentryModule());
   });
 
   afterEach(() => {
@@ -66,14 +72,10 @@ describe("sentry", () => {
 
     it("handles missing @sentry/bun gracefully", async () => {
       process.env.SENTRY_DSN = "https://key@sentry.io/123";
-      // Simulate an absent optional dependency: the mocked module throws as
-      // soon as a property is used, like a failed dynamic import would.
-      vi.doMock("@sentry/bun", () => ({
-        get init() {
-          throw new Error("Cannot find module");
-        },
-        captureException: mockCaptureException,
-      }));
+      // Simulate an absent optional dependency: the dynamic import rejects.
+      sentryModule = () => {
+        throw new Error("Cannot find module '@sentry/bun'");
+      };
       const { initSentry, isEnabled } = await importSentry();
       await initSentry();
       expect(isEnabled()).toBe(false);
