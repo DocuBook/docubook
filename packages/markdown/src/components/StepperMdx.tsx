@@ -31,6 +31,7 @@ export function StepsMdx({ children, style, className, ...props }: StepsMdxProps
   return (
     <ol
       className={className}
+      data-mdx-wrapper=""
       {...props}
       style={{
         listStyle: "none",
@@ -82,7 +83,8 @@ export function StepMdx({ title, children, style, className, ...props }: Interna
       style={{
         position: "relative",
         zIndex: 1,
-        width: "100%",
+        // No explicit width: as a grid item the step stretches to the column
+        // minus its marginLeft, while width: 100% would overflow by that margin.
         minWidth: 0,
         boxSizing: "border-box",
         marginLeft: "0.25rem",

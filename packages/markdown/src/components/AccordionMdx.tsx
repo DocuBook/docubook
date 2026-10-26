@@ -33,6 +33,7 @@ export function AccordionMdx({ title, icon, className, children }: AccordionMdxP
   return (
     <div
       className={`mdx-accordion ${isGroup ? "mdx-accordion-group-item" : ""} ${className ?? ""}`}
+      data-mdx-wrapper=""
       style={{
         border: "1px solid hsl(var(--border-color, 210 20% 85%))",
         borderRadius: 10,

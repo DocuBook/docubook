@@ -6,7 +6,7 @@ import { dirname, join, resolve } from "node:path";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { promisify } from "node:util";
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
-import { build as viteBuild } from "vite";
+import { build as viteBuild, type Plugin } from "vite";
 import {
   ASSETS_DIR,
   FRAMEWORK_ROOT,
@@ -181,6 +181,42 @@ function collectAllLucideIcons(): string[] {
   return [...icons];
 }
 
+/**
+ * Serves `node/client-routes` as a virtual module built from `docu.json`, so the
+ * browser bundle gets resolved config values instead of the server-side file.
+ */
+export function docuConfigPlugin(): Plugin {
+  return {
+    name: "docu-config",
+    // `node/client-routes.ts` is a real (server-side) file, so Vite's own
+    // resolver would claim the import first and bundle it — dragging
+    // paths.ts and node built-ins into the browser and breaking hydration.
+    // Run before core resolution so the virtual module always wins.
+    enforce: "pre",
+    resolveId(id) {
+      if (!/client-routes$/.test(id)) return null;
+      return "\0client-routes";
+    },
+    load(id) {
+      if (id !== "\0client-routes") return null;
+      const config = loadDocuConfig();
+      const resolved = {
+        ...config,
+        routes: resolveRoutes(config.routes as DocuRoute[] | undefined),
+      };
+      return [
+        `const docuConfig = ${JSON.stringify(resolved)};`,
+        `export const routes = docuConfig.routes || [];`,
+        `export const config = docuConfig;`,
+        `export const basePath = ${JSON.stringify(resolveBasePath(config))};`,
+        // Dev serves the project from the origin root, so the host's
+        // deployment path only reaches the production bundle.
+        `export const deployPath = ${JSON.stringify(servedDeployPath())};`,
+      ].join("\n");
+    },
+  };
+}
+
 export async function buildClientBundle(
   /** slug → compiled MDX ESM module source (program format) for static hydration. */
   mdxSources: Record<string, string> = {}
@@ -227,30 +263,7 @@ export async function buildClientBundle(
           return `export { ${allIcons.join(", ")} } from ${JSON.stringify(getLucideRealEntry())};`;
         },
       },
-      {
-        name: "docu-config",
-        resolveId(id) {
-          if (!/client-routes$/.test(id)) return null;
-          return "\0client-routes";
-        },
-        load(id) {
-          if (id !== "\0client-routes") return null;
-          const config = loadDocuConfig();
-          const resolved = {
-            ...config,
-            routes: resolveRoutes(config.routes as DocuRoute[] | undefined),
-          };
-          return [
-            `const docuConfig = ${JSON.stringify(resolved)};`,
-            `export const routes = docuConfig.routes || [];`,
-            `export const config = docuConfig;`,
-            `export const basePath = ${JSON.stringify(resolveBasePath(config))};`,
-            // Dev serves the project from the origin root, so the host's
-            // deployment path only reaches the production bundle.
-            `export const deployPath = ${JSON.stringify(servedDeployPath())};`,
-          ].join("\n");
-        },
-      },
+      docuConfigPlugin(),
       {
         name: "mdx-hydrate",
         resolveId(id) {
