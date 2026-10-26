@@ -157,7 +157,6 @@ flowchart TD
 
 - Vite build API on top of Rolldown
 - virtual modules for `client-routes` and `mdx-manifest`
-- a runtime-specific Lucide optimization layer
 - stubs for Node built-ins that must not leak into the browser bundle
 - Tailwind CSS via `@tailwindcss/cli`
 
