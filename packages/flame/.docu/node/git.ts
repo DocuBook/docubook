@@ -16,6 +16,28 @@ function runGit(args: string[]): Promise<string> {
   });
 }
 
+/**
+ * True when git has no history to offer rather than having failed: git is not
+ * installed (ENOENT) or exits 128 — not a repository, no commits yet, or a
+ * repo owned by another user. Common in CI (`.git` excluded from the build
+ * context, fresh `git init`), where mtime is the expected fallback.
+ */
+function isNoHistoryError(err: unknown): boolean {
+  const code = (err as { code?: unknown } | null)?.code;
+  return code === "ENOENT" || code === 128;
+}
+
+/** First line of git's stderr (or the error message) for a one-line log. */
+function gitErrorSummary(err: unknown): string {
+  const { stderr, message } = (err ?? {}) as { stderr?: unknown; message?: unknown };
+  const text = (typeof stderr === "string" && stderr.trim()) || String(message ?? err);
+  return text.split("\n")[0].trim();
+}
+
+// Set by the last batch lookup when git had no history, so the per-page
+// fallback in compileMdx skips spawning one doomed `git log` per page.
+let historyUnavailable = false;
+
 function sanitizePath(filePath: string): string | null {
   const cleanPath = filePath.replace(/^\//, "");
   if (!cleanPath || !/^[a-zA-Z0-9\-_/.\s]+$/.test(cleanPath) || /(^|\/)\.\.($|\/)/.test(cleanPath))
@@ -26,7 +48,7 @@ function sanitizePath(filePath: string): string | null {
 /** Get git last modified date for a file */
 export async function getGitLastModified(filePath: string): Promise<string | null> {
   const cleanPath = sanitizePath(filePath);
-  if (!cleanPath) return null;
+  if (!cleanPath || historyUnavailable) return null;
   try {
     const text = await runGit(["log", "-1", "--format=%cI", "--", cleanPath]);
     const date = text.trim();
@@ -52,6 +74,7 @@ export async function getFilesystemMtime(filePath: string): Promise<string | nul
 /** Batch git last modified dates for multiple files in a single spawn */
 export async function getGitLastModifiedBatch(filePaths: string[]): Promise<Map<string, string>> {
   const result = new Map<string, string>();
+  historyUnavailable = false;
   if (filePaths.length === 0) return result;
 
   const safePaths: string[] = [];
@@ -86,7 +109,11 @@ export async function getGitLastModifiedBatch(filePaths: string[]): Promise<Map<
       }
     }
   } catch (err) {
-    console.error("Failed to get git last modified batch for", filePaths, err);
+    if (isNoHistoryError(err)) historyUnavailable = true;
+    else
+      console.warn(
+        `[git] last-modified lookup failed, falling back to file mtime: ${gitErrorSummary(err)}`
+      );
   }
 
   return result;
