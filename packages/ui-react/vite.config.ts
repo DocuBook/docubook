@@ -22,6 +22,9 @@ export default defineConfig({
       fileName: (_format, entryName) => `${entryName}.js`,
     },
     rollupOptions: {
+      // Rolldown warns about every "use client" even when the directive
+      // survives because its module is emitted as its own file.
+      checks: { moduleLevelDirective: false },
       external: [
         "react",
         "react-dom",
