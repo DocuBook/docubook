@@ -86,6 +86,11 @@
       "description": "mermaid 11 supports katex up to 0.18; 0.x minors are breaking",
       "matchDepNames": ["mermaid>katex"],
       "allowedVersions": "<0.19.0"
+    },
+    {
+      "description": "Stay on Node 22, the last LTS line that supports macOS 12 (Node 24+ needs macOS 13.5). A maintainer's Mac is capped at macOS 12.7, so CI runs the Node they develop on and @types/node does not expose APIs Node 22 lacks",
+      "matchDepNames": ["node", "@types/node"],
+      "allowedVersions": "<23"
     }
   ]
 }
