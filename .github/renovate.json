@@ -28,10 +28,29 @@
       "groupName": "packages minor and patch dependencies"
     },
     {
-      "description": "Separate major updates in packages/, with the pnpm overrides that pin the same packages (react, react-dom)",
-      "matchFileNames": ["packages/**", "pnpm-workspace.yaml"],
+      "description": "Group devDependency majors in packages/; they do not ship. Runtime and peer majors stay ungrouped so each gets its own PR and changeset. Excluded: packages that are also a runtime or peer dependency of a workspace package (vite, unified, lucide-react, react-icons, tailwindcss), a root devDependency (typescript) or in the react group, so all their occurrences share one branch",
+      "matchFileNames": ["packages/**"],
+      "matchDepTypes": ["devDependencies"],
+      "matchPackageNames": [
+        "!react",
+        "!react-dom",
+        "!@types/react",
+        "!@types/react-dom",
+        "!vite",
+        "!unified",
+        "!lucide-react",
+        "!react-icons",
+        "!tailwindcss",
+        "!typescript"
+      ],
       "matchUpdateTypes": ["major"],
-      "groupName": "packages major dependencies"
+      "groupName": "packages devDependencies majors"
+    },
+    {
+      "description": "Keep React majors in one PR across packages/ and the pnpm overrides that pin the same packages",
+      "matchPackageNames": ["react", "react-dom", "@types/react", "@types/react-dom"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "react"
     },
     {
       "description": "Group minor and patch root devDependencies; majors get their own PR",
@@ -49,6 +68,12 @@
       "matchManagers": ["github-actions"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "github actions"
+    },
+    {
+      "description": "The release pipeline needs @changesets/cli, @changesets/changelog-github and changesets/action on matching majors, so they land in one PR",
+      "matchPackageNames": ["@changesets/cli", "@changesets/changelog-github", "changesets/action"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "changesets"
     },
     {
       "description": "pnpm overrides are security floors scoped to one major line (undici@7, js-yaml@4) or one consumer (mermaid>katex); a major bump would break the package that needs that line. The React pins follow packages/ instead",
