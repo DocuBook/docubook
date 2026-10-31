@@ -1,5 +1,11 @@
 # @docubook/mdx-content
 
+## 2.2.6
+
+### Patch Changes
+
+- [#435](https://github.com/DocuBook/docubook/pull/435) [`0871c3d`](https://github.com/DocuBook/docubook/commit/0871c3da9ac452c82bf17470d0c090f0c566192c) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Keep the `"use client"` directive on interactive components. The package now ships one file per module instead of a single `dist/index.js` bundle, so React Server Components frameworks such as the Next.js App Router treat Accordion, Tabs, Tooltip, Mermaid and the other interactive components as client components. The public entry point is unchanged.
+
 ## 2.2.4
 
 ### Patch Changes
