@@ -54,7 +54,7 @@
   "author-url": "https://wildan.dev",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^25.9.9",
+    "@types/node": "^22.20.5",
     "@vitest/coverage-v8": "^4.1.12",
     "typescript": "^7.0.2",
     "vite": "^8.3.5"
