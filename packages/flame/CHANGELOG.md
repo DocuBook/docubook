@@ -1,5 +1,14 @@
 # @docubook/flame
 
+## 2.2.6
+
+### Patch Changes
+
+- [#437](https://github.com/DocuBook/docubook/pull/437) [`8a8f28e`](https://github.com/DocuBook/docubook/commit/8a8f28e3c5ed084bf5511b177933d671eea85ae9) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - `flame build` now rebuilds pages and the client bundle when a `@docubook/*` package it renders with changes. Before, upgrading `@docubook/markdown`, `@docubook/ui-react`, `@docubook/core` or `@docubook/themes-colors` without editing any MDX file kept serving pages and a bundle built from the previous version until `--force`. The build cache now includes a fingerprint of each package's built output. The first build after upgrading discards the existing `.docu/build-cache.json` once.
+
+- Updated dependencies [[`0871c3d`](https://github.com/DocuBook/docubook/commit/0871c3da9ac452c82bf17470d0c090f0c566192c)]:
+  - @docubook/markdown@2.2.6
+
 ## 2.2.5
 
 ### Patch Changes
