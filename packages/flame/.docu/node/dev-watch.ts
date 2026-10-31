@@ -63,10 +63,10 @@ function findPackageRoot(file: string, name: string): string | null {
 }
 
 /**
- * Resolve `names` to workspace-linked packages. Installed copies (anything
- * under `node_modules` once symlinks are resolved) are skipped.
+ * Resolve `names` to the copies flame loads, workspace-linked or installed
+ * under `node_modules`. Names that do not resolve are skipped.
  */
-export function resolveWorkspacePackages(
+export function resolvePackages(
   names: readonly string[] = WATCHED_PACKAGES,
   fromUrl: string = import.meta.url
 ): WorkspacePackage[] {
@@ -81,11 +81,23 @@ export function resolveWorkspacePackages(
     } catch {
       continue;
     }
-    if (entry.split(sep).includes("node_modules")) continue;
     const dir = findPackageRoot(entry, name);
     if (dir) packages.push({ name, dir, entry });
   }
   return packages;
+}
+
+/**
+ * Resolve `names` to workspace-linked packages. Installed copies (anything
+ * under `node_modules` once symlinks are resolved) are skipped.
+ */
+export function resolveWorkspacePackages(
+  names: readonly string[] = WATCHED_PACKAGES,
+  fromUrl: string = import.meta.url
+): WorkspacePackage[] {
+  return resolvePackages(names, fromUrl).filter(
+    (pkg) => !pkg.entry.split(sep).includes("node_modules")
+  );
 }
 
 function listFiles(dir: string): string[] {

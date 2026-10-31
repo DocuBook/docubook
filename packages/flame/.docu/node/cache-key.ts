@@ -2,6 +2,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { FRAMEWORK_ROOT, STYLES_DIR, resolveProjectFile, basePath, deployPath } from "./paths";
+import { packageFingerprint, resolvePackages, type WorkspacePackage } from "./dev-watch";
 
 /**
  * Build cache version — bump when the toolchain output contract changes
@@ -17,8 +18,13 @@ import { FRAMEWORK_ROOT, STYLES_DIR, resolveProjectFile, basePath, deployPath } 
  * `cssBundleStamp()`, and the stylesheet key hashes the entry's whole import
  * graph (plain CSS plus package stylesheets), so a CSS-only edit invalidates
  * the assets it changes instead of waiting for `--force`.
+ *
+ * v8: the built `@docubook/*` packages entered the key material —
+ * `renderToolchainStamp()` folds `packagesStamp()`, so upgrading or
+ * rebuilding a sibling package invalidates the pages and the client bundle
+ * rendered with it.
  */
-export const BUILD_CACHE_VERSION = 7;
+export const BUILD_CACHE_VERSION = 8;
 
 /**
  * Resolved docs URL prefix and deployment path, part of every cache key.
@@ -86,10 +92,30 @@ const RENDER_SOURCE_FILES = [
   ".docu/pages/docs/[[...slug]].tsx",
 ] as const;
 
+/**
+ * Fingerprint of the built `@docubook/*` packages flame renders with.
+ *
+ * Pages are server-rendered and the client bundle is compiled from these
+ * packages' `dist/`, yet neither cache key sees them: upgrading
+ * `@docubook/markdown`, or rebuilding it in this monorepo without a version
+ * bump, kept serving pages and a bundle built from the old code. Hashing the
+ * built output covers both, and an installed copy hashes the same for as long
+ * as its version stays put. A package that does not resolve contributes
+ * nothing; one whose entry is missing (mid-rebuild) is recorded as such.
+ */
+export function packagesStamp(packages: readonly WorkspacePackage[] = resolvePackages()): string {
+  const h = createHash("sha256");
+  for (const pkg of packages) {
+    h.update(`${pkg.name}\0${packageFingerprint(pkg) ?? "missing"}\0`);
+  }
+  return h.digest("hex").slice(0, 16);
+}
+
 let renderStampCache: string | null = null;
 
 /**
- * Fingerprint of the framework's rendering sources.
+ * Fingerprint of the framework's rendering sources and the sibling packages
+ * they render with (`packagesStamp()`).
  *
  * Memoized per process — the files cannot change mid-build, and hashing them
  * on every page would dominate build time. A missing file contributes nothing
@@ -108,6 +134,7 @@ export function renderToolchainStamp(): string {
       // unreadable source — skip it rather than break the build
     }
   }
+  h.update("packages\0").update(packagesStamp());
   renderStampCache = h.digest("hex").slice(0, 16);
   return renderStampCache;
 }

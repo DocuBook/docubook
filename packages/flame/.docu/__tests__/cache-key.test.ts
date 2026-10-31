@@ -9,10 +9,12 @@ import {
   hashMdxSources,
   hookMemoryPressure,
   isTailwindRelevantCss,
+  packagesStamp,
   readStyleCss,
   runtimeStamp,
   tailwindExtraInputs,
 } from "../node/cache-key";
+import { WATCHED_PACKAGES, resolvePackages } from "../node/dev-watch";
 import { clearDerivedPageCaches, registerPageContent, getPageContent } from "../node/mdx";
 
 function makeProject(files: Record<string, string>): string {
@@ -269,6 +271,34 @@ describe("cache-key (Tailwind v4 CSS-first)", () => {
     } finally {
       cleanup(root);
     }
+  });
+
+  it("packagesStamp follows a package's built output, installed or not", () => {
+    const store = "node_modules/@docubook/markdown";
+    const root = makeProject({ [`${store}/dist/index.js`]: "export const v = 1;\n" });
+    try {
+      const dir = join(root, store);
+      const pkg = { name: "@docubook/markdown", dir, entry: join(dir, "dist/index.js") };
+      const before = packagesStamp([pkg]);
+      expect(before).toMatch(/^[0-9a-f]{16}$/);
+      writeFileSync(pkg.entry, "export const v = 1;\n");
+      expect(packagesStamp([pkg])).toBe(before);
+      mkdirSync(join(dir, "dist/components"));
+      writeFileSync(join(dir, "dist/components/Callout.js"), '"use client";\n');
+      const nested = packagesStamp([pkg]);
+      expect(nested).not.toBe(before);
+      rmSync(pkg.entry);
+      expect(packagesStamp([pkg])).not.toBe(nested);
+    } finally {
+      cleanup(root);
+    }
+  });
+
+  it("packagesStamp covers every sibling package flame renders with", () => {
+    const packages = resolvePackages();
+    expect(packages.map((pkg) => pkg.name).sort()).toEqual([...WATCHED_PACKAGES].sort());
+    expect(packagesStamp()).toBe(packagesStamp(packages));
+    expect(packagesStamp(packages.slice(1))).not.toBe(packagesStamp(packages));
   });
 
   it("atomicWriteFile never leaves a corrupt target", async () => {

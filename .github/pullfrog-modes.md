@@ -36,7 +36,7 @@ Historical names must NOT reappear as active packages: `mdx-content` → `markdo
 
 ### Config, cache & authoring
 - `docu.json` changes → `.docu/node/types.ts` + `docu.schema.json`, validated by zod.
-- **Build cache** — `BUILD_CACHE_VERSION` (currently v7, `cache-key.ts`); bump when the output contract changes (cache keys: globals.css, theme, Tailwind inputs, stylesheet fingerprint, runtime stamp, basePath).
+- **Build cache** — `BUILD_CACHE_VERSION` (currently v8, `cache-key.ts`); bump when the output contract changes (cache keys: globals.css, theme, Tailwind inputs, stylesheet fingerprint, runtime stamp, basePath, built `@docubook/*` packages).
 - **Tailwind CLI only** — `@tailwindcss/cli` in flame (Bun + Node/Deno); no PostCSS/Next.js pipeline in-repo.
 - **Markdown/directive-first** authoring — no authored JSX.
 
@@ -143,7 +143,7 @@ You are implementing code. Before writing anything, find factual scope from the 
 - **flame is Bun-first, not Bun-only** — shared logic in neutral `*.impl.ts`, runtime-specific behavior in `runtime/{bun,node,deno}.ts` adapters; keep Bun and compat paths in behavioral parity.
 - **Browser bundle** — never leak `node:*` builtins into client bundles; `hydrate.ts` (Bun) / `hydrate.node.ts` (Node/Deno, node-builtin stubs) are the only bundlers.
 - **Config** — `docu.json` changes land in `.docu/node/types.ts` + `docu.schema.json` (zod).
-- **Build cache** — bump `BUILD_CACHE_VERSION` (currently v7) when the output contract changes.
+- **Build cache** — bump `BUILD_CACHE_VERSION` (currently v8) when the output contract changes.
 - **Authoring** — markdown/directive-first; static hydration is eval-free (no `new Function`).
 - **Changeset** — any public-facing change ships a `.changeset/*.md` (all five packages are linked).
 - Tests in the same PR; bug fix → regression test.

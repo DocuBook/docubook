@@ -8,6 +8,7 @@ import {
   DEV_SUPERVISED_ENV,
   WATCHED_PACKAGES,
   packageFingerprint,
+  resolvePackages,
   resolveWorkspacePackages,
   watchWorkspacePackages,
   type WorkspacePackage,
@@ -68,6 +69,20 @@ describe("resolveWorkspacePackages", () => {
   it("resolves flame's sibling packages in this monorepo", () => {
     const names = resolveWorkspacePackages().map((pkg) => pkg.name);
     expect(names.sort()).toEqual([...WATCHED_PACKAGES].sort());
+  });
+});
+
+describe("resolvePackages", () => {
+  it("keeps copies installed under node_modules", () => {
+    const { name, pkgDir, from } = fixture("installed");
+    const [pkg] = resolvePackages([name], from);
+    expect(pkg?.dir).toBe(pkgDir);
+    expect(pkg?.entry).toBe(join(pkgDir, "dist", "index.js"));
+  });
+
+  it("finds workspace-linked packages and skips names that do not resolve", () => {
+    const { name, pkgDir, from } = fixture("workspace");
+    expect(resolvePackages([name, "@test/missing"], from).map((pkg) => pkg.dir)).toEqual([pkgDir]);
   });
 });
 
