@@ -74,7 +74,7 @@
     "zod": "^4.6.7"
   },
   "peerDependencies": {
-    "@sentry/bun": "^10.0.0"
+    "@sentry/bun": "^10.0.0 || ^11.0.0"
   },
   "peerDependenciesMeta": {
     "@sentry/bun": {
