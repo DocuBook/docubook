@@ -67,6 +67,17 @@ const pages = [
       await expectAttribute(tab, "aria-selected", "true");
     },
   },
+  {
+    // Unit tests mock mermaid; this is the only check that a diagram really renders
+    path: "/docs/components/mermaid",
+    hydrated: ".mermaid",
+    interact: async (page) => {
+      // Diagrams render lazily once they scroll into view
+      const diagram = page.locator(".mermaid").first();
+      await diagram.scrollIntoViewIfNeeded();
+      await diagram.locator("svg").first().waitFor({ timeout: HYDRATION_TIMEOUT_MS });
+    },
+  },
 ];
 
 /** Resolve a URL path to a file in distDir, mirroring clean-URL static hosts. */
