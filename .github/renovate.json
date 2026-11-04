@@ -84,7 +84,7 @@
       "enabled": false
     },
     {
-      "description": "mermaid 11 supports katex up to 0.18; 0.x minors are breaking",
+      "description": "mermaid 12 asks for katex ^0.18.0; 0.x minors are breaking. The mermaid>katex override pins 0.18.10 because 0.18.11 is deprecated (published with breaking changes)",
       "matchDepNames": ["mermaid>katex"],
       "allowedVersions": "<0.19.0"
     },
