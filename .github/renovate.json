@@ -9,6 +9,7 @@
   "semanticCommitType": "chore",
   "semanticCommitScope": "deps",
   "labels": ["dependencies", "renovate"],
+  "postUpdateOptions": ["pnpmDedupe"],
   "osvVulnerabilityAlerts": true,
   "dependencyDashboardOSVVulnerabilitySummary": "all",
   "vulnerabilityAlerts": {
