@@ -40,7 +40,7 @@ jobs:
       # Renovate clones the repository itself and reads .github/renovate.json
       # as the repository config, so no checkout or global config file.
       - name: Run Renovate
-        uses: renovatebot/github-action@v46.3.10
+        uses: renovatebot/github-action@v46.3.11
         with:
           token: ${{ secrets.RENOVATE_TOKEN || secrets.GITHUB_TOKEN }}
         env:
