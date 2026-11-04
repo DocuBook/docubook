@@ -44,7 +44,7 @@
   "author-url": "https://wildan.dev",
   "license": "MIT",
   "dependencies": {
-    "mermaid": "^11.17.2"
+    "mermaid": "^12.0.0"
   },
   "peerDependencies": {
     "lucide-react": "^1.7.0",
