@@ -6,3 +6,4 @@ out
 coverage
 *.md
 *.mdx
+pnpm-lock.yaml
