@@ -442,7 +442,7 @@ importers:
         specifier: '>=1.0.0'
         version: 1.66.0(@types/react@19.3.0)(react@19.3.1)
       tailwind-merge:
-        specifier: ^3.0.0
+        specifier: ^3.7.0
         version: 3.7.0
       tailwindcss:
         specifier: '>=4.0.0'
