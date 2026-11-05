@@ -1,5 +1,11 @@
 # @docubook/flame
 
+## 2.3.1
+
+### Patch Changes
+
+- [#457](https://github.com/DocuBook/docubook/pull/457) [`39f6272`](https://github.com/DocuBook/docubook/commit/39f6272bf3bad37f5c56a9f768855e2b1701f389) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - `engines.node` is now `^20.19.0 || >=22.12.0`, the range Vite 8 requires. Flame's Node and Deno paths build with Vite 8, so Node 20.11–20.18, which the old `>=20.11` range admitted, could not run them. Installing flame on one of those versions now prints an engines warning.
+
 ## 2.3.0
 
 ### Patch Changes
