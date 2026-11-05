@@ -51,6 +51,7 @@ Do not repeat the docs prefix in `baseURL` — it is appended automatically when
 | --------------------- | ---------- | ------------------- | ----------------- | ------------------------------ |
 | Cloudflare Pages      | Automatic  | Native GitHub       | Cloudflare infra  | None                           |
 | AWS Amplify Hosting   | Automatic  | Native GitHub       | AWS infra         | None                           |
+| GitHub Pages          | Automatic  | Native GitHub       | GitHub infra      | `flame deploy` (no flag)       |
 | Vercel                | Yes        | Native GitHub       | Vercel edge       | `vercel.json`                  |
 | Netlify               | Yes        | Native GitHub       | Netlify infra     | `netlify.toml` or UI           |
 | Firebase Hosting      | Yes        | GitHub Action       | nginx + CDN       | `firebase.json`                |
@@ -58,7 +59,6 @@ Do not repeat the docs prefix in `baseURL` — it is appended automatically when
 | Render                | Yes        | Native GitHub       | nginx             | Dashboard rewrite rule         |
 | Heroku                | Yes        | Native GitHub       | nginx             | Static buildpack + `static.json` |
 | **Docker**            | **Yes**    | **GitHub Action**       | **nginx**         | **`flame deploy --docker`** or `--docker --ci` |
-| GitHub Pages          | No         | Native GitHub       | Apache            | `flame deploy` (no flag)                  |
 | AWS S3 + CloudFront   | Limited    | GitHub Action       | nginx (CloudFront)| CloudFront Function required   |
 
 Column notes:
@@ -83,6 +83,18 @@ Source: [Cloudflare Pages — Serving Pages](https://developers.cloudflare.com/p
 Amplify automatically serves `/about` from `/about.html` when the file exists. It resolves `.html` extensions and trailing slashes based on the build output — no additional configuration required.
 
 Source: [AWS Amplify — Trailing slashes and clean URLs](https://docs.aws.amazon.com/amplify/latest/userguide/redirect-rewrite-examples.html#trailing-slashes-and-clean-urls)
+
+### GitHub Pages
+
+GitHub Pages serves `/docs/page.html` at `/docs/page` too, with no redirect between the two, so extensionless links, shared URLs and canonical URLs all resolve. A page requested with a trailing slash (`/docs/page/`) returns a `404`, and a directory requested without one (`/docs`) is redirected to `/docs/`.
+
+Project sites are published under the repository name, so `meta.baseURL` has to name that path (`https://<user>.github.io/<repo>`) — see [Serving Under a Subpath](#serving-under-a-subpath).
+
+Flame ships a deploy helper — `flame deploy` (or `bun run deploy` / `npm run deploy` / `deno task deploy`) builds the site, adds a `.nojekyll` file, and generates a `.github/workflows/deploy.yml` workflow if one does not exist. The generated workflow automatically builds and deploys on every push to the default branch. Links Flame generates carry `.html`, so the address bar shows it after you follow one; both forms work.
+
+The workflow follows your package manager — the lockfile first, then the one that ran `flame deploy` — whichever runtime runs the CLI. For pnpm, `pnpm/action-setup` needs a version: when `package.json` has no `packageManager` (or `devEngines.packageManager`) entry for pnpm, the workflow pins the major of the pnpm that ran the command, or `latest` when it cannot tell. Add `"packageManager": "pnpm@<version>"` to control it.
+
+Source: [GitHub Pages documentation](https://docs.github.com/en/pages)
 
 ## Configuration Required
 
@@ -194,18 +206,6 @@ Source: [Heroku — static buildpack](https://elements.heroku.com/buildpacks/her
 ## Limited Support
 
 These platforms cannot rewrite URLs — the site still works, but the `.html` suffix stays visible.
-
-### GitHub Pages
-
-GitHub Pages serves files at their exact path only: `/docs/page.html` works, `/docs/page` returns a `404`. There is no official rewrite mechanism for static files.
-
-Project sites are published under the repository name, so `meta.baseURL` has to name that path (`https://<user>.github.io/<repo>`) — see [Serving Under a Subpath](#serving-under-a-subpath).
-
-Flame ships a deploy helper — `flame deploy` (or `bun run deploy` / `npm run deploy` / `deno task deploy`) builds the site, adds a `.nojekyll` file, and generates a `.github/workflows/deploy.yml` workflow if one does not exist. The generated workflow automatically builds and deploys on every push to the default branch. The `.html` suffix remaining in the address bar is the only limitation — the site itself works perfectly.
-
-The workflow follows your package manager — the lockfile first, then the one that ran `flame deploy` — whichever runtime runs the CLI. For pnpm, `pnpm/action-setup` needs a version: when `package.json` has no `packageManager` (or `devEngines.packageManager`) entry for pnpm, the workflow pins the major of the pnpm that ran the command, or `latest` when it cannot tell. Add `"packageManager": "pnpm@<version>"` to control it.
-
-Source: [GitHub Pages documentation](https://docs.github.com/en/pages)
 
 ### AWS S3 + CloudFront
 
