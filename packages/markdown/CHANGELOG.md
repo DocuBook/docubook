@@ -1,5 +1,26 @@
 # @docubook/mdx-content
 
+## 2.4.0
+
+### Patch Changes
+
+- [#470](https://github.com/DocuBook/docubook/pull/470) [`a0954b5`](https://github.com/DocuBook/docubook/commit/a0954b51d5ea1587b33d3eaaa6c363002177eb37) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Center Mermaid diagrams that are narrower than the content column.
+  
+  The diagram's `<pre class="mermaid">` was meant to shrink to the diagram and center itself. A host stylesheet that widens every `<pre>` defeats that, and flame's does, so the SVG sat at the start of the column. The `<pre>` now carries `data-mermaid-align="center"`, and `styles.css` centers the diagram's own `<svg>` with auto margins.
+  
+  The rule moves only the SVG's outer box. It sets no `text-align`, which Mermaid's HTML labels would inherit. It also leaves the `<pre>` a plain block, so a Gantt chart still gets the full column width when Mermaid measures it.
+
+- [#471](https://github.com/DocuBook/docubook/pull/471) [`3d7ac54`](https://github.com/DocuBook/docubook/commit/3d7ac54fa69ec4316419f01eae6f87ae0fe1338e) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Adapt the Mermaid fullscreen view to touch-first devices.
+  
+  On a phone, or a tablet without a mouse, fullscreen used to show the desktop controls: an <kbd>Esc</kbd> badge and help that mentioned keys and the scroll wheel. It now detects the primary input with `(hover: none) and (pointer: coarse)` and follows changes, such as a keyboard being attached.
+  
+  - A **Close** button with an icon replaces the Esc badge. Its accessible name, "Close full screen", contains the visible label.
+  - The help panel describes touch: drag with one finger to move, the − and + buttons to zoom, tap the zoom percentage to reset, Close to exit. The diagram's accessible label follows.
+  - Close, help and the zoom bar buttons become 44px touch targets.
+  - The open help toggle keeps its "?" on touch, so the only "×" on screen belongs to Close.
+  
+  On desktop, the help's "Move" line now reads "drag or arrow keys". It used to read "hold scroll wheel or tap & drag".
+
 ## 2.3.0
 
 ### Minor Changes
