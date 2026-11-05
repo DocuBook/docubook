@@ -66,6 +66,39 @@ describe("logger", () => {
     });
   });
 
+  describe("spinner", () => {
+    it("prints nothing when LOG_LEVEL filters info out (deploy --silent)", async () => {
+      const logger = await importLogger({ LOG_LEVEL: "error" });
+      const log = vi.spyOn(console, "log").mockImplementation(() => {});
+      const write = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+      logger.spinner.start("Building pages...");
+      logger.spinner.stop("Built 5 pages");
+      logger.spinner.info("dist not found");
+      expect(log).not.toHaveBeenCalled();
+      expect(write).not.toHaveBeenCalled();
+    });
+
+    it("prints its messages at the default level", async () => {
+      const logger = await importLogger();
+      const log = vi.spyOn(console, "log").mockImplementation(() => {});
+      logger.spinner.start("Building pages...");
+      logger.spinner.stop("Built 5 pages");
+      expect(log).toHaveBeenCalledWith(expect.stringContaining("Building pages..."));
+      expect(log).toHaveBeenCalledWith(expect.stringContaining("Built 5 pages"));
+    });
+
+    it("emits JSON entries under LOG_FORMAT=json", async () => {
+      const logger = await importLogger({ LOG_FORMAT: "json" });
+      const log = vi.spyOn(console, "log").mockImplementation(() => {});
+      logger.spinner.start("Building pages...");
+      logger.spinner.stop("Built 5 pages");
+      const lines = log.mock.calls.map((call) => String(call[0]));
+      expect(lines).toHaveLength(2);
+      for (const line of lines) expect(JSON.parse(line).level).toBe("info");
+      expect(JSON.parse(lines[1]!).msg).toBe("Built 5 pages");
+    });
+  });
+
   describe("JSON format output", () => {
     it("outputs valid JSON when LOG_FORMAT=json", async () => {
       const logger = await importLogger({ LOG_FORMAT: "json" });

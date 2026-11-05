@@ -249,6 +249,10 @@ async function runClientBuild(mdxSources: Record<string, string>): Promise<Asset
     bundle = await viteBuild({
       configFile: false,
       publicDir: false,
+      // `flame deploy --silent` sets FLAME_BUILD_SILENT for its in-process build.
+      // Vite's reporter (the chunk table and the chunk-size advice) would
+      // otherwise print over a hundred lines; errors still come through.
+      logLevel: process.env.FLAME_BUILD_SILENT === "1" ? "error" : undefined,
       // outDir is the assets directory itself, so emitted paths ("chunks/x.js")
       // are relative to it. The default base "/" made Vite's preload helper
       // request "/chunks/x.js" (404). A relative base resolves preloads from the
