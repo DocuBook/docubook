@@ -49,6 +49,15 @@ describe("generated 404 page", () => {
     }
   });
 
+  it("staggers the rising marks with delays in the same motion-safe variant", () => {
+    const html = render();
+    // A bare [animation-delay:…] is emitted before the motion-safe animation
+    // shorthand, which resets it to 0s; the variant keeps it after.
+    expect(html).toContain("motion-safe:[animation-delay:1.6s]");
+    expect(html).toContain("motion-safe:[animation-delay:3.2s]");
+    expect(html).not.toMatch(/(?<!motion-safe:)\[animation-delay:/);
+  });
+
   it("falls back to an inline illustration without a configured logo", () => {
     state.config = { navbar: {} };
     const html = render();

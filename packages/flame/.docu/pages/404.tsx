@@ -79,9 +79,12 @@ function Mascot({ logoSrc }: { logoSrc?: string }) {
     >
       {/* Soft halo, pulsing slowly behind the mascot. */}
       <div className="bg-primary/10 motion-safe:animate-mascot-halo absolute inset-6 rounded-full" />
+      {/* The delays share the `motion-safe:` variant with the animation: Tailwind
+          then emits them after the `animation` shorthand, which would otherwise
+          reset `animation-delay` to 0s and make all three rise together. */}
       <FloatingMark className="top-4 left-6" />
-      <FloatingMark className="top-10 right-4 [animation-delay:1.6s]" />
-      <FloatingMark className="top-2 right-14 [animation-delay:3.2s]" />
+      <FloatingMark className="top-10 right-4 motion-safe:[animation-delay:1.6s]" />
+      <FloatingMark className="top-2 right-14 motion-safe:[animation-delay:3.2s]" />
       {/* The mascot floats and looks around; its shadow shrinks as it rises. */}
       <div className="motion-safe:animate-mascot-float relative">
         {logoSrc ? (
