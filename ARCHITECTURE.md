@@ -244,9 +244,11 @@ is used and a plain (non-frozen) install runs.
 
 `.github/workflows/release.yml` runs on pushes to `main`. `changesets/action`
 either opens or updates a Release PR, or publishes linked packages to npm after
-that PR is merged. Per-package GitHub releases are disabled. After publish, the
-workflow removes per-package tags, creates `v<flame version>`, creates one
-GitHub release, and triggers `docker-builder.yml`.
+that PR is merged. Publishing uses npm trusted publishing (OIDC) with
+provenance, and the Release PR is opened with a maintainer PAT so its CI runs
+without approval. Per-package GitHub releases and tags are disabled. After
+publish, the workflow removes per-package tags, creates `v<flame version>`,
+creates one GitHub release, and triggers `docker-builder.yml`.
 
 The builder workflow publishes `ghcr.io/docubook/flame` with `<version>`,
 `<major>`, and `latest` tags from `packages/flame/docker/Dockerfile.builder`.

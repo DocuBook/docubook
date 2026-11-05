@@ -408,6 +408,13 @@ On pushes to `main`, the workflow uses `changesets/action` to either:
 - open or update a Release PR, or
 - publish versioned packages to npm once that Release PR is merged
 
+The Release PR is opened with the `RENOVATE_TOKEN` secret (a maintainer PAT),
+so CI runs on it without approving workflows for `github-actions[bot]`.
+Packages are published with npm trusted publishing: the workflow's OIDC token
+is exchanged for a publish token and provenance is attached, so no npm token is
+stored. Each `@docubook/*` package lists `DocuBook/docubook` and `release.yml`
+as its trusted publisher on npmjs.com, with direct `npm publish` allowed.
+
 The publish command is:
 
 ```bash
