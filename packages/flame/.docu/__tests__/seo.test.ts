@@ -233,7 +233,9 @@ describe("landing page SEO in both builds", () => {
       const src = readFileSync(new URL(`../node/${file}`, import.meta.url), "utf-8");
       expect(src, file).toMatch(/const landingSeo = buildSeoMeta\([\s\S]*?"",\s*"landing"\s*\)/);
       // Docs pages, the docs index included, use the default "docs" page kind.
-      expect(src, file).toContain('const seo = buildSeoMeta(docuConfig, frontmatter, slug || "");');
+      expect(src, file).toMatch(
+        /const seo = buildSeoMeta\(docuConfig, frontmatter, slug \|\| "", "docs", \{\s*htmlSuffix: canonicalNeedsHtml\(deployTarget\(\)\),\s*\}\);/
+      );
     }
   });
 });

@@ -5,6 +5,8 @@ import {
   generateDockerfile,
   generateWorkflowYml,
   pnpmSetupVersion,
+  keptWorkflowWarnings,
+  workflowSetsDeployTarget,
 } from "../node/deploy.shared";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -401,5 +403,51 @@ describe("generateWorkflowYml — package manager aware on every runtime", () =>
     const bun = await readFile(new URL("../node/deploy.ts", import.meta.url), "utf-8");
     expect(bun).toContain("await Bun.write(WORKFLOW_FILE, generateWorkflowYml());");
     expect(bun).not.toContain("GITHUB_ACTIONS_WORKFLOW");
+  });
+});
+
+describe("GitHub Pages workflow — deploy target and standalone mode", () => {
+  let dir: string;
+  beforeEach(async () => {
+    dir = join(tmpdir(), `deploy-target-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    await mkdir(dir, { recursive: true });
+    await writeFile(join(dir, "package.json"), JSON.stringify({ name: "docs" }));
+    await writeFile(join(dir, "package-lock.json"), "{}");
+  });
+  afterEach(async () => {
+    const { rm } = await import("node:fs/promises");
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it("sets both env vars on the build step, each on its own line", async () => {
+    const yml = generateWorkflowYml(dir, "");
+    expect(yml).toMatch(
+      /run: npm run build\n\s+env:\n\s+FLAME_STANDALONE: "1"\n(\s+\/\/[^\n]*\n)?\s+FLAME_DEPLOY_TARGET: github-pages\n/
+    );
+    expect(workflowSetsDeployTarget(yml)).toBe(true);
+  });
+
+  it("recognizes the target written with or without quotes", () => {
+    expect(workflowSetsDeployTarget("          FLAME_DEPLOY_TARGET: github-pages\n")).toBe(true);
+    expect(workflowSetsDeployTarget('          FLAME_DEPLOY_TARGET: "github-pages"\n')).toBe(true);
+    expect(workflowSetsDeployTarget("          FLAME_DEPLOY_TARGET: vercel\n")).toBe(false);
+    expect(workflowSetsDeployTarget("      - run: npm run build\n")).toBe(false);
+  });
+
+  it("warns about a kept workflow from an older flame for every project", () => {
+    const old = "jobs:\n  build:\n    steps:\n      - run: npm run build\n";
+    const plain = keptWorkflowWarnings(old, false);
+    expect(plain).toHaveLength(1);
+    expect(plain[0]).toContain("FLAME_DEPLOY_TARGET=github-pages");
+    expect(plain[0]).toContain("canonical URLs omit .html");
+    const flagged = keptWorkflowWarnings(old, true);
+    expect(flagged).toHaveLength(2);
+    expect(flagged[1]).toContain("FLAME_STANDALONE=1");
+  });
+
+  it("stays quiet for a current workflow", async () => {
+    const yml = generateWorkflowYml(dir, "");
+    expect(keptWorkflowWarnings(yml, true)).toEqual([]);
+    expect(keptWorkflowWarnings(yml, false)).toEqual([]);
   });
 });

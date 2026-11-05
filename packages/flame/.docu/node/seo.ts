@@ -30,19 +30,30 @@ export type SeoPage = "docs" | "landing";
  * duplicate of the landing page — or, with `experimental.pages`, of the
  * project's own home page.
  */
+export interface SeoOptions {
+  /**
+   * Write docs page URLs with `.html` (`…/docs/guide/routing.html`), for a host
+   * without clean URLs. The landing page and the docs index are directory
+   * indexes and keep their trailing slash either way.
+   */
+  htmlSuffix?: boolean;
+}
+
 export function buildSeoMeta(
   config: DocuConfig,
   frontmatter: Record<string, unknown>,
   slug: string,
-  page: SeoPage = "docs"
+  page: SeoPage = "docs",
+  options: SeoOptions = {}
 ): SeoMeta {
   const baseURL = config.meta?.baseURL?.replace(/\/+$/, "") || "";
   const prefix = resolveBasePath(config);
+  const suffix = options.htmlSuffix ? ".html" : "";
   const url =
     page === "landing"
       ? `${baseURL}/`
       : slug
-        ? `${baseURL}${prefix}/${slug}`
+        ? `${baseURL}${prefix}/${slug}${suffix}`
         : `${baseURL}${prefix}/`;
 
   const result: SeoMeta = {

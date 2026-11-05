@@ -477,19 +477,22 @@ describe("experimental.pages — runtime parity", () => {
     const shared = read("deploy.shared.ts");
     expect(shared).toContain('if (!isDocker) process.env[STANDALONE_ENV] = "1"');
     const bun = read("deploy.ts");
-    expect(bun).toContain(
-      'env: isDocker ? process.env : { ...process.env, [STANDALONE_ENV]: "1" }'
+    // Standalone mode stays scoped to experimental.pages; the GitHub Pages
+    // deploy target is a separate signal set next to it.
+    expect(bun).toMatch(
+      /env: isDocker\s*\?\s*process\.env\s*:\s*\{ \.\.\.process\.env, \[STANDALONE_ENV\]: "1", \[DEPLOY_TARGET_ENV\]: "github-pages" \}/
     );
+    expect(shared).toContain('if (!isDocker) process.env[DEPLOY_TARGET_ENV] = "github-pages";');
     for (const [file, src] of [
       ["deploy.shared.ts", shared],
       ["deploy.ts", bun],
     ] as const) {
       expect(src, file).toContain("buildNginxConf(servedBasePath(), nginxOptions())");
       expect(src, file).toContain("buildHeadersFile(bundlePath())");
-      expect(src, file).toContain("workflowIsStandalone(");
-      // The workflow warning only fires where standalone mode changes output.
+      // Kept-workflow warnings come from one shared function; the standalone
+      // one only fires where standalone mode changes output.
       expect(src, file).toMatch(
-        /needsStandaloneRoot\(ownPages\(\), basePath\(\)\) &&\s*!workflowIsStandalone\(/
+        /keptWorkflowWarnings\(kept, needsStandaloneRoot\(ownPages\(\), basePath\(\)\)\)/
       );
       expect(src, file).toContain("nginxConfIsStale(readFileSync(nginxPath");
       expect(src, file).not.toContain("assertDeployModeSupported");

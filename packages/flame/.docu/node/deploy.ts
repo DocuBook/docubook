@@ -19,6 +19,7 @@ import {
   bundlePath,
   needsStandaloneRoot,
   STANDALONE_ENV,
+  DEPLOY_TARGET_ENV,
 } from "./paths";
 import {
   DOCKERFILE_BUN,
@@ -29,7 +30,7 @@ import {
   generateWorkflowYml,
   nginxOptions,
   nginxConfIsStale,
-  workflowIsStandalone,
+  keptWorkflowWarnings,
   HEADERS_FILE,
   NGINX_CONF,
   DOCKERIGNORE,
@@ -61,8 +62,12 @@ async function runBuild() {
     stderr: isSilent ? "ignore" : "inherit",
     // GitHub Pages publishes the dist on its own: with `experimental.pages` the
     // build then also writes a root redirect and a root 404 (STANDALONE_ENV).
-    // The Docker image does not need them — its nginx config redirects instead.
-    env: isDocker ? process.env : { ...process.env, [STANDALONE_ENV]: "1" },
+    // It has no clean URLs either, so canonical URLs name the `.html` file
+    // (DEPLOY_TARGET_ENV). The Docker image needs neither — nginx redirects `/`
+    // and strips `.html`.
+    env: isDocker
+      ? process.env
+      : { ...process.env, [STANDALONE_ENV]: "1", [DEPLOY_TARGET_ENV]: "github-pages" },
   });
   const exitCode = await build.exited;
   if (exitCode !== 0) {
@@ -109,17 +114,13 @@ async function writeGhaWorkflow() {
     await mkdir(WORKFLOW_DIR, { recursive: true });
     await Bun.write(WORKFLOW_FILE, generateWorkflowYml());
     log.created("📄 Created .github/workflows/deploy.yml");
-  } else if (
+  } else {
+    const kept = readFileSync(WORKFLOW_FILE, "utf-8");
     // Standalone mode only matters with a docs prefix: at a root deployment the
     // docs index already answers `/`.
-    needsStandaloneRoot(ownPages(), basePath()) &&
-    !workflowIsStandalone(readFileSync(WORKFLOW_FILE, "utf-8"))
-  ) {
-    log.info(
-      `⚠️  .github/workflows/deploy.yml builds without ${STANDALONE_ENV}=1, so the published site ` +
-        "has no root page under experimental.pages. Add it to the build step's env, or delete the " +
-        "file and rerun flame deploy."
-    );
+    for (const warning of keptWorkflowWarnings(kept, needsStandaloneRoot(ownPages(), basePath()))) {
+      log.info(warning);
+    }
   }
 }
 

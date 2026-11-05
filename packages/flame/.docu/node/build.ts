@@ -46,6 +46,8 @@ import {
   redirectHtml,
   cleanRootBundles,
   OWN_PAGES_BUNDLE_DIR,
+  deployTarget,
+  canonicalNeedsHtml,
 } from "./paths";
 import { htmlShell } from "./html";
 import { generateSearchIndex } from "./search-indexer";
@@ -288,7 +290,11 @@ async function renderDocsPage(
 
   const depth = docsDepth(slug, servedBasePath());
   const favicon = docuConfig.meta?.favicon || defaultFavicon();
-  const seo = buildSeoMeta(docuConfig, frontmatter, slug || "");
+  // GitHub Pages has no clean URLs: `flame deploy` marks its build, and the
+  // canonical then names the `.html` file the host actually serves.
+  const seo = buildSeoMeta(docuConfig, frontmatter, slug || "", "docs", {
+    htmlSuffix: canonicalNeedsHtml(deployTarget()),
+  });
   // Parity with build.impl.ts: static hosts without header control (GitHub
   // Pages) rely on the <meta> CSP for the per-page script policy.
   const csp = nonce ? cspHeader(nonce) : undefined;
@@ -478,7 +484,9 @@ async function build() {
   const lastManifest = cache["__assets__"];
   // The config is part of every rendered page (sidebar, navbar, SEO), so a
   // config-only edit has to re-render pages even when the bundle is reused.
-  const assetHash = `${JSON.stringify(assetManifest)}\0${configStamp()}`;
+  // The deploy target changes the canonical URL in every page, so a cached page
+  // from a plain build must not be reused by `flame deploy`, or the reverse.
+  const assetHash = `${JSON.stringify(assetManifest)}\0${configStamp()}\0${deployTarget() ?? ""}`;
   const assetsChanged = !isCacheEntry(lastManifest) || lastManifest.hash !== assetHash;
   if (assetsChanged) {
     cache["__assets__"] = { hash: assetHash, mtime: 0, builtAt: Date.now() };

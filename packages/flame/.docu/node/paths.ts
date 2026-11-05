@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { readdir, rm, unlink } from "node:fs/promises";
 import type { DocuConfig } from "./types";
 import { resolveBasePath, resolveDeployPath, validateBasePath } from "./base-path";
+import { DEPLOY_TARGET_ENV, resolveDeployTarget, type DeployTarget } from "./deploy-target";
 import type { BasePathIssue } from "./base-path";
 import {
   resolveOwnPages,
@@ -35,6 +36,8 @@ export {
   OWN_PAGES_BUNDLE_DIR,
 } from "./experimental";
 export type { RootRoute } from "./experimental";
+export { DEPLOY_TARGET_ENV, resolveDeployTarget, canonicalNeedsHtml } from "./deploy-target";
+export type { DeployTarget } from "./deploy-target";
 
 /**
  * FRAMEWORK_ROOT: Where the package code lives (.docu/components, .docu/pages, .docu/styles, .docu/node)
@@ -275,6 +278,15 @@ export function bundlePath(): string {
 /** URL path (from the dist root) of the generated 404 page. */
 export function notFoundPath(): string {
   return resolveNotFoundPath(ownPages(), basePath());
+}
+
+/**
+ * The deploy target this build was started for (see `./deploy-target`):
+ * `github-pages` from the workflow and local run of `flame deploy`, otherwise
+ * none. Read at call time, so the deploy flows can set it before building.
+ */
+export function deployTarget(): DeployTarget | undefined {
+  return resolveDeployTarget(process.env[DEPLOY_TARGET_ENV]);
 }
 
 /**

@@ -358,7 +358,7 @@ describe("configStamp — docu.json in the cache key", () => {
     expect(src("cache-key.ts")).toMatch(/hashMdxSources[\s\S]*\$\{configStamp\(\)\}/);
     for (const file of ["build.ts", "build.impl.ts"]) {
       expect(src(file), file).toContain(
-        "const assetHash = `${JSON.stringify(assetManifest)}\\0${configStamp()}`;"
+        'const assetHash = `${JSON.stringify(assetManifest)}\\0${configStamp()}\\0${deployTarget() ?? ""}`;'
       );
       const code = src(file);
       expect(code, file).toMatch(
