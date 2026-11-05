@@ -58,6 +58,9 @@ jobs:
       - name: Verify the release-plan matrix
         run: pnpm test:release-plan
 
+      - name: Verify the Release PR title and commit message
+        run: pnpm test:release-meta
+
   runtime-smoke:
     runs-on: ubuntu-latest
     strategy:
