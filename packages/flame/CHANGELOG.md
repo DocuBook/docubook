@@ -1,5 +1,75 @@
 # @docubook/flame
 
+## 2.4.0
+
+### Minor Changes
+
+- [#461](https://github.com/DocuBook/docubook/pull/461) [`dcd326e`](https://github.com/DocuBook/docubook/commit/dcd326e479b2f0bbca86061ef079c4d71caefaf4) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Add `experimental.pages` to `docu.json`: bring your own landing page and keep everything Flame builds under `meta.basePath`.
+  
+  With the flag on, the build writes no landing page and no landing bundle, and the `home` section is ignored with a warning. The 404 page stays Flame's and moves to `<basePath>/404.html`. Hashed bundles, the asset manifest and the search index move from the dist-root `assets/` to `<basePath>/_flame/`, so they never collide with an app's own `/assets/`. One route rule for the docs prefix then serves the docs next to any other app on the same origin, by merging the outputs or by a host rewrite. Stale output from a build with the other setting is cleaned up, and the flag is part of the build cache key.
+  
+  `flame dev` and `flame preview` redirect `/` to the docs prefix; at a root deployment (`"basePath": ""`) the docs index owns `/`. `flame deploy --docker` generates an nginx config that redirects `/` to the docs and serves the prefixed 404. `flame deploy` for GitHub Pages builds with `FLAME_STANDALONE=1`, which adds a root redirect and a root 404 to the artifact. Both warn when a kept `nginx.conf` or workflow predates the flag.
+  
+  A root `meta.basePath` (`""` or `"/"`) next to the flag puts the docs index, `404.html` and every page at the dist root, so it cannot share the origin with another app. The build and dev server warn about that combination, and the `docu.json` schema rejects it in the editor; a docs-only site that wants no landing page still builds.
+  
+  Plugins receive the bundle directory as `assetsDir` in the `onEnd` context. Resolve `assetManifest` entries against it instead of a hard-coded `outDir/assets`, which no longer holds the bundles under the flag.
+  
+  Type change for TypeScript plugins: `AssetManifest.home` is now optional, because no landing bundle is built under the flag. Code that reads `assetManifest.home.css` stops compiling under `strictNullChecks`, even with the flag off; null-check it (`assetManifest.home?.css`).
+  
+  Independently of the flag, a whitespace-only `meta.basePath` such as `" "` is now a build error instead of being read as the deployment root. Set `""` or `"/"` for a root deployment.
+  
+  The flag is off by default: existing projects keep the same output layout and page content until they opt in. Only the client bundle changes, so its hashed file names change once, as with any release that touches client code.
+
+### Patch Changes
+
+- [#463](https://github.com/DocuBook/docubook/pull/463) [`55ae4c3`](https://github.com/DocuBook/docubook/commit/55ae4c33e89a09d54c7125ef5293c57ad6b0a93b) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Fix stale output from incremental builds and make the GitHub Pages workflow match the project's package manager on every runtime.
+  
+  - A `docu.json` edit that does not touch the theme or `meta.basePath` (a sidebar title, the navbar text, the repo URL) now rebuilds the client bundle and re-renders every page. Before, every page was a cache hit and the bundle kept the old config until `flame build --force`. The resolved config is now part of the cache key (`BUILD_CACHE_VERSION` 9).
+  - Pages whose source was deleted or renamed are removed from the build output, along with their cache entries, and the build lists them. Before, their HTML stayed published with stale navigation.
+  - `flame deploy` under Bun wrote a Bun-only workflow (`bun install`) even for npm, pnpm and yarn projects. Both runtimes now write the same package-manager-aware workflow. Bun projects with a lockfile now install with `--frozen-lockfile`.
+  - The pnpm workflow passes a `version` to `pnpm/action-setup` when `package.json` does not declare pnpm in `packageManager` or `devEngines.packageManager`, which the action requires. It pins the major of the pnpm that ran `flame deploy`, or `latest`.
+
+- [#469](https://github.com/DocuBook/docubook/pull/469) [`b587c7e`](https://github.com/DocuBook/docubook/commit/b587c7ebcde1f88da0083289e916bfea62dc5e26) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Fix two `flame deploy` flags.
+  
+  - `--silent` now prints nothing on Node and Deno when the deploy succeeds, as it already did on Bun. The in-process build used to print the Vite chunk report and the progress spinner, over a hundred lines. Build errors are still shown, and the exit code is unchanged.
+  - The progress spinner now follows `LOG_LEVEL` and `LOG_FORMAT=json` like the rest of the logger. It is quiet when info messages are filtered out, and it writes JSON entries instead of terminal control codes in JSON mode.
+  - `--ci` without `--docker` used to be ignored without a word. flame now warns that `--ci` only applies with `--docker`, even under `--silent`, and points to `flame deploy --docker --ci`.
+
+- [#465](https://github.com/DocuBook/docubook/pull/465) [`cbae9b7`](https://github.com/DocuBook/docubook/commit/cbae9b779536bccf99bc48878589bee4e93f9a52) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Fix two SEO metadata bugs in the build output.
+  
+  - The docs index (`docs/index.mdx`) got the landing page's canonical and `og:url` (`<baseURL>/`) instead of its own (`<baseURL><basePath>/`) whenever `meta.basePath` has a prefix. Search engines then treated it as a duplicate of the landing page, or, with `experimental.pages`, of the project's own home page. `buildSeoMeta()` now takes the page kind, and the landing page passes `"landing"`.
+  - `og:image` lost a path segment when the first segment of `meta.basePath` equals the deployment path from `meta.baseURL` (for example `basePath: "/repo"` under `https://acme.github.io/repo`). Every page then pointed at a missing image. The deployment path is now only dropped from an image path when the author wrote it out and what remains is still a docs path, and it is dropped before the path is re-based onto the prefix.
+
+- [#472](https://github.com/DocuBook/docubook/pull/472) [`6eea0b7`](https://github.com/DocuBook/docubook/commit/6eea0b7925bc3741bae5cfc878684c4f385bd3db) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Show reading progress in the mobile table of contents bar.
+  
+  A small circular progress indicator now sits to the left of the current section's title, inline in the bar's table of contents button. It fills with the share of sections reached: the active heading's position among the page's headings. It completes at the end of the page, since a short last section never scrolls up far enough to become active. The fill animates and stays still for visitors who prefer reduced motion. The button's accessible name includes the percentage, for example "Expand table of contents, 56% of sections read".
+  
+  Above the first heading, the bar now shows the page title, as the desktop table of contents does. It used to keep the last active section after scrolling back to the top.
+
+- [#475](https://github.com/DocuBook/docubook/pull/475) [`b48ab23`](https://github.com/DocuBook/docubook/commit/b48ab239d4a64a55a20e0342d2ee91363d4b7c9d) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Fix the mobile table of contents bar's spacing and its long list.
+  
+  - **Spacing**: the table of contents button now starts where the 32px menu trigger ends. The 4px strip between them, which a tap landed on neither button, is gone, and the menu dots sit 20px from the progress ring instead of 32px. Both tap targets keep their size and do not overlap.
+  - **Opens at the active heading**: a long list used to open at its top, so a reader near the end of the page had to scroll it to find where they were. It now opens with the active heading in the middle, and while it stays open it keeps the active heading in view as the page moves.
+  - **Scrolling stays in the list**: reaching either end of the list no longer scrolls the page behind it. Before, a swipe at the top of the list pulled the page up and changed the active heading.
+  - The active entry carries `aria-current="location"`.
+
+- [#468](https://github.com/DocuBook/docubook/pull/468) [`93f725a`](https://github.com/DocuBook/docubook/commit/93f725a64f6d8531fdd8e691cf374fbbd9f00c43) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Redesign the generated 404 page.
+  
+  - The project's `navbar.logo` is the page mascot, shown as an `<img>` and animated with CSS only. The page ships no script, so the animation is light, and an SVG loaded through `<img>` cannot run scripts. Without a logo, a small inline illustration takes its place. All motion uses `motion-safe:`, so the page is still for visitors who prefer reduced motion.
+  - "404" is the headline and "Page not found" the subheadline, followed by a one-line explanation.
+  - The actions are "Go to docs" and "Back to home", each with an icon, a visible label, a 44px touch target and a focus ring. On mobile they stack at full width. At a root deployment, where both point at `/`, a single "Back to home" button is shown.
+  - Every URL stays root-absolute under the deployment path, so the page works at any requested path.
+
+- [#464](https://github.com/DocuBook/docubook/pull/464) [`081f124`](https://github.com/DocuBook/docubook/commit/081f1249a3dda7c068fc42e473999b9daf329ccf) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Warn about `routes` entries in `docu.json` that link to a page with no source in `docs/`.
+  
+  `flame build` and `flame dev` list every such entry with its sidebar trail, for example after a page was renamed or deleted but its sidebar entry was kept. The check builds each link the way the sidebar does: child `href`s are joined onto their parent under the docs prefix. `noLink` sections are skipped, but their items are still checked, and in `sidebar.context: "separator"` mode context sections are treated as headers. It only runs when `docu.json` has a `routes` table, since a scanned sidebar always matches the files. The build still succeeds.
+  
+  External URLs and fragments in `routes` now work in the sidebar. An `href` with a scheme or starting with `//` was prefixed with the parent path and the docs prefix and suffixed with `.html` (`/docshttps://…html`), and `/intro#setup` became `/docs/intro#setup.html`. The sidebar now links external URLs as written and keeps a `#fragment` or `?query` after `.html`. Pagination and the context switcher skip external entries and treat a fragment link as its page.
+  
+  The `routes` example in the configuration docs repeated the parent path in child `href`s, which renders links such as `/docs/docs/getting-started/docs/getting-started/introduction`. It now uses relative `href`s like the starter template.
+- Updated dependencies [[`a0954b5`](https://github.com/DocuBook/docubook/commit/a0954b51d5ea1587b33d3eaaa6c363002177eb37), [`3d7ac54`](https://github.com/DocuBook/docubook/commit/3d7ac54fa69ec4316419f01eae6f87ae0fe1338e)]:
+  - @docubook/markdown@2.4.0
+
 ## 2.3.1
 
 ### Patch Changes
