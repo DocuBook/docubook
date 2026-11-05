@@ -5,3 +5,61 @@
 @source "../components/Theme.tsx";
 @source "../pages/index.tsx";
 @source "../pages/404.tsx";
+
+/* 404 page mascot (pages/404.tsx). Used through `motion-safe:` only, so a
+   visitor who asks for reduced motion sees a still page. */
+@theme {
+  --animate-mascot-float: mascot-float 4s ease-in-out infinite;
+  --animate-mascot-shadow: mascot-shadow 4s ease-in-out infinite;
+  --animate-mascot-halo: mascot-halo 4s ease-in-out infinite;
+  --animate-mascot-drift: mascot-drift 4.8s ease-in-out infinite;
+
+  @keyframes mascot-float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-4deg);
+    }
+    50% {
+      transform: translateY(-14px) rotate(4deg);
+    }
+  }
+
+  @keyframes mascot-shadow {
+    0%,
+    100% {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scaleX(0.7);
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes mascot-halo {
+    0%,
+    100% {
+      transform: scale(0.92);
+      opacity: 0.7;
+    }
+    50% {
+      transform: scale(1.04);
+      opacity: 1;
+    }
+  }
+
+  @keyframes mascot-drift {
+    0% {
+      transform: translateY(8px);
+      opacity: 0;
+    }
+    25%,
+    70% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-18px);
+      opacity: 0;
+    }
+  }
+}
