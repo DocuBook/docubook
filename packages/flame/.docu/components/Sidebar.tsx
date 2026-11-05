@@ -17,6 +17,7 @@ import Menu from "./Menu";
 import { ThemeToggle } from "./Theme";
 import { GitHubLink } from "./Navbar";
 import Search from "./Search";
+import { TocProgressCircle, tocProgress } from "./TocProgress";
 import type { TocItem } from "../node/types";
 import { config as docuConfig, routes, basePath, deployPath } from "../node/client-routes";
 
@@ -87,6 +88,8 @@ export function MobileBar({
   const [tocExpanded, setTocExpanded] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  // Share of sections reached, for the progress circle beside the title
+  const [progress, setProgress] = useState(0);
   const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -99,7 +102,8 @@ export function MobileBar({
 
     const handleScroll = () => {
       let currentId: string | null = null;
-      for (const toc of tocs) {
+      let currentIndex = -1;
+      for (const [index, toc] of tocs.entries()) {
         const id = toc.href.slice(1);
         const el = document.getElementById(id);
         if (!el) continue;
@@ -108,11 +112,17 @@ export function MobileBar({
         // leave the previous heading highlighted.
         if (Math.round(el.getBoundingClientRect().top) <= offset) {
           currentId = id;
+          currentIndex = index;
         } else {
           break;
         }
       }
-      if (currentId) setActiveId(currentId);
+      // Above the first heading nothing is active, as on the desktop TOC: the
+      // bar shows the page title, matching a progress of 0.
+      setActiveId(currentId);
+      const root = document.documentElement;
+      const atEnd = window.innerHeight + window.scrollY >= root.scrollHeight - 2;
+      setProgress(tocProgress(currentIndex, tocs.length, atEnd));
     };
 
     handleScroll();
@@ -179,9 +189,14 @@ export function MobileBar({
             type="button"
             onClick={toggleToc}
             className="btn btn-ghost btn-sm min-w-0 flex-1 justify-between"
-            aria-label={tocExpanded ? "Collapse table of contents" : "Expand table of contents"}
+            aria-label={`${tocExpanded ? "Collapse" : "Expand"} table of contents${
+              tocs.length > 0 ? `, ${Math.round(progress * 100)}% of sections read` : ""
+            }`}
           >
-            <span className="truncate text-sm font-medium">{displayTitle}</span>
+            <span className="flex min-w-0 items-center gap-2">
+              {tocs.length > 0 && <TocProgressCircle value={progress} />}
+              <span className="truncate text-sm font-medium">{displayTitle}</span>
+            </span>
             {tocExpanded ? (
               <ChevronUp className="text-base-content/50 h-4 w-4 shrink-0" />
             ) : (
