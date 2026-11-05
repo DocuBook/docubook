@@ -86,8 +86,10 @@ function resolveOgImage(
     // for `baseURL: …/repo`). Drop it before re-basing — but only when what
     // remains is still a docs path, so a docs prefix that starts with the same
     // segment (`basePath: "/repo"` under `…/repo`) is not cut off. At a root
-    // deployment every path is a docs path.
-    if (deploymentPath && path.startsWith(`${deploymentPath}/`)) {
+    // deployment every path is a docs path. Only a root-relative path the
+    // author wrote can carry it: a bare relative image (`docs/og.png`) is
+    // resolved against the prefix above and never loses a segment here.
+    if (deploymentPath && image.startsWith(`${deploymentPath}/`)) {
       const rest = path.slice(deploymentPath.length);
       if (prefix === "" || isDocsPath(rest, prefix)) path = rest;
     }

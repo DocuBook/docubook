@@ -204,6 +204,16 @@ describe("og:image under a deployment path", () => {
       "/repo/assets/og.png",
       "https://acme.github.io/repo/assets/og.png",
     ],
+    // Bare relative images resolve against the prefix; the deployment path
+    // is never stripped from that synthesized path.
+    [
+      "/repo",
+      "https://acme.github.io/repo",
+      "docs/og.png",
+      "https://acme.github.io/repo/repo/docs/og.png",
+    ],
+    ["", "https://acme.github.io/repo", "repo/og.png", "https://acme.github.io/repo/repo/og.png"],
+    ["/docs", "https://acme.github.io/repo", "og.png", "https://acme.github.io/repo/docs/og.png"],
     // No deployment path.
     ["/docs", "https://acme.dev", "/docs/assets/og.png", "https://acme.dev/docs/assets/og.png"],
     ["/repo", "https://acme.dev", "/docs/assets/og.png", "https://acme.dev/repo/assets/og.png"],
