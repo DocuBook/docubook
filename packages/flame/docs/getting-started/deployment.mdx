@@ -203,6 +203,8 @@ Project sites are published under the repository name, so `meta.baseURL` has to 
 
 Flame ships a deploy helper — `flame deploy` (or `bun run deploy` / `npm run deploy` / `deno task deploy`) builds the site, adds a `.nojekyll` file, and generates a `.github/workflows/deploy.yml` workflow if one does not exist. The generated workflow automatically builds and deploys on every push to the default branch. The `.html` suffix remaining in the address bar is the only limitation — the site itself works perfectly.
 
+The workflow follows your package manager — the lockfile first, then the one that ran `flame deploy` — whichever runtime runs the CLI. For pnpm, `pnpm/action-setup` needs a version: when `package.json` has no `packageManager` (or `devEngines.packageManager`) entry for pnpm, the workflow pins the major of the pnpm that ran the command, or `latest` when it cannot tell. Add `"packageManager": "pnpm@<version>"` to control it.
+
 Source: [GitHub Pages documentation](https://docs.github.com/en/pages)
 
 ### AWS S3 + CloudFront

@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { rm } from "node:fs/promises";
+import { join, resolve, sep } from "node:path";
 import { createHash } from "node:crypto";
 import {
   FRAMEWORK_ROOT,
@@ -8,6 +9,7 @@ import {
   basePath,
   deployPath,
   ownPages,
+  loadDocuConfig,
 } from "./paths";
 import { packageFingerprint, resolvePackages, type WorkspacePackage } from "./dev-watch";
 
@@ -30,8 +32,13 @@ import { packageFingerprint, resolvePackages, type WorkspacePackage } from "./de
  * `renderToolchainStamp()` folds `packagesStamp()`, so upgrading or
  * rebuilding a sibling package invalidates the pages and the client bundle
  * rendered with it.
+ *
+ * v9: `docu.json` entered the key material (`configStamp()`). The sidebar,
+ * navbar, repo links and SEO tags are rendered from it, and the client bundle
+ * inlines it, yet a config-only edit used to leave every page a cache hit and
+ * reuse the old bundle until `--force`.
  */
-export const BUILD_CACHE_VERSION = 8;
+export const BUILD_CACHE_VERSION = 9;
 
 /**
  * Resolved docs URL prefix and deployment path, part of every cache key.
@@ -519,7 +526,7 @@ export function hashMdxSources(mdxSources: Record<string, string>, extraStamp = 
   const h = createHash("sha256");
   const slugs = Object.keys(mdxSources).sort();
   h.update(
-    `v${BUILD_CACHE_VERSION}:${runtimeStamp()}:${basePathStamp()}:${renderToolchainStamp()}:${extraStamp}:`
+    `v${BUILD_CACHE_VERSION}:${runtimeStamp()}:${basePathStamp()}:${configStamp()}:${renderToolchainStamp()}:${extraStamp}:`
   );
   for (const slug of slugs) {
     h.update(slug);
@@ -528,4 +535,91 @@ export function hashMdxSources(mdxSources: Record<string, string>, extraStamp = 
     h.update("\0");
   }
   return h.digest("hex").slice(0, 16);
+}
+
+/**
+ * Fingerprint of the resolved `docu.json`.
+ *
+ * Pages render the sidebar, navbar, repo links and SEO tags from it, and the
+ * client bundle inlines it (the `client-routes` virtual module). Neither the
+ * page cache (keyed by MDX source) nor the bundle hash (MDX modules plus
+ * stylesheets) saw it, so renaming a sidebar entry or the repo URL rebuilt
+ * nothing until `--force`. Folded into the bundle hash and the page-asset key,
+ * any config edit now rebuilds the bundle and re-renders every page.
+ *
+ * A missing or unreadable config fingerprints as empty, like the other stamps.
+ */
+export function configStamp(config: unknown = readConfigForStamp()): string {
+  let serialized = "";
+  try {
+    serialized = JSON.stringify(config) ?? "";
+  } catch {
+    // circular or otherwise unserializable — treat as no config
+  }
+  return createHash("sha256").update(serialized).digest("hex").slice(0, 16);
+}
+
+function readConfigForStamp(): unknown {
+  try {
+    return loadDocuConfig();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Page keys recorded in the build cache file on disk, read without checking
+ * its version or toolchain stamps.
+ *
+ * `readCache()` discards the whole cache on `--force` or on any stamp mismatch
+ * (every flame upgrade), which also discards the only record of which pages a
+ * previous build wrote. Pruning reads the raw file instead, so a page deleted
+ * in the same build as one of those events is still removed. A missing or
+ * corrupt file yields no keys.
+ */
+export function previousPageKeys(cacheFile: string): string[] {
+  try {
+    const parsed: unknown = JSON.parse(readFileSync(cacheFile, "utf-8"));
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return [];
+    return Object.keys(parsed).filter((key) => !key.startsWith("__"));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Remove the HTML of pages whose source was deleted or renamed since the
+ * previous build, and drop their cache entries.
+ *
+ * Page cache keys are the MDX paths without extension (`guide/routing`), and
+ * each one was written to `<docsOutDir>/<key>.html` by a previous build, so the
+ * cache doubles as the list of files Flame owns. `previousKeys` adds the pages
+ * a discarded cache recorded (see {@link previousPageKeys}). Without this, a
+ * removed page kept being published with stale navigation. Bookkeeping slots
+ * (`__meta__`, `__bundle__`, `__assets__`) are skipped, and a key that would
+ * resolve outside `docsOutDir` is dropped without touching the filesystem.
+ *
+ * Call it before writing generated pages that may share a path with a docs
+ * page (the docs index, the 404 page), or it would delete them.
+ *
+ * @returns the removed page keys
+ */
+export async function pruneRemovedPages(
+  cache: Record<string, unknown>,
+  currentPages: Iterable<string>,
+  docsOutDir: string,
+  previousKeys: Iterable<string> = []
+): Promise<string[]> {
+  const keep = new Set(currentPages);
+  const root = resolve(docsOutDir);
+  const candidates = new Set([...Object.keys(cache), ...previousKeys]);
+  const removed: string[] = [];
+  for (const key of candidates) {
+    if (key.startsWith("__") || keep.has(key)) continue;
+    const output = resolve(root, `${key}.html`);
+    if (output.startsWith(root + sep)) await rm(output, { force: true });
+    delete cache[key];
+    removed.push(key);
+  }
+  return removed;
 }

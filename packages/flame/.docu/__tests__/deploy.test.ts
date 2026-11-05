@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { NGINX_CONF, DOCKERFILE_BUN, DOCKERIGNORE, HEADERS_FILE } from "../node/deploy";
-import { detectPkgManager, generateDockerfile } from "../node/deploy.shared";
+import {
+  detectPkgManager,
+  generateDockerfile,
+  generateWorkflowYml,
+  pnpmSetupVersion,
+} from "../node/deploy.shared";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -334,5 +339,67 @@ describe("deploy output — silent mode suppresses logs", () => {
 
     expect(spy).toHaveBeenCalledTimes(4);
     spy.mockRestore();
+  });
+});
+
+describe("generateWorkflowYml — package manager aware on every runtime", () => {
+  let dir: string;
+  beforeEach(async () => {
+    dir = join(tmpdir(), `deploy-wf-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    await mkdir(dir, { recursive: true });
+    await writeFile(join(dir, "package.json"), JSON.stringify({ name: "docs", private: true }));
+  });
+  afterEach(async () => {
+    const { rm } = await import("node:fs/promises");
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it("installs with npm ci for an npm project, whatever runtime runs the CLI", async () => {
+    await writeFile(join(dir, "package-lock.json"), "{}");
+    const yml = generateWorkflowYml(dir, "bun/1.4.2 npm/? node/v22");
+    expect(yml).toContain("uses: actions/setup-node@v6");
+    expect(yml).toContain("run: npm ci --include=dev");
+    expect(yml).toContain("run: npm run build");
+    expect(yml).not.toContain("setup-bun");
+  });
+
+  it("keeps Bun for a Bun project", async () => {
+    await writeFile(join(dir, "bun.lock"), "");
+    const yml = generateWorkflowYml(dir, "");
+    expect(yml).toContain("uses: oven-sh/setup-bun@v2");
+    expect(yml).toContain("run: bun run build");
+  });
+
+  it("pins pnpm for action-setup when package.json does not", async () => {
+    await writeFile(join(dir, "pnpm-lock.yaml"), "lockfileVersion: '9.0'");
+    const yml = generateWorkflowYml(dir, "pnpm/10.5.2 npm/? node/v22.12.0 linux x64");
+    expect(yml).toMatch(/uses: pnpm\/action-setup@v6\n\s+with:\n\s+version: "10"/);
+    expect(generateWorkflowYml(dir, "")).toContain('version: "latest"');
+  });
+
+  it("omits the pnpm version when package.json already declares it", async () => {
+    await writeFile(join(dir, "pnpm-lock.yaml"), "lockfileVersion: '9.0'");
+    await writeFile(join(dir, "package.json"), JSON.stringify({ packageManager: "pnpm@10.5.2" }));
+    const yml = generateWorkflowYml(dir, "pnpm/10.5.2");
+    expect(yml).toMatch(/uses: pnpm\/action-setup@v6\n\n/);
+    // Only the pnpm input is checked: setup-node still carries `node-version`.
+    expect(yml).not.toMatch(/\n\s+version: /);
+  });
+
+  it("pnpmSetupVersion reads packageManager and devEngines", async () => {
+    expect(pnpmSetupVersion(dir, "pnpm/9.15.0")).toBe("9");
+    expect(pnpmSetupVersion(dir, "npm/10.2.0")).toBe("latest");
+    await writeFile(
+      join(dir, "package.json"),
+      JSON.stringify({ devEngines: { packageManager: { name: "pnpm", version: "^10" } } })
+    );
+    expect(pnpmSetupVersion(dir, "")).toBeUndefined();
+    expect(pnpmSetupVersion(join(dir, "missing"), "")).toBe("latest");
+  });
+
+  it("is the generator the Bun deploy entry uses too", async () => {
+    const bun = await readFile(new URL("../node/deploy.ts", import.meta.url), "utf-8");
+    expect(bun).toContain("await Bun.write(WORKFLOW_FILE, generateWorkflowYml());");
+    expect(bun).not.toContain("GITHUB_ACTIONS_WORKFLOW");
   });
 });

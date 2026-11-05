@@ -26,6 +26,7 @@ import {
   generateDockerfile,
   buildNginxConf,
   buildHeadersFile,
+  generateWorkflowYml,
   nginxOptions,
   nginxConfIsStale,
   workflowIsStandalone,
@@ -106,7 +107,7 @@ async function writeDockerFiles() {
 async function writeGhaWorkflow() {
   if (!existsSync(WORKFLOW_FILE)) {
     await mkdir(WORKFLOW_DIR, { recursive: true });
-    await Bun.write(WORKFLOW_FILE, GITHUB_ACTIONS_WORKFLOW);
+    await Bun.write(WORKFLOW_FILE, generateWorkflowYml());
     log.created("📄 Created .github/workflows/deploy.yml");
   } else if (
     // Standalone mode only matters with a docs prefix: at a root deployment the
@@ -197,58 +198,6 @@ async function deploy() {
     log.out("   Push to GitHub and enable Pages (Settings → Pages → Source: GitHub Actions)");
   }
 }
-
-const GITHUB_ACTIONS_WORKFLOW = `name: Deploy to GitHub Pages
-
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - run: bun install
-
-      - run: bun run build
-        env:
-          FLAME_STANDALONE: "1"
-
-      - name: Add .nojekyll
-        run: touch .docu/dist/.nojekyll
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: .docu/dist
-
-  deploy:
-    environment:
-      name: github-pages
-      url: \${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
-`;
 
 // The CLI dynamically imports this entry point, so import.meta.main is false
 // when running `flame deploy` under Bun. The CLI sets FLAME_CLI_ENTRY before

@@ -73,6 +73,9 @@ import {
   hookMemoryPressure,
   renderToolchainStamp,
   runtimeStamp,
+  configStamp,
+  pruneRemovedPages,
+  previousPageKeys,
 } from "./cache-key";
 import { clearDerivedPageCaches } from "./mdx";
 import { generateNonce, cspHeader } from "./security";
@@ -364,6 +367,9 @@ export async function runBuild(): Promise<void> {
 
   const mdxFiles = await scanMdxFiles(DOCS_DIR);
   const cache = args.force ? {} : await readCache();
+  // Read before the cache can be discarded or rewritten: it is the only record
+  // of which pages the previous build wrote (see pruneRemovedPages below).
+  const previousPages = previousPageKeys(CACHE_FILE);
   let built = 0;
   let skipped = 0;
 
@@ -460,7 +466,9 @@ export async function runBuild(): Promise<void> {
   inlineThemeCss = computeInlineThemeCss();
 
   const lastManifest = cache["__assets__"];
-  const assetHash = JSON.stringify(assetManifest);
+  // The config is part of every rendered page (sidebar, navbar, SEO), so a
+  // config-only edit has to re-render pages even when the bundle is reused.
+  const assetHash = `${JSON.stringify(assetManifest)}\0${configStamp()}`;
   const assetsChanged = !isCacheEntry(lastManifest) || lastManifest.hash !== assetHash;
   if (assetsChanged) {
     cache["__assets__"] = { hash: assetHash, mtime: 0, builtAt: Date.now() };
@@ -554,6 +562,24 @@ export async function runBuild(): Promise<void> {
 
   for (let i = 0; i < buildTasks.length; i += CONCURRENCY) {
     await Promise.all(buildTasks.slice(i, i + CONCURRENCY).map((fn) => fn()));
+  }
+
+  // Sources deleted or renamed since the last build: their HTML would keep
+  // being published with stale navigation. Runs right after the docs pages and
+  // before anything else is written: the docs index and the 404 page can share
+  // a path with a docs page (`docs/404.mdx` under experimental.pages, or at a
+  // root deployment), and pruning after them would delete the fresh output.
+  // Also before plugins' onEnd, so a sitemap or feed never sees the orphans.
+  const removedPages = await pruneRemovedPages(
+    cache,
+    mdxFiles.map((f) => f.path),
+    DOCS_OUT_DIR,
+    previousPages
+  );
+  if (removedPages.length > 0) {
+    logger.warn(
+      `Removed ${removedPages.length} page(s) whose source is gone: ${removedPages.join(", ")}`
+    );
   }
 
   if (indexSource) {
