@@ -101,17 +101,18 @@ jobs:
 
       # `deploy --silent` must print nothing when it succeeds. --force rebuilds
       # the client bundle, so Vite runs and its reporter would show up here.
+      # A failing deploy prints what it captured before the step fails.
       - name: Node runtime smoke (flame deploy --silent prints nothing)
         if: matrix.runtime == 'node'
         run: |
-          out=$(NODE_ENV=production FLAME_RUNTIME=node node bin/cli.js deploy --silent --force 2>&1)
+          out=$(NODE_ENV=production FLAME_RUNTIME=node node bin/cli.js deploy --silent --force 2>&1) || { printf '%s\n' "$out"; exit 1; }
           if [ -n "$out" ]; then printf '%s\n' "$out"; echo "::error::flame deploy --silent printed output"; exit 1; fi
         working-directory: packages/flame
 
       - name: Deno runtime smoke (flame deploy --silent prints nothing)
         if: matrix.runtime == 'deno'
         run: |
-          out=$(NODE_ENV=production deno run -A bin/cli.js deploy --silent --force 2>&1)
+          out=$(NODE_ENV=production deno run -A bin/cli.js deploy --silent --force 2>&1) || { printf '%s\n' "$out"; exit 1; }
           if [ -n "$out" ]; then printf '%s\n' "$out"; echo "::error::flame deploy --silent printed output"; exit 1; fi
         working-directory: packages/flame
 
