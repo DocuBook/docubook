@@ -440,10 +440,56 @@ export function workflowIsStandalone(workflow: string): boolean {
   return workflow.includes(`${STANDALONE_ENV}:`);
 }
 
-function generateWorkflowYml(): string {
-  const pm = detectPkgManager(PROJECT_ROOT, process.env.npm_config_user_agent || "");
-  const hasLockFile = existsSync(join(PROJECT_ROOT, pm.lockFile));
+/**
+ * `pnpm/action-setup` requires an explicit `version` unless `package.json`
+ * declares pnpm in `packageManager` or `devEngines.packageManager`; without
+ * either, the workflow's first step fails. Pin the major of the pnpm that ran
+ * this command when the user agent names it, and fall back to `latest`.
+ *
+ * @returns the version to pass, or `undefined` when package.json already pins it
+ */
+export function pnpmSetupVersion(projectRoot: string, userAgent = ""): string | undefined {
+  try {
+    const pkg = JSON.parse(readFileSync(join(projectRoot, "package.json"), "utf-8")) as {
+      packageManager?: unknown;
+      devEngines?: { packageManager?: unknown };
+    };
+    if (typeof pkg.packageManager === "string" && pkg.packageManager.startsWith("pnpm@")) {
+      return undefined;
+    }
+    const declared = pkg.devEngines?.packageManager;
+    const entries = Array.isArray(declared) ? declared : declared ? [declared] : [];
+    if (
+      entries.some(
+        (entry) =>
+          (entry as { name?: unknown })?.name === "pnpm" &&
+          typeof (entry as { version?: unknown })?.version === "string"
+      )
+    ) {
+      return undefined;
+    }
+  } catch {
+    // no or unreadable package.json — pin explicitly below
+  }
+  const major = /\bpnpm\/(\d+)\./.exec(userAgent)?.[1];
+  return major ?? "latest";
+}
+
+/**
+ * GitHub Pages workflow for `flame deploy`, matched to the project's package
+ * manager (lockfile first, then the invoking one). Shared by the Bun and the
+ * Node/Deno deploy entries so the workflow never depends on which runtime ran
+ * the CLI.
+ */
+export function generateWorkflowYml(
+  projectRoot: string = PROJECT_ROOT,
+  userAgent: string = process.env.npm_config_user_agent || ""
+): string {
+  const pm = detectPkgManager(projectRoot, userAgent);
+  const hasLockFile = existsSync(join(projectRoot, pm.lockFile));
   const installCmd = getInstallCommand(pm, hasLockFile);
+  const pnpmVersion =
+    pm.setupAction === "pnpm" ? pnpmSetupVersion(projectRoot, userAgent) : undefined;
   const cacheLine = hasLockFile && pm.cache ? `          cache: ${pm.cache}` : "";
 
   const setupSteps: string[] = [
@@ -463,6 +509,7 @@ function generateWorkflowYml(): string {
   } else if (pm.setupAction === "pnpm") {
     setupSteps.push(
       "      - uses: pnpm/action-setup@v6",
+      ...(pnpmVersion ? ["        with:", `          version: "${pnpmVersion}"`] : []),
       "",
       "      - uses: actions/setup-node@v6",
       "        with:",

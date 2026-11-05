@@ -1,10 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, mkdirSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
   BUILD_CACHE_VERSION,
   atomicWriteFile,
+  configStamp,
+  pruneRemovedPages,
   computeTailwindCacheKey,
   hashMdxSources,
   hookMemoryPressure,
@@ -328,5 +330,94 @@ describe("cache-key (Tailwind v4 CSS-first)", () => {
     expect(getPageContent("/hook-test")).toBeUndefined();
     // Emitting with no maps registered must not throw
     expect(() => (process as NodeJS.EventEmitter).emit("memoryPressure", "warning")).not.toThrow();
+  });
+});
+
+describe("configStamp — docu.json in the cache key", () => {
+  const base = { meta: { title: "Docs" }, navbar: { logoText: "Docs", menu: [] }, routes: [] };
+
+  it("is stable for the same config and changes with any field", () => {
+    expect(configStamp(base)).toBe(configStamp(structuredClone(base)));
+    expect(configStamp(base)).toMatch(/^[a-f0-9]{16}$/);
+    const renamed = { ...base, navbar: { ...base.navbar, logoText: "Renamed" } };
+    const withRoute = { ...base, routes: [{ title: "Overview", href: "/overview" }] };
+    const withRepo = { ...base, repo: { url: "https://example.com/repo", path: "", edit: false } };
+    for (const changed of [renamed, withRoute, withRepo]) {
+      expect(configStamp(changed)).not.toBe(configStamp(base));
+    }
+  });
+
+  it("treats a missing config as empty instead of throwing", () => {
+    expect(configStamp(null)).toBe(configStamp(null));
+    expect(configStamp(undefined)).toMatch(/^[a-f0-9]{16}$/);
+  });
+
+  it("is folded into the bundle hash and the page-asset key of both builds", () => {
+    const src = (rel: string) => readFileSync(new URL(`../node/${rel}`, import.meta.url), "utf-8");
+    expect(src("cache-key.ts")).toMatch(/hashMdxSources[\s\S]*\$\{configStamp\(\)\}/);
+    for (const file of ["build.ts", "build.impl.ts"]) {
+      expect(src(file), file).toContain(
+        "const assetHash = `${JSON.stringify(assetManifest)}\\0${configStamp()}`;"
+      );
+      expect(src(file), file).toMatch(
+        /pruneRemovedPages\(\s*cache,\s*mdxFiles\.map\(\(f\) => f\.path\),\s*DOCS_OUT_DIR\s*\)[\s\S]*runOnEnd/
+      );
+    }
+    expect(BUILD_CACHE_VERSION).toBeGreaterThanOrEqual(9);
+  });
+});
+
+describe("pruneRemovedPages — pages whose source is gone", () => {
+  function setup() {
+    const out = mkdtempSync(join(tmpdir(), "flame-prune-"));
+    for (const rel of ["guide/routing.html", "guide/routes.html", "intro.html", "keep.txt"]) {
+      mkdirSync(join(out, rel, ".."), { recursive: true });
+      writeFileSync(join(out, rel), "x");
+    }
+    return out;
+  }
+
+  it("removes the HTML and cache entries of removed pages only", async () => {
+    const out = setup();
+    const entry = { hash: "h", mtime: 1, builtAt: 1 };
+    const cache: Record<string, unknown> = {
+      __meta__: entry,
+      __bundle__: entry,
+      __assets__: entry,
+      "guide/routing": entry,
+      "guide/routes": entry,
+      intro: entry,
+    };
+    const removed = await pruneRemovedPages(cache, ["guide/routes", "intro"], out);
+    expect(removed).toEqual(["guide/routing"]);
+    expect(existsSync(join(out, "guide/routing.html"))).toBe(false);
+    expect(existsSync(join(out, "guide/routes.html"))).toBe(true);
+    expect(existsSync(join(out, "intro.html"))).toBe(true);
+    expect(existsSync(join(out, "keep.txt"))).toBe(true);
+    expect(Object.keys(cache).sort()).toEqual(
+      ["__assets__", "__bundle__", "__meta__", "guide/routes", "intro"].sort()
+    );
+    rmSync(out, { recursive: true, force: true });
+  });
+
+  it("never touches files outside the docs output for a tampered key", async () => {
+    const parent = mkdtempSync(join(tmpdir(), "flame-prune-parent-"));
+    const out = join(parent, "dist");
+    mkdirSync(out, { recursive: true });
+    writeFileSync(join(parent, "secret.html"), "x");
+    const cache: Record<string, unknown> = { "../secret": { hash: "h", mtime: 1, builtAt: 1 } };
+    const removed = await pruneRemovedPages(cache, [], out);
+    expect(removed).toEqual(["../secret"]);
+    expect(existsSync(join(parent, "secret.html"))).toBe(true);
+    expect(cache).toEqual({});
+    rmSync(parent, { recursive: true, force: true });
+  });
+
+  it("does nothing when every cached page still exists", async () => {
+    const out = setup();
+    const cache: Record<string, unknown> = { intro: { hash: "h", mtime: 1, builtAt: 1 } };
+    expect(await pruneRemovedPages(cache, ["intro"], out)).toEqual([]);
+    expect(existsSync(join(out, "intro.html"))).toBe(true);
+    rmSync(out, { recursive: true, force: true });
   });
 });

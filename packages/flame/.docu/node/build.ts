@@ -65,6 +65,8 @@ import {
   hookMemoryPressure,
   renderToolchainStamp,
   runtimeStamp,
+  configStamp,
+  pruneRemovedPages,
 } from "./cache-key";
 import { clearDerivedPageCaches } from "./mdx";
 import { generateNonce, cspHeader } from "./security";
@@ -458,7 +460,9 @@ async function build() {
   inlineThemeCss = computeInlineThemeCss();
 
   const lastManifest = cache["__assets__"];
-  const assetHash = JSON.stringify(assetManifest);
+  // The config is part of every rendered page (sidebar, navbar, SEO), so a
+  // config-only edit has to re-render pages even when the bundle is reused.
+  const assetHash = `${JSON.stringify(assetManifest)}\0${configStamp()}`;
   const assetsChanged = !isCacheEntry(lastManifest) || lastManifest.hash !== assetHash;
   if (assetsChanged) {
     cache["__assets__"] = { hash: assetHash, mtime: 0, builtAt: Date.now() };
@@ -700,6 +704,20 @@ async function build() {
     } else {
       await rm(rootNotFound, { force: true });
     }
+  }
+
+  // Sources deleted or renamed since the last build: their HTML would keep
+  // being published with stale navigation. Runs before plugins' onEnd so a
+  // sitemap or feed never sees the orphans.
+  const removedPages = await pruneRemovedPages(
+    cache,
+    mdxFiles.map((f) => f.path),
+    DOCS_OUT_DIR
+  );
+  if (removedPages.length > 0) {
+    logger.warn(
+      `Removed ${removedPages.length} page(s) whose source is gone: ${removedPages.join(", ")}`
+    );
   }
 
   logger.spinner.stop(

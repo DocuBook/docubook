@@ -494,8 +494,9 @@ describe("experimental.pages — runtime parity", () => {
       expect(src, file).toContain("nginxConfIsStale(readFileSync(nginxPath");
       expect(src, file).not.toContain("assertDeployModeSupported");
     }
-    // Both generated GitHub Pages workflows build in standalone mode.
-    expect(bun).toMatch(/- run: bun run build\n\s+env:\n\s+FLAME_STANDALONE: "1"/);
+    // Both runtimes write the same generated GitHub Pages workflow, which
+    // builds in standalone mode.
+    expect(bun).toContain("await Bun.write(WORKFLOW_FILE, generateWorkflowYml());");
     expect(shared).toMatch(
       /run build`,\n\s+"\s+env:",[\s\S]{0,200}?`\s+\$\{STANDALONE_ENV\}: "1"`/
     );
