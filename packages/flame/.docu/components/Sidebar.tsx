@@ -188,10 +188,7 @@ export function MobileBar({
           <button
             type="button"
             onClick={toggleToc}
-            // -ml-1 cancels the row gap, so this button starts where the 32px
-            // menu trigger ends: no dead strip between them and no overlap.
-            // pl-1 keeps the ring close to the menu dots.
-            className="btn btn-ghost btn-sm -ml-1 min-w-0 flex-1 justify-between pl-1"
+            className="btn btn-ghost btn-sm min-w-0 flex-1 justify-between"
             aria-label={`${tocExpanded ? "Collapse" : "Expand"} table of contents${
               tocs.length > 0 ? `, ${Math.round(progress * 100)}% of sections read` : ""
             }`}

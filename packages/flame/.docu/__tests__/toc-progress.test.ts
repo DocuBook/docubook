@@ -31,9 +31,7 @@ describe("TocProgressCircle", () => {
   const render = (value: number) =>
     renderToStaticMarkup(createElement(TocProgressCircle, { value }));
   const offset = (html: string) => Number(html.match(/stroke-dashoffset="([^"]+)"/)?.[1]);
-  const number = (html: string) => html.match(/<text[^>]*>([^<]*)<\/text>/)?.[1];
-  // 28px ring with a 2.5px stroke
-  const circumference = 2 * Math.PI * 12.75;
+  const circumference = 2 * Math.PI * 8;
 
   it("is decorative and records the rounded percentage", () => {
     const html = render(0.4);
@@ -41,44 +39,15 @@ describe("TocProgressCircle", () => {
     expect(html).toContain('data-toc-progress="40"');
   });
 
-  it("shows the percentage inside the ring, without a % sign", () => {
-    expect(number(render(0.5))).toBe("50");
-    expect(number(render(0.875))).toBe("88");
-    expect(render(0.5)).not.toContain("%");
+  it("fills the arc in proportion to the progress", () => {
+    expect(offset(render(0.25))).toBeCloseTo(circumference * 0.75);
+    expect(offset(render(1))).toBeCloseTo(0);
   });
 
-  it("is 28px, so two digits fit inside and the 32px bar button still holds it", () => {
-    expect(render(0.5)).toMatch(/<svg[^>]* width="28" height="28" viewBox="0 0 28 28"/);
-  });
-
-  it("fills the arc in proportion to the progress, with a flat cap", () => {
-    const html = render(0.25);
-    expect(offset(html)).toBeCloseTo(circumference * 0.75);
-    // A round cap makes a partial arc read as a loading spinner
-    expect(html).toContain('stroke-linecap="butt"');
-  });
-
-  it("keeps the number upright while the ring starts at 12 o'clock", () => {
-    const html = render(0.5);
-    expect(html).toContain('<g transform="rotate(-90 14 14)">');
-    expect(html).not.toMatch(/<svg[^>]*rotate/);
-    expect(html.indexOf("</g>")).toBeLessThan(html.indexOf("<text"));
-  });
-
-  it("draws only the track and a muted 0 at the start, so it does not read as a radio button", () => {
+  it("draws only the track at 0, so a round cap shows no dot", () => {
     const html = render(0);
     expect(html.match(/<circle/g)).toHaveLength(1);
     expect(html).not.toContain("stroke-primary");
-    expect(number(html)).toBe("0");
-    expect(html).toContain("fill-base-content/60");
-  });
-
-  it("becomes a filled disc with a check at 100", () => {
-    const html = render(1);
-    expect(html).toContain('data-toc-progress="100"');
-    expect(html).toContain("fill-primary");
-    expect(html).toContain("stroke-primary-content");
-    expect(html).not.toContain("<text");
   });
 
   it("clamps values outside 0..1", () => {
