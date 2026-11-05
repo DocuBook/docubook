@@ -1,5 +1,15 @@
 # @docubook/flame
 
+## 2.3.0
+
+### Patch Changes
+
+- [#447](https://github.com/DocuBook/docubook/pull/447) [`b393c39`](https://github.com/DocuBook/docubook/commit/b393c395538bcbe881b68c6a640ba32c70d93bdc) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - The optional `@sentry/bun` peer dependency now accepts v11 as well as v10 (`^10.0.0 || ^11.0.0`), so installing `@sentry/bun@11` next to flame no longer prints an unmet peer warning. Error tracking (enabled by `SENTRY_DSN`) uses only `init` and `captureException`, which v11 keeps unchanged. Sentry v11 needs Node 20.19+, 22.12+, or 23.2+ (Node 22.0–22.11 and 23.0–23.1 are not supported); stay on v10 if you are on an older Node release.
+
+- Updated dependencies [[`68285e3`](https://github.com/DocuBook/docubook/commit/68285e32850295af19c7d5c07b684250d9626d38), [`98ad1d1`](https://github.com/DocuBook/docubook/commit/98ad1d127aeb07032adb3b05a044a0bec487a492)]:
+  - @docubook/markdown@2.3.0
+  - @docubook/ui-react@2.3.0
+
 ## 2.2.6
 
 ### Patch Changes
