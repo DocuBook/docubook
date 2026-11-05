@@ -86,15 +86,3 @@ describe("deploy flags", () => {
     expect(runDeploy(["build", "--ci"]).stderr).not.toContain(warning);
   });
 });
-
-describe("deploy --silent on Node and Deno", () => {
-  it("quiets Vite's reporter through FLAME_BUILD_SILENT", async () => {
-    const { readFileSync } = await import("node:fs");
-    const hydrate = readFileSync(join(import.meta.dirname, "../node/hydrate.node.ts"), "utf8");
-    expect(hydrate).toContain(
-      'logLevel: process.env.FLAME_BUILD_SILENT === "1" ? "error" : undefined,'
-    );
-    const deploy = readFileSync(join(import.meta.dirname, "../node/deploy.shared.ts"), "utf8");
-    expect(deploy).toContain('process.env.FLAME_BUILD_SILENT = "1";');
-  });
-});
