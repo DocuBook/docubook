@@ -647,7 +647,8 @@ export async function runBuild(): Promise<void> {
     const landingSeo = buildSeoMeta(
       docuConfig,
       docuConfig.meta as unknown as Record<string, unknown>,
-      ""
+      "",
+      "landing"
     );
     const landingNonce = generateNonce();
     const landingContext: PageContext = {
