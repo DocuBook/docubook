@@ -406,7 +406,8 @@ describe("MermaidMdx", () => {
     it("auto-opens the help panel on the first fullscreen entry", async () => {
       const { container } = await renderAndEnterFullscreen();
       expect(container.textContent).toContain("Canvas controls");
-      expect(container.textContent).toContain("hold scroll wheel or tap & drag");
+      expect(container.textContent).toContain("Move — drag or arrow keys");
+      expect(container.textContent).toContain("Exit — Esc");
     });
 
     it("shows only fullscreen button after render, full controls in fullscreen", async () => {
@@ -631,6 +632,87 @@ describe("MermaidMdx", () => {
       // Re-enter → panel stays collapsed (one-time onboarding, not per entry)
       fireEvent.keyDown(viewport, { key: "Enter" });
       expect(container.textContent).not.toContain("Canvas controls");
+    });
+
+    describe("on a touch-first device", () => {
+      // jsdom has no matchMedia. Stub it so the touch query matches, and keep
+      // the change listener to simulate a keyboard and trackpad being attached.
+      let listeners: Array<(e: { matches: boolean }) => void>;
+      beforeEach(() => {
+        listeners = [];
+        window.matchMedia = ((query: string) => ({
+          matches: query === "(hover: none) and (pointer: coarse)",
+          media: query,
+          addEventListener: (_: string, cb: (e: { matches: boolean }) => void) =>
+            listeners.push(cb),
+          removeEventListener: (_: string, cb: (e: { matches: boolean }) => void) => {
+            listeners = listeners.filter((l) => l !== cb);
+          },
+        })) as unknown as typeof window.matchMedia;
+      });
+      afterEach(() => {
+        delete (window as { matchMedia?: unknown }).matchMedia;
+      });
+
+      function openHelp(container: HTMLElement) {
+        const help = container.querySelector('button[aria-label="Toggle help"]') as HTMLElement;
+        if (!container.textContent?.includes("Canvas controls")) fireEvent.click(help);
+        return help;
+      }
+
+      it("shows a Close button instead of the Esc badge", async () => {
+        const { container } = await renderAndEnterFullscreen();
+        const close = container.querySelector('button[aria-label="Close full screen"]');
+        expect(close).not.toBeNull();
+        expect(close?.textContent).toBe("Close");
+        expect(container.querySelector("kbd")).toBeNull();
+        expect(container.querySelector('button[aria-label="Exit full screen"]')).toBeNull();
+
+        fireEvent.click(close!);
+        const viewport = container.querySelector('[tabindex="0"]') as HTMLElement;
+        expect(viewport.style.position).toBe("relative");
+      });
+
+      it("describes touch gestures in the help panel, not keys or the scroll wheel", async () => {
+        const { container } = await renderAndEnterFullscreen();
+        openHelp(container);
+        const text = container.textContent ?? "";
+        expect(text).toContain("Move — drag with one finger");
+        expect(text).toContain("Zoom — − and + buttons below");
+        expect(text).toContain("Reset — tap the zoom %");
+        expect(text).toContain("Exit — Close, top right");
+        expect(text).not.toMatch(/Esc|arrow keys|scroll/);
+        // The open toggle keeps "?" so the only "×" on screen is Close's icon
+        const help = container.querySelector('button[aria-label="Toggle help"]');
+        expect(help?.getAttribute("aria-expanded")).toBe("true");
+        expect(help?.textContent).toBe("?");
+        const viewport = container.querySelector('[role="group"][tabindex="0"]');
+        expect(viewport?.getAttribute("aria-label")).not.toMatch(/Esc|arrow keys/);
+      });
+
+      it("gives the fullscreen controls 44px touch targets", async () => {
+        const { container } = await renderAndEnterFullscreen();
+        for (const label of ["Close full screen", "Toggle help", "Zoom in", "Zoom out"]) {
+          const button = container.querySelector(`button[aria-label="${label}"]`) as HTMLElement;
+          const size = Math.max(
+            parseFloat(button.style.height || "0"),
+            parseFloat(button.style.minHeight || "0")
+          );
+          expect(size, label).toBeGreaterThanOrEqual(44);
+        }
+        const reset = container.querySelector('button[aria-label="Reset view"]') as HTMLElement;
+        expect(parseFloat(reset.style.height)).toBeGreaterThanOrEqual(44);
+      });
+
+      it("switches back to the desktop controls when a keyboard and trackpad attach", async () => {
+        const { container } = await renderAndEnterFullscreen();
+        expect(container.querySelector('button[aria-label="Close full screen"]')).not.toBeNull();
+        act(() => listeners.forEach((l) => l({ matches: false })));
+        expect(container.querySelector('button[aria-label="Exit full screen"]')).not.toBeNull();
+        expect(container.querySelector("kbd")?.textContent).toBe("Esc");
+        openHelp(container);
+        expect(container.textContent).toContain("Exit — Esc");
+      });
     });
   });
 });
