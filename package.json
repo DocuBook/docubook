@@ -15,6 +15,7 @@
     "commit": "czg",
     "test": "turbo test",
     "test:release-plan": "node scripts/check-release-plan.mjs",
+    "test:release-meta": "node --test scripts/release-meta.test.mjs",
     "test:browser-smoke": "node scripts/flame-browser-smoke.mjs"
   },
   "devDependencies": {

@@ -415,6 +415,12 @@ is exchanged for a publish token and provenance is attached, so no npm token is
 stored. Each `@docubook/*` package lists `DocuBook/docubook` and `release.yml`
 as its trusted publisher on npmjs.com, with direct `npm publish` allowed.
 
+`scripts/release-meta.mjs` names the Release PR and its version commit from the
+pending changesets: `chore: v<flame version> - <subject>`, where the subject is
+the first sentence of the changeset with the largest bump, and the commit body
+has one `- <package> (<bump>): <first sentence>` line per changeset. Preview it
+with `node scripts/release-meta.mjs --print`.
+
 The publish command is:
 
 ```bash
