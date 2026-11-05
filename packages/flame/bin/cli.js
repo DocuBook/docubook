@@ -117,6 +117,15 @@ const hasCi = process.argv.includes("--ci");
 if (hasDocker) process.env.FLAME_DEPLOY_DOCKER = "1";
 if (hasSilent) process.env.FLAME_DEPLOY_SILENT = "1";
 if (hasCi) process.env.FLAME_DEPLOY_CI = "1";
+// --ci only adds the workflow that builds the Docker image, so it means nothing
+// without --docker. Say so — even with --silent, since a flag is being ignored —
+// rather than quietly writing the GitHub Pages workflow instead.
+if (command === "deploy" && hasCi && !hasDocker) {
+  console.warn(
+    "flame: --ci only applies together with --docker (it adds .github/workflows/deploy-docker.yml), so it was ignored. " +
+      "Run `flame deploy --docker --ci` for the Docker image workflow."
+  );
+}
 
 if (!command || command === "--help" || command === "-h") {
   console.log(`

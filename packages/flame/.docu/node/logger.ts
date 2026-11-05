@@ -68,6 +68,12 @@ const c =
 
 const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
+/**
+ * Progress spinner for long steps. Its messages are info-level output, so they
+ * go through the same `guard()` as the rest of the logger: nothing is printed
+ * when `LOG_LEVEL` filters info out (`flame deploy --silent` sets `error`), and
+ * `LOG_FORMAT=json` gets JSON entries instead of terminal control sequences.
+ */
 class Spinner {
   private frame = 0;
   private message = "";
@@ -76,6 +82,7 @@ class Spinner {
   info(finalMsg: string) {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
+    if (guard("info", finalMsg)) return;
     if (isCI) {
       console.log(`ℹ ${finalMsg}`);
     } else {
@@ -86,6 +93,7 @@ class Spinner {
 
   start(msg: string) {
     this.message = msg;
+    if (guard("info", msg)) return;
     if (isCI) {
       console.log(`… ${msg}`);
       return;
@@ -99,6 +107,7 @@ class Spinner {
   stop(finalMsg: string) {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
+    if (guard("info", finalMsg)) return;
     if (isCI) {
       console.log(`✓ ${finalMsg}`);
       return;
