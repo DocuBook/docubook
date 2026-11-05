@@ -115,8 +115,10 @@ export function canonicalBasePath(value: string): string {
  * Validate an authored `meta.basePath`.
  *
  * `resolveBasePath` normalizes what a static host cannot serve, so this reports
- * what it had to change instead of blocking the build: only a non-string value
- * (which cannot be normalized) is an error. Warnings name the reasons and the
+ * what it had to change instead of blocking the build. Two values are errors:
+ * a non-string (which cannot be normalized) and a whitespace-only string,
+ * which is almost certainly a typo — silently reading it as the deployment
+ * root would move every page to the dist root. Warnings name the reasons and the
  * canonical value, so the author can fix `docu.json` and keep the editor schema
  * — which only accepts the canonical form — quiet.
  */
@@ -133,8 +135,19 @@ export function validateBasePath(value: unknown): BasePathIssue[] {
     ];
   }
 
-  // `""`, `"/"`, `"///"` and whitespace-only values all mean the deployment
-  // root, which is always servable.
+  // A whitespace-only value is not a root deployment: `""` and `"/"` say that
+  // explicitly. Treating `" "` as root would quietly relocate the whole site.
+  if (value.length > 0 && value.trim().length === 0) {
+    return [
+      {
+        level: "error",
+        message: `${JSON.stringify(value)} contains only whitespace — set "" or "/" to serve the docs from the deployment root, or a prefix such as "${DEFAULT_BASE_PATH}"`,
+      },
+    ];
+  }
+
+  // `""`, `"/"` and `"///"` mean the deployment root, which is always
+  // servable.
   const structural = normalizeBasePath(value);
   if (structural === "") return [];
 

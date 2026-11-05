@@ -8,8 +8,8 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { RuntimeAdapter, ServerHandle } from "./runtime";
 import { logger } from "./logger";
-import { DIST_DIR } from "./paths";
-import { getContentType } from "./server-utils";
+import { DIST_DIR, basePath, ownPages, resolveRootRoute, notFoundPath } from "./paths";
+import { getContentType, redirectResponse } from "./server-utils";
 import { SECURITY_HEADERS, generateNonce, cspHeader, injectNonce } from "./security";
 
 function resolveFile(pathname: string): string | null {
@@ -44,7 +44,13 @@ export async function runPreview(adapter: RuntimeAdapter): Promise<ServerHandle 
     process.exit(0);
   }
 
-  const notFoundPath = resolve(DIST_DIR, "404.html");
+  // The generated 404 sits at the dist root by default and inside the docs
+  // prefix under `experimental.pages` (a standalone build has both).
+  const notFoundFiles = [resolve(DIST_DIR, notFoundPath().slice(1)), resolve(DIST_DIR, "404.html")];
+  // With `experimental.pages` the dist has no landing page: `/` belongs to the
+  // project's own pages, which are not in the dist. Unless something was placed
+  // at `index.html` by hand, send the browser to the docs instead of a 404.
+  const rootRoute = resolveRootRoute(ownPages(), basePath());
 
   const handle = await adapter.serve(
     async (req) => {
@@ -72,9 +78,15 @@ export async function runPreview(adapter: RuntimeAdapter): Promise<ServerHandle 
         });
       }
 
-      if (existsSync(notFoundPath)) {
+      if (pathname === "/" && typeof rootRoute === "object") {
+        return redirectResponse(rootRoute.redirect);
+      }
+
+      const notFoundFile = notFoundFiles.find((file) => existsSync(file));
+
+      if (notFoundFile) {
         const nonce = generateNonce();
-        const html = await readFile(notFoundPath, "utf-8");
+        const html = await readFile(notFoundFile, "utf-8");
         const modified = injectNonce(html, nonce);
         return new Response(modified, {
           status: 404,

@@ -82,7 +82,11 @@ export function devCtx(overrides?: Partial<DevServerContext>): DevServerContext 
 }
 
 export function buildEndCtx(): BuildEndContext {
-  return { assetManifest: TEST_ASSET_MANIFEST, outDir: "/test/.docu/dist" };
+  return {
+    assetManifest: TEST_ASSET_MANIFEST,
+    outDir: "/test/.docu/dist",
+    assetsDir: "/test/.docu/dist/assets",
+  };
 }
 
 // ─── PageContext shortcut ───────────────────────────────

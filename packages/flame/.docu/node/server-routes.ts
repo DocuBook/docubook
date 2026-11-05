@@ -6,7 +6,15 @@ import { renderToString } from "react-dom/server";
 import { compileMdx, frontmatterField } from "./mdx";
 import { getContentType } from "./server-utils";
 import { defaultFavicon } from "./paths";
-import { DOCS_DIR, DIST_DIR, PAGES_DIR, PROJECT_ROOT, servedBasePath, docsDepth } from "./paths";
+import {
+  DOCS_DIR,
+  DIST_DIR,
+  PAGES_DIR,
+  PROJECT_ROOT,
+  servedBasePath,
+  docsDepth,
+  bundlePath,
+} from "./paths";
 import { BuildPluginBuilder } from "./plugin-builder";
 import type { PageContext, PageType } from "./plugin";
 import type { AssetEntry, AssetManifest, DocuConfig, TocItem } from "./types";
@@ -36,7 +44,10 @@ async function createHtmlResponse(
 ): Promise<Response> {
   const nonce = generateNonce();
   const favicon = state.docuConfig.meta?.favicon || defaultFavicon();
-  const assets: AssetEntry = state.assetManifest[pageType];
+  const assets: AssetEntry | undefined = state.assetManifest[pageType];
+  // Only the landing bundle can be absent (`experimental.pages`), and the dev
+  // server never routes to the landing page then — reaching here is a bug.
+  if (!assets) throw new Error(`No client assets were built for "${pageType}" pages`);
   const context: PageContext = {
     ...page,
     pageType,
@@ -57,6 +68,7 @@ async function createHtmlResponse(
     bodyExtra: state.builder?.collectBody(context),
     depth,
     basePath: servedBasePath(),
+    bundlePath: bundlePath(),
     // Dev serves the project from the origin root, so the host's deployment
     // path never applies here — only the static build writes it into HTML.
     deployPath: "",

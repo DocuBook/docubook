@@ -1,5 +1,10 @@
 import type { DocuRoute, DocuConfig } from "./types";
-import { loadDocuConfig, resolveBasePath, servedDeployPath } from "./paths";
+import {
+  loadDocuConfig,
+  resolveBasePath,
+  servedDeployPath,
+  bundlePath as resolveBundleDir,
+} from "./paths";
 import { resolveRoutes } from "./fs-scanner";
 
 const docuConfig = loadDocuConfig();
@@ -25,3 +30,10 @@ export const basePath: string = resolveBasePath(docuConfig);
  * origin root. SSR and hydration must agree on it.
  */
 export const deployPath: string = servedDeployPath();
+
+/**
+ * URL path (from the dist root) of the bundle tree that also holds the search
+ * index: `/assets` by default, `<basePath>/_flame` under `experimental.pages`.
+ * Inlined into the client bundle by the same virtual module as the values above.
+ */
+export const bundlePath: string = resolveBundleDir();

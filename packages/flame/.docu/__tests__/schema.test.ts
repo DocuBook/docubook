@@ -101,6 +101,74 @@ describe("docu.schema.json — meta.basePath field", () => {
   });
 });
 
+describe("docu.schema.json — experimental.pages field", () => {
+  const schemaPath = join(import.meta.dirname, "..", "..", "docu.schema.json");
+  const schema: Record<string, unknown> = JSON.parse(readFileSync(schemaPath, "utf-8"));
+  const properties = schema.properties as Record<string, unknown>;
+  const experimental = properties.experimental as Record<string, unknown>;
+
+  it("has an experimental object that rejects unknown keys", () => {
+    expect(experimental).toBeDefined();
+    expect(experimental.type).toBe("object");
+    expect(experimental.additionalProperties).toBe(false);
+  });
+
+  it("defines pages as a boolean that defaults to off", () => {
+    const pages = (experimental.properties as Record<string, unknown>).pages as Record<
+      string,
+      unknown
+    >;
+    expect(pages.type).toBe("boolean");
+    expect(pages.default).toBe(false);
+  });
+
+  it("documents what moves under the docs prefix and how deploys handle the root", () => {
+    const pages = (experimental.properties as Record<string, unknown>).pages as Record<
+      string,
+      unknown
+    >;
+    const desc = pages.description as string;
+    expect(desc).toContain("index.html");
+    expect(desc).toContain("<basePath>/404.html");
+    expect(desc).toContain("<basePath>/_flame/");
+    expect(desc).toContain("meta.basePath");
+    expect(desc).toContain("--docker");
+    expect(desc).not.toContain("not supported");
+  });
+
+  it("rejects a root basePath only while experimental.pages is true", () => {
+    const rule = (schema.allOf as Record<string, any>[])[0]!;
+    // Condition: the flag is literally true.
+    expect(rule.if.required).toEqual(["experimental"]);
+    expect(rule.if.properties.experimental.properties.pages).toEqual({ const: true });
+    expect(rule.if.properties.experimental.required).toEqual(["pages"]);
+    // Consequence: basePath must not be a root form.
+    const basePath = rule.then.properties.meta.properties.basePath;
+    const root = new RegExp(basePath.not.pattern);
+    for (const value of ["", "/", "///"]) {
+      expect(root.test(value), JSON.stringify(value)).toBe(true);
+    }
+    // Whitespace-only values are rejected by the canonical pattern for every
+    // project, so the flag rule does not need to repeat them.
+    const canonical = new RegExp(
+      ((schema.properties as any).meta.properties.basePath as { pattern: string }).pattern
+    );
+    for (const value of [" ", "   ", "\t"]) {
+      expect(canonical.test(value), JSON.stringify(value)).toBe(false);
+    }
+    for (const value of ["/docs", "docs", "/handbook/v2", "/a"]) {
+      expect(root.test(value), value).toBe(false);
+    }
+    expect(basePath.description).toContain("'/docs'");
+    expect(basePath.description).toContain("cannot share the origin");
+  });
+
+  it("marks the home section as ignored under the flag", () => {
+    const home = properties.home as Record<string, unknown>;
+    expect(home.description as string).toContain("experimental.pages");
+  });
+});
+
 describe("docu.schema.json — plugins field", () => {
   const schemaPath = join(import.meta.dirname, "..", "..", "docu.schema.json");
   const schema: Record<string, unknown> = JSON.parse(readFileSync(schemaPath, "utf-8"));

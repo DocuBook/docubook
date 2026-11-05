@@ -22,17 +22,21 @@ export function htmlShell(opts: HtmlShellOptions): string {
     absoluteAssets = false,
     basePath = DEFAULT_BASE_PATH,
     deployPath = "",
+    bundlePath = "/assets",
   } = opts;
   const nonceAttr = nonce ? ` nonce="${Bun.escapeHTML(nonce)}"` : "";
   const themeStyle = themeCss ? `\n  <style${nonceAttr}>${Bun.escapeHTML(themeCss)}</style>` : "";
   const headInjection = headExtra?.length ? `\n  ${headExtra.join("\n  ")}` : "";
   const bodyInjection = bodyExtra?.length ? `\n  ${bodyExtra.join("\n  ")}` : "";
   const depthPrefix = depth === 0 ? "" : "../".repeat(depth);
-  // Bundle assets (JS, CSS, chunks) are written to the dist root and are
-  // independent of the docs prefix; pages climb out of the prefix with `../`.
-  // Depth-independent URLs (404 fallback) still carry the host's deployment
-  // path, which relative climbs cancel out.
-  const assetPrefix = absoluteAssets ? `${deployPath}/assets/` : depthPrefix + "assets/";
+  // Bundle assets (JS, CSS, chunks) live at `bundlePath` from the dist root —
+  // `/assets` by default, inside the docs prefix under `experimental.pages`.
+  // Pages climb to the dist root with `../` and descend into it. Depth-
+  // independent URLs (404 fallback) still carry the host's deployment path,
+  // which relative climbs cancel out.
+  const assetPrefix = absoluteAssets
+    ? `${deployPath}${bundlePath}/`
+    : depthPrefix + bundlePath.slice(1) + "/";
   const clientScript = js
     ? `\n  <link rel="modulepreload" href="${Bun.escapeHTML(assetPrefix + js)}">\n  <script type="module"${nonceAttr} src="${Bun.escapeHTML(assetPrefix + js)}"></script>`
     : "";

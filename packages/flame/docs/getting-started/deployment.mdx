@@ -14,7 +14,7 @@ Flame builds a fully static site — no server runtime is required. `flame build
     └── installation.html
 ```
 
-The `docs/` directory is the prefix from `meta.basePath` — change it to `/handbook` and pages are written to `.docu/dist/handbook/`, set it to `""` and they land at the dist root.
+The `docs/` directory is the prefix from `meta.basePath` — change it to `/handbook` and pages are written to `.docu/dist/handbook/`, set it to `""` and they land at the dist root. A project that serves its own landing page can switch the generated one off with `experimental.pages`, which also keeps the 404 page and the bundles under the docs prefix — see [Bring your own pages](/docs/getting-started/base-path#bring-your-own-pages).
 
 Pages are emitted as flat `.html` files, and internal links are generated with the `.html` suffix so navigation works on any static host that serves files by exact path — with **zero configuration**.
 
@@ -218,6 +218,10 @@ Flame supports Docker deployment for any platform that runs Docker images — Co
 ```shell
 flame deploy --docker
 ```
+
+:::info{title="With experimental.pages"}
+The generated nginx config follows the flag: `/` redirects to the docs prefix, 404s are served from `<basePath>/404.html`, and the immutable cache rules cover `<basePath>/_flame/`. See [Bring your own pages](/docs/getting-started/base-path#bring-your-own-pages).
+:::
 
 Generates:
 - `Dockerfile` — multi-stage build tailored to the project's package manager

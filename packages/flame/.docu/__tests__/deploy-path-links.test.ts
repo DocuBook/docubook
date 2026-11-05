@@ -12,6 +12,7 @@ vi.mock("../node/client-routes", () => ({
   },
   basePath: "/docs",
   deployPath: "/handbook",
+  bundlePath: "/assets",
 }));
 
 const { default: Sublink } = await import("../components/Sublink");

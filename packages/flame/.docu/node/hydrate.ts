@@ -9,6 +9,8 @@ import {
   LIB_DIR,
   STYLES_DIR,
   loadDocuConfig,
+  ownPages,
+  bundlePath,
   resolveBasePath,
   servedDeployPath,
 } from "./paths";
@@ -151,10 +153,16 @@ export async function buildClientBundle(
   await cleanOldBundles();
 
   const nodeEnv = process.env.NODE_ENV || "development";
+  // No landing page is rendered when the project brings its own pages, so its
+  // hydration entry is not built either — the manifest simply has no `home`.
+  const includeHome = !ownPages();
   const mdxEntries = createMdxModuleEntries(mdxSources);
   const mdxEntriesById = new Map(mdxEntries.map((entry) => [entry.id, entry]));
   const result = await Bun.build({
-    entrypoints: [join(LIB_DIR, "client.ts"), join(LIB_DIR, "home-client.ts")],
+    entrypoints: [
+      join(LIB_DIR, "client.ts"),
+      ...(includeHome ? [join(LIB_DIR, "home-client.ts")] : []),
+    ],
     outdir: ASSETS_DIR,
     splitting: true,
     naming: {
@@ -192,6 +200,9 @@ export async function buildClientBundle(
                 // Dev serves the project from the origin root, so the host's
                 // deployment path only reaches the production bundle.
                 `export const deployPath = ${JSON.stringify(servedDeployPath())};`,
+                // Where the search index sits next to the bundles — moves under
+                // the docs prefix with `experimental.pages`.
+                `export const bundlePath = ${JSON.stringify(bundlePath())};`,
               ].join("\n"),
               loader: "ts",
             };
@@ -245,7 +256,7 @@ export async function buildClientBundle(
     .map((output) => basename(output.path));
   const docsJs = entryFiles.find((file) => file.startsWith("client-"));
   const homeJs = entryFiles.find((file) => file.startsWith("home-client-"));
-  if (!docsJs || !homeJs) {
+  if (!docsJs || (includeHome && !homeJs)) {
     throw new Error("Client bundle produced incomplete entry-point outputs");
   }
 
@@ -256,7 +267,7 @@ export async function buildClientBundle(
 
   const manifest: AssetManifest = {
     docs: { js: docsJs, css: docsCss },
-    home: { js: homeJs, css: siteCss },
+    ...(includeHome && homeJs ? { home: { js: homeJs, css: siteCss } } : {}),
     notFound: { css: siteCss },
   };
   await Bun.write(join(ASSETS_DIR, "manifest.json"), JSON.stringify(manifest));

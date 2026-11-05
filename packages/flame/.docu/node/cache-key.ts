@@ -1,7 +1,14 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { FRAMEWORK_ROOT, STYLES_DIR, resolveProjectFile, basePath, deployPath } from "./paths";
+import {
+  FRAMEWORK_ROOT,
+  STYLES_DIR,
+  resolveProjectFile,
+  basePath,
+  deployPath,
+  ownPages,
+} from "./paths";
 import { packageFingerprint, resolvePackages, type WorkspacePackage } from "./dev-watch";
 
 /**
@@ -36,7 +43,16 @@ export const BUILD_CACHE_VERSION = 8;
  * still points at the old prefix.
  */
 export function basePathStamp(): string {
-  return prefixStamp(basePath(), deployPath());
+  return prefixStamp(basePath(), deployPath()) + ownPagesStamp(ownPages());
+}
+
+/**
+ * `experimental.pages` shares the key material: flipping it changes what the
+ * bundle contains (no landing entry) and, at the deployment root, whether the
+ * docs index is written at all — neither of which an MDX hash can see.
+ */
+export function ownPagesStamp(enabled: boolean): string {
+  return enabled ? "+pages" : "";
 }
 
 /**
@@ -73,13 +89,14 @@ export function runtimeStamp(): string {
  * every page a cache hit and keep serving HTML built by the old code. Hashing
  * these sources makes a framework edit invalidate the pages it affects.
  */
-const RENDER_SOURCE_FILES = [
+export const RENDER_SOURCE_FILES = [
   ".docu/node/html.ts",
   ".docu/node/html.shared.ts",
   ".docu/node/seo.ts",
   ".docu/node/utils.ts",
   ".docu/node/paths.ts",
   ".docu/node/base-path.ts",
+  ".docu/node/experimental.ts",
   ".docu/node/mdx.ts",
   ".docu/node/search-indexer.ts",
   ".docu/node/build.ts",

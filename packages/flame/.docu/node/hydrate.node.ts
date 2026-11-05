@@ -13,6 +13,8 @@ import {
   LIB_DIR,
   STYLES_DIR,
   loadDocuConfig,
+  ownPages,
+  bundlePath,
   resolveBasePath,
   servedDeployPath,
 } from "./paths";
@@ -188,6 +190,9 @@ export function docuConfigPlugin(deploymentPath: string = servedDeployPath()): P
         // Dev serves the project from the origin root, so the host's
         // deployment path only reaches the production bundle.
         `export const deployPath = ${JSON.stringify(deploymentPath)};`,
+        // Where the search index sits next to the bundles — moves under the
+        // docs prefix with `experimental.pages`.
+        `export const bundlePath = ${JSON.stringify(bundlePath())};`,
       ].join("\n");
     },
   };
@@ -235,6 +240,9 @@ async function runClientBuild(mdxSources: Record<string, string>): Promise<Asset
   const mdxEntriesById = new Map(mdxEntries.map((entry) => [entry.id, entry]));
   const docsEntryPath = join(LIB_DIR, "client.ts");
   const homeEntryPath = join(LIB_DIR, "home-client.ts");
+  // No landing page is rendered when the project brings its own pages, so its
+  // hydration entry is not built either — the manifest simply has no `home`.
+  const includeHome = !ownPages();
 
   let bundle: Awaited<ReturnType<typeof viteBuild>>;
   try {
@@ -281,7 +289,9 @@ async function runClientBuild(mdxSources: Record<string, string>): Promise<Asset
         minify: nodeEnv === "production",
         target: "es2020",
         rollupOptions: {
-          input: { client: docsEntryPath, "home-client": homeEntryPath },
+          input: includeHome
+            ? { client: docsEntryPath, "home-client": homeEntryPath }
+            : { client: docsEntryPath },
           onwarn: clientBuildOnWarn,
           output: {
             format: "es",
@@ -308,7 +318,7 @@ async function runClientBuild(mdxSources: Record<string, string>): Promise<Asset
       if (output.name === "home-client") homeJs = output.fileName;
     }
   }
-  if (!docsJs || !homeJs) {
+  if (!docsJs || (includeHome && !homeJs)) {
     throw new Error("Client bundle produced incomplete entry-point outputs");
   }
 
@@ -319,7 +329,7 @@ async function runClientBuild(mdxSources: Record<string, string>): Promise<Asset
 
   const manifest: AssetManifest = {
     docs: { js: docsJs, css: docsCss },
-    home: { js: homeJs, css: siteCss },
+    ...(includeHome && homeJs ? { home: { js: homeJs, css: siteCss } } : {}),
     notFound: { css: siteCss },
   };
   await writeFile(join(ASSETS_DIR, "manifest.json"), JSON.stringify(manifest));

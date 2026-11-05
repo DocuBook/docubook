@@ -44,7 +44,7 @@ export interface HtmlShellOptions {
    * URL prefix the site is served under (`""` at the deployment root, else
    * `/prefix` with no trailing slash). Used to re-base author-written content
    * paths (favicon, og-image) that carry the default `/docs` prefix. Bundle
-   * assets live at the dist root (`/assets/`) and never take the prefix.
+   * assets follow `bundlePath` instead.
    * Defaults to `/docs` so callers that never pass a prefix keep the
    * historical output byte-identical.
    */
@@ -55,6 +55,12 @@ export interface HtmlShellOptions {
    * relative ones already line up because pages and assets share it.
    */
   deployPath?: string;
+  /**
+   * URL path (from the dist root, no trailing slash) the hashed bundles are
+   * served from. Defaults to `/assets`; `experimental.pages` moves them under
+   * the docs prefix (`/docs/_flame`).
+   */
+  bundlePath?: string;
 }
 
 export function htmlShell(opts: HtmlShellOptions): string {
@@ -75,17 +81,21 @@ export function htmlShell(opts: HtmlShellOptions): string {
     absoluteAssets = false,
     basePath = DEFAULT_BASE_PATH,
     deployPath = "",
+    bundlePath = "/assets",
   } = opts;
   const nonceAttr = nonce ? ` nonce="${escapeHtml(nonce)}"` : "";
   const themeStyle = themeCss ? `\n  <style${nonceAttr}>${escapeHtml(themeCss)}</style>` : "";
   const headInjection = headExtra?.length ? `\n  ${headExtra.join("\n  ")}` : "";
   const bodyInjection = bodyExtra?.length ? `\n  ${bodyExtra.join("\n  ")}` : "";
   const depthPrefix = depth === 0 ? "" : "../".repeat(depth);
-  // Bundle assets (JS, CSS, chunks) are written to the dist root and are
-  // independent of the docs prefix; pages climb out of the prefix with `../`.
-  // Depth-independent URLs (404 fallback) still carry the host's deployment
-  // path, which relative climbs cancel out.
-  const assetPrefix = absoluteAssets ? `${deployPath}/assets/` : depthPrefix + "assets/";
+  // Bundle assets (JS, CSS, chunks) live at `bundlePath` from the dist root —
+  // `/assets` by default, inside the docs prefix under `experimental.pages`.
+  // Pages climb to the dist root with `../` and descend into it. Depth-
+  // independent URLs (404 fallback) still carry the host's deployment path,
+  // which relative climbs cancel out.
+  const assetPrefix = absoluteAssets
+    ? `${deployPath}${bundlePath}/`
+    : depthPrefix + bundlePath.slice(1) + "/";
   const clientScript = js
     ? `\n  <link rel="modulepreload" href="${escapeHtml(assetPrefix + js)}">\n  <script type="module"${nonceAttr} src="${escapeHtml(assetPrefix + js)}"></script>`
     : "";
