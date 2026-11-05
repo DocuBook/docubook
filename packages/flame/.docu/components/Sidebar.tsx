@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -18,6 +18,7 @@ import { ThemeToggle } from "./Theme";
 import { GitHubLink } from "./Navbar";
 import Search from "./Search";
 import { TocProgressCircle, tocProgress } from "./TocProgress";
+import { revealScrollTop } from "./toc-list-scroll";
 import type { TocItem } from "../node/types";
 import { config as docuConfig, routes, basePath, deployPath } from "../node/client-routes";
 
@@ -91,6 +92,7 @@ export function MobileBar({
   // Share of sections reached, for the progress circle beside the title
   const [progress, setProgress] = useState(0);
   const barRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!tocs.length) return;
@@ -147,6 +149,39 @@ export function MobileBar({
     return () => document.removeEventListener("mousedown", handler);
   }, [tocExpanded]);
 
+  // Scroll the open list so the active heading shows. The list is a sibling
+  // of the page, so this sets its scrollTop instead of calling
+  // scrollIntoView, which would also scroll the window.
+  const revealActive = useCallback((align: "center" | "nearest") => {
+    const list = listRef.current;
+    const entry = list?.querySelector<HTMLElement>('[aria-current="location"]');
+    if (!list || !entry) return;
+    const listRect = list.getBoundingClientRect();
+    const entryRect = entry.getBoundingClientRect();
+    const top = revealScrollTop(
+      {
+        top: listRect.top + list.clientTop,
+        height: list.clientHeight,
+        scrollTop: list.scrollTop,
+        scrollHeight: list.scrollHeight,
+      },
+      { top: entryRect.top, height: entryRect.height },
+      align
+    );
+    if (top !== null) list.scrollTop = top;
+  }, []);
+
+  // Open at the active heading, before the first paint, so a long list does
+  // not flash its top when the reader is near the end of the page.
+  useLayoutEffect(() => {
+    if (tocExpanded) revealActive("center");
+  }, [tocExpanded, revealActive]);
+
+  // While the list stays open, follow the active heading as the page moves.
+  useEffect(() => {
+    if (tocExpanded) revealActive("nearest");
+  }, [activeId, tocExpanded, revealActive]);
+
   const activeSection = tocs.find((t) => t.href.slice(1) === activeId);
   const displayTitle = activeSection?.text || title || "On this page";
   const toggleToc = useCallback(() => setTocExpanded((p) => !p), []);
@@ -188,7 +223,10 @@ export function MobileBar({
           <button
             type="button"
             onClick={toggleToc}
-            className="btn btn-ghost btn-sm min-w-0 flex-1 justify-between"
+            // -ml-1 cancels the row gap, so this button starts where the 32px
+            // menu trigger ends: no dead strip between them and no overlap.
+            // pl-1 keeps the ring close to the menu dots.
+            className="btn btn-ghost btn-sm -ml-1 min-w-0 flex-1 justify-between pl-1"
             aria-label={`${tocExpanded ? "Collapse" : "Expand"} table of contents${
               tocs.length > 0 ? `, ${Math.round(progress * 100)}% of sections read` : ""
             }`}
@@ -217,7 +255,14 @@ export function MobileBar({
         </div>
 
         {tocExpanded && (
-          <div className="border-base-200 max-h-[60vh] overflow-y-auto border-t px-4 py-2">
+          // overscroll-contain: reaching either end of the list must not
+          // scroll the page behind it, which would also change the active
+          // heading under the reader's finger.
+          <div
+            ref={listRef}
+            data-toc-list=""
+            className="border-base-200 max-h-[60vh] overflow-y-auto overscroll-contain border-t px-4 py-2"
+          >
             {tocs.length > 0 ? (
               <MobileTocList
                 tocs={tocs}
@@ -261,6 +306,7 @@ function MobileTocList({
           <li key={toc.href}>
             <a
               href={toc.href}
+              aria-current={isActive ? "location" : undefined}
               onClick={(e) => {
                 e.preventDefault();
                 onSelect(id);
