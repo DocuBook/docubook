@@ -14,48 +14,88 @@ export function tocProgress(activeIndex: number, total: number, atEnd: boolean):
   return Math.min(1, Math.max(0, (activeIndex + 1) / total));
 }
 
-const SIZE = 18;
-const STROKE = 2;
+// 28px fits the 32px bar button and leaves room for a two-digit number inside.
+const SIZE = 28;
+const STROKE = 2.5;
 const RADIUS = (SIZE - STROKE) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+const CENTER = SIZE / 2;
 
 /**
  * Circular progress for the mobile TOC bar, drawn inline before the active
- * section's title. Decorative: the bar's button names the progress in text.
+ * section's title, with the percentage inside the ring. The number has no
+ * "%" sign, which would not fit. At 100 the ring becomes a filled disc with
+ * a check. Decorative: the bar's button names the progress in text.
  */
 export function TocProgressCircle({ value }: { value: number }) {
   const progress = Math.min(1, Math.max(0, value));
+  const percent = Math.round(progress * 100);
+  const common = {
+    width: SIZE,
+    height: SIZE,
+    viewBox: `0 0 ${SIZE} ${SIZE}`,
+    "aria-hidden": true as const,
+    "data-toc-progress": percent,
+    className: "shrink-0",
+  };
+
+  if (percent === 100) {
+    return (
+      <svg {...common}>
+        <circle cx={CENTER} cy={CENTER} r={CENTER} className="fill-primary" />
+        <path
+          d="M8.5 14.5l4 4 7-8.5"
+          fill="none"
+          strokeWidth={2.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="stroke-primary-content"
+        />
+      </svg>
+    );
+  }
+
   return (
-    <svg
-      width={SIZE}
-      height={SIZE}
-      viewBox={`0 0 ${SIZE} ${SIZE}`}
-      aria-hidden="true"
-      data-toc-progress={Math.round(progress * 100)}
-      className="shrink-0 -rotate-90"
-    >
-      <circle
-        cx={SIZE / 2}
-        cy={SIZE / 2}
-        r={RADIUS}
-        fill="none"
-        strokeWidth={STROKE}
-        className="stroke-base-content/15"
-      />
-      {/* No arc at 0: a round cap would still draw a dot */}
-      {progress > 0 && (
+    <svg {...common}>
+      {/* Only the ring turns to start at 12 o'clock; the number stays upright */}
+      <g transform={`rotate(-90 ${CENTER} ${CENTER})`}>
         <circle
-          cx={SIZE / 2}
-          cy={SIZE / 2}
+          cx={CENTER}
+          cy={CENTER}
           r={RADIUS}
           fill="none"
           strokeWidth={STROKE}
-          strokeLinecap="round"
-          strokeDasharray={CIRCUMFERENCE}
-          strokeDashoffset={CIRCUMFERENCE * (1 - progress)}
-          className="stroke-primary transition-[stroke-dashoffset] duration-300 ease-out motion-reduce:transition-none"
+          className="stroke-base-content/15"
         />
-      )}
+        {/* No arc at 0. A flat cap keeps a partial arc from reading as a
+            loading spinner. */}
+        {progress > 0 && (
+          <circle
+            cx={CENTER}
+            cy={CENTER}
+            r={RADIUS}
+            fill="none"
+            strokeWidth={STROKE}
+            strokeLinecap="butt"
+            strokeDasharray={CIRCUMFERENCE}
+            strokeDashoffset={CIRCUMFERENCE * (1 - progress)}
+            className="stroke-primary transition-[stroke-dashoffset] duration-300 ease-out motion-reduce:transition-none"
+          />
+        )}
+      </g>
+      <text
+        x={CENTER}
+        y={CENTER}
+        textAnchor="middle"
+        dominantBaseline="central"
+        className={
+          percent === 0
+            ? "fill-base-content/60 text-[10px] font-semibold tabular-nums"
+            : "fill-base-content text-[10px] font-bold tabular-nums"
+        }
+      >
+        {percent}
+      </text>
     </svg>
   );
 }
