@@ -24,7 +24,7 @@ Mode instructions supplement Pullfrog's built-in workflow and win where the two 
 | Automations → Mentions → Custom instructions | `mention.instructions` | every `@pullfrog` mention | **Mentions** |
 | Automations → Enrich issues (Mode: Build) → Custom instructions | `issue.mode` + `issue.instructions` | every new issue (opt-in, see Resolve) | **Resolve** |
 
-The CLI is the npm package `pullfrog` (there is no `pf` binary — add `alias pf=pullfrog` if you want the short name). It acts as the `gh auth login` user and targets the repository in the current directory's `origin`; add `--repo DocuBook/docubook` from elsewhere. Prompt keys need **repo write**; `push`, `shell`, `env-allowlist`, signing and auto-merge need **repo admin**.
+The CLI is the npm package `pullfrog` (it installs both `pullfrog` and `pf` binaries). It acts as the `gh auth login` user and targets the repository in the current directory's `origin`; add `--repo DocuBook/docubook` from elsewhere. Prompt keys need **repo write**; `push`, `shell`, `env-allowlist`, signing and auto-merge need **repo admin**.
 
 ```sh
 npm install --global pullfrog@latest        # or: npx pullfrog@latest …
@@ -66,10 +66,10 @@ Toggles the modes assume. Console-only rows have no CLI key.
 | `fix-ci.reviewed-prs` | `false` | human PRs: ask with `@pullfrog` instead of auto-pushing fixes (Pullfrog already skips bot commits, failing base branch, and a second attempt within an hour) | write |
 | `issue.mode` | console default (Enrich) or `links` | CLI values are `none \| links \| plan \| build \| custom` — run `pullfrog config describe issue.mode` to see which one the console's Enrich maps to. `build` only with the Resolve block (every new issue becomes a PR); `custom` is Enrich with your own prompt and never changes code | write |
 | `label.enabled` | `false` | label suggestions need `label.instructions` first | write |
-| `mention.enabled` / `mention.non-collaborators` | `true` / `false` | collaborators only; a non-collaborator run cannot push anyway | write / admin |
+| `mention.enabled` / `mention.non-collaborators` | `true` / `false` | collaborators only; a non-collaborator run cannot push anyway | write / write |
 | `push` | `restricted` | feature branches only: modes push follow-up commits to PR branches and never to `main` | admin |
 | `shell` | `restricted` | always `restricted` on a public repo: scrubbed env, no `sudo`, read-only `.git` for shell commands | admin |
-| `hooks.setup` | script | runner has no Bun: `curl -fsSL https://bun.sh/install \| bash` + `corepack enable` + `pnpm install --frozen-lockfile`. Verify on the first run; a hook that fails is skipped and reported to the agent. | admin |
+| `hooks.setup` | script | runner has no Bun: `curl -fsSL https://bun.sh/install \| bash` + `corepack enable` + `pnpm install --frozen-lockfile`. Verify on the first run; a hook that fails is skipped and reported to the agent. | write |
 | `progress-comments` | `true` | no other bot reads the PR thread, so the "Leaping into action" comment costs nothing | write |
 | `effort` | `0.5`–`0.75` | repo default; `--effort` / `--deep` override per run | write |
 | **Agent → Learnings** (console only) | review monthly | Pullfrog's own notes about the repo; delete anything that contradicts ARCHITECTURE.md | write |
@@ -280,7 +280,7 @@ You are a planning agent for the DocuBook monorepo. Turn the issue into a struct
 
 **S3 — Hierarchy** — `parent_id` + `depends_on` for sequencing (research before implementation, validation last); priority scale `1=Low, 2=Normal, 3=Medium, 4=High, 5=Critical`.
 
-**S4 — Create** — produce the plan as the issue comment (`create_issue_comment`): a task list of 3-7 items, each with Context & Analysis / Step & Implementation / Acceptance & Verification (checklist + test scenarios), phase, priority (1–5), and dependencies — with the Shared context facts (runtime model, config/cache, security, changeset, validation) embedded in the acceptance criteria.
+**S4 — Create** — produce the plan as the run's plan comment (`report_progress`, which carries the **Implement plan** button — do not post a separate `create_issue_comment`): a task list of 3-7 items, each with Context & Analysis / Step & Implementation / Acceptance & Verification (checklist + test scenarios), phase, priority (1–5), and dependencies — with the Shared context facts (runtime model, config/cache, security, changeset, validation) embedded in the acceptance criteria.
 
 **S5 — Display** — Show the final plan to the user: task list, phases, dependencies, priorities, acceptance criteria.
 
