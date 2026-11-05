@@ -9,6 +9,9 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions:
   actions: write
   contents: write
+  # npm trusted publishing: pnpm exchanges the OIDC token for a publish token
+  # and attaches provenance, so no npm token is stored in the repository.
+  id-token: write
   pull-requests: write
 
 jobs:
@@ -32,19 +35,23 @@ jobs:
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
-        uses: changesets/action@v1
+        uses: changesets/action@v2.1.2
         with:
-          publish: pnpm publish-packages
-          version: pnpm version-packages
-          commit: "chore: version packages"
-          title: "chore: version packages"
+          # A Release PR opened with GITHUB_TOKEN is authored by
+          # github-actions[bot], so its CI waits for manual approval. A PAT
+          # opens it as a maintainer and CI runs on it like on any other PR.
+          github-token: ${{ secrets.RENOVATE_TOKEN }}
+          publish-script: pnpm publish-packages
+          version-script: pnpm version-packages
+          commit-message: "chore: version packages"
+          pr-title: "chore: version packages"
           # Single product release — flame is the only output; the step below
           # creates the one `v<flame version>` tag and GitHub release, so
-          # disable the per-package releases the action would otherwise create.
-          createGithubReleases: false
+          # disable the per-package releases and tags the action would
+          # otherwise push.
+          create-github-releases: false
+          push-git-tags: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           HUSKY: "0"
 
       # `published` is true for any published package, so check flame
@@ -54,7 +61,7 @@ jobs:
         id: flame
         if: steps.changesets.outputs.published == 'true'
         env:
-          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs['published-packages'] }}
         run: node scripts/published-packages.mjs @docubook/flame >> "$GITHUB_OUTPUT"
 
       - name: Create single GitHub Release (v<flame version>)
