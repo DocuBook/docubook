@@ -568,27 +568,53 @@ function readConfigForStamp(): unknown {
 }
 
 /**
+ * Page keys recorded in the build cache file on disk, read without checking
+ * its version or toolchain stamps.
+ *
+ * `readCache()` discards the whole cache on `--force` or on any stamp mismatch
+ * (every flame upgrade), which also discards the only record of which pages a
+ * previous build wrote. Pruning reads the raw file instead, so a page deleted
+ * in the same build as one of those events is still removed. A missing or
+ * corrupt file yields no keys.
+ */
+export function previousPageKeys(cacheFile: string): string[] {
+  try {
+    const parsed: unknown = JSON.parse(readFileSync(cacheFile, "utf-8"));
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return [];
+    return Object.keys(parsed).filter((key) => !key.startsWith("__"));
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Remove the HTML of pages whose source was deleted or renamed since the
  * previous build, and drop their cache entries.
  *
  * Page cache keys are the MDX paths without extension (`guide/routing`), and
  * each one was written to `<docsOutDir>/<key>.html` by a previous build, so the
- * cache doubles as the list of files Flame owns. Without this, a removed page
- * kept being published with stale navigation. Bookkeeping slots (`__meta__`,
- * `__bundle__`, `__assets__`) are skipped, and a key that would resolve
- * outside `docsOutDir` is dropped without touching the filesystem.
+ * cache doubles as the list of files Flame owns. `previousKeys` adds the pages
+ * a discarded cache recorded (see {@link previousPageKeys}). Without this, a
+ * removed page kept being published with stale navigation. Bookkeeping slots
+ * (`__meta__`, `__bundle__`, `__assets__`) are skipped, and a key that would
+ * resolve outside `docsOutDir` is dropped without touching the filesystem.
+ *
+ * Call it before writing generated pages that may share a path with a docs
+ * page (the docs index, the 404 page), or it would delete them.
  *
  * @returns the removed page keys
  */
 export async function pruneRemovedPages(
   cache: Record<string, unknown>,
   currentPages: Iterable<string>,
-  docsOutDir: string
+  docsOutDir: string,
+  previousKeys: Iterable<string> = []
 ): Promise<string[]> {
   const keep = new Set(currentPages);
   const root = resolve(docsOutDir);
+  const candidates = new Set([...Object.keys(cache), ...previousKeys]);
   const removed: string[] = [];
-  for (const key of Object.keys(cache)) {
+  for (const key of candidates) {
     if (key.startsWith("__") || keep.has(key)) continue;
     const output = resolve(root, `${key}.html`);
     if (output.startsWith(root + sep)) await rm(output, { force: true });

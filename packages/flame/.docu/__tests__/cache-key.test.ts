@@ -7,6 +7,7 @@ import {
   atomicWriteFile,
   configStamp,
   pruneRemovedPages,
+  previousPageKeys,
   computeTailwindCacheKey,
   hashMdxSources,
   hookMemoryPressure,
@@ -359,9 +360,18 @@ describe("configStamp — docu.json in the cache key", () => {
       expect(src(file), file).toContain(
         "const assetHash = `${JSON.stringify(assetManifest)}\\0${configStamp()}`;"
       );
-      expect(src(file), file).toMatch(
-        /pruneRemovedPages\(\s*cache,\s*mdxFiles\.map\(\(f\) => f\.path\),\s*DOCS_OUT_DIR\s*\)[\s\S]*runOnEnd/
+      const code = src(file);
+      expect(code, file).toMatch(
+        /pruneRemovedPages\(\s*cache,\s*mdxFiles\.map\(\(f\) => f\.path\),\s*DOCS_OUT_DIR,\s*previousPages\s*\)/
       );
+      expect(code, file).toContain("const previousPages = previousPageKeys(CACHE_FILE);");
+      // Pruning must precede every generated page that can share a docs path
+      // (docs index, 404) and the plugins' onEnd.
+      const prune = code.indexOf("await pruneRemovedPages(");
+      expect(prune, file).toBeGreaterThan(code.indexOf("await Promise.all(buildTasks.slice("));
+      expect(prune, file).toBeLessThan(code.indexOf("await writeFile(docsIndexPath, indexHtml)"));
+      expect(prune, file).toBeLessThan(code.indexOf("await writeFile(notFoundOut, notFoundHtml)"));
+      expect(prune, file).toBeLessThan(code.indexOf("runOnEnd("));
     }
     expect(BUILD_CACHE_VERSION).toBeGreaterThanOrEqual(9);
   });
@@ -418,6 +428,45 @@ describe("pruneRemovedPages — pages whose source is gone", () => {
     const cache: Record<string, unknown> = { intro: { hash: "h", mtime: 1, builtAt: 1 } };
     expect(await pruneRemovedPages(cache, ["intro"], out)).toEqual([]);
     expect(existsSync(join(out, "intro.html"))).toBe(true);
+    rmSync(out, { recursive: true, force: true });
+  });
+});
+
+describe("previousPageKeys — pages a discarded cache recorded", () => {
+  function file(content: string): string {
+    const dir = mkdtempSync(join(tmpdir(), "flame-prev-"));
+    const path = join(dir, "build-cache.json");
+    writeFileSync(path, content);
+    return path;
+  }
+
+  it("returns page keys regardless of the cache version or stamps", () => {
+    const path = file(
+      JSON.stringify({
+        __meta__: { version: 1, runtime: "bun-0.0.1", hash: "x", mtime: 0, builtAt: 0 },
+        __bundle__: { hash: "b", mtime: 0, builtAt: 0 },
+        "guide/routing": { hash: "h", mtime: 1, builtAt: 1 },
+        intro: { hash: "h", mtime: 1, builtAt: 1 },
+      })
+    );
+    expect(previousPageKeys(path).sort()).toEqual(["guide/routing", "intro"]);
+  });
+
+  it("yields nothing for a missing, corrupt or non-object file", () => {
+    expect(previousPageKeys(join(tmpdir(), "flame-no-such-cache.json"))).toEqual([]);
+    expect(previousPageKeys(file("{ not json"))).toEqual([]);
+    expect(previousPageKeys(file("[1, 2]"))).toEqual([]);
+    expect(previousPageKeys(file("null"))).toEqual([]);
+  });
+
+  it("lets pruning remove pages the in-memory cache no longer knows (--force, upgrade)", async () => {
+    const out = mkdtempSync(join(tmpdir(), "flame-prune-prev-"));
+    for (const rel of ["gone.html", "kept.html"]) writeFileSync(join(out, rel), "x");
+    const cache: Record<string, unknown> = {};
+    const removed = await pruneRemovedPages(cache, ["kept"], out, ["gone", "kept", "__meta__"]);
+    expect(removed).toEqual(["gone"]);
+    expect(existsSync(join(out, "gone.html"))).toBe(false);
+    expect(existsSync(join(out, "kept.html"))).toBe(true);
     rmSync(out, { recursive: true, force: true });
   });
 });
