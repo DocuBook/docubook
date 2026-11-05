@@ -149,6 +149,7 @@ graph TD
 
 - Diagrams are rendered **client-side**. During SSR, a `<pre class="mermaid">` placeholder is rendered instead.
 - **Pan, zoom, and fullscreen**: A fullscreen button appears after the diagram renders. Click or press Enter to open the fullscreen lightbox. Inside fullscreen, pan with mouse-drag, touch-drag, or arrow keys; zoom with the zoom bar buttons, scroll wheel, or <kbd>+</kbd> / <kbd>-</kbd>; reset via the zoom percentage button or <kbd>0</kbd>. Press Escape to exit.
+- **Alignment**: A diagram narrower than the content column is centered. The `<pre class="mermaid">` carries `data-mermaid-align="center"`, and `@docubook/markdown/styles.css` centers the diagram's `<svg>` with auto margins, so nothing inside the diagram changes.
 - **Theme synchronization**: The component automatically detects dark/light theme changes and re-renders diagrams.
 - **Lazy loading**: Off-screen diagrams are only rendered when scrolled into view (200px margin).
 - **Error fallback**: If a diagram has invalid Mermaid syntax, the raw code is shown with an error message.

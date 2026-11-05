@@ -480,9 +480,13 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
             : undefined
         }
       >
+        {/* data-mermaid-align centers the SVG through styles.css. Host styles
+            can widen this <pre> past the diagram, flame's `pre` rule does, and
+            the SVG would then sit at the start. */}
         <pre
           ref={ref}
           id={domId}
+          data-mermaid-align="center"
           className={`mermaid not-prose${className ? ` ${className}` : ""}`}
           style={{ margin: "1em auto", width: "fit-content", maxWidth: "100%" }}
         >

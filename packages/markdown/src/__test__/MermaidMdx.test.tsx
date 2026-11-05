@@ -1,6 +1,8 @@
+/// <reference types="vite/client" />
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { act, render, fireEvent, cleanup } from "@testing-library/react";
 import { MermaidMdx } from "../components/MermaidMdx";
+import stylesCss from "../../styles.css?raw";
 
 // Mock mermaid module for client-side hydration tests
 const mockInitialize = vi.fn();
@@ -47,6 +49,27 @@ afterEach(() => {
 });
 
 describe("MermaidMdx", () => {
+  it("marks the diagram for the centering rule in styles.css", () => {
+    // The rule that centers the SVG, read from the shipped stylesheet.
+    const css = stylesCss.replace(/\/\*[\s\S]*?\*\//g, "");
+    const rule = css.match(/([^{}]+)\{([^}]*margin-inline: auto;[^}]*)\}/);
+    if (!rule) throw new Error("Mermaid centering rule not found in styles.css");
+    const [, selector, body] = rule;
+    const { container } = render(<MermaidMdx chart="graph TD; A-->B;" />);
+    const pre = container.querySelector("pre.mermaid")!;
+    expect(pre.getAttribute("data-mermaid-align")).toBe("center");
+    // mermaid.run() puts the diagram's <svg> directly in the <pre>.
+    pre.innerHTML =
+      '<svg id="diagram"><foreignObject><svg id="nested"></svg></foreignObject></svg>';
+    expect(pre.querySelector("#diagram")!.matches(selector.trim())).toBe(true);
+    expect(pre.querySelector("#nested")!.matches(selector.trim())).toBe(false);
+    // The rule only moves the SVG's outer box. text-align would be inherited
+    // by Mermaid's HTML labels, and a flex <pre> would shrink the element
+    // Mermaid measures while rendering a Gantt chart.
+    expect(body).not.toContain("text-align");
+    expect(css).not.toMatch(/data-mermaid-align[^{]*\{[^}]*display: (flex|grid)/);
+  });
+
   it("renders pre.mermaid placeholder with chart text (SSR)", () => {
     const { container } = render(<MermaidMdx chart="graph TD; A-->B;" />);
     const pre = container.querySelector("pre.mermaid");
