@@ -32,9 +32,21 @@
       },
       "required": ["title"]
     },
+    "experimental": {
+      "type": "object",
+      "description": "Opt-in features whose behavior may still change between minor releases.",
+      "additionalProperties": false,
+      "properties": {
+        "pages": {
+          "type": "boolean",
+          "default": false,
+          "description": "Bring your own landing page. When true, Flame keeps everything it builds under meta.basePath: no landing page (index.html) and no landing bundle, the 404 page moves to '<basePath>/404.html', and hashed bundles plus the search index move from '/assets/' to '<basePath>/_flame/'. The 'home' section is ignored. One route rule for the docs prefix then serves the docs next to any other app on the same origin. 'flame dev' and 'flame preview' redirect '/' to the docs prefix; with an empty basePath the docs index owns '/' instead. 'flame deploy --docker' redirects '/' to the docs in nginx, and 'flame deploy' for GitHub Pages adds a root redirect and 404 to its artifact."
+        }
+      }
+    },
     "home": {
       "type": "object",
-      "description": "Home page configuration",
+      "description": "Home page configuration. Ignored when experimental.pages is true.",
       "additionalProperties": false,
       "properties": {
         "hero": { "$ref": "#/$defs/hero" },
@@ -224,6 +236,34 @@
       "required": ["colors"]
     }
   },
+  "allOf": [
+    {
+      "$comment": "experimental.pages keeps Flame's output under meta.basePath so it can share an origin with another app. A root basePath ('' or '/') puts the docs index, 404.html and every page at the dist root instead, so the build warns about it.",
+      "if": {
+        "properties": {
+          "experimental": {
+            "type": "object",
+            "properties": { "pages": { "const": true } },
+            "required": ["pages"]
+          }
+        },
+        "required": ["experimental"]
+      },
+      "then": {
+        "properties": {
+          "meta": {
+            "type": "object",
+            "properties": {
+              "basePath": {
+                "not": { "type": "string", "pattern": "^/*$" },
+                "description": "With experimental.pages enabled, use a docs prefix such as '/docs'. A root basePath ('' or '/') makes the docs own '/', index.html and 404.html, so they cannot share the origin with your own app."
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "route": {
       "type": "object",

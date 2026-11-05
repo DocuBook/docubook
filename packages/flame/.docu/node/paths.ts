@@ -4,6 +4,14 @@ import { readdir, rm, unlink } from "node:fs/promises";
 import type { DocuConfig } from "./types";
 import { resolveBasePath, resolveDeployPath, validateBasePath } from "./base-path";
 import type { BasePathIssue } from "./base-path";
+import {
+  resolveOwnPages,
+  validateOwnPages,
+  resolveBundlePath,
+  resolveNotFoundPath,
+  needsStandaloneRoot,
+  STANDALONE_ENV,
+} from "./experimental";
 
 export {
   DEFAULT_BASE_PATH,
@@ -15,6 +23,18 @@ export {
   validateBasePath,
 } from "./base-path";
 export type { BasePathIssue } from "./base-path";
+export {
+  resolveOwnPages,
+  resolveRootRoute,
+  validateOwnPages,
+  resolveBundlePath,
+  resolveNotFoundPath,
+  needsStandaloneRoot,
+  redirectHtml,
+  STANDALONE_ENV,
+  OWN_PAGES_BUNDLE_DIR,
+} from "./experimental";
+export type { RootRoute } from "./experimental";
 
 /**
  * FRAMEWORK_ROOT: Where the package code lives (.docu/components, .docu/pages, .docu/styles, .docu/node)
@@ -55,7 +75,8 @@ export const LIB_DIR = existsSync(nodeDir) ? nodeDir : libDir;
 
 // Build output (user project)
 export const DIST_DIR = join(PROJECT_ROOT, ".docu/dist");
-export const ASSETS_DIR = join(DIST_DIR, "assets");
+// ASSETS_DIR (the bundle tree) depends on `docu.json` and is declared at the
+// end of this module, next to DOCS_OUT_DIR.
 export const CACHE_FILE = join(PROJECT_ROOT, ".docu/build-cache.json");
 
 // Project paths (user content)
@@ -194,8 +215,130 @@ export function assertValidBasePath(): BasePathIssue[] {
 }
 
 /**
+ * Whether the project brings its own pages (`experimental.pages`). Read at
+ * call time, like {@link basePath}: a missing or unreadable config means the
+ * default, which is the generated landing page and 404.
+ */
+export function ownPages(): boolean {
+  let config: DocuConfig | null = null;
+  try {
+    config = loadDocuConfig();
+  } catch {
+    // config absent/unreadable (tests, ad-hoc scripts) — use the default
+  }
+  return resolveOwnPages(config);
+}
+
+/**
+ * Fail fast on an `experimental` section that cannot be honored (a non-boolean
+ * `pages`) and hand back the warnings for the caller to log. Mirrors
+ * {@link assertValidBasePath}: called from the build and dev-server entries so
+ * the message lands before any output is written.
+ */
+export function assertValidExperimental(): BasePathIssue[] {
+  let config: DocuConfig | null = null;
+  try {
+    config = loadDocuConfig();
+  } catch {
+    return [];
+  }
+
+  const issues = validateOwnPages(config);
+  const errors = issues.filter((issue) => issue.level === "error");
+  if (errors.length > 0) {
+    throw new Error(
+      [
+        `Invalid "experimental" in ${DOCU_CONFIG_PATH}:`,
+        ...errors.map((issue) => `  • ${issue.message}`),
+      ].join("\n")
+    );
+  }
+  return issues.filter((issue) => issue.level === "warning");
+}
+
+/**
  * Build-output directory for docs pages — derived from `meta.basePath`.
  * Declared after the resolver above: `const` bindings initialize in order, and
  * `DOCS_OUT_DIR` reads `DEFAULT_BASE_PATH` through the chain.
  */
 export const DOCS_OUT_DIR = docsOutDir(DIST_DIR);
+
+/**
+ * URL path (from the dist root, no trailing slash) of the hashed bundles, the
+ * asset manifest and the search index: `/assets` by default, `<basePath>/_flame`
+ * under `experimental.pages`. Same value in dev and in the build.
+ */
+export function bundlePath(): string {
+  return resolveBundlePath(ownPages(), basePath());
+}
+
+/** URL path (from the dist root) of the generated 404 page. */
+export function notFoundPath(): string {
+  return resolveNotFoundPath(ownPages(), basePath());
+}
+
+/**
+ * Whether this build should also write the standalone root entry points (a
+ * redirecting `index.html` and a root `404.html`). Requested by deploy flows
+ * that publish the dist on its own — see {@link STANDALONE_ENV}.
+ */
+export function standaloneRoot(): boolean {
+  return process.env[STANDALONE_ENV] === "1" && needsStandaloneRoot(ownPages(), basePath());
+}
+
+/**
+ * Bundle output directory — derived from {@link bundlePath}. Declared last for
+ * the same reason as `DOCS_OUT_DIR`: it reads the config singleton, whose
+ * `let` binding must be initialized first.
+ */
+export const ASSETS_DIR = join(DIST_DIR, bundlePath().slice(1));
+
+/**
+ * Remove bundles a default build left at the dist root, once the project
+ * brings its own pages and the bundle tree has moved under the docs prefix.
+ */
+export async function cleanRootBundles(): Promise<void> {
+  await cleanRootBundlesIn(DIST_DIR, ASSETS_DIR, DOCS_OUT_DIR);
+}
+
+/**
+ * {@link cleanRootBundles} over explicit directories, so it can be tested.
+ *
+ * `<dist>/assets/` goes entirely only when it holds nothing but Flame's old
+ * bundles. It is also where `docs/assets` is copied at a root deployment, and
+ * it *is* the docs output when `meta.basePath` sits under `/assets` — so when
+ * the docs output is that directory or lives inside it, only files with
+ * Flame's own hashed names are removed. The docs pages are written before
+ * this runs, so a recursive delete there would ship an empty site.
+ */
+export async function cleanRootBundlesIn(
+  distDir: string,
+  assetsDir: string,
+  docsOutDir: string
+): Promise<void> {
+  const rootAssets = join(distDir, "assets");
+  if (rootAssets === assetsDir) return;
+  const docsInRootAssets =
+    docsOutDir === distDir || docsOutDir === rootAssets || docsOutDir.startsWith(rootAssets + "/");
+  if (!docsInRootAssets) {
+    await rm(rootAssets, { recursive: true, force: true });
+    return;
+  }
+  for (const fixed of ["manifest.json", "search-index.json", "chunks"]) {
+    await rm(join(rootAssets, fixed), { recursive: true, force: true });
+  }
+  let files: string[];
+  try {
+    files = await readdir(rootAssets);
+  } catch {
+    return;
+  }
+  for (const file of files) {
+    if (
+      /^(client|home-client)-[A-Za-z0-9_-]{8}\.js(\.map)?$/.test(file) ||
+      /^(docs|site)-[0-9a-f]{16}\.css$/.test(file)
+    ) {
+      await rm(join(rootAssets, file), { force: true });
+    }
+  }
+}

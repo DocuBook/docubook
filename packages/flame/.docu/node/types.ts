@@ -86,9 +86,24 @@ export interface HomeConfig {
   features?: HomeFeature[];
 }
 
+export interface ExperimentalConfig {
+  /**
+   * Bring your own landing page. When `true`, Flame keeps everything it builds
+   * under `meta.basePath`: no landing page and no landing bundle (`home` is
+   * ignored), the 404 page at `<basePath>/404.html`, and the hashed bundles,
+   * asset manifest and search index at `<basePath>/_flame/`. Everything outside
+   * the docs prefix is the project's to serve. Defaults to `false` — the
+   * generated landing page, the root 404 and the dist-root `assets/` keep
+   * shipping until a project opts in.
+   */
+  pages?: boolean;
+}
+
 export interface DocuConfig {
   meta: DocuMeta;
   home?: HomeConfig;
+  /** Opt-in features whose behavior may still change between minor releases. */
+  experimental?: ExperimentalConfig;
   navbar: DocuNavbar;
   footer: DocuFooter;
   repo: RepoConfig;
@@ -108,7 +123,9 @@ export interface AssetEntry {
 
 export interface AssetManifest {
   docs: AssetEntry;
-  home: AssetEntry;
+  /** Landing bundle — absent when the project brings its own pages
+   *  (`experimental.pages`), because no landing page is rendered. */
+  home?: AssetEntry;
   notFound: AssetEntry;
 }
 

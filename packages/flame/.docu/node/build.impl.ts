@@ -6,7 +6,16 @@
  * The Node/Deno build entries call `runBuildCli()`.
  */
 
-import { readFile, writeFile, mkdir, readdir, copyFile, rename, unlink } from "node:fs/promises";
+import {
+  readFile,
+  writeFile,
+  mkdir,
+  readdir,
+  copyFile,
+  rename,
+  rm,
+  unlink,
+} from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join, dirname } from "node:path";
@@ -36,6 +45,15 @@ import {
   docsDepth,
   deployPath,
   assertValidBasePath,
+  assertValidExperimental,
+  resolveOwnPages,
+  bundlePath,
+  notFoundPath,
+  standaloneRoot,
+  ownPages,
+  redirectHtml,
+  cleanRootBundles,
+  OWN_PAGES_BUNDLE_DIR,
 } from "./paths";
 import { htmlShell } from "./html.shared";
 import { generateSearchIndex } from "./search-indexer";
@@ -147,7 +165,8 @@ let assetManifest: AssetManifest = {
  */
 async function resolveAssetManifest(
   bundleHit: boolean,
-  mdxSources: Record<string, string>
+  mdxSources: Record<string, string>,
+  bringOwnPages: boolean
 ): Promise<AssetManifest> {
   if (!bundleHit) return buildClientBundle(mdxSources);
   try {
@@ -157,8 +176,9 @@ async function resolveAssetManifest(
     if (
       typeof manifest.docs?.js === "string" &&
       typeof manifest.docs.css === "string" &&
-      typeof manifest.home?.js === "string" &&
-      typeof manifest.home.css === "string" &&
+      (bringOwnPages
+        ? manifest.home === undefined
+        : typeof manifest.home?.js === "string" && typeof manifest.home.css === "string") &&
       typeof manifest.notFound?.css === "string"
     ) {
       return manifest as AssetManifest;
@@ -280,6 +300,11 @@ async function renderDocsPage(
     themeCss: inlineThemeCss,
     depth,
     basePath: servedBasePath(),
+    bundlePath: bundlePath(),
+    // Under `experimental.pages` an authored `docs/404.mdx` is the 404 page the
+    // host serves at whatever path was requested, so its asset URLs must not
+    // depend on depth — the same reason the generated 404 is root-absolute.
+    ...(slug === "404" && ownPages() ? { absoluteAssets: true, deployPath: deployPath() } : {}),
     headExtra,
     bodyExtra,
   });
@@ -308,6 +333,10 @@ async function copyDirectoryRecursive(src: string, dest: string): Promise<void> 
 
 export async function runBuild(): Promise<void> {
   const docuConfig = loadDocuConfig();
+  // `experimental.pages`: the project brings its own landing page, so the build
+  // owns nothing outside the docs prefix — the 404 and the bundles move inside
+  // it. See ./experimental.ts.
+  const bringOwnPages = resolveOwnPages(docuConfig);
   const args = parseArgs();
 
   hookMemoryPressure(clearDerivedPageCaches);
@@ -316,11 +345,11 @@ export async function runBuild(): Promise<void> {
   // that cannot be honored would otherwise only surface after the whole build —
   // report them, or stop before anything is written.
   for (const warning of assertValidBasePath()) logger.warn(warning.message);
+  for (const warning of assertValidExperimental()) logger.warn(warning.message);
 
   logger.buildStart();
 
   if (args.clean) {
-    const { rm } = await import("node:fs/promises");
     try {
       await rm(DIST_DIR, { recursive: true, force: true });
     } catch (err) {
@@ -386,10 +415,13 @@ export async function runBuild(): Promise<void> {
   // on error.
   const indexSource = resolveDocsIndexSource(DOCS_DIR);
   const docsIndexPath = join(DOCS_OUT_DIR, "index.html");
+  // At the deployment root (`basePath: ""`) this path is `dist/index.html`,
+  // which belongs to the generated landing page — unless the project brings
+  // its own pages: nothing else can own `/` then, so the docs index takes it.
+  const docsIndexWritable = DOCS_OUT_DIR !== DIST_DIR || bringOwnPages;
   // If the source was removed since the previous build, don't ship stale docs
-  // output. At the deployment root, this path belongs to the landing page.
-  if (!indexSource && DOCS_OUT_DIR !== DIST_DIR) {
-    const { rm } = await import("node:fs/promises");
+  // output.
+  if (!indexSource && docsIndexWritable) {
     await rm(docsIndexPath, { force: true });
   }
   if (indexSource) {
@@ -422,7 +454,7 @@ export async function runBuild(): Promise<void> {
     isCacheEntry(lastBundle) &&
     lastBundle.hash === bundleHash &&
     existsSync(join(ASSETS_DIR, "manifest.json"));
-  assetManifest = await resolveAssetManifest(bundleHit, mdxSources);
+  assetManifest = await resolveAssetManifest(bundleHit, mdxSources, bringOwnPages);
   logger.bundleDone(Math.round(performance.now() - t));
 
   inlineThemeCss = computeInlineThemeCss();
@@ -537,7 +569,7 @@ export async function runBuild(): Promise<void> {
         builder,
         generateNonce()
       );
-      if (DOCS_OUT_DIR !== DIST_DIR) {
+      if (docsIndexWritable) {
         await mkdir(DOCS_OUT_DIR, { recursive: true });
         await writeFile(docsIndexPath, indexHtml);
       }
@@ -548,77 +580,131 @@ export async function runBuild(): Promise<void> {
     }
   }
 
-  const landingPage = React.createElement(IndexPage);
-  const landingFavicon = docuConfig.meta?.favicon || defaultFavicon();
-  const landingSeo = buildSeoMeta(
-    docuConfig,
-    docuConfig.meta as unknown as Record<string, unknown>,
-    ""
-  );
-  const landingNonce = generateNonce();
-  const landingContext: PageContext = {
-    pageType: "home",
-    assets: assetManifest.home,
-    slug: "",
-    filePath: join(PAGES_DIR, "index.tsx"),
-    frontmatter: { ...docuConfig.meta } as unknown as Record<string, unknown>,
-    config: docuConfig,
-  };
-  let landingHtml = htmlShell({
-    title: docuConfig.meta?.title || "DocuBook",
-    description: docuConfig.meta?.description || "",
-    body: renderToString(landingPage),
-    favicon: landingFavicon,
-    seo: landingSeo,
-    csp: cspHeader(landingNonce),
-    css: landingContext.assets.css,
-    js: landingContext.assets.js,
-    nonce: landingNonce,
-    themeCss: inlineThemeCss,
-    basePath: servedBasePath(),
-    headExtra: builder?.collectHead(landingContext),
-    bodyExtra: builder?.collectBody(landingContext),
-  });
-  if (builder) landingHtml = await builder.runTransformHtmlChain(landingHtml, landingContext);
-  // The landing page always owns `/`. At a root deployment the docs index
-  // would collide with it, so the index write above is skipped there — the
-  // docs root page simply does not exist.
-  await writeFile(join(DIST_DIR, "index.html"), landingHtml);
+  if (bringOwnPages) {
+    // The project owns `/`: never ship a stale landing page from a build made
+    // before the flag was set. At the deployment root `index.html` is the docs
+    // index, written (or removed) above. A standalone deploy — Flame is the
+    // whole site — gets a redirect to the docs instead.
+    if (DOCS_OUT_DIR !== DIST_DIR) {
+      if (standaloneRoot()) {
+        await writeFile(join(DIST_DIR, "index.html"), redirectHtml(servedBasePath()));
+      } else {
+        await rm(join(DIST_DIR, "index.html"), { force: true });
+      }
+    }
+    // A default build left its bundles at the dist root; they now live under
+    // the docs prefix.
+    await cleanRootBundles();
+  } else {
+    // The flag was turned off: drop the bundle tree and the 404 a flagged build
+    // left under the docs prefix — unless that 404 is a docs page of its own.
+    await rm(join(DOCS_OUT_DIR, OWN_PAGES_BUNDLE_DIR), { recursive: true, force: true });
+    if (DOCS_OUT_DIR !== DIST_DIR && !mdxFiles.some((f) => f.path === "404")) {
+      await rm(join(DOCS_OUT_DIR, "404.html"), { force: true });
+    }
+    const homeAssets = assetManifest.home;
+    if (!homeAssets) throw new Error("Client bundle has no landing entry");
+    const landingPage = React.createElement(IndexPage);
+    const landingFavicon = docuConfig.meta?.favicon || defaultFavicon();
+    const landingSeo = buildSeoMeta(
+      docuConfig,
+      docuConfig.meta as unknown as Record<string, unknown>,
+      ""
+    );
+    const landingNonce = generateNonce();
+    const landingContext: PageContext = {
+      pageType: "home",
+      assets: homeAssets,
+      slug: "",
+      filePath: join(PAGES_DIR, "index.tsx"),
+      frontmatter: { ...docuConfig.meta } as unknown as Record<string, unknown>,
+      config: docuConfig,
+    };
+    let landingHtml = htmlShell({
+      title: docuConfig.meta?.title || "DocuBook",
+      description: docuConfig.meta?.description || "",
+      body: renderToString(landingPage),
+      favicon: landingFavicon,
+      seo: landingSeo,
+      csp: cspHeader(landingNonce),
+      css: landingContext.assets.css,
+      js: landingContext.assets.js,
+      nonce: landingNonce,
+      themeCss: inlineThemeCss,
+      basePath: servedBasePath(),
+      bundlePath: bundlePath(),
+      headExtra: builder?.collectHead(landingContext),
+      bodyExtra: builder?.collectBody(landingContext),
+    });
+    if (builder) landingHtml = await builder.runTransformHtmlChain(landingHtml, landingContext);
+    // The landing page always owns `/`. At a root deployment the docs index
+    // would collide with it, so the index write above is skipped there — the
+    // docs root page simply does not exist.
+    await writeFile(join(DIST_DIR, "index.html"), landingHtml);
+  }
 
-  const notFoundPage = React.createElement(NotFoundPage);
-  const notFoundFavicon = docuConfig.meta?.favicon || defaultFavicon();
-  const notFoundNonce = generateNonce();
-  const notFoundContext: PageContext = {
-    pageType: "notFound",
-    assets: assetManifest.notFound,
-    slug: "404",
-    filePath: join(PAGES_DIR, "404.tsx"),
-    frontmatter: {},
-    config: docuConfig,
-  };
-  let notFoundHtml = htmlShell({
-    title: "404 - Not Found",
-    description: "",
-    body: renderToString(notFoundPage),
-    favicon: notFoundFavicon,
-    headExtra: [
-      '<meta name="robots" content="noindex,follow">',
-      ...(builder?.collectHead(notFoundContext) ?? []),
-    ],
-    bodyExtra: builder?.collectBody(notFoundContext),
-    csp: cspHeader(notFoundNonce),
-    css: notFoundContext.assets.css,
-    js: notFoundContext.assets.js,
-    nonce: notFoundNonce,
-    themeCss: inlineThemeCss,
-    // Served as the static-host fallback at ANY requested path — relative
-    // depth can never be right there, so use root-absolute asset URLs.
-    absoluteAssets: true,
-    basePath: servedBasePath(),
-    deployPath: deployPath(),
-  });
-  if (builder) notFoundHtml = await builder.runTransformHtmlChain(notFoundHtml, notFoundContext);
-  await writeFile(join(DIST_DIR, "404.html"), notFoundHtml);
+  // The 404 page is always Flame's. By default it is the dist-root fallback;
+  // when the project brings its own pages it moves inside the docs prefix so
+  // it never replaces the project's own root 404. A docs page authored as
+  // `docs/404.mdx` already sits at that path under the flag, and wins.
+  const docsOwnsNotFound = bringOwnPages && mdxFiles.some((f) => f.path === "404");
+  let notFoundHtml: string | undefined;
+  if (docsOwnsNotFound) {
+    logger.warn(`docs/404 is published at ${notFoundPath()}, so the generated 404 page is skipped`);
+  } else {
+    const notFoundPage = React.createElement(NotFoundPage);
+    const notFoundFavicon = docuConfig.meta?.favicon || defaultFavicon();
+    const notFoundNonce = generateNonce();
+    const notFoundContext: PageContext = {
+      pageType: "notFound",
+      assets: assetManifest.notFound,
+      slug: "404",
+      filePath: join(PAGES_DIR, "404.tsx"),
+      frontmatter: {},
+      config: docuConfig,
+    };
+    notFoundHtml = htmlShell({
+      title: "404 - Not Found",
+      description: "",
+      body: renderToString(notFoundPage),
+      favicon: notFoundFavicon,
+      headExtra: [
+        '<meta name="robots" content="noindex,follow">',
+        ...(builder?.collectHead(notFoundContext) ?? []),
+      ],
+      bodyExtra: builder?.collectBody(notFoundContext),
+      csp: cspHeader(notFoundNonce),
+      css: notFoundContext.assets.css,
+      js: notFoundContext.assets.js,
+      nonce: notFoundNonce,
+      themeCss: inlineThemeCss,
+      // Served as the static-host fallback at ANY requested path — relative
+      // depth can never be right there, so use root-absolute asset URLs.
+      absoluteAssets: true,
+      basePath: servedBasePath(),
+      bundlePath: bundlePath(),
+      deployPath: deployPath(),
+    });
+    if (builder) notFoundHtml = await builder.runTransformHtmlChain(notFoundHtml, notFoundContext);
+    const notFoundOut = join(DIST_DIR, notFoundPath().slice(1));
+    await mkdir(dirname(notFoundOut), { recursive: true });
+    await writeFile(notFoundOut, notFoundHtml);
+  }
+  if (bringOwnPages && DOCS_OUT_DIR !== DIST_DIR) {
+    // The root 404 is the project's — except in a standalone deploy, where the
+    // host has no other pages and only honors a root `404.html`. Either 404
+    // page (generated, or authored as `docs/404.mdx`) uses root-absolute asset
+    // URLs, so the same file works from either location.
+    const rootNotFound = join(DIST_DIR, "404.html");
+    const prefixedNotFound = join(DIST_DIR, notFoundPath().slice(1));
+    if (standaloneRoot() && notFoundHtml) {
+      await writeFile(rootNotFound, notFoundHtml);
+    } else if (standaloneRoot() && existsSync(prefixedNotFound)) {
+      await copyFile(prefixedNotFound, rootNotFound);
+    } else {
+      await rm(rootNotFound, { force: true });
+    }
+  }
 
   logger.spinner.stop(
     `Built ${built} pages (${skipped} cached) \x1b[90m(${Math.round(performance.now() - t)}ms)\x1b[0m`
@@ -631,7 +717,7 @@ export async function runBuild(): Promise<void> {
       filePath: join(DOCS_DIR, f.path),
       outputPath: join(DOCS_OUT_DIR, `${f.path}.html`),
     }));
-    await builder.runOnEnd(pages, { assetManifest, outDir: DIST_DIR });
+    await builder.runOnEnd(pages, { assetManifest, outDir: DIST_DIR, assetsDir: ASSETS_DIR });
   }
 
   logger.indexStart();

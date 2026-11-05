@@ -350,12 +350,31 @@ build.onStart((config) => {
 Called after all page HTML has been written. Generate sitemaps, RSS feeds, or other output using the final output directory and page-specific asset manifest.
 
 ```typescript
-build.onEnd((config, pages, { outDir, assetManifest }) => {
+import { join } from "node:path";
+
+build.onEnd((config, pages, { outDir, assetsDir, assetManifest }) => {
   // pages: { slug, title, filePath, outputPath }[]
   console.log(`Built ${pages.length} pages to ${outDir}`);
-  console.log(`Docs CSS: ${assetManifest.docs.css}`);
+  console.log(`Docs CSS: ${join(assetsDir, assetManifest.docs.css)}`);
 });
 ```
+
+| Field | Description |
+| ----- | ----------- |
+| `outDir` | Absolute output directory (`.docu/dist`). |
+| `assetsDir` | Absolute directory of the hashed bundles, `manifest.json` and `search-index.json`. It is `outDir/assets` by default and `outDir/<basePath>/_flame` with [`experimental.pages`](/docs/getting-started/base-path#bring-your-own-pages). Resolve manifest entries against it rather than a hard-coded `assets/`. |
+| `assetManifest` | Hashed file names per page family (`docs`, `home`, `notFound`), relative to `assetsDir`. `home` is absent with `experimental.pages`. |
+
+:::warning{title="AssetManifest.home is optional"}
+`AssetManifest.home` is typed as optional, because no landing bundle is built with `experimental.pages`. A TypeScript plugin that reads `assetManifest.home.css` no longer compiles under `strictNullChecks`, even for projects that leave the flag off. Check for it first:
+
+```typescript
+const homeCss = assetManifest.home?.css;
+if (homeCss) {
+  // the project ships flame's landing page
+}
+```
+:::
 
 ### onLoad({ filter }, callback)
 

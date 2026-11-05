@@ -67,10 +67,17 @@ export interface DevServerContext {
  * Final build metadata passed to `onEnd` after all HTML files are written.
  */
 export interface BuildEndContext {
-  /** Page-specific hashed assets emitted under `outDir/assets`. */
+  /** Page-specific hashed assets; the file names are relative to `assetsDir`. */
   assetManifest: Readonly<AssetManifest>;
   /** Absolute static output directory. */
   outDir: string;
+  /**
+   * Absolute directory holding the hashed bundles, `manifest.json` and
+   * `search-index.json`: `outDir/assets` by default, `outDir/<basePath>/_flame`
+   * with `experimental.pages`. Resolve manifest entries against this, never
+   * against a hard-coded `outDir/assets`.
+   */
+  assetsDir: string;
 }
 
 export type { AssetEntry, AssetManifest, DocuConfig };

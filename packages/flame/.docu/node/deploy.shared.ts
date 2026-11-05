@@ -11,7 +11,18 @@
 import { writeFile, mkdir } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { DIST_DIR, PROJECT_ROOT, FRAMEWORK_ROOT, servedBasePath } from "./paths";
+import {
+  DIST_DIR,
+  PROJECT_ROOT,
+  FRAMEWORK_ROOT,
+  servedBasePath,
+  ownPages,
+  basePath,
+  bundlePath,
+  needsStandaloneRoot,
+  STANDALONE_ENV,
+  OWN_PAGES_BUNDLE_DIR,
+} from "./paths";
 
 const FLAME_VERSION = JSON.parse(
   readFileSync(resolve(FRAMEWORK_ROOT, "package.json"), "utf-8")
@@ -20,21 +31,37 @@ const FLAME_VERSION = JSON.parse(
 const WORKFLOW_DIR = join(PROJECT_ROOT, ".github/workflows");
 const WORKFLOW_FILE = join(WORKFLOW_DIR, "deploy.yml");
 
+/** Options for {@link buildNginxConf} beyond the docs prefix. */
+export interface NginxConfOptions {
+  /** URL path of the bundle tree (no trailing slash). Defaults to `/assets`. */
+  bundlePath?: string;
+  /**
+   * `experimental.pages`: the generated 404 lives inside the docs prefix and
+   * there is no landing page. Flame is still the whole site inside the image,
+   * so `/` redirects to the docs instead of answering 404.
+   */
+  ownPages?: boolean;
+}
+
 /**
- * Nginx content-assets block.
+ * Nginx config for `flame deploy --docker`.
  *
  * Two distinct asset trees:
- *  - `/assets/` — hash-named client bundles, written to the dist root, immutable.
+ *  - the bundle tree — hash-named client bundles, immutable. At the dist root
+ *    (`/assets/`) by default, under the docs prefix (`/docs/_flame/`) with
+ *    `experimental.pages`.
  *  - `<prefix>/assets/` — user content assets copied from `docs/assets`,
  *    revalidated after 7d.
  *
- * When the prefix is empty (root deployment) both trees land on `/assets/`, and
- * nginx rejects duplicate location blocks — so the content tree is omitted and
- * the immutable bundle rules win. Non-hashed content assets then inherit the
- * 1y immutable header; that is a deliberate trade for a valid config, and root
- * deployments are the uncommon case.
+ * When both trees land on the same path (the default bundle tree at a root
+ * deployment) nginx rejects duplicate location blocks — so the content tree is
+ * omitted and the immutable bundle rules win. Non-hashed content assets then
+ * inherit the 1y immutable header; that is a deliberate trade for a valid
+ * config, and root deployments are the uncommon case. Under the flag the
+ * bundle tree is `/_flame/`, so the two never collide.
  */
-export function buildNginxConf(basePath: string): string {
+export function buildNginxConf(basePath: string, options: NginxConfOptions = {}): string {
+  const { bundlePath = "/assets", ownPages = false } = options;
   // nginx `location` names must be plain URI prefixes; anything else (spaces,
   // braces, semicolons) fails `nginx -t` and the container never starts.
   // Unsafe prefixes simply lose the content-assets cache block — the default
@@ -46,10 +73,11 @@ export function buildNginxConf(basePath: string): string {
         "omitting the content-assets caching block (assets still served)"
     );
   }
+  const contentAssetsPath = `${basePath}/assets`;
   const contentAssetsBlock =
-    safePrefix && basePath.length > 0
+    (safePrefix || basePath.length === 0) && contentAssetsPath !== bundlePath
       ? `
-  location ${basePath}/assets/ {
+  location ${contentAssetsPath}/ {
     expires 7d;
     add_header Cache-Control "public";
     add_header X-Frame-Options "DENY" always;
@@ -61,13 +89,28 @@ export function buildNginxConf(basePath: string): string {
   }
 `
       : "";
+  // Root deployments under the flag publish the docs index at `/`; with a docs
+  // prefix nothing in the image answers `/`, so send the browser to the docs.
+  // Relative `Location`: an absolute one carries the container's own port (80),
+  // which is wrong behind `docker run -p 8080:80`. Targeting the directory
+  // directly also skips nginx's extra trailing-slash 301.
+  const rootRedirect =
+    ownPages && basePath.length > 0
+      ? `
+  location = / {
+    absolute_redirect off;
+    return 302 ${basePath}/;
+  }
+`
+      : "";
+  const notFound = ownPages ? `${basePath}/404.html` : "/404.html";
 
   return `server {
   listen 80;
   server_name _;
   root /usr/share/nginx/html;
   index index.html;
-  error_page 404 /404.html;
+  error_page 404 ${notFound};
 
   gzip on;
   gzip_types text/html text/css application/javascript image/svg+xml;
@@ -81,16 +124,16 @@ export function buildNginxConf(basePath: string): string {
   add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'" always;
 
   # Build metadata and search content use stable URLs, so clients must revalidate them.
-  location = /assets/manifest.json {
+  location = ${bundlePath}/manifest.json {
     expires -1;
   }
 
-  location = /assets/search-index.json {
+  location = ${bundlePath}/search-index.json {
     expires -1;
   }
 
   # Generated JS, CSS, and chunks include content hashes in their filenames.
-  location /assets/ {
+  location ${bundlePath}/ {
     expires 1y;
     add_header Cache-Control "public, immutable";
     add_header X-Frame-Options "DENY" always;
@@ -101,8 +144,8 @@ export function buildNginxConf(basePath: string): string {
     add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'" always;
   }
 ${contentAssetsBlock}
-  location = /404.html { }
-
+  location = ${notFound} { }
+${rootRedirect}
   location / {
     try_files $uri $uri.html $uri/ =404;
   }
@@ -268,7 +311,13 @@ RUN ${pm.runCmd} run build
 ${NGINX_STAGE}`;
 }
 
-export const HEADERS_FILE = `/*
+/**
+ * `_headers` (Netlify / Cloudflare Pages format) written next to the dist by
+ * `flame deploy`. Cache rules follow the bundle tree: `/assets` by default,
+ * `<basePath>/_flame` under `experimental.pages`.
+ */
+export function buildHeadersFile(bundlePath = "/assets"): string {
+  return `/*
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
@@ -276,23 +325,26 @@ export const HEADERS_FILE = `/*
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https:; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'
 
-/assets/client-*
+${bundlePath}/client-*
   Cache-Control: public, max-age=31536000, immutable
-/assets/home-client-*
+${bundlePath}/home-client-*
   Cache-Control: public, max-age=31536000, immutable
-/assets/docs-*
+${bundlePath}/docs-*
   Cache-Control: public, max-age=31536000, immutable
-/assets/site-*
+${bundlePath}/site-*
   Cache-Control: public, max-age=31536000, immutable
-/assets/chunks/*
+${bundlePath}/chunks/*
   Cache-Control: public, max-age=31536000, immutable
-/assets/assets/*
+${bundlePath}/assets/*
   Cache-Control: public, max-age=31536000, immutable
-/assets/manifest.json
+${bundlePath}/manifest.json
   Cache-Control: no-cache
-/assets/search-index.json
+${bundlePath}/search-index.json
   Cache-Control: no-cache
 `;
+}
+
+export const HEADERS_FILE = buildHeadersFile();
 
 const isDocker = !!process.env.FLAME_DEPLOY_DOCKER;
 
@@ -311,6 +363,10 @@ const log = isSilent
 
 async function runBuild() {
   process.env.NODE_ENV = "production";
+  // GitHub Pages publishes the dist on its own: with `experimental.pages` the
+  // build then also writes a root redirect and a root 404 (see STANDALONE_ENV).
+  // The Docker image does not need them — its nginx config redirects instead.
+  if (!isDocker) process.env[STANDALONE_ENV] = "1";
   if (isSilent) {
     process.env.FLAME_BUILD_SILENT = "1";
     process.env.LOG_LEVEL = "error";
@@ -335,15 +391,53 @@ async function writeDockerFiles() {
     );
   }
 
-  if (!existsSync(join(dockerDir, "nginx.conf"))) {
-    await writeFile(join(dockerDir, "nginx.conf"), buildNginxConf(servedBasePath()));
+  const nginxPath = join(dockerDir, "nginx.conf");
+  if (!existsSync(nginxPath)) {
+    await writeFile(nginxPath, buildNginxConf(servedBasePath(), nginxOptions()));
     log.created("📄 Created nginx.conf");
+  } else if (nginxConfIsStale(readFileSync(nginxPath, "utf-8"))) {
+    log.info(
+      `⚠️  nginx.conf does not serve ${bundlePath()}/ (the bundle path changes with experimental.pages); ` +
+        "delete it and rerun flame deploy --docker to regenerate."
+    );
   }
 
   if (!existsSync(join(dockerDir, ".dockerignore"))) {
     await writeFile(join(dockerDir, ".dockerignore"), DOCKERIGNORE);
     log.created("📄 Created .dockerignore");
   }
+}
+
+/** nginx options for the current project — the bundle tree and 404 follow
+ *  `experimental.pages`. */
+export function nginxOptions(): NginxConfOptions {
+  return { bundlePath: bundlePath(), ownPages: ownPages() };
+}
+
+/**
+ * Whether a kept nginx.conf was generated for the other bundle layout.
+ *
+ * Under `experimental.pages` a config that never mentions the moved bundle
+ * tree predates the flag. Without the flag only a config that still points at
+ * the flagged tree is stale. A hand-edited default config (a reworded
+ * `location /assets/` block) is the user's own business and must not warn on
+ * every deploy.
+ */
+export function nginxConfIsStale(
+  conf: string,
+  flagged: boolean = ownPages(),
+  path: string = bundlePath()
+): boolean {
+  return flagged ? !conf.includes(`${path}/`) : conf.includes(`/${OWN_PAGES_BUNDLE_DIR}/`);
+}
+
+/**
+ * Whether a kept GitHub Pages workflow builds in standalone mode. Workflows
+ * generated before `experimental.pages` existed lack it, and their artifact
+ * then has no root entry point once the flag is on.
+ */
+export function workflowIsStandalone(workflow: string): boolean {
+  return workflow.includes(`${STANDALONE_ENV}:`);
 }
 
 function generateWorkflowYml(): string {
@@ -412,6 +506,10 @@ function generateWorkflowYml(): string {
     `      - run: ${installCmd}`,
     "",
     `      - run: ${pm.runCmd} run build`,
+    "        env:",
+    // The workflow publishes the dist on its own: under `experimental.pages`
+    // the build adds a root redirect and 404 (a no-op without the flag).
+    `          ${STANDALONE_ENV}: "1"`,
     "",
     "      - name: Add .nojekyll",
     "        run: touch .docu/dist/.nojekyll",
@@ -475,6 +573,17 @@ async function writeGhaWorkflow() {
     await mkdir(WORKFLOW_DIR, { recursive: true });
     await writeFile(WORKFLOW_FILE, generateWorkflowYml());
     log.created("📄 Created .github/workflows/deploy.yml");
+  } else if (
+    // Standalone mode only matters with a docs prefix: at a root deployment the
+    // docs index already answers `/`.
+    needsStandaloneRoot(ownPages(), basePath()) &&
+    !workflowIsStandalone(readFileSync(WORKFLOW_FILE, "utf-8"))
+  ) {
+    log.info(
+      `⚠️  .github/workflows/deploy.yml builds without ${STANDALONE_ENV}=1, so the published site ` +
+        "has no root page under experimental.pages. Add it to the build step's env, or delete the " +
+        "file and rerun flame deploy."
+    );
   }
 }
 
@@ -494,7 +603,7 @@ export async function runDeploy(): Promise<void> {
 
   // Common: .nojekyll + _headers
   await writeFile(join(DIST_DIR, ".nojekyll"), "");
-  await writeFile(join(DIST_DIR, "_headers"), HEADERS_FILE);
+  await writeFile(join(DIST_DIR, "_headers"), buildHeadersFile(bundlePath()));
 
   if (isDocker) {
     await writeDockerFiles();

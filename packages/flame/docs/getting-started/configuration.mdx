@@ -34,12 +34,13 @@ Flame reads project configuration from `docu.json` at the project root. This fil
 | `meta`    | object | **Yes**  | Site metadata                          |
 | `navbar`  | object | **Yes**  | Navigation bar configuration           |
 | `footer`  | object | No       | Footer configuration                   |
-| `home`    | object | No       | Landing page hero and features         |
+| `home`    | object | No       | Landing page hero and features (ignored under `experimental.pages`) |
 | `repo`    | object | No       | Repository link for edit-on-GitHub     |
 | `sidebar` | object | No       | Sidebar behavior options               |
 | `routes`  | array  | No       | Manual route table overrides           |
 | `themes`  | object | No       | Theme color configuration              |
 | `plugins` | array  | No       | Plugin list                            |
+| `experimental` | object | No  | Opt-in features that may still change  |
 
 ## meta
 
@@ -148,7 +149,7 @@ Enables the **Edit on GitHub** link on documentation pages.
 
 ## home
 
-Customise the landing page hero section and feature cards.
+Customise the landing page hero section and feature cards. The section is ignored when [`experimental.pages`](#experimental) is on — the landing page is then yours to build, and the build logs a warning while `home` is still present.
 
 ```json
 {
@@ -267,3 +268,23 @@ Extend Flame with build and dev server hooks. See [Plugins](/docs/getting-starte
 ```
 
 Each entry is a plugin name (npm package or relative path) optionally followed by an options object. Relative paths starting with `.` resolve from the project root; absolute paths and `..` traversal are blocked.
+
+## experimental
+
+Opt-in features whose behavior may still change between minor releases. Nothing here is on by default.
+
+```json
+{
+  "experimental": {
+    "pages": true
+  }
+}
+```
+
+| Field   | Type    | Default | Description |
+| ------- | ------- | ------- | ----------- |
+| `pages` | boolean | `false` | Bring your own landing page. Flame then keeps everything it builds under `meta.basePath`: no landing page or landing bundle, the 404 page at `<basePath>/404.html`, and bundles plus the search index at `<basePath>/_flame/`. `home` is ignored. See [Bring your own pages](/docs/getting-started/base-path#bring-your-own-pages). |
+
+With `pages` off, nothing changes: the generated landing page and root 404 keep shipping, bundles stay in the dist-root `assets/`, and `home` keeps rendering.
+
+Use `pages` with a docs prefix. A root `meta.basePath` (`""` or `"/"`) makes the docs own `/` and the root `index.html` and `404.html`, so they cannot share the origin with another app. The schema flags that combination, and the build and dev server print a warning.

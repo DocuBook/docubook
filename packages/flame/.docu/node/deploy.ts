@@ -10,12 +10,25 @@
 import { mkdir } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { DIST_DIR, PROJECT_ROOT, servedBasePath } from "./paths";
+import {
+  DIST_DIR,
+  PROJECT_ROOT,
+  servedBasePath,
+  ownPages,
+  basePath,
+  bundlePath,
+  needsStandaloneRoot,
+  STANDALONE_ENV,
+} from "./paths";
 import {
   DOCKERFILE_BUN,
   DOCKERFILE_MARKER,
   generateDockerfile,
   buildNginxConf,
+  buildHeadersFile,
+  nginxOptions,
+  nginxConfIsStale,
+  workflowIsStandalone,
   HEADERS_FILE,
   NGINX_CONF,
   DOCKERIGNORE,
@@ -45,6 +58,10 @@ async function runBuild() {
   const build = Bun.spawn(["bun", "run", "build"], {
     stdout: isSilent ? "ignore" : "inherit",
     stderr: isSilent ? "ignore" : "inherit",
+    // GitHub Pages publishes the dist on its own: with `experimental.pages` the
+    // build then also writes a root redirect and a root 404 (STANDALONE_ENV).
+    // The Docker image does not need them — its nginx config redirects instead.
+    env: isDocker ? process.env : { ...process.env, [STANDALONE_ENV]: "1" },
   });
   const exitCode = await build.exited;
   if (exitCode !== 0) {
@@ -69,9 +86,15 @@ async function writeDockerFiles() {
     );
   }
 
-  if (!existsSync(join(dockerDir, "nginx.conf"))) {
-    await Bun.write(join(dockerDir, "nginx.conf"), buildNginxConf(servedBasePath()));
+  const nginxPath = join(dockerDir, "nginx.conf");
+  if (!existsSync(nginxPath)) {
+    await Bun.write(nginxPath, buildNginxConf(servedBasePath(), nginxOptions()));
     log.created("📄 Created nginx.conf");
+  } else if (nginxConfIsStale(readFileSync(nginxPath, "utf-8"))) {
+    log.info(
+      `⚠️  nginx.conf does not serve ${bundlePath()}/ (the bundle path changes with experimental.pages); ` +
+        "delete it and rerun flame deploy --docker to regenerate."
+    );
   }
 
   if (!existsSync(join(dockerDir, ".dockerignore"))) {
@@ -85,6 +108,17 @@ async function writeGhaWorkflow() {
     await mkdir(WORKFLOW_DIR, { recursive: true });
     await Bun.write(WORKFLOW_FILE, GITHUB_ACTIONS_WORKFLOW);
     log.created("📄 Created .github/workflows/deploy.yml");
+  } else if (
+    // Standalone mode only matters with a docs prefix: at a root deployment the
+    // docs index already answers `/`.
+    needsStandaloneRoot(ownPages(), basePath()) &&
+    !workflowIsStandalone(readFileSync(WORKFLOW_FILE, "utf-8"))
+  ) {
+    log.info(
+      `⚠️  .github/workflows/deploy.yml builds without ${STANDALONE_ENV}=1, so the published site ` +
+        "has no root page under experimental.pages. Add it to the build step's env, or delete the " +
+        "file and rerun flame deploy."
+    );
   }
 }
 
@@ -140,7 +174,7 @@ async function deploy() {
 
   // Common: .nojekyll + _headers
   await Bun.write(join(DIST_DIR, ".nojekyll"), "");
-  await Bun.write(join(DIST_DIR, "_headers"), HEADERS_FILE);
+  await Bun.write(join(DIST_DIR, "_headers"), buildHeadersFile(bundlePath()));
 
   if (isDocker) {
     await writeDockerFiles();
@@ -195,6 +229,8 @@ jobs:
       - run: bun install
 
       - run: bun run build
+        env:
+          FLAME_STANDALONE: "1"
 
       - name: Add .nojekyll
         run: touch .docu/dist/.nojekyll

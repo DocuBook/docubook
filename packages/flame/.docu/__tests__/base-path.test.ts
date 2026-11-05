@@ -622,7 +622,19 @@ describe("validateBasePath — normalization guard", () => {
     expect(validateBasePath("/repo/docs")).toEqual([]);
     expect(validateBasePath("")).toEqual([]);
     expect(validateBasePath("/")).toEqual([]);
-    expect(validateBasePath("   ")).toEqual([]);
+    expect(validateBasePath("///")).toEqual([]);
+  });
+
+  it("rejects whitespace-only strings instead of reading them as the root", () => {
+    for (const value of [" ", "   ", "\t", " \n "]) {
+      const issues = validateBasePath(value);
+      expect(issues, JSON.stringify(value)).toHaveLength(1);
+      expect(issues[0].level).toBe("error");
+      expect(issues[0].message).toContain(`${JSON.stringify(value)} contains only whitespace`);
+      expect(issues[0].message).toContain('"/docs"');
+    }
+    // Surrounding whitespace around a real value is still normalized, not rejected.
+    expect(validateBasePath("  /docs  ").every((issue) => issue.level !== "error")).toBe(true);
   });
 
   it("rejects non-strings — nothing can normalize them", () => {

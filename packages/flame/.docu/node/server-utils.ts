@@ -150,3 +150,12 @@ export function getContentType(pathname: string): string {
   const ext = pathname.split(".").pop()?.toLowerCase();
   return MIME_TYPES[ext || ""] || "application/octet-stream";
 }
+
+/**
+ * Temporary redirect to a same-origin path. Built by hand: `Response.redirect`
+ * requires an absolute URL on Node, and the dev and preview servers only know
+ * the path they are serving under.
+ */
+export function redirectResponse(location: string): Response {
+  return new Response(null, { status: 302, headers: { Location: location } });
+}

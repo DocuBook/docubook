@@ -1,5 +1,13 @@
 import { watch } from "node:fs";
-import { DOCS_DIR, loadDocuConfig, resolveBasePath, assertValidBasePath } from "./paths";
+import {
+  DOCS_DIR,
+  loadDocuConfig,
+  resolveBasePath,
+  assertValidBasePath,
+  assertValidExperimental,
+  resolveOwnPages,
+  resolveRootRoute,
+} from "./paths";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
 import { buildClientBundle, computeInlineThemeCss } from "./hydrate";
@@ -22,14 +30,17 @@ import {
   type ServerState,
 } from "./server-routes";
 import { wrapPluginResponse } from "./security";
+import { redirectResponse } from "./server-utils";
 import { matchDocsSlug, stripDocsHtmlSuffix } from "./utils";
 
 const docuConfig = loadDocuConfig();
 const resolvedBasePath = resolveBasePath(docuConfig);
+const rootRoute = resolveRootRoute(resolveOwnPages(docuConfig), resolvedBasePath);
 
 // Report normalized prefixes (and stop on a value that cannot be honored)
 // before the server announces a site that would be built somewhere else.
 for (const warning of assertValidBasePath()) logger.warn(warning.message);
+for (const warning of assertValidExperimental()) logger.warn(warning.message);
 
 const parsedPort = parseInt(process.env.PORT ?? "3000", 10);
 const PORT =
@@ -173,13 +184,18 @@ const server = Bun.serve({
 
       let response: Response;
 
-      // The landing page owns `/` in every deployment. At the deployment root
-      // (`meta.basePath: ""`) docs would otherwise claim it, but the build
-      // skips the docs index there — so dev must not serve it either.
+      // `/` follows the build (see resolveRootRoute): the landing page owns it
+      // by default — at the deployment root (`meta.basePath: ""`) the build
+      // skips the docs index for that reason, so dev must not serve it either.
+      // When the project brings its own pages there is no landing page: the
+      // docs index takes `/` at the root, and at any other prefix the browser
+      // is sent to the docs, since the project's pages are not served here.
       // Static assets were already handled above, so a root deployment may
       // still match every other path as a docs route.
       if (pathname === "/") {
-        response = await handleIndex(state);
+        if (rootRoute === "landing") response = await handleIndex(state);
+        else if (rootRoute === "docs-index") response = await handleDocsIndex(state);
+        else response = redirectResponse(rootRoute.redirect);
       } else {
         const docsSlug = matchDocsSlug(pathname, resolvedBasePath);
         if (docsSlug) {
