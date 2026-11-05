@@ -203,10 +203,13 @@ request.
 Branch protection on `main` requires `ci (lint)`, `ci (typecheck)`,
 `ci (build)`, `ci (test)`, and `commitlint` on a branch that is up to date
 with `main`. It also requires one approving review, and a new push dismisses
-earlier approvals. Code-owner review is switched on, but there is no
-`CODEOWNERS` file, so it adds no extra reviewer. CodeQL also scans each pull
-request, and Pullfrog posts an automated review. Neither is a required check,
-but reply in the thread to each Pullfrog inline comment you act on or decline.
+earlier approvals. There is no code-owner rule and no `CODEOWNERS` file.
+
+An author cannot approve their own PR, and Renovate PRs and the Release PR are
+opened with a maintainer's token. That approval therefore usually comes from
+Pullfrog's automated review or from another maintainer. CodeQL also scans each
+pull request. Neither CodeQL nor Pullfrog is a required check, but reply in the
+thread to each Pullfrog inline comment you act on or decline.
 
 ## Branch Naming
 
