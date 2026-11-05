@@ -22,6 +22,18 @@
   }
 }
 
+/* Mermaid replaces the text of <pre class="mermaid"> with its SVG. A host
+   stylesheet can make that <pre> wider than the diagram (flame sets
+   `pre { width: inherit !important }`), and the SVG then sits at the start.
+   Center the diagram's own <svg> with auto margins. This moves only its outer
+   box. text-align would be inherited by the HTML labels inside the diagram,
+   and a flex <pre> would shrink the element Mermaid measures while it renders
+   a Gantt chart, so the <pre> stays a plain block. */
+pre[data-mermaid-align="center"] > svg {
+  display: block;
+  margin-inline: auto;
+}
+
 [data-card-hover]:hover {
   border-color: hsl(var(--primary, 210 81% 56%)) !important;
   box-shadow: 0 11px 28px rgba(34, 129, 227, 0.15) !important;
