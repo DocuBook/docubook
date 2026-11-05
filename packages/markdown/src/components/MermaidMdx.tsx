@@ -17,6 +17,46 @@ let mermaidPromise: Promise<typeof import("mermaid")> | null = null;
 // page load (not per diagram); re-openable via the help button
 let hintSeen = false;
 
+// Touch-first devices (phones, tablets without a mouse) have no Esc key,
+// arrow keys or scroll wheel, so fullscreen shows a Close button, touch
+// wording and larger targets there. Keyed on the primary input, not the
+// viewport width: a narrow desktop window still has a keyboard.
+const TOUCH_QUERY = "(hover: none) and (pointer: coarse)";
+
+function useTouchPrimary(): boolean {
+  const [touch, setTouch] = useState(false);
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    const query = window.matchMedia(TOUCH_QUERY);
+    setTouch(query.matches);
+    // Follows a tablet that gains or loses a keyboard and trackpad
+    const onChange = (e: MediaQueryListEvent) => setTouch(e.matches);
+    query.addEventListener("change", onChange);
+    return () => query.removeEventListener("change", onChange);
+  }, []);
+  return touch;
+}
+
+// Fullscreen help, one row per action. Touch has no pinch zoom (native
+// gestures are blocked in fullscreen), so it points at the zoom bar.
+const HELP_ROWS = {
+  pointer: [
+    ["Move", "drag or arrow keys"],
+    ["Zoom", "+ / − keys or scroll"],
+    ["Reset", "0 or click the zoom %"],
+    ["Exit", "Esc"],
+  ],
+  touch: [
+    ["Move", "drag with one finger"],
+    ["Zoom", "− and + buttons below"],
+    ["Reset", "tap the zoom %"],
+    ["Exit", "Close, top right"],
+  ],
+} as const;
+
+// Minimum touch target on touch-first devices (WCAG 2.5.5, Apple HIG)
+const TOUCH_TARGET = 44;
+
 interface MermaidMdxProps {
   /** Mermaid diagram definition (from rehype plugin or programmatic) */
   chart: string;
@@ -73,11 +113,14 @@ function ControlButton({
   label,
   onClick,
   cell,
+  size = 28,
   children,
 }: {
   label: string;
   onClick: () => void;
   cell: { col: number; row: number };
+  /** Square size in px — larger on touch-first devices */
+  size?: number;
   children: ReactNode;
 }) {
   return (
@@ -86,7 +129,13 @@ function ControlButton({
       aria-label={label}
       title={label}
       onClick={onClick}
-      style={{ ...controlButtonStyle, gridColumn: cell.col, gridRow: cell.row }}
+      style={{
+        ...controlButtonStyle,
+        width: size,
+        height: size,
+        gridColumn: cell.col,
+        gridRow: cell.row,
+      }}
     >
       <svg
         width="14"
@@ -120,6 +169,7 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
   const [showHelp, setShowHelp] = useState(false);
   const dragRef = useRef({ dragging: false, lastX: 0, lastY: 0 });
   const viewportRef = useRef<HTMLDivElement>(null);
+  const touch = useTouchPrimary();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -369,7 +419,9 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
       aria-label={
         showFullscreenBtn
           ? fullscreen
-            ? "Mermaid diagram. Drag or use arrow keys to pan, + and - to zoom, click the percentage to reset, Esc to exit."
+            ? touch
+              ? "Mermaid diagram. Drag to pan, use the zoom buttons to zoom, tap the percentage to reset, Close to exit."
+              : "Mermaid diagram. Drag or use arrow keys to pan, + and - to zoom, click the percentage to reset, Esc to exit."
             : "Mermaid diagram. Press Enter to open fullscreen view."
           : undefined
       }
@@ -501,7 +553,8 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
             aria-label="Pan and zoom controls"
             style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
           >
-            {/* Top-right chrome: ESC badge + help toggle, panel drops below */}
+            {/* Top-right chrome: exit (Esc badge, or Close on touch) + help
+                toggle, panel drops below */}
             <div
               style={{
                 position: "absolute",
@@ -515,36 +568,76 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
               }}
             >
               <div style={{ display: "flex", gap: 8 }}>
-                <button
-                  type="button"
-                  aria-label="Exit full screen"
-                  onClick={() => setFullscreen(false)}
-                  style={topBarButtonStyle}
-                >
-                  <kbd
+                {touch ? (
+                  // No Esc key on touch: a Close button with an icon and a
+                  // visible label, which the accessible name contains
+                  <button
+                    type="button"
+                    aria-label="Close full screen"
+                    onClick={() => setFullscreen(false)}
                     style={{
-                      padding: "1px 5px",
-                      borderRadius: 4,
-                      border: "1px solid rgba(127,127,127,0.4)",
-                      background: "rgba(127,127,127,0.15)",
-                      fontSize: 11,
-                      fontFamily: "inherit",
-                      lineHeight: 1.4,
+                      ...topBarButtonStyle,
+                      minHeight: TOUCH_TARGET,
+                      padding: "0 14px",
+                      fontSize: 14,
                     }}
                   >
-                    Esc
-                  </kbd>
-                  <span>Exit fullscreen</span>
-                </button>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M18 6 6 18M6 6l12 12" />
+                    </svg>
+                    <span>Close</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    aria-label="Exit full screen"
+                    onClick={() => setFullscreen(false)}
+                    style={topBarButtonStyle}
+                  >
+                    <kbd
+                      style={{
+                        padding: "1px 5px",
+                        borderRadius: 4,
+                        border: "1px solid rgba(127,127,127,0.4)",
+                        background: "rgba(127,127,127,0.15)",
+                        fontSize: 11,
+                        fontFamily: "inherit",
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      Esc
+                    </kbd>
+                    <span>Exit fullscreen</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   aria-label="Toggle help"
                   aria-expanded={showHelp}
-                  title="Canvas controls & keyboard shortcuts"
+                  title={touch ? "Canvas controls" : "Canvas controls & keyboard shortcuts"}
                   onClick={() => setShowHelp((v) => !v)}
-                  style={{ ...topBarButtonStyle, width: 28, padding: 0, fontSize: 14 }}
+                  style={{
+                    ...topBarButtonStyle,
+                    width: touch ? TOUCH_TARGET : 28,
+                    minHeight: touch ? TOUCH_TARGET : undefined,
+                    padding: 0,
+                    fontSize: touch ? 16 : 14,
+                    // On touch the toggle keeps "?": a "×" here would sit next
+                    // to Close's "×". Its open state shows as a darker fill.
+                    ...(touch && showHelp ? { background: "rgba(127,127,127,0.3)" } : null),
+                  }}
                 >
-                  {showHelp ? "×" : "?"}
+                  {showHelp && !touch ? "×" : "?"}
                 </button>
               </div>
 
@@ -565,10 +658,11 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
                   }}
                 >
                   <p style={{ margin: 0, fontWeight: 600 }}>Canvas controls</p>
-                  <p style={{ margin: 0 }}>Move — hold scroll wheel or tap &amp; drag</p>
-                  <p style={{ margin: 0 }}>Zoom — + / − keys or scroll</p>
-                  <p style={{ margin: 0 }}>Reset — 0 or click the zoom %</p>
-                  <p style={{ margin: 0 }}>Exit — Esc</p>
+                  {HELP_ROWS[touch ? "touch" : "pointer"].map(([action, how]) => (
+                    <p key={action} style={{ margin: 0 }}>
+                      {action} — {how}
+                    </p>
+                  ))}
                 </div>
               ) : null}
             </div>
@@ -595,6 +689,7 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
                 label="Zoom out"
                 onClick={() => zoom(1 / ZOOM_STEP)}
                 cell={{ col: 1, row: 1 }}
+                size={touch ? TOUCH_TARGET : 28}
               >
                 <circle cx="11" cy="11" r="7" />
                 <path d="m21 21-4-4M8 11h6" />
@@ -606,7 +701,7 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
                 onClick={resetView}
                 style={{
                   minWidth: 56,
-                  height: 28,
+                  height: touch ? TOUCH_TARGET : 28,
                   padding: "0 8px",
                   border: "none",
                   borderRadius: 6,
@@ -623,6 +718,7 @@ export function MermaidMdx({ chart, id, className }: MermaidMdxProps) {
                 label="Zoom in"
                 onClick={() => zoom(ZOOM_STEP)}
                 cell={{ col: 3, row: 1 }}
+                size={touch ? TOUCH_TARGET : 28}
               >
                 <circle cx="11" cy="11" r="7" />
                 <path d="m21 21-4-4M8 11h6M11 8v6" />
