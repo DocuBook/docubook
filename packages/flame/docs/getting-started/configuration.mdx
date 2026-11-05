@@ -217,21 +217,36 @@ Routes define the sidebar navigation tree. When omitted, Flame auto-generates ro
   "routes": [
     {
       "title": "Getting Started",
-      "href": "/docs/getting-started",
+      "href": "/getting-started",
+      "noLink": true,
       "context": { "title": "Guide", "icon": "BookOpen" },
       "items": [
-        { "title": "Introduction", "href": "/docs/getting-started/introduction" },
-        { "title": "Installation", "href": "/docs/getting-started/installation" }
+        { "title": "Introduction", "href": "/introduction" },
+        { "title": "Installation", "href": "/installation" }
       ]
     }
   ]
 }
 ```
 
+Each `href` is relative to its parent: the sidebar joins them from the top-level route down and puts the docs prefix (`meta.basePath`) in front. In the example above, Introduction links to `/docs/getting-started/introduction` and must be backed by `docs/getting-started/introduction.mdx`. Do not repeat the parent path or the `/docs` prefix in a child `href` — `/docs/getting-started/introduction` would become `/docs/docs/getting-started/docs/getting-started/introduction`.
+
+`flame build` and `flame dev` warn about every entry that links to a page with no source in `docs/`, for example after a page was renamed or deleted, and list it with its sidebar trail:
+
+```
+⚠ docu.json "routes" links to 1 page(s) with no source in docs/ — the sidebar link will 404:
+    /guide/routing  (Guide › Routing)
+  Add the page, or fix or remove the entry in docu.json.
+```
+
+`noLink` sections are not checked themselves, only their items. With `sidebar.context: "separator"`, sections that have a `context` are group headers, so only their items are checked.
+
+An entry may also link outside the docs: an `href` with a scheme (`https://`, `mailto:`) or starting with `//` is linked as written, without the parent path or prefix. A docs `href` can carry a `#fragment` or `?query`, which stays after `.html` (`/configuration#meta` links to `/docs/getting-started/configuration.html#meta`). Neither is checked as a page, and pagination and the context switcher skip external entries and count a fragment link as its page.
+
 | Field | Type | Description |
 | ----- | ---- | ----------- |
 | `title` | string | Section or page title |
-| `href` | string | URL path |
+| `href` | string | Path relative to the parent route (top-level: relative to the docs prefix) |
 | `noLink` | boolean | If true, the item is a group header (not clickable) |
 | `items` | array | Nested child routes |
 | `context` | object | Context metadata: `title`, `icon` (Lucide name), `description` |

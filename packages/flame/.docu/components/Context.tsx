@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { cn, docsHtmlHref, stripDeployPath, withDeployPath } from "../node/utils";
+import {
+  cn,
+  docsHtmlHref,
+  hasUrlScheme,
+  splitPathSuffix,
+  stripDeployPath,
+  withDeployPath,
+} from "../node/utils";
 import { Dropdown, DropdownItem } from "@docubook/ui-react/dropdown";
 import { routes, config as docuConfig, basePath, deployPath } from "../node/client-routes";
 import { ChevronsUpDown, Check } from "lucide-react";
@@ -15,9 +22,12 @@ function getContextRoutes() {
   return routes.filter((route) => route.context);
 }
 
-function getFirstItemHref(route: { href: string; items?: { href: string }[] }): string {
-  if (!route.items?.length) return route.href;
-  return `${route.href}${getFirstItemHref(route.items[0])}`;
+/** Path of a context's first docs page, skipping external links and fragments. */
+export function getFirstItemHref(route: { href: string; items?: { href: string }[] }): string {
+  const own = splitPathSuffix(route.href).pathname;
+  const first = route.items?.find((item) => !hasUrlScheme(item.href));
+  if (!first) return own;
+  return `${own}${getFirstItemHref(first)}`;
 }
 
 function getActiveContextRoute(path: string) {

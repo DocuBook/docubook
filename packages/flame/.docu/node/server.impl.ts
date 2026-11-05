@@ -38,7 +38,8 @@ import {
   type ServerState,
 } from "./server-routes";
 import { wrapPluginResponse } from "./security";
-import { redirectResponse } from "./server-utils";
+import { redirectResponse, scanMdxFiles, resolveDocsIndexSource } from "./server-utils";
+import { findMissingRouteTargets, missingRoutesWarning } from "./route-check";
 import { matchDocsSlug, stripDocsHtmlSuffix } from "./utils";
 
 export async function runServer(adapter: RuntimeAdapter): Promise<ServerHandle> {
@@ -50,6 +51,19 @@ export async function runServer(adapter: RuntimeAdapter): Promise<ServerHandle> 
   // before the server announces a site that would be built somewhere else.
   for (const warning of assertValidBasePath()) logger.warn(warning.message);
   for (const warning of assertValidExperimental()) logger.warn(warning.message);
+  // Broken sidebar entries in docu.json (a renamed or deleted page): checked once
+  // at startup, the same check the build runs.
+  {
+    const routesWarning = missingRoutesWarning(
+      findMissingRouteTargets(
+        docuConfig.routes,
+        (await scanMdxFiles(DOCS_DIR)).map((f) => f.path),
+        Boolean(resolveDocsIndexSource(DOCS_DIR)),
+        { separator: docuConfig.sidebar?.context === "separator" }
+      )
+    );
+    if (routesWarning) logger.warn(routesWarning);
+  }
 
   const parsedPort = parseInt(process.env.PORT ?? "3000", 10);
   const PORT =

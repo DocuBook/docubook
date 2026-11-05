@@ -55,6 +55,7 @@ import { initSentry, captureException } from "./sentry";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
 import { scanMdxFiles, resolveDocsIndexSource } from "./server-utils";
+import { findMissingRouteTargets, missingRoutesWarning } from "./route-check";
 import { defaultFavicon } from "./paths";
 import type { AssetManifest, BuildCache, BuildCacheMeta, CliArgs } from "./types";
 import { isCacheEntry } from "./types";
@@ -364,6 +365,17 @@ async function build() {
   await copyDirectoryRecursive(DOCS_ASSETS_DIR, join(DOCS_OUT_DIR, "assets"));
 
   const mdxFiles = await scanMdxFiles(DOCS_DIR);
+  // A sidebar entry whose page was renamed or deleted links to a 404; say so
+  // before building rather than shipping the broken link silently.
+  const routesWarning = missingRoutesWarning(
+    findMissingRouteTargets(
+      docuConfig.routes,
+      mdxFiles.map((f) => f.path),
+      Boolean(resolveDocsIndexSource(DOCS_DIR)),
+      { separator: docuConfig.sidebar?.context === "separator" }
+    )
+  );
+  if (routesWarning) logger.warn(routesWarning);
   const cache = args.force ? {} : await readCache();
   // Read before the cache can be discarded or rewritten: it is the only record
   // of which pages the previous build wrote (see pruneRemovedPages below).

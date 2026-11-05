@@ -26,6 +26,28 @@ describe("chrome links under a host deployment path", () => {
     expect(html).toContain('href="/handbook/docs/guide/routing.html"');
   });
 
+  it("sidebar keeps a #fragment after .html and links external routes as written", () => {
+    const anchor = renderToStaticMarkup(
+      createElement(Sublink, { title: "Setup", href: "/guide/routing#setup", level: 1 })
+    );
+    expect(anchor).toContain('href="/handbook/docs/guide/routing.html#setup"');
+    const query = renderToStaticMarkup(
+      createElement(Sublink, { title: "Tab", href: "/guide/routing?tab=2", level: 1 })
+    );
+    expect(query).toContain('href="/handbook/docs/guide/routing.html?tab=2"');
+    // A nested external entry keeps no parent path, prefix or .html.
+    const external = renderToStaticMarkup(
+      createElement(Sublink, {
+        title: "GitHub",
+        href: "https://github.com/acme/docs",
+        level: 1,
+        parentHref: "/docs/getting-started",
+      })
+    );
+    expect(external).toContain('href="https://github.com/acme/docs"');
+    expect(external).not.toContain("getting-startedhttps");
+  });
+
   it("navbar logo, logo link and menu links point inside the deployment path", () => {
     const html = renderToStaticMarkup(
       createElement(Navbar, {

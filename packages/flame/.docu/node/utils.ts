@@ -31,6 +31,38 @@ export function docsHtmlHref(path: string): string {
 }
 
 /**
+ * Any URL with a scheme (`https:`, `mailto:`) or protocol-relative (`//host`).
+ * Wider than {@link isExternalUrl}: a `routes` entry may link to anything that
+ * is not a docs path.
+ */
+export function hasUrlScheme(href: string): boolean {
+  return /^([a-z][a-z\d+.-]*:|\/\/)/i.test(href);
+}
+
+/**
+ * Split a docs path from its `?query`/`#fragment`, e.g. `/docs/intro#setup`
+ * into `/docs/intro` and `#setup`.
+ */
+export function splitPathSuffix(path: string): { pathname: string; suffix: string } {
+  const cut = path.search(/[?#]/);
+  return cut === -1
+    ? { pathname: path, suffix: "" }
+    : { pathname: path.slice(0, cut), suffix: path.slice(cut) };
+}
+
+/**
+ * Link for a sidebar `routes` entry whose path is already composed under the
+ * docs prefix. Like {@link docsHtmlHref} it takes the `.html` suffix, but a
+ * `?query` or `#fragment` stays after it (`/docs/intro.html#setup`), and a URL
+ * with a scheme passes through untouched.
+ */
+export function sidebarLinkHref(fullHref: string): string {
+  if (hasUrlScheme(fullHref)) return fullHref;
+  const { pathname, suffix } = splitPathSuffix(fullHref);
+  return `${docsHtmlHref(pathname)}${suffix}`;
+}
+
+/**
  * Resolve an authored nav/menu link for the current deployment.
  *
  * Docs pages ship as flat `.html` files, so `/docs/guide/routing` has to request

@@ -1,6 +1,7 @@
 import { loadDocuConfig } from "./paths";
 import type { DocuRoute } from "./types";
 import { resolveRoutes } from "./fs-scanner";
+import { hasUrlScheme, splitPathSuffix } from "./utils";
 import { DOCS_DIR } from "./paths";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -11,14 +12,27 @@ import type { Frontmatter } from "./mdx";
 const docuConfig = loadDocuConfig();
 export const routes: DocuRoute[] = resolveRoutes(docuConfig.routes);
 
-export function flattenRoutes(): string[] {
+/**
+ * Docs path of a route under its section, or `undefined` for an external URL,
+ * which is not a docs page. A `#fragment` or `?query` is dropped: it points
+ * into a page, not at another one.
+ */
+function routeDocsPath(route: DocuRoute, section: string): string | undefined {
+  if (hasUrlScheme(route.href)) return undefined;
+  const href = splitPathSuffix(route.href).pathname;
+  return href.startsWith(section) ? href : `${section}${href}`.replace(/\/+/g, "/");
+}
+
+/** Linked docs pages in sidebar order, each once — the pagination sequence. */
+export function flattenRoutes(tree: DocuRoute[] = routes): string[] {
   const paths: string[] = [];
+  const seen = new Set<string>();
 
   function traverse(route: DocuRoute, section = "") {
-    const fullPath = route.href.startsWith(section)
-      ? route.href
-      : `${section}${route.href}`.replace(/\/+/g, "/");
-    if (route.href && !route.noLink) {
+    const fullPath = routeDocsPath(route, section);
+    if (fullPath === undefined) return;
+    if (route.href && !route.noLink && !seen.has(fullPath)) {
+      seen.add(fullPath);
       paths.push(fullPath);
     }
     if (route.items) {
@@ -26,24 +40,25 @@ export function flattenRoutes(): string[] {
     }
   }
 
-  routes.forEach((route) => traverse(route));
+  tree.forEach((route) => traverse(route));
   return paths;
 }
 
-export function getRouteMap(): Map<string, string> {
+export function getRouteMap(tree: DocuRoute[] = routes): Map<string, string> {
   const map = new Map<string, string>();
 
   function traverse(route: DocuRoute, section = "") {
-    const fullPath = route.href.startsWith(section)
-      ? route.href
-      : `${section}${route.href}`.replace(/\/+/g, "/");
-    map.set(fullPath, route.title);
+    const fullPath = routeDocsPath(route, section);
+    if (fullPath === undefined) return;
+    // The first entry for a page names it; a later `#fragment` link to the
+    // same page must not rename it.
+    if (!map.has(fullPath)) map.set(fullPath, route.title);
     if (route.items) {
       route.items.forEach((item) => traverse(item, fullPath));
     }
   }
 
-  routes.forEach((route) => traverse(route));
+  tree.forEach((route) => traverse(route));
   return map;
 }
 
