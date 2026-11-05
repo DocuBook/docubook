@@ -46,8 +46,28 @@ but they are no longer the active package identities in this repository:
 - **Turborepo** — orchestrates `build`, `lint`, `typecheck`, and `test`
 - **Vite 8 + Rolldown** — library build pipeline for `core`, `markdown`, `themes-colors`, and `ui-react`; also used in flame's Node/Deno compatibility bundling
 - **Changesets** — linked versioning for the five published packages
+- **Renovate** — self-hosted dependency updates (`.github/workflows/renovate.yml`, config in `.github/renovate.json`) with a Dependency Dashboard issue
 - **Husky + lint-staged + commitlint + czg** — local commit/push enforcement
-- **GitHub Actions** — CI matrix, PR commit linting, npm/GitHub releases, and flame builder image publication
+- **GitHub Actions** — CI matrix, PR commit linting, Renovate runs, npm/GitHub releases, and flame builder image publication; CodeQL and Pullfrog review pull requests alongside
+
+### Dependency Updates
+
+Renovate runs daily and opens regular updates on Mondays, once a release is at
+least 3 days old (`minimumReleaseAge`). Vulnerability updates open on any day.
+Updates are grouped so each PR's release impact is clear:
+
+- minor and patch updates are grouped per area (packages, root, GitHub Actions)
+- `devDependencies` majors in `packages/**` share one PR
+- each runtime or peer major gets its own PR, so it can carry its own changeset
+- React, vitest, and the changesets toolchain move as one PR each
+
+Two policies constrain it. `node` and `@types/node` stay below 23, because the
+maintainer's macOS 12 machine cannot run Node 24. Majors of
+`pnpm-workspace.yaml` overrides are disabled, because each override is a
+security floor scoped to one major line or one consumer. Every lockfile update
+also runs `pnpm dedupe`, so overridden specifiers survive Renovate's
+`pnpm update` call. Workspace overrides are not published: they protect this
+repository's lockfile, not consumers' installs.
 
 ### Release Model
 
@@ -65,14 +85,14 @@ plan are published — the ones carrying a changeset, plus any package pulled in
 because a dependency's new version leaves the range it declares. A package with
 no changeset and no broken range keeps its current version.
 
-Dependents are pulled in when their declared range is left. Peer dependencies
-behave the same way because
-`___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH.onlyUpdatePeerDependentsWhenOutOfRange`
-is enabled: without it, any bump of a package forces a major release of its
-peer dependents, which then drags the whole linked group to a major version
-(#403). No published package currently declares another `@docubook/*` package
-as a peer, so the option only guards future internal peers. Only flame depends
-on the other packages.
+Dependents are pulled in, with a patch bump, only when a new version leaves
+their declared range. Changesets 3 treats peer dependencies the same way.
+Changesets 2 instead forced a major release on peer dependents of any bumped
+package, which dragged the whole linked group to a major version (#403), unless
+the experimental `onlyUpdatePeerDependentsWhenOutOfRange` option was set.
+Changesets 3 no longer reads that option, and it has been removed from
+`.changeset/config.json`. No published package currently declares another
+`@docubook/*` package as a peer. Only flame depends on the other packages.
 
 Releases that move all five packages together therefore come from changesets
 that list every package explicitly — a convention, not a property of linking.
@@ -289,8 +309,11 @@ dependencies, then exercise `bin/cli.js`; missing `.docu/lib` output is compiled
 lazily before the compatibility build runs. Each smoke job then serves the
 output and loads pages in headless Chrome (`scripts/flame-browser-smoke.mjs`),
 failing on uncaught errors, failed same-origin scripts or stylesheets, or
-islands that do not hydrate. A separate workflow validates every commit in pull
-requests with commitlint.
+islands that do not hydrate. One page renders a real mermaid diagram, because
+the unit tests mock mermaid. A `release-plan` job runs `pnpm test:release-plan`
+(the Changesets planner against fixture changesets) and `pnpm test:release-meta`
+(the Release PR title builder). A separate workflow validates every commit in
+pull requests with commitlint.
 
 ## Trade-offs and Limitations
 

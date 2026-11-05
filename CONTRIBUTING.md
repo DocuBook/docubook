@@ -96,6 +96,7 @@ pnpm install
 | `pnpm typecheck` | Type-check the workspace through Turborepo |
 | `pnpm test` | Run workspace tests through Turborepo |
 | `pnpm test:release-plan` | Verify the read-only release-plan matrix from `.changeset/config.json` |
+| `pnpm test:release-meta` | Test the Release PR title and version commit message builder (`scripts/release-meta.mjs`) |
 | `pnpm test:browser-smoke` | Load a built flame site (`packages/flame/.docu/dist`) in headless Chrome and check pages hydrate; set `CHROME_PATH` if Google Chrome is not installed |
 | `pnpm clean` | Run every package's clean script through Turborepo |
 | `pnpm commit` | Open the interactive commit prompt |
@@ -172,7 +173,8 @@ Git hooks are installed by Husky during `pnpm install`.
 `lint-staged` currently runs:
 
 - `prettier --write --ignore-unknown` on staged files; `.prettierignore`
-  excludes Markdown and MDX
+  excludes Markdown, MDX, and `pnpm-lock.yaml` (pnpm and Renovate write the
+  lockfile in pnpm's own style, so Prettier would rewrite it on every commit)
 - check-only `oxlint` on staged `*.{js,ts,jsx,tsx}` files
 
 ### On Every Push
@@ -191,10 +193,20 @@ message.
 ### In CI
 
 Pull requests and pushes to `main` run the Turbo `lint`, `typecheck`, `build`,
-and `test` matrix on Node.js 22. Build and test jobs install Bun. Separate smoke
-jobs build flame through Node and Deno, including the lazy `.docu/lib`
-compilation path, then run `pnpm test:browser-smoke` to load the built site in
-headless Chrome. `commitlint.yml` validates every commit in a pull request.
+and `test` matrix on Node.js 22. Build and test jobs install Bun. The
+`release-plan` job runs `pnpm test:release-plan` and `pnpm test:release-meta`.
+Separate smoke jobs build flame through Node and Deno, including the lazy
+`.docu/lib` compilation path, then run `pnpm test:browser-smoke` to load the
+built site in headless Chrome. `commitlint.yml` validates every commit in a pull
+request.
+
+Branch protection on `main` requires `ci (lint)`, `ci (typecheck)`,
+`ci (build)`, `ci (test)`, and `commitlint` on a branch that is up to date
+with `main`. It also requires one approving review, and a new push dismisses
+earlier approvals. Code-owner review is switched on, but there is no
+`CODEOWNERS` file, so it adds no extra reviewer. CodeQL also scans each pull
+request, and Pullfrog posts an automated review. Neither is a required check,
+but reply in the thread to each Pullfrog inline comment you act on or decline.
 
 ## Branch Naming
 
@@ -253,7 +265,7 @@ Examples:
 feat(flame): add runtime smoke coverage
 fix(core): preserve portable declaration output
 docs: update architecture notes
-chore: update dependenciesmigrate packages to vite 8
+chore: migrate packages to vite 8
 ```
 
 ### Scopes
@@ -334,6 +346,76 @@ PR body should include:
 - [ ] changes are scoped and avoid unrelated refactors
 - [ ] validation notes are included in the PR body for runtime/tooling changes
 
+## Dependency Updates (Renovate)
+
+Dependencies are updated by self-hosted
+[Renovate](https://docs.renovatebot.com/) running in
+`.github/workflows/renovate.yml`. Its repository config is
+`.github/renovate.json`, and Renovate always reads it from `main`.
+
+### Schedule and Dashboard
+
+- The workflow runs daily at 03:00 UTC and can be dispatched by hand
+  (`dryRun`: `disabled`, `full`, `lookup`, `extract`; `logLevel`: `info`,
+  `debug`).
+- Regular updates are opened on Mondays (`schedule: ["on monday"]`).
+  Vulnerability updates (OSV and GitHub alerts) are opened on any day and get
+  the `security` label.
+- `minimumReleaseAge: "3 days"` holds back a new version until it is 3 days
+  old. While it waits, the branch shows a pending `renovate/stability-days`
+  status, and the dashboard lists it under "Pending Status Checks".
+- The [Dependency Dashboard](https://github.com/DocuBook/docubook/issues/432)
+  lists every pending, rate-limited, and open update. Ticking a checkbox there
+  creates, unblocks, or rebases that branch on the next run. Dispatch the
+  workflow to act on it right away.
+
+### Grouping Rules
+
+| Rule | Result |
+|---|---|
+| `@docubook/*` | Ignored; workspace packages are versioned by Changesets |
+| Minor/patch in `packages/**` and the matching `pnpm-workspace.yaml` pins | One `packages minor and patch dependencies` PR |
+| Minor/patch in the root `package.json` | One `root devDependencies` PR |
+| `devDependencies` majors in `packages/**` | One `packages devDependencies majors` PR (they do not ship) |
+| Runtime and peer majors in `packages/**` | One PR each, so each gets its own changeset |
+| React, vitest + `@vitest/*`, changesets toolchain | One PR per group across the workspace |
+| GitHub Actions minor/patch | One `github actions` PR; majors get one PR each |
+| Majors of `pnpm-workspace.yaml` overrides | Disabled; overrides are security floors scoped to one major line or consumer |
+| `node` and `@types/node` | Held below 23 (`allowedVersions: "<23"`), the last line that supports the maintainer's macOS 12 |
+
+`postUpdateOptions: ["pnpmDedupe"]` runs `pnpm dedupe` after every lockfile
+update. Without it, the `pnpm update --no-save` call that Renovate makes drops
+the specifiers that `pnpm-workspace.yaml` overrides set, and
+`pnpm install --frozen-lockfile` fails in CI.
+
+### Reviewing Renovate PRs
+
+- Check the diff, not the commit prefix. A PR that changes a `dependencies` or
+  `peerDependencies` range in a published `packages/*/package.json` needs a
+  changeset pushed to its branch before merging. Renovate titles
+  `dependencies` updates `fix(deps)` but peer updates `chore(deps)`, as in the
+  `@sentry/bun` peer bump. A PR that only touches `devDependencies`, root
+  tooling, workflows, or the lockfile needs no changeset.
+- Branch protection requires branches to be up to date with `main`, so
+  Renovate rebases its unmodified branches whenever they fall behind `main`.
+  That includes regenerating `pnpm-lock.yaml` after another lockfile PR merges.
+  The rebase happens on the next run, which you can trigger by dispatching the
+  workflow.
+- Once anyone else pushes to a Renovate branch, Renovate stops rebasing it.
+  Keep that branch up to date yourself.
+- Validate config changes outside the repository, for example
+  `cd /tmp && npx -y -p renovate renovate-config-validator --strict <repo>/.github/renovate.json`.
+
+### Token Permissions
+
+The workflow uses the `RENOVATE_TOKEN` secret, a fine-grained PAT. It falls
+back to `GITHUB_TOKEN`, which cannot open PRs that edit workflows. The PAT
+needs read and write access to **Contents**, **Pull requests**, **Issues**,
+**Commit statuses**, and **Workflows**, plus read access to **Dependabot
+alerts**. Without Commit statuses, Renovate creates the first branch, fails to
+set `renovate/stability-days`, and aborts with `Repository has changed during
+renovation`, so no PR opens. The same token opens the Release PR (see below).
+
 ## Changesets and Releases
 
 This repository uses [Changesets](https://github.com/changesets/changesets) for
@@ -358,9 +440,9 @@ Practical consequence:
 - linking aligns versions between the packages that belong to the **same**
   release; it does not version and publish the whole group
 - a package without a changeset is published only when a dependency's new
-  version leaves the range it declares; peer dependencies are pulled in only
-  when their range is left
-  (`___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH.onlyUpdatePeerDependentsWhenOutOfRange`)
+  version leaves the range it declares, and then with a patch bump; Changesets 3
+  treats peer dependencies the same way (Changesets 2 forced a major bump on
+  peer dependents unless an experimental option was set, see #403)
 - release scope is determined by the changesets plus dependency propagation, not
   by the touched files alone
 - the resulting plan can be inspected before opening a PR with
@@ -382,6 +464,9 @@ Typical examples:
 - bug fixes visible to users
 
 ### Local Versioning Flow
+
+The Release PR (see below) normally does this. Run it locally only to preview
+versions and changelogs, or when releasing by hand:
 
 ```bash
 # create a changeset
@@ -433,9 +518,10 @@ which runs:
 pnpm build && changeset publish
 ```
 
-After publish, the workflow disables Changesets' per-package GitHub releases,
-removes the generated per-package tags, and creates one product release tag
-based on flame's version:
+The action does not create per-package GitHub releases or push per-package
+tags (`create-github-releases: false`, `push-git-tags: false`). After publish,
+the workflow deletes the `@docubook/*@<version>` tags that `changeset publish`
+creates locally, and creates one product release tag based on flame's version:
 
 ```text
 v<flame version>

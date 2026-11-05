@@ -43,7 +43,7 @@ bunx flame init
 bun run dev
 ```
 
-### Node.js (≥ 20.11) — [install](https://nodejs.org)
+### Node.js (^20.19 or ≥ 22.12) — [install](https://nodejs.org)
 
 ```bash
 npm install @docubook/flame
@@ -74,8 +74,9 @@ deno task dev
 >
 > For development workflow:
 > - Vitest provides fast unit testing with native ESM and TypeScript support
-> - Changesets handles package versioning and release management
-> - Husky runs automatic linting and formatting before commits
+> - Changesets handles package versioning; a Release PR on `main` publishes the linked `@docubook/*` packages to npm with trusted publishing (OIDC + provenance)
+> - Renovate keeps dependencies current: it opens grouped update PRs on Mondays once a release is 3 days old, opens vulnerability PRs on any day, and tracks everything pending in the [Dependency Dashboard](https://github.com/DocuBook/docubook/issues/432)
+> - Husky runs lint-staged (Prettier + Oxlint) before commits and a lint, build and commitlint check before pushes
 > - commitlint ensures commit messages follow the Conventional Commits format consistently
 >
-> This setup helps keep the codebase organized, maintainable, and contributor-friendly.
+> See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow, including how Renovate PRs are reviewed, and [ARCHITECTURE.md](ARCHITECTURE.md) for the release model.
