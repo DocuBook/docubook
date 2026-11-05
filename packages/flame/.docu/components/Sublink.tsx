@@ -12,7 +12,14 @@ import {
 import { ChevronDown } from "lucide-react";
 import Anchor from "./Anchor";
 import type { DocuRoute } from "../node/types";
-import { cn, docsHtmlHref, stripDeployPath, withDeployPath } from "../node/utils";
+import {
+  cn,
+  hasUrlScheme,
+  sidebarLinkHref,
+  splitPathSuffix,
+  stripDeployPath,
+  withDeployPath,
+} from "../node/utils";
 import { config as docuConfig, basePath, deployPath } from "../node/client-routes";
 
 /** Exclusive accordion for level >= 2 sidebar groups — opening one group
@@ -55,7 +62,14 @@ export default function Sublink({
   parentHref = "",
   pathname: pathnameProp,
 }: SublinkProps) {
-  const fullHref = parentHref ? `${parentHref}${href}` : `${basePath}${href}`;
+  // An external URL is linked as written. Docs paths are composed from the
+  // parent hrefs under the docs prefix; a `#fragment` or `?query` rides along
+  // in the link, while active state and accordions use the bare path.
+  const isExternal = hasUrlScheme(href);
+  const fullHref = isExternal
+    ? href
+    : splitPathSuffix(parentHref ? `${parentHref}${href}` : `${basePath}${href}`).pathname;
+  const linkSuffix = isExternal ? "" : splitPathSuffix(href).suffix;
   // Routes are compared deployment-free; the browser path includes the host's
   // deployment path on a subpath deployment.
   const currentPathname =
@@ -63,7 +77,9 @@ export default function Sublink({
     (typeof window !== "undefined"
       ? stripDeployPath(window.location.pathname, deployPath)
       : basePath);
-  const linkHref = withDeployPath(docsHtmlHref(fullHref), deployPath);
+  const linkHref = isExternal
+    ? href
+    : withDeployPath(sidebarLinkHref(`${fullHref}${linkSuffix}`), deployPath);
   const isLinkActive = (path: string) => {
     const route = stripDeployPath(path, deployPath);
     return route === fullHref || route === `${fullHref}.html`;

@@ -1,4 +1,5 @@
 import type { DocuRoute } from "./types";
+import { hasUrlScheme, splitPathSuffix } from "./utils";
 
 /**
  * Check the `routes` table of `docu.json` against the docs that exist.
@@ -12,7 +13,9 @@ import type { DocuRoute } from "./types";
  * `noLink`; its children are checked either way. In `sidebar.context:
  * "separator"` mode with context sections, the menu shows only the routes that
  * have a `context`, as plain group headers, so their own href is not a link and
- * routes without a context are not shown at all. A link is broken when no MDX
+ * routes without a context are not shown at all. External URLs are linked as
+ * written and a `#fragment`/`?query` stays after `.html` (see
+ * `sidebarLinkHref`), so neither is a missing page: only the path is checked. A link is broken when no MDX
  * source has that exact slug, so the page 404s — typically after a page was
  * renamed or deleted but the sidebar entry was kept.
  */
@@ -24,14 +27,13 @@ export interface MissingRouteTarget {
   trail: string[];
 }
 
-/** External links and fragments are not docs pages. */
+/** External URLs are linked as written by the sidebar, so they are not docs pages. */
 function isCheckableHref(href: string): boolean {
-  return !/^([a-z][a-z\d+.-]*:|\/\/)/i.test(href);
+  return !hasUrlScheme(href);
 }
 
 function joinRoutePath(parent: string, href: string): string {
-  const withoutFragment = href.split("#")[0]!.split("?")[0]!;
-  return `${parent}${withoutFragment}`.replace(/\/{2,}/g, "/");
+  return `${parent}${splitPathSuffix(href).pathname}`.replace(/\/{2,}/g, "/");
 }
 
 function slugOf(path: string): string {

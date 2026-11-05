@@ -241,6 +241,8 @@ Each `href` is relative to its parent: the sidebar joins them from the top-level
 
 `noLink` sections are not checked themselves, only their items. With `sidebar.context: "separator"`, sections that have a `context` are group headers, so only their items are checked.
 
+An entry may also link outside the docs: an `href` with a scheme (`https://`, `mailto:`) or starting with `//` is linked as written, without the parent path or prefix. A docs `href` can carry a `#fragment` or `?query`, which stays after `.html` (`/configuration#meta` links to `/docs/getting-started/configuration.html#meta`). Neither is checked as a page, and pagination and the context switcher skip external entries and count a fragment link as its page.
+
 | Field | Type | Description |
 | ----- | ---- | ----------- |
 | `title` | string | Section or page title |
