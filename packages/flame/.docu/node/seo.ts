@@ -2,6 +2,7 @@ import type { DocuConfig } from "./types";
 import { frontmatterField } from "./mdx";
 import { resolveBasePath, resolveDeployPath } from "./paths";
 import { rebaseContentPath } from "./utils";
+import { isDocsPath } from "./base-path";
 
 export interface SeoMeta {
   /** Absolute canonical URL */
@@ -12,21 +13,37 @@ export interface SeoMeta {
   image?: string;
 }
 
+/** Which page the metadata is for: a docs page (incl. the docs index) or the
+ *  generated landing page at the deployment root. */
+export type SeoPage = "docs" | "landing";
+
 /**
  * Build SEO metadata from config and per-page frontmatter.
  * All fields are derived from existing data — no extra config required.
  *
  * All paths are prefixed with the configured base path so canonical and OG
  * URLs stay correct when the site is served under a subpath.
+ *
+ * The docs index (`slug` `""`) lives at `<baseURL><prefix>/`, the landing page
+ * at `<baseURL>/`. They only coincide at a root deployment (`basePath: ""`).
+ * Giving the docs index the landing URL made search engines treat it as a
+ * duplicate of the landing page — or, with `experimental.pages`, of the
+ * project's own home page.
  */
 export function buildSeoMeta(
   config: DocuConfig,
   frontmatter: Record<string, unknown>,
-  slug: string
+  slug: string,
+  page: SeoPage = "docs"
 ): SeoMeta {
   const baseURL = config.meta?.baseURL?.replace(/\/+$/, "") || "";
   const prefix = resolveBasePath(config);
-  const url = slug ? `${baseURL}${prefix}/${slug}` : `${baseURL}/`;
+  const url =
+    page === "landing"
+      ? `${baseURL}/`
+      : slug
+        ? `${baseURL}${prefix}/${slug}`
+        : `${baseURL}${prefix}/`;
 
   const result: SeoMeta = {
     url,
@@ -63,13 +80,19 @@ function resolveOgImage(
     if (/^[a-zA-Z][a-zA-Z\d+.-]*:\/\//.test(image)) return new URL(image).href;
     // Content assets live under the docs prefix *inside* the deployment root,
     // which `baseURL` already spells out (schema: "origin plus deployment
-    // root"), so resolve the path relative to it. The deployment path is only
-    // used to spot an author who spelled the host's segment out themselves.
-    const rebased = rebaseContentPath(image.startsWith("/") ? image : `${prefix}/${image}`, prefix);
-    const withinRoot = rebased.startsWith(`${deploymentPath}/`)
-      ? rebased.slice(deploymentPath.length)
-      : rebased;
-    return new URL(withinRoot.replace(/^\/+/, ""), `${baseURL}/`).href;
+    // root"), so resolve the path relative to it.
+    let path = image.startsWith("/") ? image : `${prefix}/${image}`;
+    // An author may have spelled the host's segment out (`/repo/docs/og.png`
+    // for `baseURL: …/repo`). Drop it before re-basing — but only when what
+    // remains is still a docs path, so a docs prefix that starts with the same
+    // segment (`basePath: "/repo"` under `…/repo`) is not cut off. At a root
+    // deployment every path is a docs path.
+    if (deploymentPath && path.startsWith(`${deploymentPath}/`)) {
+      const rest = path.slice(deploymentPath.length);
+      if (prefix === "" || isDocsPath(rest, prefix)) path = rest;
+    }
+    const rebased = rebaseContentPath(path, prefix);
+    return new URL(rebased.replace(/^\/+/, ""), `${baseURL}/`).href;
   } catch {
     return image;
   }
