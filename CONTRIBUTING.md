@@ -67,8 +67,8 @@ public disclosure and contact maintainers privately first.
 
 ### Requirements
 
-- **Node.js** `^20.19.0 || ^22.13.0 || >=24` (root `engines` range)
-- **pnpm** `12.x` (`packageManager` pins `pnpm@12.3.4`)
+- **Node.js** `^22.22.2 || ^24.15.0 || >=26` (root `engines` range)
+- **pnpm** `12.x` (the root `packageManager` field pins the exact version)
 - **Bun** `>=1.4.0` for flame's default `dev`, `build`, `preview`, and
   `deploy` scripts; a full-workspace `pnpm build` also requires Bun
 

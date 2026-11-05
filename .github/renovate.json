@@ -77,7 +77,7 @@
       "groupName": "changesets"
     },
     {
-      "description": "pnpm overrides are security floors scoped to one major line (undici@7, js-yaml@4) or one consumer (mermaid>katex); a major bump would break the package that needs that line. The React pins follow packages/ instead",
+      "description": "pnpm overrides are security floors scoped to one major line (js-yaml@4) or one consumer (mermaid>katex); a major bump would break the package that needs that line. The React pins follow packages/ instead",
       "matchDepTypes": ["pnpm-workspace.overrides"],
       "matchDepNames": ["!react", "!react-dom", "!@types/react", "!@types/react-dom"],
       "matchUpdateTypes": ["major"],
