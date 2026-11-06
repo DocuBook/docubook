@@ -13,11 +13,13 @@ import {
   hookMemoryPressure,
   isTailwindRelevantCss,
   packagesStamp,
+  pluginsStamp,
   readStyleCss,
   runtimeStamp,
   tailwindExtraInputs,
 } from "../node/cache-key";
 import { WATCHED_PACKAGES, resolvePackages } from "../node/dev-watch";
+import type { PluginEntry } from "../node/plugin";
 import { clearDerivedPageCaches, registerPageContent, getPageContent } from "../node/mdx";
 
 function makeProject(files: Record<string, string>): string {
@@ -302,6 +304,97 @@ describe("cache-key (Tailwind v4 CSS-first)", () => {
     expect(packages.map((pkg) => pkg.name).sort()).toEqual([...WATCHED_PACKAGES].sort());
     expect(packagesStamp()).toBe(packagesStamp(packages));
     expect(packagesStamp(packages.slice(1))).not.toBe(packagesStamp(packages));
+  });
+
+  it("pluginsStamp follows plugin packages and local plugin files", () => {
+    const store = "node_modules/@test/plugin";
+    const manifest = (version: string) =>
+      JSON.stringify({ name: "@test/plugin", version, main: "./dist/index.js" });
+    const root = makeProject({
+      [`${store}/package.json`]: manifest("1.0.0"),
+      [`${store}/dist/index.js`]: "export default {};\n",
+      "plugins/local.js": "export default {};\n",
+    });
+    try {
+      const entries: PluginEntry[] = ["@test/plugin", ["./plugins/local.js", { a: 1 }]];
+      const stamp = () => pluginsStamp(entries, root, root);
+      const before = stamp();
+      expect(before).toMatch(/^[0-9a-f]{16}$/);
+      expect(stamp()).toBe(before);
+
+      writeFileSync(join(root, store, "package.json"), manifest("1.0.1"));
+      const upgraded = stamp();
+      expect(upgraded).not.toBe(before);
+
+      writeFileSync(join(root, store, "dist/index.js"), "export default { v: 2 };\n");
+      const rebuilt = stamp();
+      expect(rebuilt).not.toBe(upgraded);
+
+      writeFileSync(join(root, "plugins/local.js"), "export default { v: 2 };\n");
+      expect(stamp()).not.toBe(rebuilt);
+
+      expect(pluginsStamp([], root, root)).not.toBe(stamp());
+
+      // Extensionless local specifiers, as the docs write them, hash the file
+      // the runtime loads, and a directory hashes its index file.
+      writeFileSync(join(root, "plugins/reading-time.ts"), "export default {};\n");
+      mkdirSync(join(root, "plugins/analytics"));
+      writeFileSync(join(root, "plugins/analytics/index.js"), "export default {};\n");
+      const bare = () =>
+        pluginsStamp(["./plugins/reading-time", "./plugins/analytics"], root, root);
+      const bareBefore = bare();
+      expect(bareBefore).not.toBe(pluginsStamp(["./plugins/nope", "./plugins/nope2"], root, root));
+      writeFileSync(join(root, "plugins/reading-time.ts"), "export default { v: 2 };\n");
+      const bareEdited = bare();
+      expect(bareEdited).not.toBe(bareBefore);
+      writeFileSync(join(root, "plugins/analytics/index.js"), "export default { v: 2 };\n");
+      expect(bare()).not.toBe(bareEdited);
+      // Unresolvable plugins still fingerprint (as missing) instead of throwing.
+      expect(pluginsStamp(["@test/nope", "./plugins/nope.js"], root, root)).toMatch(
+        /^[0-9a-f]{16}$/
+      );
+    } finally {
+      cleanup(root);
+    }
+  });
+
+  it("pluginsStamp follows ESM-only plugin packages, found from a parent node_modules", () => {
+    // `require.resolve` throws ERR_PACKAGE_PATH_NOT_EXPORTED for an
+    // import-only `exports` map, though `import()` loads the plugin fine.
+    const store = "node_modules/@test/esm";
+    const manifest = (version: string) =>
+      JSON.stringify({
+        name: "@test/esm",
+        version,
+        type: "module",
+        exports: { ".": { import: "./dist/index.js" } },
+      });
+    const root = makeProject({
+      [`${store}/package.json`]: manifest("1.0.0"),
+      [`${store}/dist/index.js`]: "export default {};\n",
+      "app/lib/.keep": "",
+    });
+    try {
+      // Looked up from a nested directory, as the loader's own module is.
+      const stamp = () => pluginsStamp(["@test/esm"], root, join(root, "app/lib"));
+      const before = stamp();
+      expect(before).not.toBe(pluginsStamp(["@test/missing"], root, join(root, "app/lib")));
+      writeFileSync(join(root, store, "package.json"), manifest("2.0.0"));
+      const upgraded = stamp();
+      expect(upgraded).not.toBe(before);
+      writeFileSync(join(root, store, "dist/index.js"), "export default { v: 2 };\n");
+      expect(stamp()).not.toBe(upgraded);
+    } finally {
+      cleanup(root);
+    }
+  });
+
+  it("pluginsStamp is in the render stamp, so plugins no longer bypass the page cache", () => {
+    const src = (rel: string) => readFileSync(new URL(`../node/${rel}`, import.meta.url), "utf-8");
+    expect(src("cache-key.ts")).toContain('h.update("plugins\\0").update(pluginsStamp());');
+    for (const file of ["build.ts", "build.impl.ts"]) {
+      expect(src(file), file).not.toMatch(/rebuildDecision === "(no|hash_check)" && !builder/);
+    }
   });
 
   it("atomicWriteFile never leaves a corrupt target", async () => {

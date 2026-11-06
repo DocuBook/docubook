@@ -1,7 +1,8 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { rm } from "node:fs/promises";
-import { join, resolve, sep } from "node:path";
+import { dirname, join, resolve, sep } from "node:path";
 import { createHash } from "node:crypto";
+import { fileURLToPath } from "node:url";
 import {
   FRAMEWORK_ROOT,
   STYLES_DIR,
@@ -10,8 +11,10 @@ import {
   deployPath,
   ownPages,
   loadDocuConfig,
+  PROJECT_ROOT,
 } from "./paths";
 import { packageFingerprint, resolvePackages, type WorkspacePackage } from "./dev-watch";
+import type { PluginEntry } from "./plugin";
 
 /**
  * Build cache version — bump when the toolchain output contract changes
@@ -37,8 +40,12 @@ import { packageFingerprint, resolvePackages, type WorkspacePackage } from "./de
  * navbar, repo links and SEO tags are rendered from it, and the client bundle
  * inlines it, yet a config-only edit used to leave every page a cache hit and
  * reuse the old bundle until `--force`.
+ *
+ * v10: the `docu.json` plugins entered the key material — `renderToolchainStamp()`
+ * folds `pluginsStamp()`, so pages are no longer re-rendered on every build
+ * just because a plugin is configured.
  */
-export const BUILD_CACHE_VERSION = 9;
+export const BUILD_CACHE_VERSION = 10;
 
 /**
  * Resolved docs URL prefix and deployment path, part of every cache key.
@@ -135,11 +142,95 @@ export function packagesStamp(packages: readonly WorkspacePackage[] = resolvePac
   return h.digest("hex").slice(0, 16);
 }
 
+/**
+ * Fingerprint of the plugins listed in `docu.json`.
+ *
+ * Plugin hooks shape every page (onLoad, remark/rehype, injectHead/Body,
+ * transformHtml), but `configStamp()` only sees their specifiers and options:
+ * upgrading a plugin package, or editing a local plugin file, changed output
+ * without changing any key. A package hashes as its version plus its built
+ * `dist/`, a local file as its content, anything unresolvable as "missing".
+ *
+ * Local paths resolve from `root`, as `loadPlugins` does. Packages are looked
+ * up from `packagesFrom`, the directory `plugin-loader` imports them from (it
+ * sits next to this module in both `.docu/node` and the compiled `.docu/lib`).
+ */
+export function pluginsStamp(
+  entries: readonly PluginEntry[] = readPluginEntries(),
+  root: string = PROJECT_ROOT,
+  packagesFrom: string = dirname(fileURLToPath(import.meta.url))
+): string {
+  const h = createHash("sha256");
+  for (const entry of entries) {
+    const specifier = Array.isArray(entry) ? entry[0] : entry;
+    h.update(`${specifier}\0${pluginFingerprint(specifier, root, packagesFrom)}\0`);
+  }
+  return h.digest("hex").slice(0, 16);
+}
+
+const LOCAL_PLUGIN_SUFFIXES = [
+  "",
+  ".ts",
+  ".tsx",
+  ".mts",
+  ".js",
+  ".mjs",
+  ".cjs",
+  "/index.ts",
+  "/index.js",
+  "/index.mjs",
+] as const;
+
+function pluginFingerprint(specifier: string, root: string, packagesFrom: string): string {
+  try {
+    if (specifier.startsWith(".") || specifier.startsWith("/")) {
+      // The loader imports extensionless paths (`./plugins/reading-time`), so
+      // find the file the runtime would load instead of reading the bare path.
+      const base = resolve(root, specifier);
+      const file = LOCAL_PLUGIN_SUFFIXES.map((suffix) => base + suffix).find(
+        (p) => existsSync(p) && statSync(p).isFile()
+      );
+      if (!file) return "missing";
+      // shortcut: hashes the plugin's own file only, not the files it imports; edit one of those and run `flame build --force`.
+      return createHash("sha256").update(readFileSync(file)).digest("hex");
+    }
+    const dir = findInstalledPackage(specifier, packagesFrom);
+    if (!dir) return "missing";
+    const manifest = join(dir, "package.json");
+    const { version } = JSON.parse(readFileSync(manifest, "utf-8")) as { version?: string };
+    // The manifest stands in for the entry: which file `import()` loads depends
+    // on the package's `exports` conditions, and only `dist/` is hashed anyway.
+    const pkg = { name: specifier, dir, entry: manifest };
+    return `${version ?? ""}\0${packageFingerprint(pkg) ?? "missing"}`;
+  } catch {
+    return "missing";
+  }
+}
+
+/**
+ * The `node_modules/<name>` directory `import(name)` would load from `fromDir`,
+ * found by walking up like the runtime does. Unlike `require.resolve`, this
+ * does not depend on the package's `exports` conditions, so ESM-only plugins
+ * (`"exports": { ".": { "import": … } }`) resolve too.
+ */
+function findInstalledPackage(name: string, fromDir: string): string | null {
+  for (let dir = fromDir; ; dir = dirname(dir)) {
+    const candidate = join(dir, "node_modules", ...name.split("/"));
+    if (existsSync(join(candidate, "package.json"))) return realpathSync(candidate);
+    if (dirname(dir) === dir) return null;
+  }
+}
+
+function readPluginEntries(): readonly PluginEntry[] {
+  return (readConfigForStamp() as { plugins?: PluginEntry[] } | null)?.plugins ?? [];
+}
+
 let renderStampCache: string | null = null;
 
 /**
- * Fingerprint of the framework's rendering sources and the sibling packages
- * they render with (`packagesStamp()`).
+ * Fingerprint of the framework's rendering sources, the sibling packages
+ * they render with (`packagesStamp()`) and the configured plugins
+ * (`pluginsStamp()`).
  *
  * Memoized per process — the files cannot change mid-build, and hashing them
  * on every page would dominate build time. A missing file contributes nothing
@@ -159,6 +250,7 @@ export function renderToolchainStamp(): string {
     }
   }
   h.update("packages\0").update(packagesStamp());
+  h.update("plugins\0").update(pluginsStamp());
   renderStampCache = h.digest("hex").slice(0, 16);
   return renderStampCache;
 }

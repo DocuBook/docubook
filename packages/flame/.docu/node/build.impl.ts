@@ -511,7 +511,7 @@ export async function runBuild(): Promise<void> {
   for (const file of mdxFiles) {
     const rebuildDecision = shouldRebuild(file.path, file.mtime, cache);
 
-    if (rebuildDecision === "no" && !builder) {
+    if (rebuildDecision === "no") {
       const outputPath = join(DOCS_OUT_DIR, `${file.path}.html`);
       if (existsSync(outputPath) && !assetsChanged) {
         skipped++;
@@ -529,7 +529,7 @@ export async function runBuild(): Promise<void> {
       }
     }
 
-    if (rebuildDecision === "hash_check" && !builder) {
+    if (rebuildDecision === "hash_check") {
       const contentHash = hashContent(rawMdx);
       const cached = cache[file.path];
       if (isCacheEntry(cached) && cached.hash === contentHash) {
