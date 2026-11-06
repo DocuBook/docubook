@@ -552,7 +552,8 @@ The `module` path must stay inside the bundle directory: Flame refuses absolute,
 build()
 ├─ loadPlugins → plugin.setup(build)        ← validate, register hooks
 ├─ onStart(config)                          ← initialize
-├─ for each MDX file:
+├─ for each MDX file: onLoad({filter})     ← transform raw content (client bundle)
+├─ for each MDX file not in the build cache:
 │   ├── onLoad({filter})                    ← transform raw content
 │   ├── transformFrontmatter()              ← mutate frontmatter
 │   ├── compileMdx() ← remark / rehype      ← MDX pipeline
@@ -563,6 +564,8 @@ build()
 ├─ render standalone 404 → page hooks → write HTML
 └─ onEnd(config, pages, context)             ← final output metadata
 ```
+
+`flame build` skips docs pages whose source, `docu.json` and plugins are unchanged since the last build, so the per-page hooks from `transformFrontmatter` to `transformHtml` run only for pages it renders again. A plugin package counts as changed when its version or built `dist/` changes, and a local plugin when its own file changes. `onEnd` still receives every page. Run `flame build --force` to render every page, for example after editing a file that a local plugin imports.
 
 Execution is **sequential** (waterfall). Plugins run in `docu.json` order and `handleRequest` is **first-wins**. Execution-hook errors fail `flame build` and are logged by `flame dev`; collection hooks such as `injectHead` and `injectBody` throw developer errors.
 
