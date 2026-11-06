@@ -18,6 +18,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { Modal, useModal } from "@docubook/ui-react/modal";
 import { Kbd, FnKey } from "@docubook/ui-react/kbd";
@@ -39,6 +40,14 @@ import { cn } from "../node/utils";
 import { search, type SearchResult } from "../node/search";
 import { bundlePath, deployPath } from "../node/client-routes";
 import type { SearchRecord } from "../node/search-indexer";
+import {
+  loadSearchProvider,
+  readSearchProviderConfig,
+  runSearchProvider,
+  searchProviderUrl,
+  type SearchProviderAction,
+  type SearchProviderConfig,
+} from "../node/search-provider";
 
 interface SearchProps {
   className?: string;
@@ -46,6 +55,7 @@ interface SearchProps {
 
 let indexCache: SearchRecord[] | null = null;
 let cmdKRegistered = false;
+let providerKeysRegistered = false;
 
 async function loadIndex(): Promise<SearchRecord[]> {
   if (indexCache) return indexCache;
@@ -59,7 +69,136 @@ async function loadIndex(): Promise<SearchRecord[]> {
   return indexCache!;
 }
 
+/**
+ * Search entry point. A plugin that declares a search provider on the page
+ * (see `search-provider.ts`) takes over the dialog; flame keeps the trigger,
+ * the shortcuts and the Ask AI buttons, so the sidebar looks the same either
+ * way. Without one, the built-in index search runs.
+ */
 export default function Search({ className }: SearchProps) {
+  // The page's provider declaration never changes after load: read it once.
+  const [provider] = useState(readSearchProviderConfig);
+  return provider ? (
+    <ProviderSearch className={className} config={provider} />
+  ) : (
+    <BuiltinSearch className={className} />
+  );
+}
+
+function providerAction(config: SearchProviderConfig, action: SearchProviderAction) {
+  void runSearchProvider(action, config, searchProviderUrl(config, deployPath, bundlePath));
+}
+
+/** Start downloading the provider before the click lands (hover, focus, touch). */
+function preloadProvider(config: SearchProviderConfig) {
+  loadSearchProvider(config, searchProviderUrl(config, deployPath, bundlePath)).catch(() => {
+    // reported when the reader actually opens search
+  });
+}
+
+function ProviderSearch({ className, config }: SearchProps & { config: SearchProviderConfig }) {
+  useEffect(() => {
+    // Sidebar and mobile bar both render a Search: register the keys once.
+    if (providerKeysRegistered) return;
+    providerKeysRegistered = true;
+    const handler = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return;
+      const key = e.key.toLowerCase();
+      if (key === "k") {
+        e.preventDefault();
+        providerAction(config, "search");
+      } else if (key === "i" && config.askAi) {
+        e.preventDefault();
+        providerAction(config, "askAi");
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => {
+      window.removeEventListener("keydown", handler);
+      providerKeysRegistered = false;
+    };
+  }, [config]);
+
+  return (
+    <div className={className}>
+      <SearchTrigger
+        onClick={() => providerAction(config, "search")}
+        onIntent={() => preloadProvider(config)}
+      />
+    </div>
+  );
+}
+
+/** Whether the page's search provider offers Ask AI. */
+export function useAskAi(): SearchProviderConfig | null {
+  const [config] = useState(readSearchProviderConfig);
+  return config?.askAi ? config : null;
+}
+
+interface AskAiButtonProps {
+  config: SearchProviderConfig;
+  /**
+   * `icon`: square button beside the sidebar search bar.
+   * `block`: full-width row with a label, for the mobile drawer.
+   */
+  variant?: "icon" | "block";
+  /** Runs before the panel opens, e.g. to close the drawer that holds the button. */
+  onBeforeOpen?: () => void;
+  className?: string;
+}
+
+/** Opens the provider's Ask AI panel — kept apart from the search dialog. */
+export function AskAiButton({
+  config,
+  variant = "icon",
+  onBeforeOpen,
+  className,
+}: AskAiButtonProps) {
+  const open = () => {
+    onBeforeOpen?.();
+    providerAction(config, "askAi");
+  };
+  const intent = () => preloadProvider(config);
+
+  if (variant === "block") {
+    return (
+      <button
+        type="button"
+        onClick={open}
+        onPointerEnter={intent}
+        onFocus={intent}
+        aria-keyshortcuts="Control+I Meta+I"
+        className={cn(
+          "border-base-300 bg-base-200/50 text-base-content/70 hover:border-base-content/20 hover:bg-base-200 hover:text-base-content flex h-9 w-full items-center gap-2 rounded-full border px-3 text-sm transition-colors",
+          className
+        )}
+      >
+        <Sparkles className="text-primary h-4 w-4 shrink-0" aria-hidden="true" />
+        <span className="flex-1 text-left">Ask AI</span>
+      </button>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={open}
+      onPointerEnter={intent}
+      onFocus={intent}
+      aria-label="Ask AI"
+      title="Ask AI (Ctrl/⌘ I)"
+      aria-keyshortcuts="Control+I Meta+I"
+      className={cn(
+        "border-base-300 bg-base-200/50 text-base-content/60 hover:border-primary/40 hover:bg-primary/10 hover:text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors",
+        className
+      )}
+    >
+      <Sparkles className="h-4 w-4" aria-hidden="true" />
+    </button>
+  );
+}
+
+function BuiltinSearch({ className }: SearchProps) {
   const { ref: modalRef, open, close } = useModal();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -243,9 +382,17 @@ export default function Search({ className }: SearchProps) {
   );
 }
 
-function SearchTrigger({ onClick }: { onClick: () => void }) {
+function SearchTrigger({ onClick, onIntent }: { onClick: () => void; onIntent?: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="flex w-full items-center">
+    <button
+      type="button"
+      onClick={onClick}
+      onPointerEnter={onIntent}
+      onFocus={onIntent}
+      aria-label="Search documentation"
+      aria-keyshortcuts="Control+K Meta+K"
+      className="flex w-full items-center"
+    >
       <div className="block p-2 lg:hidden">
         <SearchIcon className="text-base-content/60 h-5 w-5" />
       </div>

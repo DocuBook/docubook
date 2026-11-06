@@ -15,6 +15,7 @@ import {
   assertValidExperimental,
   resolveOwnPages,
   resolveRootRoute,
+  bundlePath,
 } from "./paths";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
@@ -162,6 +163,7 @@ export async function runServer(adapter: RuntimeAdapter): Promise<ServerHandle> 
         port: handle?.port ?? PORT,
         hostname: handle?.hostname ?? "localhost",
         assetManifest: state.assetManifest,
+        assetsPath: bundlePath(),
       });
       if (pluginResponse) {
         const securedResponse = wrapPluginResponse(pluginResponse, true);

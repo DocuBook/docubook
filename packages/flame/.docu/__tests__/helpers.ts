@@ -77,6 +77,7 @@ export function devCtx(overrides?: Partial<DevServerContext>): DevServerContext 
     port: 3000,
     hostname: "localhost",
     assetManifest: TEST_ASSET_MANIFEST,
+    assetsPath: "/assets",
     ...overrides,
   };
 }
