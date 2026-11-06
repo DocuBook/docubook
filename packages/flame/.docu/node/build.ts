@@ -385,7 +385,10 @@ async function build() {
   let skipped = 0;
 
   const pluginsConfig = docuConfig.plugins ?? [];
-  const builder = pluginsConfig.length > 0 ? new BuildPluginBuilder(docuConfig) : null;
+  // Strict: a hook that throws fails the build instead of shipping pages
+  // without its work (dev keeps logging and carrying on).
+  const builder =
+    pluginsConfig.length > 0 ? new BuildPluginBuilder(docuConfig, { strict: true }) : null;
   if (builder) {
     const plugins = await loadPlugins(pluginsConfig);
     for (const plugin of plugins) {

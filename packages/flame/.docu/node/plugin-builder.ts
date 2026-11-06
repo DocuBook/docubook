@@ -19,8 +19,20 @@ interface OnLoadHandler {
   }) => Awaitable<{ contents?: string; loader?: "js" | "ts" | "mdx" } | void>;
 }
 
+export interface BuildPluginBuilderOptions {
+  /**
+   * Rethrow an error from an execution hook (`onStart`, `onLoad`,
+   * `transformFrontmatter`, `transformHtml`, `onEnd`) instead of logging it
+   * and carrying on. `flame build` sets it, so a failing hook fails the build
+   * rather than shipping pages without the hook's work; `flame dev` keeps
+   * logging. `handleRequest` always logs: it only runs in `flame dev`.
+   */
+  strict?: boolean;
+}
+
 export class BuildPluginBuilder implements PluginBuilder {
   readonly config: DocuConfig;
+  private readonly strict: boolean;
 
   private _handleRequest: Array<
     (req: Request, context: DevServerContext) => Awaitable<Response | void>
@@ -42,8 +54,9 @@ export class BuildPluginBuilder implements PluginBuilder {
   > = [];
   private _transformHtml: Array<(html: string, context: PageContext) => Awaitable<string>> = [];
 
-  constructor(config: DocuConfig) {
+  constructor(config: DocuConfig, options: BuildPluginBuilderOptions = {}) {
     this.config = config;
+    this.strict = options.strict ?? false;
   }
 
   /**
@@ -195,7 +208,8 @@ export class BuildPluginBuilder implements PluginBuilder {
   /**
    * Register a callback to run once after all pages are built.
    * Receives the resolved config, aggregated docs metadata, and final build metadata.
-   * Callback errors are logged by `runOnEnd()` and do not stop later callbacks.
+   * A callback error fails `flame build` (strict mode); `flame dev` logs it
+   * and runs the later callbacks.
    *
    * @param callback - Receives config, page metadata, and emitted assets. May return a Promise.
    *
@@ -219,7 +233,8 @@ export class BuildPluginBuilder implements PluginBuilder {
    * Register a callback to transform raw file content before MDX compilation.
    * Filtered by regex against the file's relative path — only the **first** matching
    * handler's result is used.
-   * Callback errors are logged by `runOnLoad()` before trying later matching handlers.
+   * A callback error fails `flame build` (strict mode); `flame dev` logs it
+   * and tries the later matching handlers.
    *
    * @param args.filter - RegExp matched against the file's relative path.
    * @param args.namespace - Optional namespace prefix (reserved for future use).
@@ -251,7 +266,8 @@ export class BuildPluginBuilder implements PluginBuilder {
    * Register a callback to run once before the build starts.
    * Receives the resolved DocuConfig for resource initialization. To stop
    * the build on an invalid option, throw from `setup()` instead.
-   * Callback errors are logged by `runOnStart()` and do not stop later callbacks.
+   * A callback error fails `flame build` (strict mode); `flame dev` logs it
+   * and runs the later callbacks.
    *
    * @param callback - Receives the resolved config. May return a Promise.
    *
@@ -319,8 +335,8 @@ export class BuildPluginBuilder implements PluginBuilder {
   /**
    * Execute all registered onEnd callbacks sequentially with the resolved
    * config and aggregated page metadata.
-   * Errors inside individual callbacks are caught and logged — execution
-   * continues to the next callback without throwing.
+   * In strict mode the first callback error is rethrown; otherwise it is
+   * logged and execution continues to the next callback.
    *
    * @param pages - Array of metadata for every built docs page.
    * @param context - Final output directory and page-specific asset manifest.
@@ -330,9 +346,7 @@ export class BuildPluginBuilder implements PluginBuilder {
       try {
         await this._onEnd[i](this.config, pages, context);
       } catch (err) {
-        console.error(
-          `[plugin] onEnd callback #${i + 1} error: ${err instanceof Error ? err.message : String(err)}`
-        );
+        this.hookFailed(`onEnd callback #${i + 1}`, err);
       }
     }
   }
@@ -340,8 +354,8 @@ export class BuildPluginBuilder implements PluginBuilder {
   /**
    * Execute registered onLoad handlers in registration order against a file.
    * Only the **first** handler whose `filter` regex matches the path and returns
-   * a result is applied. If a matching handler throws, the error is logged and
-   * subsequent handlers are tried.
+   * a result is applied. If a matching handler throws, strict mode rethrows
+   * the error; otherwise it is logged and subsequent handlers are tried.
    *
    * @param path - Relative path of the file being loaded.
    * @param content - Raw file content.
@@ -357,9 +371,7 @@ export class BuildPluginBuilder implements PluginBuilder {
           const result = await handler.fn({ path, content });
           if (result) return result;
         } catch (err) {
-          console.error(
-            `[plugin] onLoad handler for filter ${handler.filter} error: ${err instanceof Error ? err.message : String(err)}`
-          );
+          this.hookFailed(`onLoad handler for filter ${handler.filter} on ${path}`, err);
         }
       }
     }
@@ -369,17 +381,15 @@ export class BuildPluginBuilder implements PluginBuilder {
   /**
    * Execute all registered onStart callbacks sequentially.
    * Each callback receives the resolved DocuConfig.
-   * Errors inside individual callbacks are caught and logged — execution
-   * continues to the next callback without throwing.
+   * In strict mode the first callback error is rethrown; otherwise it is
+   * logged and execution continues to the next callback.
    */
   async runOnStart(): Promise<void> {
     for (let i = 0; i < this._onStart.length; i++) {
       try {
         await this._onStart[i](this.config);
       } catch (err) {
-        console.error(
-          `[plugin] onStart callback #${i + 1} error: ${err instanceof Error ? err.message : String(err)}`
-        );
+        this.hookFailed(`onStart callback #${i + 1}`, err);
       }
     }
   }
@@ -391,8 +401,8 @@ export class BuildPluginBuilder implements PluginBuilder {
    * `null` pass the current value through unchanged.
    * Callbacks that return a non-object (string, number, array) are skipped
    * with a console warning — only plain objects are accepted.
-   * Errors inside individual callbacks are caught and logged — the current
-   * frontmatter passes through unchanged for that step.
+   * In strict mode a callback error is rethrown; otherwise it is logged and
+   * the current frontmatter passes through unchanged for that step.
    *
    * @param frontmatter - Initial frontmatter object parsed from MDX.
    * @param context - Page context with slug, filePath, and raw content.
@@ -416,9 +426,7 @@ export class BuildPluginBuilder implements PluginBuilder {
           }
         }
       } catch (err) {
-        console.error(
-          `[plugin] transformFrontmatter callback #${i + 1} error: ${err instanceof Error ? err.message : String(err)}`
-        );
+        this.hookFailed(`transformFrontmatter callback #${i + 1} on ${context.filePath}`, err);
       }
     }
     return result;
@@ -430,8 +438,8 @@ export class BuildPluginBuilder implements PluginBuilder {
    * original HTML for the first). Every callback **must** return a string.
    * Callbacks returning a non-string (e.g. `undefined`) are skipped with a
    * warning — the current HTML passes through unchanged for that step.
-   * Errors inside individual callbacks are caught and logged — the current
-   * HTML passes through unchanged for that step.
+   * In strict mode a callback error is rethrown; otherwise it is logged and
+   * the current HTML passes through unchanged for that step.
    *
    * @param html - The initial HTML string.
    * @param context - Full page context (slug, filePath, frontmatter, content, config).
@@ -450,9 +458,7 @@ export class BuildPluginBuilder implements PluginBuilder {
           );
         }
       } catch (err) {
-        console.error(
-          `[plugin] transformHtml callback #${i + 1} error: ${err instanceof Error ? err.message : String(err)}`
-        );
+        this.hookFailed(`transformHtml callback #${i + 1} on ${context.filePath}`, err);
       }
     }
     return result;
@@ -498,6 +504,16 @@ export class BuildPluginBuilder implements PluginBuilder {
    */
   transformHtml(callback: (html: string, context: PageContext) => Awaitable<string>): void {
     this._transformHtml.push(callback);
+  }
+
+  /**
+   * Report an error thrown by an execution hook: rethrow it in strict mode
+   * (`flame build`), otherwise log it and let the caller carry on.
+   */
+  private hookFailed(hook: string, err: unknown): void {
+    const message = `[plugin] ${hook} error: ${err instanceof Error ? err.message : String(err)}`;
+    if (this.strict) throw new Error(message, { cause: err });
+    console.error(message);
   }
 
   /**

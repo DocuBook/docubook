@@ -357,7 +357,7 @@ describe("Plugin integration — error isolation", () => {
       throw new Error("html error");
     });
 
-    const result = await builder.runTransformHtmlChain("<p>original</p>", null as any);
+    const result = await builder.runTransformHtmlChain("<p>original</p>", pageCtx());
     // Should pass through unchanged, not throw
     expect(result).toBe("<p>original</p>");
   });
@@ -418,5 +418,88 @@ describe("Plugin integration — error isolation", () => {
       buildEndCtx()
     );
     expect(order).toEqual([1, 2, 3]);
+  });
+});
+
+// ─── Strict mode (flame build) ──────────────────────────
+
+describe("Plugin integration — strict mode", () => {
+  const strictBuilder = () => createBuilder([], { strict: true });
+
+  it("onStart error rejects and stops later callbacks", async () => {
+    const builder = strictBuilder();
+    const later: string[] = [];
+    await createFaultyPlugin("onStart").setup(builder);
+    builder.onStart(() => {
+      later.push("ran");
+    });
+
+    await expect(builder.runOnStart()).rejects.toThrow(
+      "[plugin] onStart callback #1 error: onStart failure"
+    );
+    expect(later).toEqual([]);
+  });
+
+  it("onLoad error rejects instead of trying the next handler", async () => {
+    const builder = strictBuilder();
+    const cause = new Error("redaction failed");
+    builder.onLoad({ filter: /\.mdx$/ }, () => {
+      throw cause;
+    });
+    builder.onLoad({ filter: /\.mdx$/ }, () => ({ contents: "unredacted" }));
+
+    const error = await builder.runOnLoad("docs/a.mdx", "SECRET").catch((err: Error) => err);
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toBe(
+      "[plugin] onLoad handler for filter /\\.mdx$/ on docs/a.mdx error: redaction failed"
+    );
+    expect((error as Error).cause).toBe(cause);
+  });
+
+  it("transformFrontmatter and transformHtml errors name the page", async () => {
+    const builder = strictBuilder();
+    builder.transformFrontmatter(() => {
+      throw new Error("fm error");
+    });
+    builder.transformHtml(() => {
+      throw new Error("html error");
+    });
+
+    await expect(
+      builder.runTransformFrontmatterChain({}, pageCtx({ filePath: "docs/a.mdx" }))
+    ).rejects.toThrow("[plugin] transformFrontmatter callback #1 on docs/a.mdx error: fm error");
+    await expect(
+      builder.runTransformHtmlChain("<html></html>", pageCtx({ filePath: "docs/a.mdx" }))
+    ).rejects.toThrow("[plugin] transformHtml callback #1 on docs/a.mdx error: html error");
+  });
+
+  it("onEnd error rejects", async () => {
+    const builder = strictBuilder();
+    builder.onEnd(() => {
+      throw new Error("sitemap failed");
+    });
+
+    await expect(builder.runOnEnd([], buildEndCtx())).rejects.toThrow(
+      "[plugin] onEnd callback #1 error: sitemap failed"
+    );
+  });
+
+  it("handleRequest still isolates errors (dev only)", async () => {
+    const builder = strictBuilder();
+    await createFaultyPlugin("handleRequest").setup(builder);
+    await expect(
+      builder.runHandleRequest(new Request("http://test.dev"), devCtx())
+    ).resolves.toBeNull();
+  });
+
+  it("hooks that succeed behave as in lenient mode", async () => {
+    const builder = strictBuilder();
+    builder.onLoad({ filter: /\.mdx$/ }, ({ content }) => ({ contents: content.toUpperCase() }));
+    builder.transformHtml((html) => html.replace("</body>", "<!-- ok --></body>"));
+
+    expect(await builder.runOnLoad("docs/a.mdx", "hi")).toEqual({ contents: "HI" });
+    expect(await builder.runTransformHtmlChain("<body></body>", pageCtx())).toBe(
+      "<body><!-- ok --></body>"
+    );
   });
 });

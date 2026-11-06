@@ -4,7 +4,7 @@
  * and boilerplate across plugin.test.ts, plugin-integration.test.ts,
  * and plugin-loader.test.ts.
  */
-import { BuildPluginBuilder } from "../node/plugin-builder";
+import { BuildPluginBuilder, type BuildPluginBuilderOptions } from "../node/plugin-builder";
 import type { DocuBookPlugin } from "../node/plugin";
 import type { HtmlShellOptions } from "../node/html.shared";
 import type { AssetManifest } from "../node/types";
@@ -38,8 +38,11 @@ export function createMinimalConfig(pluginNames: string[] = []): TestDocuConfig 
 
 // ─── BuildPluginBuilder factory ─────────────────────────
 
-export function createBuilder(pluginNames: string[] = []): BuildPluginBuilder {
-  return new BuildPluginBuilder(createMinimalConfig(pluginNames) as any);
+export function createBuilder(
+  pluginNames: string[] = [],
+  options?: BuildPluginBuilderOptions
+): BuildPluginBuilder {
+  return new BuildPluginBuilder(createMinimalConfig(pluginNames) as any, options);
 }
 
 // ─── Default htmlShell options (avoids repeating favicon/css/js 4×) ──
