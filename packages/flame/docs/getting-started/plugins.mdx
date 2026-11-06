@@ -321,9 +321,9 @@ When a hook throws, `flame build` fails, so a site never ships without a hook's 
 | Hook | `flame build` | `flame dev` |
 | ---- | ------------- | ----------- |
 | `onStart` | **Fails** before any page is written | Log + continue to next callback |
-| `onLoad` | **Fails**: the page is not written, exit code 1 | Log + try next matching handler |
-| `transformFrontmatter` | **Fails**: the page is not written, exit code 1 | Log + frontmatter unchanged |
-| `transformHtml` | **Fails**: the page is not written, exit code 1 | Log + HTML unchanged |
+| `onLoad` | **Fails** before any page is written. For the docs index, only that page is not written, exit code 1 | Log + try next matching handler |
+| `transformFrontmatter` | **Fails**: that docs page is not written, the others are, exit code 1 | Log + frontmatter unchanged |
+| `transformHtml` | **Fails**. On a docs page, that page is not written, exit code 1. On the landing or 404 page, the build stops: later pages, the search index, the build cache and `onEnd` are skipped | Log + HTML unchanged |
 | `onEnd` | **Fails**: pages are written, the search index and build cache are not | — (not run) |
 | `handleRequest` | — (not run) | Log + continue to next handler |
 | `injectHead` / `injectBody` / remark / rehype | **Throw** - developer error | **Throw** - developer error |
