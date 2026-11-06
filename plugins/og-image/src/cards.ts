@@ -4,6 +4,7 @@
  */
 
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import matter from "@11ty/gray-matter";
@@ -142,9 +143,17 @@ export function sourceCandidates(docsDir: string, slug: string): string[] {
   ];
 }
 
+/** Frontmatter of a source file. Parsed with the same library `@docubook/core` uses. */
+function parseFrontmatter(raw: string): Record<string, unknown> {
+  // An options object keeps gray-matter from caching every file's content.
+  return matter(raw, {}).data as Record<string, unknown>;
+}
+
 /**
- * Frontmatter of a docs page read from its source file, or `undefined` when
- * no source exists. Parsed with the same library `@docubook/core` uses.
+ * Frontmatter of a docs page as written in its source file, or `undefined`
+ * when no source exists. Every card is planned from this, never from the
+ * frontmatter other plugins hand on, so the page phase and `onEnd` always
+ * agree on the file name.
  */
 export async function readFrontmatter(
   docsDir: string,
@@ -157,8 +166,24 @@ export async function readFrontmatter(
     } catch {
       continue;
     }
-    // An options object keeps gray-matter from caching every file's content.
-    return matter(raw, {}).data as Record<string, unknown>;
+    return parseFrontmatter(raw);
+  }
+  return undefined;
+}
+
+/** {@link readFrontmatter} for hooks that must return synchronously. */
+export function readFrontmatterSync(
+  docsDir: string,
+  slug: string
+): Record<string, unknown> | undefined {
+  for (const file of sourceCandidates(docsDir, slug)) {
+    let raw: string;
+    try {
+      raw = readFileSync(file, "utf8");
+    } catch {
+      continue;
+    }
+    return parseFrontmatter(raw);
   }
   return undefined;
 }

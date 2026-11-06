@@ -25,6 +25,7 @@ import {
   imageRef,
   planCard,
   readFrontmatter,
+  readFrontmatterSync,
   sha256,
   skipReason,
   type Card,
@@ -244,20 +245,38 @@ export default function pluginOgImage(
         await ready();
       });
 
+      // Card each docs page links to, by slug, for `injectHead` on the same render.
+      const linked = new Map<string, PlannedCard>();
+
       build.transformFrontmatter((frontmatter, ctx) => {
+        linked.delete(ctx.slug);
         const kind = ctx.slug === "" ? "index" : "docs";
         if (kind === "index" && !site.hasDocsIndex) return;
+        // An image set by the author or an earlier plugin wins.
         if (skipReason(kind, frontmatter, resolved)) return;
-        const planned = plan(docsCard(kind, ctx.slug, frontmatter, site));
+        // Plan from the source file, as `onEnd` does: other plugins may have
+        // changed the title by now (in `onLoad` or their own
+        // `transformFrontmatter`), and the name must match the file written.
+        let source: Record<string, unknown> | undefined;
+        try {
+          source = readFrontmatterSync(site.docsDir, ctx.slug);
+        } catch {
+          return;
+        }
+        if (!source || skipReason(kind, source, resolved)) return;
+        const planned = plan(docsCard(kind, ctx.slug, source, site));
+        linked.set(ctx.slug, planned);
         return { ...frontmatter, image: imageRef(planned.file) };
       });
 
       build.injectHead((ctx: PageContext) => {
         if (ctx.pageType === "docs") {
-          const kind = ctx.slug === "" ? "index" : "docs";
-          const planned = plan(docsCard(kind, ctx.slug, ctx.frontmatter, site));
-          // Tags describe the card only when the page actually shows it.
-          return ctx.frontmatter.image === imageRef(planned.file) ? sizeTags(planned.card) : [];
+          const planned = linked.get(ctx.slug);
+          // Tags describe the card only while the page still shows it: a
+          // later plugin may have replaced the image.
+          return planned && ctx.frontmatter.image === imageRef(planned.file)
+            ? sizeTags(planned.card)
+            : [];
         }
         if (ctx.pageType === "home" && wantsHome()) {
           const planned = plan(homeCard(config));

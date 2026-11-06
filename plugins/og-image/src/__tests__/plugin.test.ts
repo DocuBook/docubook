@@ -172,6 +172,26 @@ describe("transformFrontmatter", () => {
     expect(run.frontmatter({ title: "Welcome" }, "")).toEqual({ title: "Welcome" });
   });
 
+  it("names the card from the source file, whatever other plugins did to the title", async () => {
+    const run = load();
+    await run.start();
+    // e.g. an `onLoad` substitution or an earlier plugin's title suffix
+    const fm = run.frontmatter({ title: "Setup · Acme", description: "Changed." }, "guides/setup");
+    await run.end(ALL);
+    expect(await cards()).toContain((fm.image as string).replace("./assets/og/", ""));
+  });
+
+  it("leaves a page alone when its source sets an image another plugin removed", () => {
+    const run = load();
+    expect(run.frontmatter({ title: "Custom" }, "guides/custom")).toEqual({ title: "Custom" });
+  });
+
+  it("leaves pages without a source file alone", () => {
+    expect(load().frontmatter({ title: "Virtual" }, "generated/page")).toEqual({
+      title: "Virtual",
+    });
+  });
+
   it("skips the docs index flame does not write at a root deployment", () => {
     const run = load({}, makeConfig({ basePath: "" }));
     expect(run.frontmatter({ title: "Welcome" }, "")).toEqual({ title: "Welcome" });
@@ -179,15 +199,31 @@ describe("transformFrontmatter", () => {
 });
 
 describe("injectHead", () => {
-  it("describes the card on pages that show it", () => {
+  it("describes the card on pages that show it", async () => {
+    await writeFile(join(root, "docs/guides/quote.mdx"), `---\ntitle: 'Say "hi" <now>'\n---\n`);
     const run = load();
-    const fm = run.frontmatter({ title: 'Say "hi" <now>' }, "guides/setup");
-    expect(run.head({ slug: "guides/setup", frontmatter: fm })).toEqual([
+    const fm = run.frontmatter({ title: 'Say "hi" <now>' }, "guides/quote");
+    expect(run.head({ slug: "guides/quote", frontmatter: fm })).toEqual([
       `<meta property="og:image:width" content="1200">`,
       `<meta property="og:image:height" content="630">`,
       `<meta property="og:image:type" content="image/png">`,
       `<meta property="og:image:alt" content="Say &quot;hi&quot; &lt;now&gt;">`,
     ]);
+  });
+
+  it("keeps the tags when a later plugin changes the title", () => {
+    const run = load();
+    const fm = run.frontmatter({ title: "Setup" }, "guides/setup");
+    const tags = run.head({ slug: "guides/setup", frontmatter: { ...fm, title: "Setup · Acme" } });
+    expect(tags).toContain(`<meta property="og:image:alt" content="Setup">`);
+  });
+
+  it("drops the tags when a later plugin replaces the image", () => {
+    const run = load();
+    const fm = run.frontmatter({ title: "Setup" }, "guides/setup");
+    expect(
+      run.head({ slug: "guides/setup", frontmatter: { ...fm, image: "./other.png" } })
+    ).toEqual([]);
   });
 
   it("adds nothing to pages with their own image", () => {

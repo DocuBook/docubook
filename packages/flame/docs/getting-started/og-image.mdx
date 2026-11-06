@@ -80,6 +80,8 @@ og: false
 
 A page with `og: false` falls back to `meta.ogImage`.
 
+The card text comes from the frontmatter as written in the page's file. If another plugin rewrites a title during the build, the page shows the new title and the card keeps the written one; use `og.title` to change the card.
+
 ## Options
 
 | Option | Type | Default | Description |

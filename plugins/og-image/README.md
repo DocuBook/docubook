@@ -54,7 +54,7 @@ The build warns when a title has characters no loaded font can draw, and names t
 
 ## How it works
 
-`transformFrontmatter` sets `image: ./assets/og/<slug>.<hash>.png`, which Flame resolves against `meta.baseURL` and the docs prefix. `onEnd` reads every page's frontmatter, renders the cards that are missing or out of date, deletes cards of removed pages, and records what it wrote in `.docu/og-image.json`. Takumi's `render()` never touches the network: the logo and fonts are read from disk.
+`transformFrontmatter` sets `image: ./assets/og/<slug>.<hash>.png`, which Flame resolves against `meta.baseURL` and the docs prefix. Cards take their text from the frontmatter in the source file, so a title another plugin changes at build time (in `onLoad` or `transformFrontmatter`) does not reach the card; the file name the page links to and the file `onEnd` writes always match. `onEnd` reads every page's frontmatter, renders the cards that are missing or out of date, deletes cards of removed pages, and records what it wrote in `.docu/og-image.json`. Takumi's `render()` never touches the network: the logo and fonts are read from disk.
 
 ## Development
 
