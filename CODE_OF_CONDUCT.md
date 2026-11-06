@@ -59,10 +59,10 @@ representative at an online or offline event.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement by contacting the
-maintainer, [@gitfromwildan](https://github.com/gitfromwildan), through the
-contact details on their GitHub profile. Do not report violations in a public
-issue or discussion.
+reported to the community leaders responsible for enforcement by emailing the
+maintainer, [@gitfromwildan](https://github.com/gitfromwildan), at
+[email@wildan.dev](mailto:email@wildan.dev). Do not report violations in a
+public issue or discussion.
 
 All complaints will be reviewed and investigated promptly and fairly.
 
