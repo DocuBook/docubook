@@ -37,6 +37,18 @@ export interface Site {
   routes: DocuConfig["routes"];
 }
 
+/**
+ * Strip slashes from the end (and the start, unless `endOnly`) in one linear
+ * pass. A `/\/+$/` regex backtracks polynomially on long runs of `/`.
+ */
+export function trimSlashes(value: string, endOnly = false): string {
+  let start = 0;
+  let end = value.length;
+  if (!endOnly) while (start < end && value[start] === "/") start++;
+  while (end > start && value[end - 1] === "/") end--;
+  return value.slice(start, end);
+}
+
 /** Walk up from `start` to the directory holding `docu.json`, as flame does. */
 export function findProjectRoot(start: string = process.cwd()): string {
   let dir = start;
@@ -59,7 +71,7 @@ export function normalizeBasePath(value: string | undefined | null): string {
   } catch {
     // malformed URL: treat the raw value as a path
   }
-  path = `/${path.replace(/^\/+|\/+$/g, "")}`;
+  path = `/${trimSlashes(path)}`;
   return path === "/" ? "" : path;
 }
 
@@ -100,7 +112,7 @@ export function resolveDeployPath(config: DocuConfig): string {
 function domainOf(baseURL: string): string | undefined {
   try {
     const url = new URL(baseURL);
-    return `${url.host}${url.pathname.replace(/\/+$/, "")}`;
+    return `${url.host}${trimSlashes(url.pathname, true)}`;
   } catch {
     return undefined;
   }
@@ -109,7 +121,7 @@ function domainOf(baseURL: string): string | undefined {
 export function resolveSite(config: DocuConfig, options: ResolvedOptions, root: string): Site {
   const prefix = resolveBasePath(config);
   const ownPages = config.experimental?.pages === true;
-  const baseURL = (config.meta?.baseURL ?? "").trim().replace(/\/+$/, "");
+  const baseURL = trimSlashes((config.meta?.baseURL ?? "").trim(), true);
   const navbarName = config.navbar?.logoText?.trim();
   return {
     root,
@@ -133,7 +145,9 @@ export function resolveSite(config: DocuConfig, options: ResolvedOptions, root: 
 export function sectionFor(routes: Site["routes"], slug: string): string | undefined {
   const segments = slug.split("/");
   if (segments.length < 2) return undefined;
-  const route = routes.find((r) => r.href?.replace(/^\/+|\/+$/g, "") === segments[0]);
+  const route = routes.find(
+    (r) => typeof r.href === "string" && trimSlashes(r.href) === segments[0]
+  );
   const title = route?.title?.trim();
   return title || undefined;
 }

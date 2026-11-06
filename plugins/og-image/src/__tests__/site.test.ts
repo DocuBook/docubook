@@ -18,6 +18,7 @@ import {
   resolveDeployPath,
   resolveSite,
   sectionFor,
+  trimSlashes,
 } from "../site";
 import { imageRef } from "../cards";
 
@@ -141,6 +142,23 @@ describe("sectionFor", () => {
     expect(sectionFor(routes, "introduction")).toBeUndefined();
     expect(sectionFor(routes, "blog/hello")).toBeUndefined();
     expect(sectionFor([], "a/b")).toBeUndefined();
+  });
+});
+
+describe("trimSlashes", () => {
+  it("strips slashes at both ends, or only at the end", () => {
+    expect(trimSlashes("//a/b//")).toBe("a/b");
+    expect(trimSlashes("//a/b//", true)).toBe("//a/b");
+    expect(trimSlashes("///")).toBe("");
+    expect(trimSlashes("a")).toBe("a");
+  });
+
+  it("stays linear on long runs of slashes", () => {
+    const hostile = `/${"/".repeat(100_000)}x`;
+    const started = performance.now();
+    expect(trimSlashes(hostile)).toBe("x");
+    expect(normalizeBasePath(hostile)).toBe("/x");
+    expect(performance.now() - started).toBeLessThan(100);
   });
 });
 
