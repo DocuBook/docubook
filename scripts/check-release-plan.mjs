@@ -150,7 +150,12 @@ const readPlan = () => {
   if (!Array.isArray(plan.releases)) {
     throw new Error(`unexpected planner output in ${planFile}`);
   }
-  return plan.releases.map((release) => [release.name, release.type]).sort(byName);
+  // A `none` entry is a dependent whose range still covers the new version
+  // (plugins/* depend on flame): it is neither versioned nor published.
+  return plan.releases
+    .filter((release) => release.type !== "none")
+    .map((release) => [release.name, release.type])
+    .sort(byName);
 };
 
 let failures = 0;

@@ -1,33 +1,98 @@
 ---
 title: Algolia
-description: Integrate Algolia DocSearch into your Flame documentation site.
+description: Replace the built-in search with Algolia DocSearch, and add Ask AI in its own side panel.
 ---
 
-[Algolia DocSearch](https://docsearch.algolia.com/) provides a fast, relevant search experience for documentation sites. Flame does not include Algolia by default — add it via a plugin registered in the `plugins` array of `docu.json`:
+[Algolia DocSearch](https://docsearch.algolia.com/) searches an index that Algolia's crawler builds from your published site. The official plugin `@docubook/plugin-search-algolia` swaps Flame's [built-in search](/docs/getting-started/search/built-in) for DocSearch v5 and, if you give it an Agent Studio agent, adds **Ask AI**.
 
-:::info title="Example configuration — adapt to your plugin"
-  The entry below is an **example**. `@docubook/plugin-search-algolia` is a placeholder —
-  replace it with whatever Algolia search plugin you install.
-:::
+The two stay apart. Search opens the DocSearch dialog and shows search results only. Ask AI opens a separate side panel beside the page, so a question never shows up in the search dialog and a search never starts a chat.
 
-```json
+## Install
+
+```bash
+npm install -D @docubook/plugin-search-algolia
+```
+
+Register it in the `plugins` array of `docu.json`:
+
+```json:docu.json
 {
   "plugins": [
-    ["your-algolia-plugin-package", {
+    ["@docubook/plugin-search-algolia", {
       "appId": "YOUR_APP_ID",
       "apiKey": "YOUR_SEARCH_ONLY_API_KEY",
       "indexName": "YOUR_INDEX_NAME",
-      "assistantId": "optional_assistant_id"
+      "askAi": "YOUR_AGENT_ID"
     }]
   ]
 }
 ```
 
-The plugin format is `[packageName, factoryOptions]`. At build time, Flame loads the package, calls its default export as a factory with your options, and registers the returned plugin instance.
+Leave out `askAi` to ship search without Ask AI. Remove the plugin entry to go back to the built-in search.
 
 :::info{title="Is this safe?"}
-  Yes. The **search-only API key** only allows querying your index — no writes. The App ID and index name are already visible in browser network requests. Never put your **Admin API Key** here.
+  Yes. The **search-only API key** can only query your index. The App ID, index name and key are visible in browser requests anyway. Never put your **Admin API key** here.
 :::
+
+## Where it appears
+
+| Place | Search | Ask AI |
+| --- | --- | --- |
+| Desktop sidebar | The search bar under the logo | A Sparkles button beside the search bar |
+| Mobile bar | The search icon | — |
+| Mobile menu drawer | — | An **Ask AI** button under the GitHub icon and theme toggle |
+| Keyboard | `⌘ K` / `Ctrl K` | `⌘ I` / `Ctrl I` (toggles the panel) |
+
+The dialog and the panel follow your theme colors and the light/dark toggle. Opening one closes the other, and closing them returns focus to where you were.
+
+The DocSearch code loads the first time a reader hovers, focuses or clicks search or Ask AI, so pages that nobody searches from do not download it. The files are copied next to Flame's own bundles and served from your domain, so the site's `script-src 'self'` policy needs no change.
+
+## Options
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `appId` | string | **Required.** Algolia application ID. |
+| `apiKey` | string | **Required.** Search-only API key. |
+| `indexName` | string | **Required.** Index the crawler writes to. |
+| `askAi` | string \| object | Agent ID, or the [Ask AI options](#ask-ai) below. Omit for search only. |
+| `searchParameters` | object | Algolia search parameters for the dialog, e.g. `{ "facetFilters": ["lang:en"] }`. |
+| `placeholder` | string | Placeholder of the search input. |
+| `maxResultsPerGroup` | number | Maximum results per group in the dialog. |
+| `disableUserPersonalization` | boolean | Do not keep recent and favorite searches in local storage. |
+| `translations` | object | DocSearch [modal translations](https://docsearch.algolia.com/docs/api#translations). |
+| `relativeUrls` | boolean | Default `true`: results open on the site you are on, not the crawled domain, so search also works in `flame dev` and on preview deployments. |
+
+Options are checked when the build starts. A missing or malformed value stops the build with a `[plugin:search-algolia]` error naming the option.
+
+## Ask AI
+
+Ask AI needs an agent in [Algolia Agent Studio](https://www.algolia.com/doc/guides/algolia-ai/agent-studio/) with your index as its search tool. Pass its ID as a string, or pass an object to tune the panel:
+
+```json:docu.json
+["@docubook/plugin-search-algolia", {
+  "appId": "YOUR_APP_ID",
+  "apiKey": "YOUR_SEARCH_ONLY_API_KEY",
+  "indexName": "YOUR_INDEX_NAME",
+  "askAi": {
+    "agentId": "YOUR_AGENT_ID",
+    "suggestedQuestions": true,
+    "side": "right",
+    "width": 400
+  }
+}]
+```
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `agentId` | string | **Required.** Agent Studio agent ID. |
+| `appId` / `apiKey` | string | Credentials of the agent, when they differ from the search ones. |
+| `indices` | string[] | Indices the agent may search. Defaults to `indexName`. |
+| `searchParameters` | object | Search parameters per index name, e.g. `{ "YOUR_INDEX_NAME": { "distinct": false } }`. |
+| `suggestedQuestions` | boolean | Show suggested questions when a conversation starts. |
+| `variant` | `"floating"` \| `"inline"` | `floating` (default) opens over the page; `inline` pushes the page aside. |
+| `side` | `"left"` \| `"right"` | Side the panel opens from. Default `right`. |
+| `width` / `expandedWidth` | number \| string | Panel width in pixels or any CSS width. DocSearch defaults: `360px` and `580px`. |
+| `translations` | object | DocSearch [Sidepanel translations](https://docsearch.algolia.com/docs/sidepanel/api). |
 
 ## Register for DocSearch
 
@@ -43,11 +108,10 @@ Algolia provides DocSearch for open-source projects for free.
   - **Application ID**
   - **Search-Only API Key**
   - **Index Name**
-  - (optional) **Assistant ID**
 :::
 
-:::step{title="Add credentials to docu.json"}
-  Add the plugin entry to `plugins` as shown above. No `.env` file needed.
+:::step{title="Add the plugin to docu.json"}
+  Add the plugin entry as shown in [Install](#install). No `.env` file needed. For Ask AI, create an agent in Agent Studio and add its ID as `askAi`.
 :::
 ::::
 
@@ -79,14 +143,14 @@ After your site is live, configure the Algolia crawler to index your pages. The 
 
 Paste the configuration below into the editor. The values you need to change are highlighted.
 
-```javascript:index.js showLineNumbers {2-3,6,13,16-17,62} Expandable
+```javascript:index.js showLineNumbers {2-3,6,13,16-17,64} Expandable
 new Crawler({
   appId: "YOUR_APP_ID",           // ← your App ID
   apiKey: "YOUR_CRAWLER_API_KEY",  // ← your crawler API key
   indexPrefix: "",
   rateLimit: 8,
   startUrls: ["https://your-domain.com"], // ← your domain
-  renderJavaScript: true,
+  renderJavaScript: false,
   maxDepth: 10,
   maxUrls: 8000,
   schedule: "every 1 day at 02:00 am",
@@ -103,7 +167,8 @@ new Crawler({
           $(".breadcrumbs li:nth-child(2)").text().trim() ||
           "Docs";
 
-        const layoutAnchors = ["scroll-container", "main-navbar"];
+        // ids of layout wrappers, not of a section: strip them from record urls
+        const layoutAnchors = ["scroll-container", "mdx-content-island"];
 
         return helpers
           .docsearch({
@@ -113,7 +178,8 @@ new Crawler({
                 defaultValue: lvl0,
               },
               lvl1: [".prose h1"],
-              content: [".prose p, .prose li"],
+              // page description + MDX body only, so "Last updated" and the footer stay out
+              content: [".prose > p, #mdx-content-island p, #mdx-content-island li, #mdx-content-island td"],
               lvl2: [".prose h2"],
               lvl3: [".prose h3"],
               lvl4: [".prose h4"],
@@ -129,7 +195,7 @@ new Crawler({
               ...record,
               anchor: undefined,
               url: record.url
-                ? record.url.replace(/#(scroll-container|main-navbar)$/, "")
+                ? record.url.replace(/#(scroll-container|mdx-content-island)$/, "")
                 : record.url,
               url_without_anchor:
                 record.url_without_anchor ||
@@ -194,9 +260,12 @@ Key settings worth noting:
 |---|---|---|
 | `distinct` | `true` | Deduplicate records by URL — one result per page |
 | `attributeForDistinct` | `"url"` | Group all sections of a page under one result |
-| `renderJavaScript` | `true` | Flame uses JS-rendered content — must be enabled |
+| `content` | `#mdx-content-island …` | Indexes the page description, paragraphs, list items and table cells, but not "Last updated" or the footer |
+| `renderJavaScript` | `false` | Flame writes every page as static HTML, so the crawler needs no browser and crawls faster |
 | `schedule` | `every 1 day` | Keeps search results fresh without over-scraping |
 
 ## Deploy
 
-Credentials are in `docu.json`, so no `.env` or platform secrets needed. Deploy `.docu/dist/` to any static host — the Algolia plugin handles everything at build time.
+Credentials live in `docu.json`, so no `.env` file or platform secrets are needed. Build and deploy `.docu/dist/` to any static host as usual: the plugin writes its browser files into the build output.
+
+The browser needs to reach Algolia over HTTPS. Flame's default `connect-src 'self' https:` policy already allows it. If you tightened `connect-src` on your host, allow `https://*.algolia.net` and `https://*.algolianet.com`. Ask AI talks to Agent Studio on the same `*.algolia.net` hosts.

@@ -61,6 +61,14 @@ export interface DevServerContext {
   hostname: string;
   /** Current page-specific asset manifest, refreshed after HMR rebuilds. */
   assetManifest: Readonly<AssetManifest>;
+  /**
+   * URL path the dev server serves the hashed bundles from, with no trailing
+   * slash: `/assets` by default, `<basePath>/_flame` with
+   * `experimental.pages`. It is the dev counterpart of
+   * `BuildEndContext.assetsDir`, so a plugin that writes files there in
+   * `onEnd` serves the same files from here during `flame dev`.
+   */
+  assetsPath: string;
 }
 
 /**
@@ -81,6 +89,11 @@ export interface BuildEndContext {
 }
 
 export type { AssetEntry, AssetManifest, DocuConfig };
+export type {
+  SearchProvider,
+  SearchProviderConfig,
+  SearchProviderFactory,
+} from "./search-provider";
 
 // ─── PluginBuilder Interface ────────────────────────────
 

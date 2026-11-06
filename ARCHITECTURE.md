@@ -17,6 +17,10 @@ The monorepo is split into reusable packages:
 - `@docubook/themes-colors` provides theme presets and color utilities
 - `@docubook/ui-react` provides reusable React UI primitives for flame
 
+Official flame plugins live under `plugins/`:
+
+- `@docubook/plugin-search-algolia` replaces the built-in search with Algolia DocSearch and adds Ask AI
+
 **Scope boundaries:** file-based docs authoring and rendering only. No CMS, no
 user auth, no database. Project config is declarative via `docu.json`.
 
@@ -29,6 +33,7 @@ user auth, no database. Project config is declarative via `docu.json`.
 | `@docubook/flame` | `packages/flame` | Static site generator and CLI. Bun executes TypeScript source entries directly; Node and Deno use compatibility entries precompiled to `.docu/lib/`. |
 | `@docubook/themes-colors` | `packages/themes-colors` | Theme presets, CSS variable generation, color utilities, and passthrough `themes/*` and `syntax/*` exports. Ships native ESM via Vite library mode. |
 | `@docubook/ui-react` | `packages/ui-react` | DaisyUI + Tailwind React primitives consumed by flame and published as an ESM-only, multi-entry package with component and stylesheet subpath exports. |
+| `@docubook/plugin-search-algolia` | `plugins/search-algolia` | Flame plugin: Algolia DocSearch v5 keyword search in the DocSearch dialog and Ask AI in the DocSearch Sidepanel. Ships a Node entry (`dist/index.js`) and a browser build (`dist/client/`) that it copies beside flame's bundles. Private until its first npm release; not part of the linked release group. |
 
 ### Historical Renames
 
@@ -285,6 +290,7 @@ The builder workflow publishes `ghcr.io/docubook/flame` with `<version>`,
 8. **Eval-free static hydration.** Per-page MDX becomes static ESM modules, avoiding runtime code evaluation in production builds; development keeps a compatibility fallback.
 9. **Tailwind CLI as the CSS pipeline.** Both Bun and Node/Deno paths invoke `@tailwindcss/cli` rather than depending on a PostCSS app pipeline.
 10. **Hook-based plugin model in flame.** Types live in `plugin.ts`, resolution and validation in `plugin-loader.ts`, and ordered collection/execution in `plugin-builder.ts`.
+11. **Search providers keep flame's search UI.** A plugin replaces the search dialog by declaring `#docubook-search-provider` (JSON) on docs pages and shipping a browser module in the bundle directory. Flame keeps the triggers, shortcuts and Ask AI buttons, and imports the module on first use (`search-provider.ts`).
 
 ## Testing
 
@@ -302,6 +308,7 @@ Package-level validation:
 - `packages/themes-colors` — theme resolution and CSS generation
 - `packages/ui-react` — React component primitives
 - `packages/flame` — build pipeline, runtime adapters, plugin system, and static-site behavior
+- `plugins/search-algolia` — option validation, provider declaration, asset copy and dev serving
 
 CI runs Turbo `lint`, `typecheck`, `build`, and `test` jobs on Node.js 22, plus
 runtime smoke tests for flame on Node and Deno. The smoke jobs build workspace

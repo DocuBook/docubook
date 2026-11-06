@@ -7,6 +7,7 @@ import {
   assertValidExperimental,
   resolveOwnPages,
   resolveRootRoute,
+  bundlePath,
 } from "./paths";
 import { loadPlugins } from "./plugin-loader";
 import { BuildPluginBuilder } from "./plugin-builder";
@@ -158,6 +159,7 @@ const server = Bun.serve({
         port: serverPort,
         hostname: serverHostname,
         assetManifest: state.assetManifest,
+        assetsPath: bundlePath(),
       });
       if (pluginResponse) {
         const securedResponse = wrapPluginResponse(pluginResponse, true);

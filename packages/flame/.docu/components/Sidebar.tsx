@@ -16,7 +16,7 @@ import { Context } from "./Context";
 import Menu from "./Menu";
 import { ThemeToggle } from "./Theme";
 import { GitHubLink } from "./Navbar";
-import Search from "./Search";
+import Search, { AskAiButton, useAskAi } from "./Search";
 import { TocProgressCircle, tocProgress } from "./TocProgress";
 import { revealScrollTop } from "./toc-list-scroll";
 import type { TocItem } from "../node/types";
@@ -39,6 +39,7 @@ export default function Sidebar({ tocs = [], title, repoUrl, className }: Sideba
 }
 
 function DesktopSidebar({ className, repoUrl }: { className?: string; repoUrl?: string }) {
+  const askAi = useAskAi();
   return (
     <div className={cn("flex h-full flex-col", className)}>
       {/* Logo */}
@@ -57,9 +58,10 @@ function DesktopSidebar({ className, repoUrl }: { className?: string; repoUrl?: 
         </a>
       </div>
 
-      {/* Search */}
-      <div className="shrink-0 px-4 pb-3">
-        <Search className="w-full" />
+      {/* Search, plus Ask AI when the search plugin offers it */}
+      <div className="flex shrink-0 items-center gap-2 px-4 pb-3">
+        <Search className="min-w-0 flex-1" />
+        {askAi && <AskAiButton config={askAi} />}
       </div>
 
       {/* Context + Menu */}
@@ -351,6 +353,8 @@ function MobileDrawer({
   onClose: () => void;
   repoUrl?: string;
 }) {
+  const askAi = useAskAi();
+
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
@@ -382,6 +386,12 @@ function MobileDrawer({
             <PanelRightClose className="text-base-content/60 h-5 w-5" />
           </button>
         </div>
+        {askAi && (
+          <div className="border-base-200 border-b px-4 py-3">
+            {/* Close the drawer first: the panel opens over the page, not over the drawer */}
+            <AskAiButton config={askAi} variant="block" onBeforeOpen={onClose} />
+          </div>
+        )}
         <div className="flex-1 overflow-y-auto px-4 py-2">
           <Context className="mb-2" />
           <Menu onNavigate={onClose} routes={routes} />

@@ -1,0 +1,99 @@
+/*
+ * DocSearch dialog and Sidepanel themed with flame's tokens. Flame defines
+ * HSL channels (`--primary`, `--background`, `--muted`, …) for the light theme
+ * on :root and for the dark theme on .dark, so mapping DocSearch's variables
+ * to them follows the theme toggle without DocSearch's own `data-theme`
+ * switch, which would also flip daisyUI's theme.
+ */
+@import "@docsearch/css/dist/style.css";
+@import "@docsearch/css/dist/sidepanel.css";
+
+/* Flame renders the triggers; DocSearch's own buttons stay hidden. */
+#docubook-docsearch,
+.DocSearch-SidepanelButton {
+  display: none !important;
+}
+
+/* :root:root outranks DocSearch's :root[data-theme="dark"] block. */
+:root:root {
+  --docsearch-font-family: inherit;
+  --docsearch-primary-color: hsl(var(--primary));
+  --docsearch-primary-dark-color: hsl(var(--primary));
+  --docsearch-soft-primary-color: hsl(var(--primary) / 0.1);
+  --docsearch-highlight-color: hsl(var(--primary));
+  --docsearch-focus-color: hsl(var(--primary));
+  --docsearch-logo-color: hsl(var(--primary));
+  --docsearch-text-color: hsl(var(--foreground));
+  --docsearch-secondary-text-color: hsl(var(--muted-foreground));
+  --docsearch-muted-color: hsl(var(--muted-foreground));
+  --docsearch-muted-color-darker: hsl(var(--muted-foreground) / 0.25);
+  --docsearch-icon-color: hsl(var(--muted-foreground));
+  --docsearch-subtle-color: hsl(var(--border-color));
+  --docsearch-background-color: hsl(var(--muted));
+  --docsearch-border-radius: calc(var(--radius, 0.5rem) - 2px);
+  --docsearch-container-background: rgb(0 0 0 / 0.4);
+  --docsearch-modal-background: hsl(var(--background));
+  --docsearch-modal-radius: var(--radius, 0.75rem);
+  --docsearch-modal-width: 640px;
+  --docsearch-modal-shadow: 0 20px 40px -12px rgb(0 0 0 / 0.25), 0 0 0 1px hsl(var(--border-color));
+  --docsearch-searchbox-background: hsl(var(--background));
+  --docsearch-searchbox-focus-background: hsl(var(--background));
+  --docsearch-hit-color: hsl(var(--foreground));
+  --docsearch-hit-background: hsl(var(--background));
+  --docsearch-hit-focus-background: hsl(var(--primary) / 0.1);
+  --docsearch-hit-highlight-color: hsl(var(--primary) / 0.15);
+  --docsearch-hit-shadow: none;
+  --docsearch-key-background: hsl(var(--muted));
+  --docsearch-key-color: hsl(var(--muted-foreground));
+  --docsearch-key-pressed-shadow: none;
+  --docsearch-footer-background: hsl(var(--background));
+  --docsearch-footer-shadow: 0 -1px 0 0 hsl(var(--border-color));
+  --docsearch-dropdown-menu-background: hsl(var(--popover));
+  --docsearch-dropdown-menu-item-hover-background: hsl(var(--muted));
+  --docsearch-popover-background: hsl(var(--popover));
+  --docsearch-popover-arrow-color: hsl(var(--popover));
+  --docsearch-chip-text-color: hsl(var(--primary));
+  --docsearch-chip-background: hsl(var(--primary) / 0.1);
+  --docsearch-menu-trigger-active-background: hsl(var(--primary) / 0.1);
+  --docsearch-menu-trigger-active-text-color: hsl(var(--primary));
+  --docsearch-code-block-background: hsl(var(--muted));
+  --docsearch-success-color: hsl(var(--primary) / 0.1);
+  --docsearch-sidepanel-text-base: hsl(var(--foreground));
+  --docsearch-sidepanel-accent-muted: hsl(var(--muted-foreground));
+}
+
+:root.dark {
+  --docsearch-container-background: rgb(0 0 0 / 0.6);
+  --docsearch-modal-shadow: 0 20px 40px -12px rgb(0 0 0 / 0.6), 0 0 0 1px hsl(var(--border-color));
+}
+
+/* Keep DocSearch's tighter mobile spacing, which :root:root would mask. */
+@media (max-width: 768px) {
+  :root:root {
+    --docsearch-spacing: 0.625rem;
+    --docsearch-footer-height: 48px;
+  }
+}
+
+.DocSearch-Hit a:focus-visible {
+  outline: 2px solid var(--docsearch-focus-color);
+}
+
+.DocSearch-Logo [class^="cls-"] {
+  fill: currentColor;
+}
+
+.DocSearch-Sidepanel-Prompt--form {
+  border-color: var(--docsearch-subtle-color);
+}
+
+.DocSearch-Sidepanel-Prompt--submit {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.DocSearch-Sidepanel-Prompt--submit:disabled,
+.DocSearch-Sidepanel-Prompt--submit[aria-disabled="true"] {
+  background-color: var(--docsearch-background-color);
+  color: var(--docsearch-muted-color);
+}
