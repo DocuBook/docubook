@@ -32,7 +32,9 @@ function loadStylesheet(): Promise<void> {
   stylesheet ??= new Promise<void>((resolve) => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = new URL(STYLESHEET, import.meta.url).href;
+    // Same `?v=<version>` as this module, so an upgrade is not served the
+    // old theme from a long-lived bundle cache.
+    link.href = new URL(STYLESHEET + new URL(import.meta.url).search, import.meta.url).href;
     // An unstyled dialog is still usable: never block search on CSS.
     link.onload = link.onerror = () => resolve();
     document.head.appendChild(link);
@@ -86,14 +88,30 @@ function whenReady<T>(create: (onReady: () => void) => T): Promise<T> {
   });
 }
 
+/**
+ * Share one setup between callers, but forget a failed one: a chunk that did
+ * not load (a flaky network, or a deploy that replaced the hashed chunk) is
+ * retried on the next open instead of leaving the surface dead until a reload.
+ */
+export function retryable<T>(create: () => Promise<T>): () => Promise<T> {
+  let pending: Promise<T> | null = null;
+  return () =>
+    (pending ??= create().catch((error: unknown) => {
+      pending = null;
+      throw error;
+    }));
+}
+
+function logLoadError(error: unknown) {
+  console.error("[plugin:search-algolia] Could not load DocSearch:", error);
+}
+
 /** Focus a field once the surface has rendered it. */
 function focusSoon(selector: string) {
   requestAnimationFrame(() => document.querySelector<HTMLElement>(selector)?.focus());
 }
 
 export default function createSearchProvider(config: ClientConfig): SearchProvider {
-  let modal: Promise<DocSearchInstance> | null = null;
-  let panel: Promise<SidepanelInstance> | null = null;
   let panelInstance: SidepanelInstance | null = null;
   let modalInstance: DocSearchInstance | null = null;
 
@@ -115,8 +133,8 @@ export default function createSearchProvider(config: ClientConfig): SearchProvid
     lastFocused = null;
   };
 
-  const loadModal = () =>
-    (modal ??= Promise.all([import("@docsearch/js/docsearch"), loadStylesheet()]).then(
+  const loadModal = retryable<DocSearchInstance>(() =>
+    Promise.all([import("@docsearch/js/docsearch"), loadStylesheet()]).then(
       ([{ default: docsearch }]) =>
         whenReady((onReady) =>
           docsearch({
@@ -136,11 +154,12 @@ export default function createSearchProvider(config: ClientConfig): SearchProvid
             onReady,
           } as Parameters<typeof docsearch>[0])
         ).then((instance) => (modalInstance = instance))
-    ));
+    )
+  );
 
   const assistant = config.assistant;
-  const loadPanel = () =>
-    (panel ??= Promise.all([import("@docsearch/sidepanel-js"), loadStylesheet()]).then(
+  const loadPanel = retryable<SidepanelInstance>(() =>
+    Promise.all([import("@docsearch/sidepanel-js"), loadStylesheet()]).then(
       ([{ default: sidepanel }]) =>
         whenReady((onReady) =>
           sidepanel({
@@ -157,11 +176,12 @@ export default function createSearchProvider(config: ClientConfig): SearchProvid
             onReady,
           } as Parameters<typeof sidepanel>[0])
         ).then((instance) => (panelInstance = instance))
-    ));
+    )
+  );
 
   // Start fetching DocSearch now: flame imports this module on hover or
   // focus of a trigger, so the dialog is usually ready by the click.
-  void loadModal();
+  void loadModal().catch(logLoadError);
 
   return {
     open() {
@@ -171,9 +191,11 @@ export default function createSearchProvider(config: ClientConfig): SearchProvid
         switching = true;
         panelInstance.close();
       }
-      void loadModal().then((instance) => {
-        if (!instance.isOpen) instance.open();
-      });
+      void loadModal()
+        .then((instance) => {
+          if (!instance.isOpen) instance.open();
+        })
+        .catch(logLoadError);
     },
     askAi: assistant
       ? () => {
@@ -186,7 +208,9 @@ export default function createSearchProvider(config: ClientConfig): SearchProvid
             switching = true;
             modalInstance.close();
           }
-          void loadPanel().then((instance) => instance.open());
+          void loadPanel()
+            .then((instance) => instance.open())
+            .catch(logLoadError);
         }
       : undefined,
   };
