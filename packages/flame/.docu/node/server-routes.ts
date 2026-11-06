@@ -56,6 +56,7 @@ async function createHtmlResponse(
     nonce,
   };
   let html = createHtmlShell({
+    verification: state.docuConfig.meta?.verification,
     title,
     description,
     body,

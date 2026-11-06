@@ -65,6 +65,32 @@ Site-wide metadata used for page `<title>`, `<meta name="description">`, Open Gr
 | `basePath`    | string | No       | URL prefix the docs site is served under **inside** the deployment root (default: `/docs`). Empty string `""` serves the docs from the deployment root |
 | `favicon`     | string | No       | Path to favicon (default: `/docs/assets/images/favicon.ico`) |
 | `ogImage`     | string | No       | Global fallback OG image URL for social sharing (per-page override via frontmatter `image` field) |
+| `verification` | object | No | Site-verification `<meta>` tags for every page Flame builds, keyed by meta name. See [Site verification](#site-verification) |
+
+### Site verification
+
+Services such as the Algolia Crawler or Google Search Console confirm that you own a domain by looking for a `<meta>` tag on your site. List each tag under `meta.verification`, with the meta name as the key and the token as the value:
+
+```json
+{
+  "meta": {
+    "title": "My Docs",
+    "baseURL": "https://example.com",
+    "verification": {
+      "algolia-site-verification": "ADCCB4B3D3A8BDCE",
+      "google-site-verification": "your-google-token"
+    }
+  }
+}
+```
+
+Flame writes each entry into the `<head>` of every page it builds: the landing page, the docs pages, and the 404 page. The first entry above becomes:
+
+```html
+<meta name="algolia-site-verification" content="ADCCB4B3D3A8BDCE">
+```
+
+The tag is in the static HTML, so a crawler finds it without running JavaScript. With [`experimental.pages`](#experimental) Flame builds no landing page: if your own app serves the home page, add the tag there, or give the service the URL of a docs page (Algolia calls it **Optional URL**).
 
 ### Base path
 

@@ -320,3 +320,28 @@ describe("docu.schema.json — repo.path field", () => {
     expect(path.description as string).toContain("auto-detect");
   });
 });
+
+describe("docu.schema.json — meta.verification field", () => {
+  const schemaPath = join(import.meta.dirname, "..", "..", "docu.schema.json");
+  const schema: Record<string, unknown> = JSON.parse(readFileSync(schemaPath, "utf-8"));
+  const metaProps = ((schema.properties as Record<string, unknown>).meta as Record<string, unknown>)
+    .properties as Record<string, unknown>;
+  const verification = metaProps.verification as {
+    type: string;
+    propertyNames: { pattern: string };
+    additionalProperties: { type: string; minLength: number };
+  };
+
+  it("maps meta names to non-empty string tokens", () => {
+    expect(verification.type).toBe("object");
+    expect(verification.additionalProperties).toEqual({ type: "string", minLength: 1 });
+  });
+
+  it("accepts provider meta names and flags names that are not one", () => {
+    const name = new RegExp(verification.propertyNames.pattern);
+    for (const ok of ["algolia-site-verification", "google-site-verification", "msvalidate.01"]) {
+      expect(name.test(ok)).toBe(true);
+    }
+    for (const bad of ["", "has space", 'quote"name']) expect(name.test(bad)).toBe(false);
+  });
+});

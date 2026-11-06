@@ -1,4 +1,4 @@
-import type { HtmlShellOptions } from "./html.shared";
+import { verificationTags, type HtmlShellOptions } from "./html.shared";
 export type { HtmlShellOptions };
 import { cspMeta } from "./security";
 import { rebaseContentPath } from "./utils";
@@ -23,6 +23,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
     basePath = DEFAULT_BASE_PATH,
     deployPath = "",
     bundlePath = "/assets",
+    verification,
   } = opts;
   const nonceAttr = nonce ? ` nonce="${Bun.escapeHTML(nonce)}"` : "";
   const themeStyle = themeCss ? `\n  <style${nonceAttr}>${Bun.escapeHTML(themeCss)}</style>` : "";
@@ -67,7 +68,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${Bun.escapeHTML(title)}</title>
-  <meta name="description" content="${Bun.escapeHTML(description)}">
+  <meta name="description" content="${Bun.escapeHTML(description)}">${verificationTags(verification, Bun.escapeHTML)}
   ${favicon ? `<link rel="icon" type="image/x-icon" href="${Bun.escapeHTML(resolvePath(favicon))}">` : ""}${themeStyle}
   <link rel="preload" href="${Bun.escapeHTML(assetPrefix + css)}" as="style">
   <link rel="stylesheet" href="${Bun.escapeHTML(assetPrefix + css)}">

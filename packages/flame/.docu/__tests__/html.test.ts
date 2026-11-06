@@ -237,6 +237,44 @@ describe("htmlShell", () => {
     });
   });
 
+  describe("site verification", () => {
+    it("writes one <meta> per meta.verification entry after the description", () => {
+      const html = htmlShell({
+        ...MINIMAL_OPTS,
+        verification: {
+          "algolia-site-verification": "ADCCB4B3D3A8BDCE",
+          "google-site-verification": " g-token ",
+        },
+      });
+      expect(html).toContain(
+        '<meta name="description" content="A test page">\n  <meta name="algolia-site-verification" content="ADCCB4B3D3A8BDCE">\n  <meta name="google-site-verification" content="g-token">'
+      );
+    });
+
+    it("escapes names and tokens", () => {
+      const html = htmlShell({
+        ...MINIMAL_OPTS,
+        verification: { 'x"><script>a()</script>': '"><script>b()</script>' },
+      });
+      expect(html).not.toContain("<script>a()</script>");
+      expect(html).not.toContain("<script>b()</script>");
+      expect(html).toContain('content="&quot;&gt;&lt;script&gt;b()&lt;/script&gt;"');
+    });
+
+    it("skips entries that are not a non-empty string pair", () => {
+      const html = htmlShell({
+        ...MINIMAL_OPTS,
+        verification: { empty: "", blank: "  ", number: 42, "": "token", ok: "yes" },
+      });
+      expect(html.match(/<meta name="(empty|blank|number)"|<meta name=""/g)).toBeNull();
+      expect(html).toContain('<meta name="ok" content="yes">');
+    });
+
+    it("writes nothing without meta.verification", () => {
+      expect(htmlShell(MINIMAL_OPTS)).not.toContain("verification");
+    });
+  });
+
   describe("SEO meta tags", () => {
     const SEO_OPTS = {
       ...MINIMAL_OPTS,

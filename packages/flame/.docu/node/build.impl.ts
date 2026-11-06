@@ -293,6 +293,7 @@ async function renderDocsPage(
   // new Function — no 'unsafe-eval' needed in the CSP.
   const csp = cspHeader(nonce);
   let html = htmlShell({
+    verification: docuConfig.meta?.verification,
     title,
     description,
     body,
@@ -665,6 +666,7 @@ export async function runBuild(): Promise<void> {
       nonce: landingNonce,
     };
     let landingHtml = htmlShell({
+      verification: docuConfig.meta?.verification,
       title: docuConfig.meta?.title || "DocuBook",
       description: docuConfig.meta?.description || "",
       body: renderToString(landingPage),
@@ -709,6 +711,7 @@ export async function runBuild(): Promise<void> {
       nonce: notFoundNonce,
     };
     notFoundHtml = htmlShell({
+      verification: docuConfig.meta?.verification,
       title: "404 - Not Found",
       description: "",
       body: renderToString(notFoundPage),
