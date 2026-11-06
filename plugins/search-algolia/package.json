@@ -1,7 +1,6 @@
 {
   "name": "@docubook/plugin-search-algolia",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "description": "Algolia DocSearch for DocuBook Flame — keyword search in the DocSearch dialog and Ask AI in its own side panel.",
   "type": "module",
   "main": "./dist/index.js",

@@ -33,7 +33,7 @@ user auth, no database. Project config is declarative via `docu.json`.
 | `@docubook/flame` | `packages/flame` | Static site generator and CLI. Bun executes TypeScript source entries directly; Node and Deno use compatibility entries precompiled to `.docu/lib/`. |
 | `@docubook/themes-colors` | `packages/themes-colors` | Theme presets, CSS variable generation, color utilities, and passthrough `themes/*` and `syntax/*` exports. Ships native ESM via Vite library mode. |
 | `@docubook/ui-react` | `packages/ui-react` | DaisyUI + Tailwind React primitives consumed by flame and published as an ESM-only, multi-entry package with component and stylesheet subpath exports. |
-| `@docubook/plugin-search-algolia` | `plugins/search-algolia` | Flame plugin: Algolia DocSearch v5 keyword search in the DocSearch dialog and Ask AI in the DocSearch Sidepanel. Ships a Node entry (`dist/index.js`) and a browser build (`dist/client/`) that it copies beside flame's bundles. Private until its first npm release; not part of the linked release group. |
+| `@docubook/plugin-search-algolia` | `plugins/search-algolia` | Flame plugin: Algolia DocSearch v5 keyword search in the DocSearch dialog and Ask AI in the DocSearch Sidepanel. Ships a Node entry (`dist/index.js`) and a browser build (`dist/client/`) that it copies beside flame's bundles. Versioned on its own through Changesets, outside the linked release group. Its first release (0.1.0) was published by hand, since npm trusted publishing cannot create a new package. |
 
 ### Historical Renames
 
