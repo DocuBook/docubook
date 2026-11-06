@@ -20,6 +20,7 @@ The monorepo is split into reusable packages:
 Official flame plugins live under `plugins/`:
 
 - `@docubook/plugin-search-algolia` replaces the built-in search with Algolia DocSearch and adds Ask AI
+- `@docubook/plugin-og-image` renders a social preview card for every page at build time
 
 **Scope boundaries:** file-based docs authoring and rendering only. No CMS, no
 user auth, no database. Project config is declarative via `docu.json`.
@@ -34,6 +35,7 @@ user auth, no database. Project config is declarative via `docu.json`.
 | `@docubook/themes-colors` | `packages/themes-colors` | Theme presets, CSS variable generation, color utilities, and passthrough `themes/*` and `syntax/*` exports. Ships native ESM via Vite library mode. |
 | `@docubook/ui-react` | `packages/ui-react` | DaisyUI + Tailwind React primitives consumed by flame and published as an ESM-only, multi-entry package with component and stylesheet subpath exports. |
 | `@docubook/plugin-search-algolia` | `plugins/search-algolia` | Flame plugin: Algolia DocSearch v5 keyword search in the DocSearch dialog and Ask AI in the DocSearch Sidepanel. Ships a Node entry (`dist/index.js`) and a browser build (`dist/client/`) that it copies beside flame's bundles. Versioned on its own through Changesets, outside the linked release group. Its first release (0.1.0) was published by hand, since npm trusted publishing cannot create a new package. |
+| `@docubook/plugin-og-image` | `plugins/og-image` | Flame plugin: a 1200×630 OpenGraph card per page, rendered at build time from frontmatter with Takumi (`@takumi-rs/core`, a native module with prebuilt binaries for Bun, Node and Deno). Points `frontmatter.image` at the card so flame's SEO code writes `og:image`, renders only changed cards in `onEnd` (manifest in `.docu/og-image.json`), and serves cards from `flame dev`. Versioned on its own through Changesets, outside the linked release group; its first release is published by hand. |
 
 ### Historical Renames
 
@@ -309,6 +311,7 @@ Package-level validation:
 - `packages/ui-react` — React component primitives
 - `packages/flame` — build pipeline, runtime adapters, plugin system, and static-site behavior
 - `plugins/search-algolia` — option validation, provider declaration, asset copy and dev serving
+- `plugins/og-image` — option validation, card planning and hashing, layouts against golden images, incremental publishing, dev serving
 
 CI runs Turbo `lint`, `typecheck`, `build`, and `test` jobs on Node.js 22, plus
 runtime smoke tests for flame on Node and Deno. The smoke jobs build workspace

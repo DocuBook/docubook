@@ -1,0 +1,65 @@
+{
+  "name": "@docubook/plugin-og-image",
+  "version": "0.1.0",
+  "description": "Social preview cards for DocuBook Flame: a 1200×630 OpenGraph image for every page, rendered at build time from its frontmatter with Takumi.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && vite build && tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "lint": "oxlint .",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "pnpm run clean && pnpm run test && pnpm run build"
+  },
+  "keywords": [
+    "docubook",
+    "flame",
+    "plugin",
+    "opengraph",
+    "og-image",
+    "social-card",
+    "seo",
+    "takumi"
+  ],
+  "homepage": "https://github.com/DocuBook/docubook/tree/main/plugins/og-image",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DocuBook/docubook.git",
+    "directory": "plugins/og-image"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "author": "wildan.nrs",
+  "author-url": "https://wildan.dev",
+  "license": "MIT",
+  "dependencies": {
+    "@11ty/gray-matter": "^3.0.0",
+    "@docubook/themes-colors": "workspace:^",
+    "@takumi-rs/core": "~2.19.0"
+  },
+  "peerDependencies": {
+    "@docubook/flame": "workspace:^"
+  },
+  "devDependencies": {
+    "@docubook/flame": "workspace:^",
+    "@types/node": "^22.20.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.0"
+  }
+}

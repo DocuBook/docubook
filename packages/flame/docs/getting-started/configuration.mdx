@@ -64,7 +64,7 @@ Site-wide metadata used for page `<title>`, `<meta name="description">`, Open Gr
 | `baseURL`     | string | No       | Origin plus deployment root of the site, e.g. `https://book.acme.dev` or `https://acme.github.io/repo` for a GitHub Pages project site. Used to build canonical and Open Graph URLs (and by plugins that need absolute URLs), and its pathname (`/repo`) is the prefix the host serves the dist under |
 | `basePath`    | string | No       | URL prefix the docs site is served under **inside** the deployment root (default: `/docs`). Empty string `""` serves the docs from the deployment root |
 | `favicon`     | string | No       | Path to favicon (default: `/docs/assets/images/favicon.ico`) |
-| `ogImage`     | string | No       | Global fallback OG image URL for social sharing (per-page override via frontmatter `image` field) |
+| `ogImage`     | string | No       | Global fallback OG image URL for social sharing (per-page override via frontmatter `image` field). To generate a card for every page instead, see [Social Images](/docs/getting-started/og-image) |
 | `verification` | object | No | Site-verification `<meta>` tags for every page Flame builds, keyed by meta name. See [Site verification](#site-verification) |
 
 ### Site verification

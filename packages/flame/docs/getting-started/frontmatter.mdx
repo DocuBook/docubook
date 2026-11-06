@@ -22,7 +22,8 @@ Below is a table of available frontmatter fields for documentation pages:
 | ----------- | ------------ | -------- | --------------------------------------------------------------------------------------------------------------------------- |
 | title       | string       | Yes      | The page title, displayed in the header and metadata. |
 | description | string       | Yes      | A short description of the page, used for SEO and previews. |
-| image       | string (URL) | No       | Per-page OG image (`og:image`) for social sharing. Falls back to `meta.ogImage` in `docu.json`. See examples below for accepted path formats. |
+| image       | string (URL) | No       | Per-page OG image (`og:image`) for social sharing. Falls back to `meta.ogImage` in `docu.json`. With the [Social Images](/docs/getting-started/og-image) plugin, leave it out and the page gets a generated card. See examples below for accepted path formats. |
+| og          | `false` or object | No  | Only with the [Social Images](/docs/getting-started/og-image) plugin. `false` turns the generated card off for this page; `{ title, description }` changes the card's text without changing the page. |
 | date        | string       | No       | Publication date in `YYYY-MM-DD` format (e.g. `2026-06-10`). If omitted, resolves from: `git log` → filesystem `mtime` → hidden. |
 
 ### Image path examples

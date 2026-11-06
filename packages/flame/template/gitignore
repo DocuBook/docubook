@@ -1,4 +1,5 @@
 node_modules
 .docu/dist
 .docu/build-cache.json
+.docu/og-image.json
 .env

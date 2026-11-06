@@ -62,13 +62,14 @@ const scenarios = [
   },
   {
     // flame's dependency range is left, so it follows. markdown no longer
-    // declares core as a peer and stays out of the plan. The Algolia plugin's
-    // flame peer range is left in turn, so it is republished with a new range.
+    // declares core as a peer and stays out of the plan. The plugins' flame
+    // peer range is left in turn, so they are republished with a new range.
     pkg: "@docubook/core",
     bump: "major",
     expected: [
       ["@docubook/core", "major"],
       ["@docubook/flame", "major"],
+      ["@docubook/plugin-og-image", "patch"],
       ["@docubook/plugin-search-algolia", "patch"],
     ],
   },

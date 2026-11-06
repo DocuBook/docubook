@@ -1,0 +1,124 @@
+---
+title: Social Images
+description: Give every page its own social preview card, generated at build time from its title and description.
+---
+
+When someone shares a page on X, Slack, Discord, LinkedIn or WhatsApp, the app shows the image from the page's `og:image` tag. Without one, every page shares the same `meta.ogImage`, or no image at all. The official plugin `@docubook/plugin-og-image` draws a 1200×630 card for each page from its frontmatter, with your logo, site name and theme colours.
+
+You write nothing extra. A page with a `title` and `description` gets its card.
+
+## Install
+
+```bash
+npm install -D @docubook/plugin-og-image
+```
+
+Register it in `docu.json` and make sure `meta.baseURL` is set, because social sites only read absolute image URLs:
+
+```json:docu.json
+{
+  "meta": {
+    "title": "Acme Docs",
+    "baseURL": "https://docs.acme.dev"
+  },
+  "plugins": ["@docubook/plugin-og-image"]
+}
+```
+
+Run `flame build`. Each docs page now carries tags like these:
+
+```html
+<meta property="og:image" content="https://docs.acme.dev/docs/assets/og/guides/setup.1a2b3c4d.png" />
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:alt" content="Setup">
+```
+
+## The card
+
+The default `card` layout shows the logo and site name with the page's sidebar group, the title and description, a Docs chip with your domain, and the logo again in a tile on the right. Colours follow `themes.colors`. Titles and descriptions longer than two lines end in an ellipsis.
+
+The `minimal` layout keeps only the logo, site name, title, description and domain on a plain background. It suits apps that crop previews to a square.
+
+```json:docu.json
+{
+  "plugins": [["@docubook/plugin-og-image", { "layout": "minimal" }]]
+}
+```
+
+The landing page gets a card from `home.hero.headline` and `meta.description`, unless `meta.ogImage` already sets its image.
+
+## Per page
+
+An image you set yourself always wins:
+
+```yaml
+---
+title: Release notes
+image: ./assets/images/release-card.png
+---
+```
+
+`og` changes the card without touching the page, or turns it off:
+
+```yaml
+---
+title: Configuration reference for docu.json
+description: Every option in docu.json.
+og:
+  title: Configuration
+---
+```
+
+```yaml
+---
+title: Changelog
+og: false
+---
+```
+
+A page with `og: false` falls back to `meta.ogImage`.
+
+The card text comes from the frontmatter as written in the page's file. If another plugin rewrites a title during the build, the page shows the new title and the card keeps the written one; use `og.title` to change the card.
+
+## Options
+
+| Option | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+| `layout` | `"card"` \| `"minimal"` | `"card"` | Card layout |
+| `logo` | string \| `false` | `navbar.logo.src` | Logo file, as a project path (`brand/logo.svg`) or a site path (`/docs/assets/logo.svg`). SVG, PNG, JPEG or WebP, at most 1 MB. `false` renders no logo |
+| `siteName` | string | `navbar.logoText`, then `meta.title` | Name in the card's top row |
+| `pages` | object | all `true` | `{ "docs", "index", "home" }`: which pages get a card |
+| `fonts` | array | none | `[{ "path": "fonts/NotoSans.ttf", "weight": 400 }]`: fonts tried before the built-in one |
+
+## Other scripts
+
+The built-in font, Geist, covers Latin-1: English, Indonesian and most Western European languages. For other scripts, such as Polish, Vietnamese, Cyrillic, Greek or CJK, add a font file that covers them:
+
+```json:docu.json
+{
+  "plugins": [
+    ["@docubook/plugin-og-image", {
+      "fonts": [
+        { "path": "fonts/NotoSans-Regular.ttf", "weight": 400 },
+        { "path": "fonts/NotoSans-Bold.ttf", "weight": 700 }
+      ]
+    }]
+  ]
+}
+```
+
+The build warns when a card has characters no loaded font can draw, and names the pages.
+
+## Build output and caching
+
+Cards go to `assets/og/` inside the docs output, next to your own `docs/assets/`. The hash in each file name changes when the card's text changes, so Facebook, LinkedIn and Slack fetch the new card instead of showing a cached one.
+
+A build renders only the cards that are missing or out of date and records them in `.docu/og-image.json`. Add that file to `.gitignore`. A build with nothing changed writes no images, and the plugin deletes the cards of pages you removed.
+
+In CI, cache the `.docu` directory between runs to skip rendering unchanged cards.
+
+## During development
+
+`flame dev` renders a page's card on request at the same URL, so you can open `/docs/assets/og/<page>.<hash>.png` in the browser while you write. Flame's dev server does not add Open Graph tags; check them in the output of `flame build`.

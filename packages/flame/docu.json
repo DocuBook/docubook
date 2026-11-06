@@ -161,6 +161,10 @@
           "href": "/plugins"
         },
         {
+          "title": "Social Images",
+          "href": "/og-image"
+        },
+        {
           "title": "Deployment",
           "href": "/deployment"
         },
