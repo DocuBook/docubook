@@ -237,19 +237,27 @@ export class BuildPluginBuilder implements PluginBuilder {
       content: string;
     }) => Awaitable<{ contents?: string; loader?: "js" | "ts" | "mdx" } | void>
   ): void {
-    this._onLoad.push({ ...args, fn: callback });
+    if (!(args?.filter instanceof RegExp)) {
+      throw new TypeError("[plugin] onLoad requires a RegExp `filter`");
+    }
+    // `g` and `y` make `RegExp#test` stateful (it resumes from `lastIndex`),
+    // so a shared filter would skip every other matching file and let its
+    // transform (e.g. redaction) silently not run. Match each path from 0.
+    const filter = new RegExp(args.filter.source, args.filter.flags.replace(/[gy]/g, ""));
+    this._onLoad.push({ ...args, filter, fn: callback });
   }
 
   /**
    * Register a callback to run once before the build starts.
-   * Receives the resolved DocuConfig for validation or resource initialization.
+   * Receives the resolved DocuConfig for resource initialization. To stop
+   * the build on an invalid option, throw from `setup()` instead.
    * Callback errors are logged by `runOnStart()` and do not stop later callbacks.
    *
    * @param callback - Receives the resolved config. May return a Promise.
    *
    * @example
    * build.onStart((config) => {
-   *   if (!config.meta.baseURL) throw new Error("baseURL required");
+   *   if (!config.meta.baseURL) console.warn("[plugin:x] meta.baseURL is not set");
    * });
    */
   onStart(callback: (config: DocuConfig) => Awaitable<void>): void {
