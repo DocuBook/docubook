@@ -12,7 +12,11 @@ export interface AskAiOptions {
   appId?: string;
   /** Search-only API key for the agent, when it differs from `apiKey`. */
   apiKey?: string;
-  /** Index names the agent's search tool may query. */
+  /**
+   * Index names sent with each Ask AI request. Only for an agent whose search
+   * tool is in `dynamic` mode; a `static` tool rejects them (HTTP 422). Leave
+   * out to use the indices configured on the agent.
+   */
   indices?: string[];
   /** Show suggested questions on the new-conversation screen. */
   suggestedQuestions?: boolean;
@@ -165,7 +169,7 @@ function checkAppId<T extends string | undefined>(value: T, where = ""): T {
 
 function resolveAskAi(
   raw: unknown,
-  search: { appId: string; apiKey: string; indexName: string }
+  search: { appId: string; apiKey: string }
 ): ClientAssistantConfig | undefined {
   if (raw === undefined || raw === false) return undefined;
   if (typeof raw === "string") {
@@ -174,7 +178,6 @@ function resolveAskAi(
       agentId: raw.trim(),
       appId: search.appId,
       apiKey: search.apiKey,
-      indices: [search.indexName],
       panel: {},
     };
   }
@@ -207,7 +210,8 @@ function resolveAskAi(
     agentId: requireString(raw, "agentId", where),
     appId: checkAppId(optionalString(raw, "appId", where), where) ?? search.appId,
     apiKey: optionalString(raw, "apiKey", where) ?? search.apiKey,
-    indices: (indices as string[] | undefined)?.map((name) => name.trim()) ?? [search.indexName],
+    // Omitted unless set: a static search tool rejects per-request indices.
+    ...(indices ? { indices: (indices as string[]).map((name) => name.trim()) } : {}),
     ...(searchParameters
       ? { searchParameters: searchParameters as Record<string, Record<string, unknown>> }
       : {}),

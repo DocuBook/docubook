@@ -39,14 +39,14 @@ describe("resolveOptions", () => {
     });
   });
 
-  it("expands an agent ID string into an Ask AI config on the same index", () => {
+  it("expands an agent ID string into an Ask AI config that leaves the indices to the agent", () => {
     const config = resolveOptions({ ...base, askAi: "agent-1" }, MODULE);
     expect(config.askAi).toBe(true);
+    // No `indices`: an agent whose search tool is static rejects them (422).
     expect(config.assistant).toEqual({
       agentId: "agent-1",
       appId: "APP123",
       apiKey: "search-key",
-      indices: ["docs"],
       panel: {},
     });
   });

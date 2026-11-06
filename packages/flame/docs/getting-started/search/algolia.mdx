@@ -86,7 +86,7 @@ Ask AI needs an agent in [Algolia Agent Studio](https://www.algolia.com/doc/guid
 | --- | --- | --- |
 | `agentId` | string | **Required.** Agent Studio agent ID. |
 | `appId` / `apiKey` | string | Credentials of the agent, when they differ from the search ones. |
-| `indices` | string[] | Indices the agent may search. Defaults to `indexName`. |
+| `indices` | string[] | Indices sent with each question. Only for an agent whose search tool is in `dynamic` mode. A `static` tool rejects them, so leave this out to use the indices configured on the agent. |
 | `searchParameters` | object | Search parameters per index name, e.g. `{ "YOUR_INDEX_NAME": { "distinct": false } }`. |
 | `suggestedQuestions` | boolean | Show suggested questions when a conversation starts. |
 | `variant` | `"floating"` \| `"inline"` | `floating` (default) opens over the page; `inline` pushes the page aside. |
