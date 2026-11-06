@@ -1,4 +1,12 @@
-import { mkdirSync, mkdtempSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  realpathSync,
+  rmSync,
+  symlinkSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -24,7 +32,8 @@ afterEach(() => {
 
 /** A package `@test/<name>` with `dist/index.js`, plus a file to resolve from. */
 function fixture(layout: "workspace" | "installed") {
-  root = mkdtempSync(join(tmpdir(), "flame-dev-watch-"));
+  // realpath: macOS tmpdir is a symlink (/tmp -> /private/tmp) and the resolver returns realpaths
+  root = mkdtempSync(join(realpathSync(tmpdir()), "flame-dev-watch-"));
   const name = "@test/pkg";
   const pkgDir =
     layout === "workspace"

@@ -52,7 +52,11 @@ describe("CLI runtime selection", () => {
   });
 });
 
-describe("deploy flags", () => {
+// Each test spawns the CLI up to twice; spawnSync kills it after SPAWN_TIMEOUT,
+// so the vitest timeout must outlast that worst case or it fires first under load.
+const SPAWN_TIMEOUT = 60_000;
+
+describe("deploy flags", { timeout: 2 * SPAWN_TIMEOUT + 10_000 }, () => {
   // Runs the CLI on Node in an empty directory: the warning is printed while
   // flags are parsed, before the deploy itself (which then fails for lack of a
   // docu.json, which is irrelevant here).
@@ -63,7 +67,7 @@ describe("deploy flags", () => {
         cwd: dir,
         encoding: "utf8",
         env: { ...process.env, FLAME_RUNTIME: "node", NODE_ENV: "production" },
-        timeout: 60_000,
+        timeout: SPAWN_TIMEOUT,
       });
     } finally {
       rmSync(dir, { recursive: true, force: true });
