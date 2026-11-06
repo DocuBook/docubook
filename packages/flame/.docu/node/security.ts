@@ -95,13 +95,32 @@ export function normalizeImporterPath(importer: string): string {
   return resolve(importer).replace(/\\/g, "/");
 }
 
-export function injectNonce(html: string, nonce: string): string {
-  const scripts = html.replace(/<script\b(?![^>]*\bsrc\s*=)([^>]*)>/gi, (match) => {
+/**
+ * Give every inline `<script>` (one without `src`) the nonce, replacing any it
+ * already has. Only for HTML flame trusts to run: plugin `injectHead` /
+ * `injectBody` snippets and plugin dev-server responses — never page content.
+ * `<script src>` is left alone: a nonce would admit any host, while CSP
+ * `'self'` only admits the site's own files.
+ */
+export function nonceInlineScripts(html: string, nonce: string): string {
+  return html.replace(/<script\b(?![^>]*\bsrc\s*=)([^>]*)>/gi, (match) => {
     if (/nonce\s*=/i.test(match)) {
       return match.replace(/nonce="[^"]*"/i, `nonce="${nonce}"`);
     }
     return match.replace(/>$/, ` nonce="${nonce}">`);
   });
+}
+
+/**
+ * Re-serve a built page under a fresh nonce (`flame preview`): replace the
+ * nonce on scripts that already carry one and in the `<meta>` CSP. A script
+ * the build left without a nonce stays without one, so preview blocks what
+ * the deployed site blocks.
+ */
+export function rotateNonce(html: string, nonce: string): string {
+  const scripts = html.replace(/<script\b[^>]*>/gi, (tag) =>
+    tag.replace(/(\s)nonce="[^"]*"/i, `$1nonce="${nonce}"`)
+  );
   // Keep the <meta> CSP nonce in sync: browsers intersect the meta policy
   // with the response-header policy, so a stale build-time nonce would block
   // the very scripts re-tagged above.
@@ -141,7 +160,7 @@ export function wrapPluginResponse(
     const nonce = generateNonce();
     securedHeaders.set("Content-Security-Policy", cspHeader(nonce, allowEval));
     if (typeof body === "string") {
-      body = injectNonce(body, nonce);
+      body = nonceInlineScripts(body, nonce);
     }
   }
   return new Response(body, {

@@ -226,13 +226,17 @@ export interface PluginBuilder {
    * ⚠️ Sanitize any user-controlled or external data before injecting.
    * Plugin-provided strings are injected raw into the final HTML.
    *
+   * Inline `<script>` tags get the page's CSP nonce, so they run on the
+   * deployed site. `<script src>` gets none: the CSP only loads scripts from
+   * the site's own origin, so ship the file through `onEnd` (`assetsDir`).
+   *
    * Use for: analytics snippets, meta tags, stylesheet links.
    *
    * @param callback - Returns a single HTML string or an array. Called once per page.
    *
    * @example
    * build.injectHead(() => {
-   *   return `<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXX"></script>`;
+   *   return `<meta name="theme-color" content="#0f172a">`;
    * });
    */
   injectHead(callback: (context: PageContext) => string | string[]): void;
@@ -243,6 +247,10 @@ export interface PluginBuilder {
    *
    * ⚠️ Sanitize any user-controlled or external data before injecting.
    * Plugin-provided strings are injected raw into the final HTML.
+   *
+   * Inline `<script>` tags get the page's CSP nonce, so they run on the
+   * deployed site. `<script src>` gets none: the CSP only loads scripts from
+   * the site's own origin, so ship the file through `onEnd` (`assetsDir`).
    *
    * Use for: chat widgets, live-script loaders, deferred scripts.
    *
