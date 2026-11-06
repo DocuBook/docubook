@@ -7,7 +7,8 @@ Thank you for your interest in contributing to DocuBook.
 DocuBook is a documentation-focused static site generator built as a pnpm
 monorepo. The repository contains reusable packages for MDX compilation,
 portable React markdown components, theme utilities, UI primitives, and the
-`flame` static-site runtime.
+`flame` static-site runtime. Official flame plugins live under `plugins/`:
+`@docubook/plugin-search-algolia` and `@docubook/plugin-og-image`.
 
 For the internal system overview — package responsibilities, runtime model,
 build pipeline, deployment, and release decisions — see
@@ -113,12 +114,14 @@ pnpm --filter @docubook/core run build
 pnpm --filter @docubook/markdown run test
 pnpm --filter @docubook/ui-react run typecheck
 pnpm --filter @docubook/flame run compile:lib
+pnpm --filter @docubook/plugin-og-image run test
 pnpm turbo build --filter=@docubook/flame...
 ```
 
 Notes:
 
-- `core`, `markdown`, `themes-colors`, and `ui-react` build with **Vite 8**.
+- `core`, `markdown`, `themes-colors`, `ui-react`, and both plugins build with
+  **Vite 8**.
 - `flame` uses **Bun** for its main `dev`, `build`, `preview`, and `deploy`
   scripts.
 - `flame` uses **Vite 8** for Node/Deno compatibility compilation
@@ -181,7 +184,8 @@ Git hooks are installed by Husky during `pnpm install`.
 
 `pre-push` runs:
 
-1. `pnpm turbo lint` for package lint scripts (currently flame and ui-react)
+1. `pnpm turbo lint` for package lint scripts (currently flame, ui-react, and
+   both plugins)
 2. `pnpm turbo build` for the workspace
 3. `pnpm exec commitlint --from ... --to HEAD --verbose` for the pushed range
 
@@ -283,8 +287,9 @@ interactive `czg` prompt currently offers:
 - `flame`
 
 `mdx-content` is a historical prompt value. Current package scopes are `core`,
-`flame`, `markdown`, `themes-colors`, and `ui-react`; type those manually when
-they improve clarity, or omit the scope.
+`flame`, `markdown`, `themes-colors`, and `ui-react`, plus `plugins` for changes
+under `plugins/`; type those manually when they improve clarity, or omit the
+scope.
 
 ### Non-Interactive Commits
 
@@ -382,8 +387,10 @@ Dependencies are updated by self-hosted
 | `devDependencies` majors in `packages/**` | One `packages devDependencies majors` PR (they do not ship) |
 | Runtime and peer majors in `packages/**` | One PR each, so each gets its own changeset |
 | React, vitest + `@vitest/*`, changesets toolchain | One PR per group across the workspace |
+| Dependencies in `plugins/**` | Not grouped; one PR per dependency (Renovate's default) |
 | GitHub Actions minor/patch | One `github actions` PR; majors get one PR each |
 | Majors of `pnpm-workspace.yaml` overrides | Disabled; overrides are security floors scoped to one major line or consumer |
+| `mermaid>katex` override | Held below 0.19 (`allowedVersions: "<0.19.0"`); 0.x minors are breaking |
 | `node` and `@types/node` | Held below 23 (`allowedVersions: "<23"`), the last line that supports the maintainer's macOS 12 |
 
 `postUpdateOptions: ["pnpmDedupe"]` runs `pnpm dedupe` after every lockfile
@@ -434,6 +441,12 @@ The published packages are **linked** in `.changeset/config.json`:
 - `@docubook/themes-colors`
 - `@docubook/ui-react`
 
+`@docubook/plugin-search-algolia` and `@docubook/plugin-og-image` are outside
+that group and versioned on their own. They declare `@docubook/flame` as a peer,
+so a major flame release pulls them in with a patch bump. npm trusted publishing
+cannot create a new package, so a new plugin's first release is published by
+hand before `release.yml` can publish it.
+
 The repository is currently in stable release mode; `.changeset/pre.json` is
 absent. Prerelease mode and tags must be entered explicitly before documenting
 or publishing another prerelease series.
@@ -461,7 +474,8 @@ pnpm changeset
 
 Typical examples:
 
-- behavior changes in `core`, `markdown`, `flame`, `themes-colors`, or `ui-react`
+- behavior changes in `core`, `markdown`, `flame`, `themes-colors`, `ui-react`,
+  or a plugin under `plugins/`
 - new exports or removed exports
 - runtime/build/deployment changes that affect consumers
 - bug fixes visible to users

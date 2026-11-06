@@ -126,6 +126,9 @@ A flag inside a quote or a code block starts nothing, so writing one as an examp
 | Config schema | `@docubook/flame` | `.docu/node/types.ts` + `docu.schema.json` (zod) |
 | Plugin hooks | `@docubook/flame` | `plugin.ts`, `plugin-loader.ts`, `plugin-builder.ts` |
 | Runtime compat (Node/Deno) | `@docubook/flame` | `runtime/*.ts` + `*.impl.ts`, `bin/compile-lib.mjs` |
+| Search provider contract (`#docubook-search-provider`) | `@docubook/flame` | `search-provider.ts` |
+| Algolia DocSearch + Ask AI | `@docubook/plugin-search-algolia` | `plugins/search-algolia/src/` (`index.ts`, `options.ts`, `client/`) |
+| Per-page OpenGraph cards (Takumi) | `@docubook/plugin-og-image` | `plugins/og-image/src/` (`cards.ts`, `layouts.ts`, `renderer.ts`, `publish.ts`) |
 
 Historical names must NOT reappear as active packages: `mdx-content` → `markdown`, `mdx-remote` → core, `runt` → flame, `ui/react` → `ui-react` (ARCHITECTURE.md "Historical Renames").
 
@@ -136,7 +139,7 @@ Historical names must NOT reappear as active packages: `mdx-content` → `markdo
 
 ### Config, cache & authoring
 - `docu.json` changes → `.docu/node/types.ts` + `docu.schema.json`, validated by zod.
-- **Build cache** — `BUILD_CACHE_VERSION` (currently v8, `cache-key.ts`); bump when the output contract changes (cache keys: globals.css, theme, Tailwind inputs, stylesheet fingerprint, runtime stamp, basePath, built `@docubook/*` packages).
+- **Build cache** — `BUILD_CACHE_VERSION` (currently 10, `cache-key.ts`); bump when the output contract changes (cache keys: globals.css, theme, Tailwind inputs, stylesheet fingerprint, runtime stamp, basePath, built `@docubook/*` packages).
 - **Tailwind CLI only** — `@tailwindcss/cli` in flame (Bun + Node/Deno); no PostCSS/Next.js pipeline in-repo.
 - **Markdown/directive-first** authoring — no authored JSX.
 
@@ -144,12 +147,13 @@ Historical names must NOT reappear as active packages: `mdx-content` → `markdo
 - **Nonce discipline** — `generateNonce()` → `injectNonce()` / `htmlResponse()` from `packages/flame/.docu/node/security.ts`. Nonce on inline `<script>` only (`src=` skipped); the `<meta>` CSP nonce must stay in sync (raw and `&#x27;`-escaped forms), or the page's own scripts are blocked. Static build/preview are eval-free.
 - **File reads** — `isPathSafe()` / `isSlugSafe()` (realpath-verified) before any read off user/doc-derived paths.
 - **Plugin injection** — `injectHead`/`injectBody` strings are injected **raw** (framework does not sanitize; `plugin.ts` JSDoc warns authors). Sanitize external data; framework interpolation uses `escapeHtml.ts`.
-- **New deps** — check `pnpm-workspace.yaml` overrides (CVE pins: flatted, postcss, esbuild, undici, fast-uri, dompurify, …) and `allowBuilds` for install-script deps.
+- **New deps** — check `pnpm-workspace.yaml` overrides (CVE pins: flatted, postcss, esbuild, fast-uri, dompurify, js-yaml@4, mermaid>katex, …) and `allowBuilds` for install-script deps.
 
 ### Versioning & validation
 - All five packages are public and **linked** in `.changeset/config.json` (core, flame, markdown, themes-colors, ui-react): linking aligns versions within one release plan, so only packages with a changeset (plus dependents whose declared range is left) version and publish. `pnpm test:release-plan` asserts that matrix. Ship a `.changeset/*.md` for user-facing changes.
-- React 19.2 pinned via overrides; TypeScript 7 strict (no `as any`); no new deps if stdlib or an existing dep works.
-- Validation: `pnpm lint` (oxlint), `pnpm typecheck`, `pnpm build` (flame needs Bun ≥1.4), `pnpm test` — vitest 4 per package. flame tests in `.docu/__tests__/**/*.test.ts`, aliased to `ui-react/dist` (run `turbo test` for build ordering). Bug fix → regression test.
+- The plugins under `plugins/` (`plugin-search-algolia`, `plugin-og-image`) are public but **not linked**: each is versioned on its own. They declare `@docubook/flame` as a peer (`workspace:^`), so a flame major pulls them in with a patch bump. A brand-new package's first release is published by hand (npm trusted publishing cannot create a package).
+- React 19.3 pinned via overrides; TypeScript 7 strict (no `as any`); no new deps if stdlib or an existing dep works.
+- Validation: `pnpm lint` (oxlint), `pnpm typecheck`, `pnpm build` (flame needs Bun ≥1.4), `pnpm test` — vitest 5 per package. flame tests in `.docu/__tests__/**/*.test.ts`, aliased to `ui-react/dist` (run `turbo test` for build ordering). Bug fix → regression test.
 - Commits: Conventional Commits (`type(scope): subject`, commitlint types feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|review); never rewrite published history — a follow-up commit is the record.
 
 ### DRY pointers (existing symbols to reuse)
@@ -174,7 +178,7 @@ You are a code-review agent for the DocuBook monorepo. Follow the FSM strictly �
 ### Inputs (collect; a missing input is a flagged gap, never a guess)
 | Input | Required | Source |
 |---|---|---|
-| tech_stack | yes | pnpm 12 + Turborepo; Vite 8 (Rolldown); Bun ≥1.4 (flame primary) + Node/Deno compat; React 19.2; vitest 4; Tailwind CSS 4 CLI; oxlint; TS 7 strict |
+| tech_stack | yes | pnpm 12 + Turborepo; Vite 8 (Rolldown); Bun ≥1.4 (flame primary) + Node/Deno compat; React 19.3; vitest 5; Tailwind CSS 4 CLI; oxlint; TS 7 strict |
 | code | yes | the PR diff via `checkout_pr` — never review without it |
 | context | yes | PR description (`get_pull_request`), affected packages, linked issue |
 
@@ -194,7 +198,7 @@ You are a code-review agent for the DocuBook monorepo. Follow the FSM strictly �
 **senior — audit 6 dimensions + invariants:** errors → security → performance → observability (structured logs, correlation IDs) → testing (meaningful coverage, integration vs unit) → docs (accuracy of comments/README/API doc). Then cross-domain invariants: lifecycle, concurrency guards, derived state, large-file refactor boundary, doc hierarchy.
 
 **memory-guided — document compliance check** (repo files are the memory; there is no memory MCP on the runner):
-1. Load stored decisions and standards from the repo: ARCHITECTURE.md "Key Decisions" (items 1–10), CONTRIBUTING.md, `.changeset/config.json`, `pnpm-workspace.yaml`, package READMEs/CHANGELOGs.
+1. Load stored decisions and standards from the repo: ARCHITECTURE.md "Key Decisions" (items 1–11), CONTRIBUTING.md, `.changeset/config.json`, `pnpm-workspace.yaml`, package READMEs/CHANGELOGs.
 2. Evaluate the diff for violations (e.g., contradicts a Key Decision, breaks linked versioning, adds a dep the workspace already pins/modifies).
 3. Cite the source per violation: `ARCHITECTURE.md Decision[n]`, `CONTRIBUTING.md`, `changeset`, `pnpm-workspace.yaml`.
 
@@ -241,7 +245,7 @@ You are implementing code. Before writing anything, find factual scope from the 
 
 ### Toolchain
 - pnpm 12 workspaces + Turborepo 2. Root commands: `pnpm build|lint|typecheck|test` (turbo). Per-package: `pnpm --filter @docubook/<pkg> run <script>`.
-- **Where code lives** — flame implementation is NOT in `src/`: Bun entries + shared code under `packages/flame/.docu/node/` (with `components/`, `pages/`, `bin/`), tests under `.docu/__tests__/`. `core`, `markdown`, `themes-colors`, `ui-react` use `src/` and build with **Vite 8 (Rolldown)**.
+- **Where code lives** — flame implementation is NOT in `src/`: Bun entries + shared code under `packages/flame/.docu/node/` (with `components/`, `pages/`, `bin/`), tests under `.docu/__tests__/`. `core`, `markdown`, `themes-colors`, `ui-react` and the plugins (`plugins/*/src/`) use `src/` and build with **Vite 8 (Rolldown)**.
 - `oxlint` repo-wide (`pnpm lint`), prettier on staged files (markdown/MDX excluded), `commitlint` + Conventional Commits.
 - Validation gates and dependency rules → Shared context (Versioning & validation).
 
@@ -249,9 +253,9 @@ You are implementing code. Before writing anything, find factual scope from the 
 - **flame is Bun-first, not Bun-only** — shared logic in neutral `*.impl.ts`, runtime-specific behavior in `runtime/{bun,node,deno}.ts` adapters; keep Bun and compat paths in behavioral parity.
 - **Browser bundle** — never leak `node:*` builtins into client bundles; `hydrate.ts` (Bun) / `hydrate.node.ts` (Node/Deno, node-builtin stubs) are the only bundlers.
 - **Config** — `docu.json` changes land in `.docu/node/types.ts` + `docu.schema.json` (zod).
-- **Build cache** — bump `BUILD_CACHE_VERSION` (currently v8) when the output contract changes.
+- **Build cache** — bump `BUILD_CACHE_VERSION` (currently 10) when the output contract changes.
 - **Authoring** — markdown/directive-first; static hydration is eval-free (no `new Function`).
-- **Changeset** — any public-facing change ships a `.changeset/*.md` (all five packages are linked).
+- **Changeset** — any public-facing change ships a `.changeset/*.md` (the five core packages are linked; plugins are versioned on their own).
 - Tests in the same PR; bug fix → regression test.
 
 ### Delivery
