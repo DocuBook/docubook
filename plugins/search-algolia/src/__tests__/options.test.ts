@@ -51,6 +51,11 @@ describe("resolveOptions", () => {
     });
   });
 
+  it("leaves the indices to the agent when the object form omits them", () => {
+    const config = resolveOptions({ ...base, askAi: { agentId: "agent-1" } }, MODULE);
+    expect(config.assistant).not.toHaveProperty("indices");
+  });
+
   it("maps Ask AI options to the side panel", () => {
     const config = resolveOptions(
       {
