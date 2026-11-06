@@ -1,0 +1,63 @@
+{
+  "name": "@docubook/plugin-search-algolia",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Algolia DocSearch for DocuBook Flame — keyword search in the DocSearch dialog and Ask AI in its own side panel.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && vite build && vite build -c vite.client.config.ts && tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "lint": "oxlint .",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "pnpm run clean && pnpm run test && pnpm run build"
+  },
+  "keywords": [
+    "docubook",
+    "flame",
+    "plugin",
+    "algolia",
+    "docsearch",
+    "search",
+    "ask-ai"
+  ],
+  "homepage": "https://github.com/DocuBook/docubook/tree/main/plugins/search-algolia",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DocuBook/docubook.git",
+    "directory": "plugins/search-algolia"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "author": "wildan.nrs",
+  "author-url": "https://wildan.dev",
+  "license": "MIT",
+  "peerDependencies": {
+    "@docubook/flame": "workspace:^"
+  },
+  "devDependencies": {
+    "@docsearch/css": "^5.2.0",
+    "@docsearch/js": "^5.2.0",
+    "@docsearch/sidepanel-js": "^5.2.0",
+    "@docubook/flame": "workspace:^",
+    "@types/node": "^22.20.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.0"
+  }
+}

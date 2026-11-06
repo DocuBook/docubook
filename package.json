@@ -35,7 +35,8 @@
     "vitest": "^5.0.0"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "plugins/*"
   ],
   "engines": {
     "node": "^22.22.2 || ^24.15.0 || >=26"
