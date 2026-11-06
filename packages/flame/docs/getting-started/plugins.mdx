@@ -555,8 +555,8 @@ build()
 ├─ for each MDX file: onLoad({filter})     ← transform raw content (client bundle)
 ├─ for each MDX file not in the build cache:
 │   ├── onLoad({filter})                    ← transform raw content
-│   ├── transformFrontmatter()              ← mutate frontmatter
 │   ├── compileMdx() ← remark / rehype      ← MDX pipeline
+│   ├── transformFrontmatter()              ← mutate frontmatter (before SEO tags)
 │   ├── injectHead() / injectBody()         ← docs context
 │   ├── transformHtml()                     ← final docs transform
 │   └── write docs HTML
