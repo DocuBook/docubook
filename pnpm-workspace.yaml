@@ -2,6 +2,7 @@ packages:
   - "packages/*"
   - "plugins/*"
 overrides:
+  "@docubook/plugin-search-algolia>@docubook/flame": "workspace:*"
   flatted: ">=3.4.2"
   postcss: ">=8.5.18"
   esbuild: ">=0.28.1"
@@ -23,3 +24,6 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
+minimumReleaseAgeExclude:
+  # Published 2026-11-06; drop once it is older than the release-age window.
+  - "@docubook/plugin-search-algolia@0.1.0"
