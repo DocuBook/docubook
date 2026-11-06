@@ -1,8 +1,8 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { rm } from "node:fs/promises";
-import { join, resolve, sep } from "node:path";
+import { dirname, join, resolve, sep } from "node:path";
 import { createHash } from "node:crypto";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import {
   FRAMEWORK_ROOT,
   STYLES_DIR,
@@ -150,16 +150,20 @@ export function packagesStamp(packages: readonly WorkspacePackage[] = resolvePac
  * upgrading a plugin package, or editing a local plugin file, changed output
  * without changing any key. A package hashes as its version plus its built
  * `dist/`, a local file as its content, anything unresolvable as "missing".
+ *
+ * Local paths resolve from `root`, as `loadPlugins` does. Packages are looked
+ * up from `packagesFrom`, the directory `plugin-loader` imports them from (it
+ * sits next to this module in both `.docu/node` and the compiled `.docu/lib`).
  */
 export function pluginsStamp(
   entries: readonly PluginEntry[] = readPluginEntries(),
-  root: string = PROJECT_ROOT
+  root: string = PROJECT_ROOT,
+  packagesFrom: string = dirname(fileURLToPath(import.meta.url))
 ): string {
-  const from = pathToFileURL(join(root, "package.json")).href;
   const h = createHash("sha256");
   for (const entry of entries) {
     const specifier = Array.isArray(entry) ? entry[0] : entry;
-    h.update(`${specifier}\0${pluginFingerprint(specifier, root, from)}\0`);
+    h.update(`${specifier}\0${pluginFingerprint(specifier, root, packagesFrom)}\0`);
   }
   return h.digest("hex").slice(0, 16);
 }
@@ -177,7 +181,7 @@ const LOCAL_PLUGIN_SUFFIXES = [
   "/index.mjs",
 ] as const;
 
-function pluginFingerprint(specifier: string, root: string, from: string): string {
+function pluginFingerprint(specifier: string, root: string, packagesFrom: string): string {
   try {
     if (specifier.startsWith(".") || specifier.startsWith("/")) {
       // The loader imports extensionless paths (`./plugins/reading-time`), so
@@ -190,14 +194,30 @@ function pluginFingerprint(specifier: string, root: string, from: string): strin
       // shortcut: hashes the plugin's own file only, not the files it imports; edit one of those and run `flame build --force`.
       return createHash("sha256").update(readFileSync(file)).digest("hex");
     }
-    const [pkg] = resolvePackages([specifier], from);
-    if (!pkg) return "missing";
-    const { version } = JSON.parse(readFileSync(join(pkg.dir, "package.json"), "utf-8")) as {
-      version?: string;
-    };
+    const dir = findInstalledPackage(specifier, packagesFrom);
+    if (!dir) return "missing";
+    const manifest = join(dir, "package.json");
+    const { version } = JSON.parse(readFileSync(manifest, "utf-8")) as { version?: string };
+    // The manifest stands in for the entry: which file `import()` loads depends
+    // on the package's `exports` conditions, and only `dist/` is hashed anyway.
+    const pkg = { name: specifier, dir, entry: manifest };
     return `${version ?? ""}\0${packageFingerprint(pkg) ?? "missing"}`;
   } catch {
     return "missing";
+  }
+}
+
+/**
+ * The `node_modules/<name>` directory `import(name)` would load from `fromDir`,
+ * found by walking up like the runtime does. Unlike `require.resolve`, this
+ * does not depend on the package's `exports` conditions, so ESM-only plugins
+ * (`"exports": { ".": { "import": … } }`) resolve too.
+ */
+function findInstalledPackage(name: string, fromDir: string): string | null {
+  for (let dir = fromDir; ; dir = dirname(dir)) {
+    const candidate = join(dir, "node_modules", ...name.split("/"));
+    if (existsSync(join(candidate, "package.json"))) return realpathSync(candidate);
+    if (dirname(dir) === dir) return null;
   }
 }
 
