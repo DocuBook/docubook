@@ -30,6 +30,13 @@ export interface DocuMeta {
   favicon?: string;
   /** Default OG image path (e.g. /docs/assets/images/og.png). Used when page frontmatter has no image. */
   ogImage?: string;
+  /**
+   * Site-verification tags, written into the `<head>` of every page flame
+   * builds: meta name → token, e.g.
+   * `{ "algolia-site-verification": "ADCCB4B3D3A8BDCE" }` renders
+   * `<meta name="algolia-site-verification" content="ADCCB4B3D3A8BDCE">`.
+   */
+  verification?: Record<string, string>;
 }
 
 export interface SocialLink {

@@ -130,8 +130,20 @@ After your site is live, configure the Algolia crawler to index your pages. The 
   Go to **Data Sources** → **Crawler** → click your crawler name.
 :::
 
-:::step{title="Add your domain"}
-  In the **Domains** tab, add your production URL.
+:::step{title="Add and verify your domain"}
+  In the **Domains** tab, add your production URL. If Algolia asks you to verify it, open the **Meta tag** tab, copy the code from `content="…"`, and add it to `docu.json`:
+
+```json
+{
+  "meta": {
+    "verification": {
+      "algolia-site-verification": "YOUR_VERIFICATION_CODE"
+    }
+  }
+}
+```
+
+  Flame writes `<meta name="algolia-site-verification" content="YOUR_VERIFICATION_CODE">` into every page it builds, including the home page. Deploy, then click **Verify now** next to the domain. See [Site verification](/docs/getting-started/configuration#site-verification).
 :::
 
 :::step{title="Open the Editor"}

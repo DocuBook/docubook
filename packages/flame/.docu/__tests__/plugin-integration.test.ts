@@ -196,6 +196,15 @@ describe("Plugin integration — dev page routes", () => {
     expect(html).not.toContain('<script type="module"');
   });
 
+  it("writes meta.verification on the dev server's home and 404 pages", async () => {
+    const builder = createBuilder();
+    builder.config.meta.verification = { "algolia-site-verification": "ADCCB4B3D3A8BDCE" };
+    const tag = '<meta name="algolia-site-verification" content="ADCCB4B3D3A8BDCE">';
+
+    expect(await (await handleIndex(createState(builder))).text()).toContain(tag);
+    expect(await (await handleNotFound(createState(builder))).text()).toContain(tag);
+  });
+
   it("gives plugins the nonce of the page's CSP, and adds it to nothing else", async () => {
     const builder = createBuilder();
     builder.injectBody((ctx) => [

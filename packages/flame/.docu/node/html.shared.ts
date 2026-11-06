@@ -61,6 +61,30 @@ export interface HtmlShellOptions {
    * the docs prefix (`/docs/_flame`).
    */
   bundlePath?: string;
+  /**
+   * Site-verification `<meta>` tags from `meta.verification`: meta name →
+   * token, e.g. `{ "algolia-site-verification": "ADCCB4B3D3A8BDCE" }`. Entries
+   * whose name or token is not a non-empty string are skipped.
+   */
+  verification?: Record<string, unknown>;
+}
+
+/** Render `meta.verification` as `<meta name content>` tags, escaped. */
+export function verificationTags(
+  verification: Record<string, unknown> | undefined,
+  escape: (value: string) => string
+): string {
+  if (!verification || typeof verification !== "object") return "";
+  return Object.entries(verification)
+    .filter(
+      (entry): entry is [string, string] =>
+        entry[0].trim() !== "" && typeof entry[1] === "string" && entry[1].trim() !== ""
+    )
+    .map(
+      ([name, token]) =>
+        `\n  <meta name="${escape(name.trim())}" content="${escape(token.trim())}">`
+    )
+    .join("");
 }
 
 export function htmlShell(opts: HtmlShellOptions): string {
@@ -82,6 +106,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
     basePath = DEFAULT_BASE_PATH,
     deployPath = "",
     bundlePath = "/assets",
+    verification,
   } = opts;
   const nonceAttr = nonce ? ` nonce="${escapeHtml(nonce)}"` : "";
   const themeStyle = themeCss ? `\n  <style${nonceAttr}>${escapeHtml(themeCss)}</style>` : "";
@@ -126,7 +151,7 @@ export function htmlShell(opts: HtmlShellOptions): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)}</title>
-  <meta name="description" content="${escapeHtml(description)}">
+  <meta name="description" content="${escapeHtml(description)}">${verificationTags(verification, escapeHtml)}
   ${favicon ? `<link rel="icon" type="image/x-icon" href="${escapeHtml(resolvePath(favicon))}">` : ""}${themeStyle}
   <link rel="preload" href="${escapeHtml(assetPrefix + css)}" as="style">
   <link rel="stylesheet" href="${escapeHtml(assetPrefix + css)}">

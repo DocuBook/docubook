@@ -28,6 +28,12 @@
         "ogImage": {
           "type": "string",
           "description": "Default OG image path (e.g. /docs/assets/images/og.png)"
+        },
+        "verification": {
+          "type": "object",
+          "description": "Site-verification <meta> tags written into the <head> of every page flame builds, keyed by meta name: { \"algolia-site-verification\": \"ADCCB4B3D3A8BDCE\" } for the Algolia Crawler, { \"google-site-verification\": \"...\" } for Google Search Console.",
+          "propertyNames": { "pattern": "^[A-Za-z0-9._:-]+$" },
+          "additionalProperties": { "type": "string", "minLength": 1 }
         }
       },
       "required": ["title"]
