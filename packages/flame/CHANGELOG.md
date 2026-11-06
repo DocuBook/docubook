@@ -1,5 +1,19 @@
 # @docubook/flame
 
+## 2.6.0
+
+### Minor Changes
+
+- [#488](https://github.com/DocuBook/docubook/pull/488) [`dffd7d2`](https://github.com/DocuBook/docubook/commit/dffd7d294dd892df346b1fe9db5f2b032cd84bf3) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Add `meta.verification` to `docu.json` for site-verification tags. Each entry, keyed by meta name, becomes a `<meta>` tag in the `<head>` of every page Flame builds, including the landing page, so the Algolia Crawler or Google Search Console can verify your domain: `{ "algolia-site-verification": "ADCCB4B3D3A8BDCE" }` renders `<meta name="algolia-site-verification" content="ADCCB4B3D3A8BDCE">`.
+
+- [#485](https://github.com/DocuBook/docubook/pull/485) [`a3f1f1b`](https://github.com/DocuBook/docubook/commit/a3f1f1bfe4103999eaf6df46382be3f36d474431) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - `flame build` now fails when a plugin hook throws. Before, an error in `onStart`, `onLoad`, `transformFrontmatter`, `transformHtml` or `onEnd` was logged and the build exited with code 0, shipping pages without that hook's work, such as content an `onLoad` plugin was meant to remove. The build now exits with code 1, and a page whose hook failed is not written. The error names the hook and, for page hooks, the source file. `flame dev` still logs hook errors and keeps serving. If a plugin used to throw from a hook on purpose to report a soft problem, make it log a warning instead.
+
+### Patch Changes
+
+- [#484](https://github.com/DocuBook/docubook/pull/484) [`daf7c13`](https://github.com/DocuBook/docubook/commit/daf7c13a7a42e85be8a73730e949cd2bfcc3574d) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Plugins can now run inline scripts on the deployed site. `PageContext` has a new `nonce` field, the page's CSP nonce: write `<script nonce="${ctx.nonce}">` in `injectHead` or `injectBody`. Before, the page's Content Security Policy blocked every inline plugin script, even though `flame preview` ran them. Flame does not add the nonce to plugin output itself, so a `<script>` that reaches the page through an unescaped value stays blocked. `flame preview` now only replaces the nonce the build wrote, so it blocks the same scripts as the deployed site.
+
+- [#482](https://github.com/DocuBook/docubook/pull/482) [`63f60aa`](https://github.com/DocuBook/docubook/commit/63f60aa5bd8faac43cdb5a1a037ad762d2ad70fc) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - A plugin's `onLoad` handler now runs on every matching file when its `filter` has the `g` or `y` flag. Before, `RegExp#test` resumed from the previous match, so every other matching file skipped the handler and was built from its unchanged source. A filter that is not a `RegExp` now fails in `setup()` with `[plugin] onLoad requires a RegExp \`filter\``.
+
 ## 2.5.0
 
 ### Minor Changes
