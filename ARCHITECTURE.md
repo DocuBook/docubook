@@ -35,7 +35,7 @@ user auth, no database. Project config is declarative via `docu.json`.
 | `@docubook/themes-colors` | `packages/themes-colors` | Theme presets, CSS variable generation, color utilities, and passthrough `themes/*` and `syntax/*` exports. Ships native ESM via Vite library mode. |
 | `@docubook/ui-react` | `packages/ui-react` | DaisyUI + Tailwind React primitives consumed by flame and published as an ESM-only, multi-entry package with component and stylesheet subpath exports. |
 | `@docubook/plugin-search-algolia` | `plugins/search-algolia` | Flame plugin: Algolia DocSearch v5 keyword search in the DocSearch dialog and Ask AI in the DocSearch Sidepanel. Ships a Node entry (`dist/index.js`) and a browser build (`dist/client/`) that it copies beside flame's bundles. Versioned on its own through Changesets, outside the linked release group. Its first release (0.1.0) was published by hand, since npm trusted publishing cannot create a new package. |
-| `@docubook/plugin-og-image` | `plugins/og-image` | Flame plugin: a 1200×630 OpenGraph card per page, rendered at build time from frontmatter with Takumi (`@takumi-rs/core`, a native module with prebuilt binaries for Bun, Node and Deno). Points `frontmatter.image` at the card so flame's SEO code writes `og:image`, renders only changed cards in `onEnd` (manifest in `.docu/og-image.json`), and serves cards from `flame dev`. Versioned on its own through Changesets, outside the linked release group; its first release is published by hand. |
+| `@docubook/plugin-og-image` | `plugins/og-image` | Flame plugin: a 1200×630 OpenGraph card per page, rendered at build time from frontmatter with Takumi (`@takumi-rs/core`, a native module with prebuilt binaries for Bun, Node and Deno). Points `frontmatter.image` at the card so flame's SEO code writes `og:image`, renders only changed cards in `onEnd` (manifest in `.docu/og-image.json`), and serves cards from `flame dev`. Depends on `@docubook/themes-colors`. Versioned on its own through Changesets, outside the linked release group. Its first release (0.1.0) was published by hand, like search-algolia's. |
 
 ### Historical Renames
 
@@ -49,10 +49,10 @@ but they are no longer the active package identities in this repository:
 
 ## Monorepo Infrastructure
 
-- **pnpm workspaces** — root dependency management, shared overrides, and native build allow-list in `pnpm-workspace.yaml`
+- **pnpm workspaces** — `packages/*` and `plugins/*`; root dependency management, shared overrides, and native build allow-list in `pnpm-workspace.yaml`
 - **Turborepo** — orchestrates `build`, `lint`, `typecheck`, and `test`
-- **Vite 8 + Rolldown** — library build pipeline for `core`, `markdown`, `themes-colors`, and `ui-react`; also used in flame's Node/Deno compatibility bundling
-- **Changesets** — linked versioning for the five published packages
+- **Vite 8 + Rolldown** — library build pipeline for `core`, `markdown`, `themes-colors`, `ui-react`, and both plugins; also used in flame's Node/Deno compatibility bundling
+- **Changesets** — linked versioning for the five core packages; the two plugins are versioned on their own
 - **Renovate** — self-hosted dependency updates (`.github/workflows/renovate.yml`, config in `.github/renovate.json`) with a Dependency Dashboard issue
 - **Husky + lint-staged + commitlint + czg** — local commit/push enforcement
 - **GitHub Actions** — CI matrix, PR commit linting, Renovate runs, npm/GitHub releases, and flame builder image publication; CodeQL and Pullfrog review pull requests alongside
@@ -67,6 +67,9 @@ Updates are grouped so each PR's release impact is clear:
 - `devDependencies` majors in `packages/**` share one PR
 - each runtime or peer major gets its own PR, so it can carry its own changeset
 - React, vitest, and the changesets toolchain move as one PR each
+- `plugins/**` dependencies match none of the area groups, so they get
+  Renovate's default of one PR per dependency, except vitest, which joins the
+  workspace-wide vitest PR
 
 Two policies constrain it. `node` and `@types/node` stay below 23, because the
 maintainer's macOS 12 machine cannot run Node 24. Majors of
@@ -98,8 +101,12 @@ Changesets 2 instead forced a major release on peer dependents of any bumped
 package, which dragged the whole linked group to a major version (#403), unless
 the experimental `onlyUpdatePeerDependentsWhenOutOfRange` option was set.
 Changesets 3 no longer reads that option, and it has been removed from
-`.changeset/config.json`. No published package currently declares another
-`@docubook/*` package as a peer. Only flame depends on the other packages.
+`.changeset/config.json`. Among the linked packages, only flame depends on the
+others, and none declares another as a peer. Both plugins declare
+`@docubook/flame` as a peer (`workspace:^`), and `plugin-og-image` also depends
+on `@docubook/themes-colors`. A major flame release therefore leaves the
+plugins' peer range and pulls them in with a patch bump; smaller flame
+releases leave them out.
 
 Releases that move all five packages together therefore come from changesets
 that list every package explicitly — a convention, not a property of linking.
@@ -253,6 +260,12 @@ This repository's production docs use `vercel.json`:
 - edge CSP, HSTS, frame, MIME, referrer, and permissions headers
 - one-year caching for the docs OG image and 24-hour immutable caching for
   hashed `/assets/*`
+
+The docs site (`packages/flame/docu.json`) enables
+`@docubook/plugin-search-algolia`. Flame installs the published plugin through
+an `npm:` alias devDependency rather than the workspace copy, and the
+`@docubook/plugin-search-algolia>@docubook/flame` override in
+`pnpm-workspace.yaml` points the plugin's flame peer back at the workspace.
 
 ### Flame Project Deployment
 
