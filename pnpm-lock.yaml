@@ -358,8 +358,8 @@ importers:
         version: 4.6.7
     devDependencies:
       '@docubook/plugin-search-algolia':
-        specifier: npm:@docubook/plugin-search-algolia@^0.1.0
-        version: 0.1.0(@docubook/flame@packages+flame)
+        specifier: npm:@docubook/plugin-search-algolia@^0.1.2
+        version: 0.1.2(@docubook/flame@packages+flame)
       '@types/node':
         specifier: ^22.20.5
         version: 22.20.5
@@ -782,8 +782,8 @@ packages:
   '@docsearch/sidepanel-js@5.2.0':
     resolution: {integrity: sha512-g3H479KRvjZOts58sxu2NKNCh6noQVk/GemB7tkKBKfGtWDdO9pSISpNfaO6aGpZM6hBUjAz+SRZQB4GAnhJvQ==}
 
-  '@docubook/plugin-search-algolia@0.1.0':
-    resolution: {integrity: sha512-/0fXmuMjIBTkkZJECN/g4asbgCXueZXUGNkpT9dZpkGFA1ot05uDeyLNb9qQWIPkFOzM77GbLALPPOLxbUYsWA==}
+  '@docubook/plugin-search-algolia@0.1.2':
+    resolution: {integrity: sha512-lZSR8qZuIEaowXrkiERf4xFJkH+byXZ51Xi7r/IQprc2I6qqj8SY0xPsDM4ireBctkLk5ueLh19bmB4P5vVRMw==}
     peerDependencies:
       '@docubook/flame': workspace:*
 
@@ -4083,7 +4083,7 @@ snapshots:
 
   '@docsearch/sidepanel-js@5.2.0': {}
 
-  '@docubook/plugin-search-algolia@0.1.0(@docubook/flame@packages+flame)':
+  '@docubook/plugin-search-algolia@0.1.2(@docubook/flame@packages+flame)':
     dependencies:
       '@docubook/flame': link:packages/flame
 
