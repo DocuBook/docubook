@@ -92,23 +92,29 @@ export default function pluginAnalytics(
     );
   }
 
+  // Options are inserted into HTML and JavaScript: encode them for each
+  const id = encodeURIComponent(opts.id);
+  const idJs = JSON.stringify(opts.id).replace(/</g, "\\u003c");
+
   return {
     name: "analytics",
     setup(build) {
-      build.injectHead(() => {
+      build.injectHead((ctx) => {
         return `
-<script async src="https://www.googletagmanager.com/gtag/js?id=${opts.id}"></script>
-<script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=${id}"></script>
+<script nonce="${ctx.nonce}">
   window.dataLayer = window.dataLayer || [];
   function gtag(){ dataLayer.push(arguments); }
   gtag('js', new Date());
-  gtag('config', '${opts.id}');
+  gtag('config', ${idJs});
 </script>`;
       });
     },
   };
 }
 ```
+
+The inline `<script>` carries the page's CSP nonce (`ctx.nonce`) and runs. The `gtag.js` file from `googletagmanager.com` is blocked by the CSP: see [Scripts and the Content Security Policy](#scripts-and-the-content-security-policy).
 
 Then register it in `docu.json`:
 
@@ -425,9 +431,18 @@ Return HTML strings to inject before `</body>`. Check `ctx.assets.js` before gen
 
 ```typescript
 build.injectBody((ctx) =>
-  ctx.assets.js ? `<script>console.log("Client bundle loaded")</script>` : []
+  ctx.assets.js ? `<script nonce="${ctx.nonce}">console.log("Client bundle loaded")</script>` : []
 );
 ```
+
+### Scripts and the Content Security Policy
+
+Every page carries a Content Security Policy that runs a script only when it comes from the site's own origin or carries the page's nonce.
+
+- **Inline `<script>`** runs only with the page's nonce. Write it yourself from `ctx.nonce`: `<script nonce="${ctx.nonce}">`. It then runs in `flame dev`, `flame preview`, and on the deployed site.
+- Flame never adds the nonce to plugin output. A `<script>` that reaches your HTML through an unescaped value, such as a frontmatter title, stays blocked. Still escape every value you insert.
+- **`<script src>`** runs without a nonce when the file comes from the site's own origin. Ship the file with the site: copy it into `assetsDir` in `onEnd`, serve it from `assetsPath` in `handleRequest` for `flame dev`, and point `src` at the bundle directory.
+- **Scripts from another host**, such as `googletagmanager.com`, are blocked. Flame has no option yet to add a host to the policy. Giving such a `<script src>` the nonce makes it run, but it then runs with full control of the page, and scripts it loads from other hosts are still blocked.
 
 ### transformHtml(html, ctx)
 
@@ -452,6 +467,7 @@ build.transformHtml((html, ctx) =>
 | `frontmatter` | Docs frontmatter, site metadata for home, or an empty object for 404 |
 | `content` | Raw MDX/Markdown content when available |
 | `config` | Resolved DocuBook configuration |
+| `nonce` | The page's CSP nonce, for inline `<script>` tags (see [Scripts and the Content Security Policy](#scripts-and-the-content-security-policy)) |
 
 The final asset manifest uses the same page families:
 
@@ -599,14 +615,18 @@ export default function pluginSitemap(opts?: { hostname?: string }): DocuBookPlu
 import type { DocuBookPlugin } from "@docubook/flame";
 
 export default function pluginAnalytics(opts: { id: string }): DocuBookPlugin {
+  const id = encodeURIComponent(opts.id);
+  const idJs = JSON.stringify(opts.id).replace(/</g, "\\u003c");
   return {
     name: "analytics",
     setup(build) {
+      // Blocked by the CSP until flame can add a host to it
       build.injectHead(() =>
-        `<script async src="https://www.googletagmanager.com/gtag/js?id=${opts.id}"></script>`
+        `<script async src="https://www.googletagmanager.com/gtag/js?id=${id}"></script>`
       );
-      build.injectBody(() =>
-        `<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${opts.id}');</script>`
+      // Runs: carries the page's nonce
+      build.injectBody((ctx) =>
+        `<script nonce="${ctx.nonce}">window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config',${idJs});</script>`
       );
     },
   };

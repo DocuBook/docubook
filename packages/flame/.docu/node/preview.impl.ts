@@ -10,7 +10,7 @@ import type { RuntimeAdapter, ServerHandle } from "./runtime";
 import { logger } from "./logger";
 import { DIST_DIR, basePath, ownPages, resolveRootRoute, notFoundPath } from "./paths";
 import { getContentType, redirectResponse } from "./server-utils";
-import { SECURITY_HEADERS, generateNonce, cspHeader, injectNonce } from "./security";
+import { SECURITY_HEADERS, generateNonce, cspHeader, rotateNonce } from "./security";
 
 function resolveFile(pathname: string): string | null {
   const path = pathname.slice(1);
@@ -64,7 +64,7 @@ export async function runPreview(adapter: RuntimeAdapter): Promise<ServerHandle 
         if (contentType === "text/html") {
           const nonce = generateNonce();
           const html = await readFile(filePath, "utf-8");
-          const modified = injectNonce(html, nonce);
+          const modified = rotateNonce(html, nonce);
           return new Response(modified, {
             headers: {
               "Content-Type": "text/html",
@@ -87,7 +87,7 @@ export async function runPreview(adapter: RuntimeAdapter): Promise<ServerHandle 
       if (notFoundFile) {
         const nonce = generateNonce();
         const html = await readFile(notFoundFile, "utf-8");
-        const modified = injectNonce(html, nonce);
+        const modified = rotateNonce(html, nonce);
         return new Response(modified, {
           status: 404,
           headers: {

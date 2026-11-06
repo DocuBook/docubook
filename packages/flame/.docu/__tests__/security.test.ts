@@ -6,7 +6,8 @@ import {
   cspMeta,
   isPathSafe,
   isSlugSafe,
-  injectNonce,
+  nonceInlineScripts,
+  rotateNonce,
   wrapPluginResponse,
 } from "../node/security";
 
@@ -135,59 +136,89 @@ describe("isSlugSafe", () => {
   });
 });
 
-describe("injectNonce", () => {
+describe("nonceInlineScripts", () => {
   it("adds nonce to inline scripts", () => {
     const html = `<script>alert(1)</script>`;
-    expect(injectNonce(html, "abc")).toBe(`<script nonce="abc">alert(1)</script>`);
+    expect(nonceInlineScripts(html, "abc")).toBe(`<script nonce="abc">alert(1)</script>`);
   });
 
   it("skips scripts with src attribute", () => {
     const html = `<script src="/app.js"></script>`;
-    expect(injectNonce(html, "abc")).toBe(html);
+    expect(nonceInlineScripts(html, "abc")).toBe(html);
   });
 
   it("replaces existing nonce on inline scripts", () => {
     const html = `<script nonce="old">alert(1)</script>`;
-    expect(injectNonce(html, "new")).toBe(`<script nonce="new">alert(1)</script>`);
+    expect(nonceInlineScripts(html, "new")).toBe(`<script nonce="new">alert(1)</script>`);
   });
 
   it("handles multiple inline scripts", () => {
     const html = `<script>a()</script><script>b()</script>`;
-    const result = injectNonce(html, "x");
+    const result = nonceInlineScripts(html, "x");
     expect(result.match(/nonce="x"/g)).toHaveLength(2);
   });
 
   it("handles script with other attributes", () => {
     const html = `<script defer data-id="x">run()</script>`;
-    const result = injectNonce(html, "n1");
+    const result = nonceInlineScripts(html, "n1");
     expect(result).toContain(`nonce="n1"`);
   });
+});
 
-  it("syncs the nonce inside a <meta> CSP tag (static pages re-served by preview)", () => {
+describe("rotateNonce", () => {
+  const meta = (nonce: string) =>
+    `<meta http-equiv="Content-Security-Policy" content="script-src &#x27;self&#x27; &#x27;nonce-${nonce}&#x27;">`;
+
+  it("replaces the build nonce on scripts that carry it, inline or not", () => {
+    const html =
+      meta("old") +
+      `<script nonce="old">run()</script>` +
+      `<script type="module" nonce="old" src="/assets/docs.js"></script>`;
+    expect(rotateNonce(html, "new")).toBe(
+      meta("new") +
+        `<script nonce="new">run()</script>` +
+        `<script type="module" nonce="new" src="/assets/docs.js"></script>`
+    );
+  });
+
+  it("leaves a script with any other nonce value as it is", () => {
+    const html = meta("old") + `<script nonce="guess">steal()</script>`;
+    expect(rotateNonce(html, "new")).toBe(meta("new") + `<script nonce="guess">steal()</script>`);
+  });
+
+  it("does not add a nonce to a script the build left without one", () => {
+    const html = meta("old") + `<script>fromContent()</script><script src="/a.js"></script>`;
+    expect(rotateNonce(html, "new")).toBe(
+      meta("new") + `<script>fromContent()</script><script src="/a.js"></script>`
+    );
+  });
+
+  it("does not touch a data-nonce attribute", () => {
+    const html = meta("old") + `<script data-nonce="old">run()</script>`;
+    expect(rotateNonce(html, "new")).toBe(meta("new") + `<script data-nonce="old">run()</script>`);
+  });
+
+  it("reads an unescaped build nonce from the <meta> CSP", () => {
     const html =
       `<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'nonce-old'">` +
       `<script nonce="old">run()</script>`;
-    const result = injectNonce(html, "new");
+    const result = rotateNonce(html, "new");
     expect(result).toContain(`'nonce-new'`);
     expect(result).not.toContain(`'nonce-old'`);
-    expect(result).toContain(`nonce="new"`);
-    expect(result).not.toContain(`nonce="old"`);
+    expect(result).toContain(`<script nonce="new">run()</script>`);
   });
 
-  it("syncs an HTML-escaped nonce from static build output", () => {
+  it("matches a base64 build nonce exactly", () => {
     const html =
-      `<meta http-equiv="Content-Security-Policy" ` +
-      `content="script-src &#x27;self&#x27; &#x27;nonce-old&#x27;">` +
-      `<script nonce="old">run()</script>`;
-    const result = injectNonce(html, "new");
-    expect(result).toContain("&#x27;nonce-new&#x27;");
-    expect(result).not.toContain("&#x27;nonce-old&#x27;");
+      meta("a+b/c==") + `<script nonce="a+b/c==">run()</script><script nonce="a+b">x()</script>`;
+    expect(rotateNonce(html, "new")).toBe(
+      meta("new") + `<script nonce="new">run()</script><script nonce="a+b">x()</script>`
+    );
   });
 
-  it("leaves HTML without a <meta> CSP tag unchanged (script-only rewrite)", () => {
-    const html = `<script>a()</script><meta name="description" content="x">`;
-    const result = injectNonce(html, "n");
-    expect(result).toBe(`<script nonce="n">a()</script><meta name="description" content="x">`);
+  it("leaves HTML without a <meta> CSP nonce unchanged", () => {
+    const html = `<script nonce="old">a()</script><meta name="description" content="x">`;
+    expect(rotateNonce(html, "n")).toBe(html);
   });
 });
 

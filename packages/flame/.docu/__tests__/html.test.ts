@@ -202,6 +202,17 @@ describe("htmlShell", () => {
       expect(html).toContain('<meta name="a">');
       expect(html).toContain('<meta name="b">');
     });
+
+    it("injects plugin scripts unchanged, without adding the page nonce", () => {
+      const html = htmlShell({
+        ...MINIMAL_OPTS,
+        nonce: "n0nce",
+        headExtra: ['<meta content="x"><script>smuggled()</script>">'],
+        bodyExtra: ['<script nonce="n0nce">intended()</script>'],
+      });
+      expect(html).toContain("<script>smuggled()</script>");
+      expect(html).toContain('<script nonce="n0nce">intended()</script>');
+    });
   });
 
   describe("extraScripts", () => {

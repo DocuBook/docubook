@@ -103,6 +103,7 @@ export function pageCtx(overrides?: Partial<PageContext>): PageContext {
     frontmatter: {},
     content: "",
     config: createMinimalConfig() as any,
+    nonce: "test-nonce",
     ...overrides,
   } as PageContext;
 }

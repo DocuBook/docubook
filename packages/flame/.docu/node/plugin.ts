@@ -35,6 +35,14 @@ export interface PageContext {
   content?: string;
   /** Resolved site configuration */
   config: DocuConfig;
+  /**
+   * The page's Content Security Policy nonce. The policy blocks inline
+   * scripts without it, so give a `<script>` from `injectHead`/`injectBody`
+   * the nonce yourself: `<script nonce="${ctx.nonce}">`. Flame never adds it
+   * to plugin output, so a `<script>` that reaches the page through an
+   * unescaped value stays blocked.
+   */
+  nonce: string;
 }
 
 /**
@@ -226,13 +234,17 @@ export interface PluginBuilder {
    * ⚠️ Sanitize any user-controlled or external data before injecting.
    * Plugin-provided strings are injected raw into the final HTML.
    *
+   * The page's CSP blocks an inline `<script>` without `nonce="${ctx.nonce}"`,
+   * and a `<script src>` from another origin: ship the file through `onEnd`
+   * (`assetsDir`) instead.
+   *
    * Use for: analytics snippets, meta tags, stylesheet links.
    *
    * @param callback - Returns a single HTML string or an array. Called once per page.
    *
    * @example
    * build.injectHead(() => {
-   *   return `<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXX"></script>`;
+   *   return `<meta name="theme-color" content="#0f172a">`;
    * });
    */
   injectHead(callback: (context: PageContext) => string | string[]): void;
@@ -243,6 +255,10 @@ export interface PluginBuilder {
    *
    * ⚠️ Sanitize any user-controlled or external data before injecting.
    * Plugin-provided strings are injected raw into the final HTML.
+   *
+   * The page's CSP blocks an inline `<script>` without `nonce="${ctx.nonce}"`,
+   * and a `<script src>` from another origin: ship the file through `onEnd`
+   * (`assetsDir`) instead.
    *
    * Use for: chat widgets, live-script loaders, deferred scripts.
    *

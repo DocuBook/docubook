@@ -186,7 +186,7 @@ export class BuildPluginBuilder implements PluginBuilder {
    * @param callback - Returns a single HTML string or an array. Called once per page.
    *
    * @example
-   * build.injectHead(() => `<script async src="https://cdn.example.com/analytics.js"></script>`);
+   * build.injectHead((ctx) => `<script nonce="${ctx.nonce}">window.dataLayer = [];</script>`);
    */
   injectHead(callback: (context: PageContext) => string | string[]): void {
     this._injectHead.push(callback);

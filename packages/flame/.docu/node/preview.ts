@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { logger } from "./logger";
 import { DIST_DIR, basePath, ownPages, resolveRootRoute, notFoundPath } from "./paths";
 import { getContentType, redirectResponse } from "./server-utils";
-import { SECURITY_HEADERS, generateNonce, cspHeader, injectNonce } from "./security";
+import { SECURITY_HEADERS, generateNonce, cspHeader, rotateNonce } from "./security";
 
 const PORT = process.env.PORT || "4173";
 
@@ -58,7 +58,7 @@ const server = Bun.serve({
       if (contentType === "text/html") {
         const nonce = generateNonce();
         const html = await Bun.file(filePath).text();
-        const modified = injectNonce(html, nonce);
+        const modified = rotateNonce(html, nonce);
         return new Response(modified, {
           headers: {
             "Content-Type": "text/html",
@@ -81,7 +81,7 @@ const server = Bun.serve({
     if (notFoundFile) {
       const nonce = generateNonce();
       const html = await Bun.file(notFoundFile).text();
-      const modified = injectNonce(html, nonce);
+      const modified = rotateNonce(html, nonce);
       return new Response(modified, {
         status: 404,
         headers: {

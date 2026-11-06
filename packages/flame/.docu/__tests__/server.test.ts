@@ -6,7 +6,7 @@ import {
   htmlResponse,
   isPathSafe,
   isSlugSafe,
-  injectNonce,
+  nonceInlineScripts,
 } from "../node/security";
 import { getContentType } from "../node/server-utils";
 import { hmrScript } from "../node/html.shared";
@@ -252,36 +252,36 @@ describe("server: route matching", () => {
   });
 });
 
-describe("injectNonce", () => {
+describe("nonceInlineScripts", () => {
   it("injects nonce into inline script tags", () => {
     const html = '<script>alert(1)</script><script src="ext.js"></script>';
-    const result = injectNonce(html, "abc-123");
+    const result = nonceInlineScripts(html, "abc-123");
     expect(result).toContain('nonce="abc-123"');
     expect(result).toContain('<script src="ext.js"></script>');
   });
 
   it("replaces existing nonce with new nonce", () => {
     const html = '<script nonce="existing">alert(1)</script>';
-    const result = injectNonce(html, "new-nonce");
+    const result = nonceInlineScripts(html, "new-nonce");
     expect(result).toContain('nonce="new-nonce"');
     expect(result).not.toContain('nonce="existing"');
   });
 
   it("handles script tags with extra attributes", () => {
     const html = "<script defer async>init()</script>";
-    const result = injectNonce(html, "n1");
+    const result = nonceInlineScripts(html, "n1");
     expect(result).toMatch(/<script\s+defer\s+async\s+nonce="n1">/);
   });
 
   it("handles uppercase SCRIPT tags", () => {
     const html = "<SCRIPT>alert(1)</SCRIPT>";
-    const result = injectNonce(html, "u");
+    const result = nonceInlineScripts(html, "u");
     expect(result).toContain('nonce="u"');
   });
 
   it("returns html unchanged when there are no script tags", () => {
     const html = "<div>hello</div>";
-    expect(injectNonce(html, "n")).toBe(html);
+    expect(nonceInlineScripts(html, "n")).toBe(html);
   });
 });
 

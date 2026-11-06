@@ -95,13 +95,39 @@ export function normalizeImporterPath(importer: string): string {
   return resolve(importer).replace(/\\/g, "/");
 }
 
-export function injectNonce(html: string, nonce: string): string {
-  const scripts = html.replace(/<script\b(?![^>]*\bsrc\s*=)([^>]*)>/gi, (match) => {
+/**
+ * Give every inline `<script>` (one without `src`) the nonce, replacing any it
+ * already has. Only for a whole HTML response a plugin's `handleRequest`
+ * returns in `flame dev` — never page content or `injectHead`/`injectBody`
+ * snippets, which carry `ctx.nonce` themselves. `<script src>` is left alone:
+ * a nonce would admit any host, while CSP `'self'` only admits the site's own
+ * files.
+ */
+export function nonceInlineScripts(html: string, nonce: string): string {
+  return html.replace(/<script\b(?![^>]*\bsrc\s*=)([^>]*)>/gi, (match) => {
     if (/nonce\s*=/i.test(match)) {
       return match.replace(/nonce="[^"]*"/i, `nonce="${nonce}"`);
     }
     return match.replace(/>$/, ` nonce="${nonce}">`);
   });
+}
+
+/**
+ * Re-serve a built page under a fresh nonce (`flame preview`): read the build
+ * nonce from the page's `<meta>` CSP and replace it there and on the scripts
+ * that carry it. Any other nonce value, or none, is left as it is, so preview
+ * blocks what the deployed site blocks.
+ */
+export function rotateNonce(html: string, nonce: string): string {
+  const meta = /<meta\b[^>]*Content-Security-Policy[^>]*>/i.exec(html)?.[0];
+  const found = meta && /'nonce-([^']*)'|&#(?:x27|39);nonce-(.*?)&#(?:x27|39);/i.exec(meta);
+  const buildNonce = found ? (found[1] ?? found[2]) : undefined;
+  if (!buildNonce) return html;
+  const scripts = html.replace(/<script\b[^>]*>/gi, (tag) =>
+    tag.replace(/(\s)nonce="([^"]*)"/i, (attr, space: string, value: string) =>
+      value === buildNonce ? `${space}nonce="${nonce}"` : attr
+    )
+  );
   // Keep the <meta> CSP nonce in sync: browsers intersect the meta policy
   // with the response-header policy, so a stale build-time nonce would block
   // the very scripts re-tagged above.
@@ -141,7 +167,7 @@ export function wrapPluginResponse(
     const nonce = generateNonce();
     securedHeaders.set("Content-Security-Policy", cspHeader(nonce, allowEval));
     if (typeof body === "string") {
-      body = injectNonce(body, nonce);
+      body = nonceInlineScripts(body, nonce);
     }
   }
   return new Response(body, {
