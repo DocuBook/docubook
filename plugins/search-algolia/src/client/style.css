@@ -97,3 +97,13 @@
   background-color: var(--docsearch-background-color);
   color: var(--docsearch-muted-color);
 }
+
+/*
+ * The Sidepanel's conversation history reuses the dialog's remove button
+ * (`.DocSearch-Hit-action-button`). The dialog stylesheet hides that button
+ * until a search hit is selected, and sidepanel.css never shows it again, so
+ * with both stylesheets loaded a conversation could not be removed.
+ */
+.DocSearch-Sidepanel-RecentConversation .DocSearch-Hit-action-button {
+  display: block;
+}
