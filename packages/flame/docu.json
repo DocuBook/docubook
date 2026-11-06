@@ -103,6 +103,17 @@
     "path": "blob/main/packages/flame/{filePath}",
     "edit": true
   },
+  "plugins": [
+    [
+      "@docubook/plugin-search-algolia",
+      {
+        "appId": "5CCYZZZ96E",
+        "apiKey": "96e2ea3739eeed056a314c85925e8079",
+        "indexName": "docsearch_docubook",
+        "askAi": "cdd1d1a2-5e49-400e-a093-3cdcc838731c"
+      }
+    ]
+  ],
   "routes": [
     {
       "title": "Getting Started",

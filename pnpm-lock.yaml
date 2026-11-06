@@ -163,6 +163,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  '@docubook/plugin-search-algolia>@docubook/flame': workspace:*
   flatted: '>=3.4.2'
   postcss: '>=8.5.18'
   esbuild: '>=0.28.1'
@@ -356,6 +357,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
+      '@docubook/plugin-search-algolia':
+        specifier: npm:@docubook/plugin-search-algolia@^0.1.0
+        version: 0.1.0(@docubook/flame@packages+flame)
       '@types/node':
         specifier: ^22.20.5
         version: 22.20.5
@@ -485,7 +489,7 @@ importers:
         specifier: ^5.2.0
         version: 5.2.0
       '@docubook/flame':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/flame
       '@types/node':
         specifier: ^22.20.5
@@ -777,6 +781,11 @@ packages:
 
   '@docsearch/sidepanel-js@5.2.0':
     resolution: {integrity: sha512-g3H479KRvjZOts58sxu2NKNCh6noQVk/GemB7tkKBKfGtWDdO9pSISpNfaO6aGpZM6hBUjAz+SRZQB4GAnhJvQ==}
+
+  '@docubook/plugin-search-algolia@0.1.0':
+    resolution: {integrity: sha512-/0fXmuMjIBTkkZJECN/g4asbgCXueZXUGNkpT9dZpkGFA1ot05uDeyLNb9qQWIPkFOzM77GbLALPPOLxbUYsWA==}
+    peerDependencies:
+      '@docubook/flame': workspace:*
 
   '@esbuild/aix-ppc64@0.28.1':
     resolution: {integrity: sha512-Svl7tq8k/08+p6CXPpRjQ1fKX+1odH/BQbb48fV6fj3CWHhsoIOoY87w1oHXm0qEpkIK3ZfVgp0hed3XBXzXMQ==}
@@ -4073,6 +4082,10 @@ snapshots:
   '@docsearch/js@5.2.0': {}
 
   '@docsearch/sidepanel-js@5.2.0': {}
+
+  '@docubook/plugin-search-algolia@0.1.0(@docubook/flame@packages+flame)':
+    dependencies:
+      '@docubook/flame': link:packages/flame
 
   '@esbuild/aix-ppc64@0.28.1':
     optional: true

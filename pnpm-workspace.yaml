@@ -2,6 +2,7 @@ packages:
   - "packages/*"
   - "plugins/*"
 overrides:
+  "@docubook/plugin-search-algolia>@docubook/flame": "workspace:*"
   flatted: ">=3.4.2"
   postcss: ">=8.5.18"
   esbuild: ">=0.28.1"
