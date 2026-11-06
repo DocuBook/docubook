@@ -195,6 +195,21 @@ describe("Plugin integration — dev page routes", () => {
     expect(html).toContain('data-transformed="notFound"');
     expect(html).not.toContain('<script type="module"');
   });
+
+  it("gives plugins the nonce of the page's CSP, and adds it to nothing else", async () => {
+    const builder = createBuilder();
+    builder.injectBody((ctx) => [
+      `<script nonce="${ctx.nonce}">window.pluginRan = true;</script>`,
+      "<script>window.forgotNonce = true;</script>",
+    ]);
+
+    const response = await handleIndex(createState(builder));
+    const html = await response.text();
+    const nonce = /'nonce-([^']+)'/.exec(response.headers.get("Content-Security-Policy")!)![1];
+
+    expect(html).toContain(`<script nonce="${nonce}">window.pluginRan = true;</script>`);
+    expect(html).toContain("<script>window.forgotNonce = true;</script>");
+  });
 });
 
 // ─── No-op mode: zero plugins ───────────────────────────

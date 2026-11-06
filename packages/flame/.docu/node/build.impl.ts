@@ -200,9 +200,9 @@ async function renderDocsPage(
   slug: string,
   rawMdx: string,
   filePath: string,
-  gitDates?: Map<string, string>,
-  builder?: BuildPluginBuilder | null,
-  nonce?: string
+  gitDates: Map<string, string> | undefined,
+  builder: BuildPluginBuilder | null | undefined,
+  nonce: string
 ): Promise<string> {
   let content = rawMdx;
   if (builder) {
@@ -281,6 +281,7 @@ async function renderDocsPage(
     frontmatter,
     content,
     config: docuConfig,
+    nonce,
   };
   const headExtra = builder?.collectHead(ctx);
   const bodyExtra = builder?.collectBody(ctx);
@@ -290,7 +291,7 @@ async function renderDocsPage(
   const seo = buildSeoMeta(docuConfig, frontmatter, slug || "");
   // MDX content hydrates from the bundled ESM module (mdx-hydrate), not
   // new Function — no 'unsafe-eval' needed in the CSP.
-  const csp = nonce ? cspHeader(nonce) : undefined;
+  const csp = cspHeader(nonce);
   let html = htmlShell({
     title,
     description,
@@ -658,6 +659,7 @@ export async function runBuild(): Promise<void> {
       filePath: join(PAGES_DIR, "index.tsx"),
       frontmatter: { ...docuConfig.meta } as unknown as Record<string, unknown>,
       config: docuConfig,
+      nonce: landingNonce,
     };
     let landingHtml = htmlShell({
       title: docuConfig.meta?.title || "DocuBook",
@@ -701,6 +703,7 @@ export async function runBuild(): Promise<void> {
       filePath: join(PAGES_DIR, "404.tsx"),
       frontmatter: {},
       config: docuConfig,
+      nonce: notFoundNonce,
     };
     notFoundHtml = htmlShell({
       title: "404 - Not Found",

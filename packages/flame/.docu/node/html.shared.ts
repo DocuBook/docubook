@@ -7,7 +7,7 @@
  */
 
 import { escapeHtml } from "./escapeHtml";
-import { cspMeta, nonceInlineScripts } from "./security";
+import { cspMeta } from "./security";
 import { rebaseContentPath } from "./utils";
 import { DEFAULT_BASE_PATH } from "./paths";
 
@@ -31,9 +31,9 @@ export interface HtmlShellOptions {
   themeCss?: string;
   /** Depth from document root (0=root, 1=subdir, 2=sub/subdir). Used for relative asset paths. */
   depth?: number;
-  /** HTML strings to inject before `</head>` (from plugin `injectHead` hooks). Their inline `<script>` tags get `nonce`. */
+  /** HTML strings to inject before `</head>` (from plugin `injectHead` hooks). */
   headExtra?: string[];
-  /** HTML strings to inject before `</body>`, after the main script (from plugin `injectBody` hooks). Their inline `<script>` tags get `nonce`. */
+  /** HTML strings to inject before `</body>`, after the main script (from plugin `injectBody` hooks). */
   bodyExtra?: string[];
   /** SEO meta tags derived from config + frontmatter */
   seo?: SeoMeta;
@@ -85,15 +85,8 @@ export function htmlShell(opts: HtmlShellOptions): string {
   } = opts;
   const nonceAttr = nonce ? ` nonce="${escapeHtml(nonce)}"` : "";
   const themeStyle = themeCss ? `\n  <style${nonceAttr}>${escapeHtml(themeCss)}</style>` : "";
-  // Plugin snippets are trusted like the shell's own scripts: their inline
-  // <script> gets the page nonce, or the CSP blocks it once deployed.
-  const pluginHtml = (items?: string[]) => {
-    if (!items?.length) return "";
-    const html = items.join("\n  ");
-    return `\n  ${nonce ? nonceInlineScripts(html, nonce) : html}`;
-  };
-  const headInjection = pluginHtml(headExtra);
-  const bodyInjection = pluginHtml(bodyExtra);
+  const headInjection = headExtra?.length ? `\n  ${headExtra.join("\n  ")}` : "";
+  const bodyInjection = bodyExtra?.length ? `\n  ${bodyExtra.join("\n  ")}` : "";
   const depthPrefix = depth === 0 ? "" : "../".repeat(depth);
   // Bundle assets (JS, CSS, chunks) live at `bundlePath` from the dist root —
   // `/assets` by default, inside the docs prefix under `experimental.pages`.

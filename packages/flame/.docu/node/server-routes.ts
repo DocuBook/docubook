@@ -39,7 +39,7 @@ async function createHtmlResponse(
   status: number,
   state: ServerState,
   pageType: PageType,
-  page: Omit<PageContext, "pageType" | "assets" | "config">,
+  page: Omit<PageContext, "pageType" | "assets" | "config" | "nonce">,
   depth = 0
 ): Promise<Response> {
   const nonce = generateNonce();
@@ -53,6 +53,7 @@ async function createHtmlResponse(
     pageType,
     assets,
     config: state.docuConfig,
+    nonce,
   };
   let html = createHtmlShell({
     title,

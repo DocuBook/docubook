@@ -203,31 +203,15 @@ describe("htmlShell", () => {
       expect(html).toContain('<meta name="b">');
     });
 
-    it("gives inline plugin scripts the page nonce", () => {
+    it("injects plugin scripts unchanged, without adding the page nonce", () => {
       const html = htmlShell({
         ...MINIMAL_OPTS,
         nonce: "n0nce",
-        headExtra: ["<script>window.dataLayer = [];</script>"],
-        bodyExtra: ['<script defer data-id="1">gtag()</script>'],
+        headExtra: ['<meta content="x"><script>smuggled()</script>">'],
+        bodyExtra: ['<script nonce="n0nce">intended()</script>'],
       });
-      expect(html).toContain('<script nonce="n0nce">window.dataLayer = [];</script>');
-      expect(html).toContain('<script defer data-id="1" nonce="n0nce">gtag()</script>');
-    });
-
-    it("leaves plugin <script src> and page content scripts without a nonce", () => {
-      const html = htmlShell({
-        ...MINIMAL_OPTS,
-        body: "<script>fromContent()</script>",
-        nonce: "n0nce",
-        headExtra: ['<script async src="https://cdn.example.com/a.js"></script>'],
-      });
-      expect(html).toContain('<script async src="https://cdn.example.com/a.js"></script>');
-      expect(html).toContain("<script>fromContent()</script>");
-    });
-
-    it("injects plugin scripts unchanged without a nonce", () => {
-      const html = htmlShell({ ...MINIMAL_OPTS, bodyExtra: ["<script>run()</script>"] });
-      expect(html).toContain("<script>run()</script>");
+      expect(html).toContain("<script>smuggled()</script>");
+      expect(html).toContain('<script nonce="n0nce">intended()</script>');
     });
   });
 

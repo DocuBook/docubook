@@ -1,6 +1,6 @@
 import type { HtmlShellOptions } from "./html.shared";
 export type { HtmlShellOptions };
-import { cspMeta, nonceInlineScripts } from "./security";
+import { cspMeta } from "./security";
 import { rebaseContentPath } from "./utils";
 import { DEFAULT_BASE_PATH } from "./paths";
 
@@ -26,15 +26,8 @@ export function htmlShell(opts: HtmlShellOptions): string {
   } = opts;
   const nonceAttr = nonce ? ` nonce="${Bun.escapeHTML(nonce)}"` : "";
   const themeStyle = themeCss ? `\n  <style${nonceAttr}>${Bun.escapeHTML(themeCss)}</style>` : "";
-  // Plugin snippets are trusted like the shell's own scripts: their inline
-  // <script> gets the page nonce, or the CSP blocks it once deployed.
-  const pluginHtml = (items?: string[]) => {
-    if (!items?.length) return "";
-    const html = items.join("\n  ");
-    return `\n  ${nonce ? nonceInlineScripts(html, nonce) : html}`;
-  };
-  const headInjection = pluginHtml(headExtra);
-  const bodyInjection = pluginHtml(bodyExtra);
+  const headInjection = headExtra?.length ? `\n  ${headExtra.join("\n  ")}` : "";
+  const bodyInjection = bodyExtra?.length ? `\n  ${bodyExtra.join("\n  ")}` : "";
   const depthPrefix = depth === 0 ? "" : "../".repeat(depth);
   // Bundle assets (JS, CSS, chunks) live at `bundlePath` from the dist root —
   // `/assets` by default, inside the docs prefix under `experimental.pages`.

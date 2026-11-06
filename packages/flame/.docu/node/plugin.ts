@@ -35,6 +35,14 @@ export interface PageContext {
   content?: string;
   /** Resolved site configuration */
   config: DocuConfig;
+  /**
+   * The page's Content Security Policy nonce. The policy blocks inline
+   * scripts without it, so give a `<script>` from `injectHead`/`injectBody`
+   * the nonce yourself: `<script nonce="${ctx.nonce}">`. Flame never adds it
+   * to plugin output, so a `<script>` that reaches the page through an
+   * unescaped value stays blocked.
+   */
+  nonce: string;
 }
 
 /**
@@ -226,9 +234,9 @@ export interface PluginBuilder {
    * ⚠️ Sanitize any user-controlled or external data before injecting.
    * Plugin-provided strings are injected raw into the final HTML.
    *
-   * Inline `<script>` tags get the page's CSP nonce, so they run on the
-   * deployed site. `<script src>` gets none: the CSP only loads scripts from
-   * the site's own origin, so ship the file through `onEnd` (`assetsDir`).
+   * The page's CSP blocks an inline `<script>` without `nonce="${ctx.nonce}"`,
+   * and a `<script src>` from another origin: ship the file through `onEnd`
+   * (`assetsDir`) instead.
    *
    * Use for: analytics snippets, meta tags, stylesheet links.
    *
@@ -248,9 +256,9 @@ export interface PluginBuilder {
    * ⚠️ Sanitize any user-controlled or external data before injecting.
    * Plugin-provided strings are injected raw into the final HTML.
    *
-   * Inline `<script>` tags get the page's CSP nonce, so they run on the
-   * deployed site. `<script src>` gets none: the CSP only loads scripts from
-   * the site's own origin, so ship the file through `onEnd` (`assetsDir`).
+   * The page's CSP blocks an inline `<script>` without `nonce="${ctx.nonce}"`,
+   * and a `<script src>` from another origin: ship the file through `onEnd`
+   * (`assetsDir`) instead.
    *
    * Use for: chat widgets, live-script loaders, deferred scripts.
    *
