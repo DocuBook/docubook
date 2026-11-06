@@ -82,7 +82,7 @@
     }
   },
   "devDependencies": {
-    "@docubook/plugin-search-algolia": "npm:@docubook/plugin-search-algolia@^0.1.0",
+    "@docubook/plugin-search-algolia": "npm:@docubook/plugin-search-algolia@^0.1.2",
     "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
