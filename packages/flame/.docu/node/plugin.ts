@@ -118,13 +118,15 @@ export interface PluginBuilder {
 
   /**
    * Register a callback to run once before the build starts.
-   * Use for: validating config, initializing resources, fetching remote data.
+   * Use for: initializing resources, fetching remote data. An error thrown
+   * here is logged and the build continues — check required options in
+   * `setup()`, where an error stops the build.
    *
    * @param callback - Receives the resolved config. May return a Promise.
    *
    * @example
    * build.onStart((config) => {
-   *   if (!config.meta.baseURL) throw new Error("baseURL required");
+   *   if (!config.meta.baseURL) console.warn("[plugin:x] meta.baseURL is not set");
    * });
    */
   onStart(callback: (config: DocuConfig) => void | Promise<void>): void;
@@ -161,7 +163,8 @@ export interface PluginBuilder {
    *
    * Use for: preprocessing MDX/MD, injecting frontmatter, code transformations.
    *
-   * @param args.filter - RegExp matched against the file's relative path
+   * @param args.filter - RegExp matched against the file's relative path. Its
+   *   `g` and `y` flags are ignored, so every matching file is transformed.
    * @param args.namespace - Optional namespace prefix (reserved for future use)
    * @param callback - Receives file path and raw content. Return new contents or void.
    *

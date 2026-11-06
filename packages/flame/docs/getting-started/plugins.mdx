@@ -151,29 +151,29 @@ export default function pluginCounter(): DocuBookPlugin {
 
 :::step{title="Step 5: Error Handling"}
 
-Don't throw raw errors - use clear messages with a `[plugin:name]` prefix:
+Don't throw raw errors - use clear messages with a `[plugin:name]` prefix.
+Check required options in the factory or in `setup()`: an error thrown there stops the build. An error thrown inside a hook such as `onStart` is only logged, and the build continues without the check.
 
 ```typescript
 export default function pluginValidator(): DocuBookPlugin {
   return {
     name: "validator",
     setup(build) {
-      build.onStart((config) => {
-        if (!config.meta?.baseURL) {
-          throw new Error(
-            "[plugin:validator] `meta.baseURL` is required in docu.json"
-          );
-        }
-        // Validate URL
-        try {
-          new URL(config.meta.baseURL);
-        } catch {
-          throw new Error(
-            "[plugin:validator] `meta.baseURL` is not a valid URL: " +
-            config.meta.baseURL
-          );
-        }
-      });
+      const { config } = build;
+      if (!config.meta?.baseURL) {
+        throw new Error(
+          "[plugin:validator] `meta.baseURL` is required in docu.json"
+        );
+      }
+      // Validate URL
+      try {
+        new URL(config.meta.baseURL);
+      } catch {
+        throw new Error(
+          "[plugin:validator] `meta.baseURL` is not a valid URL: " +
+          config.meta.baseURL
+        );
+      }
 
       build.onLoad({ filter: /\.mdx$/ }, ({ path, content }) => {
         if (!content.trim()) {
@@ -321,9 +321,12 @@ DocuBook Flame applies **catch & log + continue** across all execution hooks to 
 | `transformHtml`       | Log + HTML unchanged                 |
 | `handleRequest`       | Log + continue to next handler       |
 | `injectHead` / `injectBody` / remark / rehype | **Throw** - developer error |
+| Plugin factory / `setup()` | **Throw** - stops the build |
 
 In other words: **your plugin can error without stopping anyone else's build.**
 Errors are still visible in the console - so developers can debug without losing build output.
+
+Because a failing hook is skipped, the build still writes output without that hook's work. Don't rely on an execution hook for something the site must never ship without, such as removing internal content in `onLoad`: if it throws, the page is built from the unchanged source. Check what the plugin needs in its factory or `setup()` instead, where an error stops the build.
 
 ```typescript
 // Example: a failing plugin - error is logged, build continues
@@ -337,11 +340,11 @@ build.onLoad({ filter: /\.mdx$/ }, () => {
 
 ### onStart(config)
 
-Called once before the build. Use for config validation or resource initialization.
+Called once before the build. Use for resource initialization, such as fetching remote data. An error thrown here is logged and the build continues; check required options in `setup()` instead.
 
 ```typescript
-build.onStart((config) => {
-  if (!config.meta.baseURL) throw new Error("baseURL is required");
+build.onStart(async (config) => {
+  if (!config.meta.baseURL) console.warn("[plugin:sitemap] `meta.baseURL` is not set, URLs stay relative");
 });
 ```
 
@@ -529,8 +532,8 @@ The `module` path must stay inside the bundle directory: Flame refuses absolute,
 
 ```
 build()
-├─ loadPlugins → plugin.setup(build)        ← hooks registered
-├─ onStart(config)                          ← validate
+├─ loadPlugins → plugin.setup(build)        ← validate, register hooks
+├─ onStart(config)                          ← initialize
 ├─ for each MDX file:
 │   ├── onLoad({filter})                    ← transform raw content
 │   ├── transformFrontmatter()              ← mutate frontmatter

@@ -139,6 +139,22 @@ describe("BuildPluginBuilder — Execution", () => {
       const result = await builder.runOnLoad("page.md", "content");
       expect(result).toBeNull();
     });
+
+    it("matches every file when the filter has the g or y flag", async () => {
+      builder.onLoad({ filter: /\.mdx$/gy }, ({ content }) => ({
+        contents: content.replace("SECRET", "[redacted]"),
+      }));
+      const paths = ["docs/a.mdx", "docs/b.mdx", "docs/c.mdx", "docs/d.mdx"];
+      const results = [];
+      for (const path of paths) results.push(await builder.runOnLoad(path, "SECRET"));
+      expect(results.map((r) => r?.contents)).toEqual(paths.map(() => "[redacted]"));
+    });
+
+    it("rejects a filter that is not a RegExp", () => {
+      expect(() => builder.onLoad({ filter: "\\.mdx$" as unknown as RegExp }, () => {})).toThrow(
+        "[plugin] onLoad requires a RegExp `filter`"
+      );
+    });
   });
 
   describe("runTransformFrontmatterChain", () => {
