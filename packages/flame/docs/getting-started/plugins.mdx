@@ -464,7 +464,7 @@ Do not parse `manifest.json` as a single `{ js, css }` bundle. Read the entry fo
 
 ### handleRequest(req, ctx)
 
-Intercept incoming dev server requests. First plugin to return a `Response` short-circuits. The context contains `port`, `hostname`, and the current page-specific `assetManifest`, including updates from dev rebuilds.
+Intercept incoming dev server requests. First plugin to return a `Response` short-circuits. The context contains `port`, `hostname`, the current page-specific `assetManifest`, including updates from dev rebuilds, and `assetsPath`: the URL path the dev server serves the bundles from (`/assets`, or `<basePath>/_flame` with `experimental.pages`). A plugin that writes files into `assetsDir` in `onEnd` can serve the same files under `assetsPath` during `flame dev`.
 
 ```typescript
 build.handleRequest((req, ctx) => {
@@ -477,6 +477,53 @@ build.handleRequest((req, ctx) => {
   }
 });
 ```
+
+## Search providers
+
+A plugin can replace the built-in search dialog while Flame keeps its search bar, the `⌘ K` shortcut and the mobile search icon. The [Algolia plugin](/docs/getting-started/search/algolia) works this way.
+
+::::steps
+:::step{title="Declare the provider on docs pages"}
+Inject a JSON block with the id `docubook-search-provider`. `module` is the path of your browser module **relative to the bundle directory**. `askAi: true` also shows Flame's Ask AI buttons (Sparkles beside the sidebar search bar, a row in the mobile drawer, and `⌘ I`).
+
+```typescript
+build.injectHead((ctx) =>
+  ctx.pageType === "docs"
+    ? `<script type="application/json" id="docubook-search-provider">${JSON.stringify({
+        module: "my-search/client.js",
+        askAi: false,
+        // ...anything else your module needs
+      }).replace(/</g, "\\u003c")}</script>`
+    : []
+);
+```
+:::
+
+:::step{title="Ship the module beside the bundles"}
+Copy it into `assetsDir` in `onEnd` and serve it under `assetsPath` in `handleRequest`, so it resolves in both `flame build` and `flame dev`, under a subpath deployment and with `experimental.pages`.
+:::
+
+:::step{title="Export a provider factory"}
+Flame imports the module the first time the reader hovers, focuses or opens search, and calls its default export with the parsed JSON:
+
+```typescript
+import type { SearchProviderFactory } from "@docubook/flame";
+
+const createProvider: SearchProviderFactory = (config) => ({
+  open() {
+    // open your search UI
+  },
+  askAi() {
+    // open your Ask AI UI, or close it when it is open
+  },
+});
+
+export default createProvider;
+```
+:::
+::::
+
+The `module` path must stay inside the bundle directory: Flame refuses absolute, remote and `..` paths and keeps the built-in search when the declaration is invalid.
 
 ## Lifecycle
 
@@ -610,6 +657,9 @@ import type {
   DevServerContext,
   BuildEndContext,
   PluginEntry,
+  SearchProvider,
+  SearchProviderConfig,
+  SearchProviderFactory,
 } from "@docubook/flame";
 ```
 
