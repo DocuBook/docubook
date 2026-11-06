@@ -16,9 +16,11 @@ build pipeline, deployment, and release decisions — see
 
 ## Code of Conduct
 
-Be respectful, constructive, and collaborative. If you need to report a
-sensitive issue such as a security problem or private-data exposure, avoid
-public disclosure and contact maintainers privately first.
+This project follows the [Contributor Covenant](./CODE_OF_CONDUCT.md). Be
+respectful, constructive, and collaborative.
+
+Report security problems or private-data exposure privately, as described in
+[SECURITY.md](./SECURITY.md), never in a public issue or pull request.
 
 ## Ways to Contribute
 
