@@ -68,7 +68,8 @@ Updates are grouped so each PR's release impact is clear:
 - each runtime or peer major gets its own PR, so it can carry its own changeset
 - React, vitest, and the changesets toolchain move as one PR each
 - `plugins/**` dependencies match none of the area groups, so they get
-  Renovate's default of one PR per dependency
+  Renovate's default of one PR per dependency, except vitest, which joins the
+  workspace-wide vitest PR
 
 Two policies constrain it. `node` and `@types/node` stay below 23, because the
 maintainer's macOS 12 machine cannot run Node 24. Majors of

@@ -387,7 +387,7 @@ Dependencies are updated by self-hosted
 | `devDependencies` majors in `packages/**` | One `packages devDependencies majors` PR (they do not ship) |
 | Runtime and peer majors in `packages/**` | One PR each, so each gets its own changeset |
 | React, vitest + `@vitest/*`, changesets toolchain | One PR per group across the workspace |
-| Dependencies in `plugins/**` | Not grouped; one PR per dependency (Renovate's default) |
+| Dependencies in `plugins/**` | No area group; one PR per dependency (Renovate's default), except `vitest` + `@vitest/*`, which join the vitest group |
 | GitHub Actions minor/patch | One `github actions` PR; majors get one PR each |
 | Majors of `pnpm-workspace.yaml` overrides | Disabled; overrides are security floors scoped to one major line or consumer |
 | `mermaid>katex` override | Held below 0.19 (`allowedVersions: "<0.19.0"`); 0.x minors are breaking |
