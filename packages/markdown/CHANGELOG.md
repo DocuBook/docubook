@@ -1,5 +1,13 @@
 # @docubook/mdx-content
 
+## 2.7.0
+
+### Patch Changes
+
+- [#503](https://github.com/DocuBook/docubook/pull/503) [`7544523`](https://github.com/DocuBook/docubook/commit/754452393b3b42a8c9a4bbfdee6b59c9f0ba0211) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Make card groups respond to their container width so narrow documentation columns retain their padding and do not overlap the table of contents or Ask AI panel.
+
+- [#497](https://github.com/DocuBook/docubook/pull/497) [`f03c39f`](https://github.com/DocuBook/docubook/commit/f03c39f851027aa03492806760e65e00753cbc4f) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Refresh accordion groups with a shared rounded border, row dividers, lighter headers and consistent spacing. Add keyboard focus styling and respect reduced-motion preferences.
+
 ## 2.4.0
 
 ### Patch Changes

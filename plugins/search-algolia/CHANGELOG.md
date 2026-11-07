@@ -1,5 +1,15 @@
 # @docubook/plugin-search-algolia
 
+## 0.1.3
+
+### Patch Changes
+
+- [#503](https://github.com/DocuBook/docubook/pull/503) [`f756952`](https://github.com/DocuBook/docubook/commit/f7569521429e887a92b8cef9c735f753ee33e532) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Dock Ask AI in a separate box beside the documentation on desktop. Reserve space for the configured panel width, preserve the reading position, and show accessible, evenly spaced TOC dots with active sections and heading tooltips. Use compact navigation on narrow desktops while keeping Ask AI fullscreen on mobile. The compact navigation action explicitly closes Ask AI and restores the full sidebar with visible focus. Keep the mobile navigation drawer above the document and dismiss search and Ask AI when it opens.
+
+- [#502](https://github.com/DocuBook/docubook/pull/502) [`4f552ef`](https://github.com/DocuBook/docubook/commit/4f552ef7ec1151bfd58cb56889d70e92b29191be) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Make the Ask AI side panel fill the viewport below 1024px, including tablet screens and custom panel widths. Hide the expand action while the panel is fullscreen.
+- Updated dependencies [[`4733c4b`](https://github.com/DocuBook/docubook/commit/4733c4b0e4240192b4087f9894fb8cd9f42e603e), [`620eda7`](https://github.com/DocuBook/docubook/commit/620eda7b4a01b4e1996a973b27033012044dbea4), [`bac0581`](https://github.com/DocuBook/docubook/commit/bac05815ce748e3e19b70bc4acd9a9206fa2abdb), [`f756952`](https://github.com/DocuBook/docubook/commit/f7569521429e887a92b8cef9c735f753ee33e532), [`0d8c42f`](https://github.com/DocuBook/docubook/commit/0d8c42fe414500f6660b8fb33015ad809047815a), [`22774fb`](https://github.com/DocuBook/docubook/commit/22774fb9e5bff2c27f9168e72868cb3313d6bce8), [`5665075`](https://github.com/DocuBook/docubook/commit/5665075c51a789e0ddda91563e1fd1b73f89ec7c), [`58db2aa`](https://github.com/DocuBook/docubook/commit/58db2aa071ab32d89dcb1cc2727fa036dcebe609)]:
+  - @docubook/flame@2.7.0
+
 ## 0.1.2
 
 ### Patch Changes
