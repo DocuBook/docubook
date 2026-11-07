@@ -295,7 +295,7 @@ function BuiltinSearch({ className }: SearchProps) {
       <Modal
         ref={modalRef}
         closeOnBackdrop
-        className="items-start pt-[15vh] backdrop:bg-black/40"
+        className="items-start pt-[15vh] backdrop-blur-sm"
         boxClassName="w-[calc(100%-2rem)] max-w-[640px] p-0 mx-auto relative z-10"
       >
         <div onKeyDown={handleKeyDown}>
