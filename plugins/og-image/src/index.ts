@@ -105,28 +105,39 @@ function escapeAttr(value: string): string {
     .replace(/>/g, "&gt;");
 }
 
+function isImageMeta(tag: string): boolean {
+  const attributes = tag.matchAll(/\s([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g);
+  const attribute = [...attributes].find((match) => /^(property|name)$/i.test(match[1]));
+  const name = (attribute?.[2] ?? attribute?.[3] ?? attribute?.[4] ?? "").toLowerCase();
+  return (
+    name === "og:image" ||
+    name.startsWith("og:image:") ||
+    name === "twitter:image" ||
+    name === "twitter:image:alt"
+  );
+}
+
 /** Replace fallback image metadata without changing the rest of the page. */
 function replaceHomeImageTags(html: string, tags: string[]): string {
   const headEnd = html.search(/<\/head\s*>/i);
   if (headEnd < 0) return html;
-  const head = html
-    .slice(0, headEnd)
-    .replace(
-      /<!--[\s\S]*?-->|<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>|<meta\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi,
-      (tag) => {
-        if (!/^<meta\b/i.test(tag)) return tag;
-        const attributes = tag.matchAll(/\s([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g);
-        const attribute = [...attributes].find((match) => /^(property|name)$/i.test(match[1]));
-        const name = (attribute?.[2] ?? attribute?.[3] ?? attribute?.[4] ?? "").toLowerCase();
-        return name === "og:image" ||
-          name.startsWith("og:image:") ||
-          name === "twitter:image" ||
-          name === "twitter:image:alt"
-          ? ""
-          : tag;
-      }
-    );
-  return `${head}${tags.join("")}${html.slice(headEnd)}`;
+  const head = html.slice(0, headEnd);
+  const tokens = head.matchAll(
+    /<!--[\s\S]*?-->|<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>|<meta\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi
+  );
+  // One pass over the head, copying the text between dropped tags. A dropped
+  // tag leaves a space unless it sat on a tag boundary, so the text around it
+  // can never join into new markup such as `<!--` or `<script`.
+  let out = "";
+  let kept = 0;
+  for (const token of tokens) {
+    if (!/^<meta\b/i.test(token[0]) || !isImageMeta(token[0])) continue;
+    out += head.slice(kept, token.index);
+    if (out && !/[>\s]$/.test(out)) out += " ";
+    kept = token.index + token[0].length;
+  }
+  out += head.slice(kept);
+  return `${out}${tags.join("")}${html.slice(headEnd)}`;
 }
 
 function sizeTags(card: Card): string[] {

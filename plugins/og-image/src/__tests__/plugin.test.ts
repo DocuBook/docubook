@@ -341,6 +341,19 @@ describe("home image priority", () => {
     for (const example of examples) expect(html).toContain(example);
   });
 
+  it("never joins the text around a dropped tag into new markup", async () => {
+    const html = await load().html(
+      shell(
+        `<!-<meta property="og:image" content="${fallback}">-- x --><scr<meta name="twitter:image" content="${fallback}">ipt>`
+      )
+    );
+    const head = html.split("</head>")[0];
+    expect(head).not.toContain(fallback);
+    expect(head).not.toContain("<!--");
+    expect(head).not.toContain("<script");
+    expect(head).toContain(`<!- -- x --><scr ipt>`);
+  });
+
   it("renders and serves the advertised home card even with a global fallback", async () => {
     const run = load({}, makeConfig({ ogImage: fallback }));
     const html = await run.html(shell());
