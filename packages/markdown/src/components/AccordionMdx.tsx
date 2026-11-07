@@ -35,8 +35,9 @@ export function AccordionMdx({ title, icon, className, children }: AccordionMdxP
       className={`mdx-accordion ${isGroup ? "mdx-accordion-group-item" : ""} ${className ?? ""}`}
       data-mdx-wrapper=""
       style={{
-        border: "1px solid hsl(var(--border-color, 210 20% 85%))",
-        borderRadius: 10,
+        minWidth: 0,
+        border: isGroup ? undefined : "1px solid hsl(var(--border-color, 210 20% 85%))",
+        borderRadius: isGroup ? 0 : 16,
         overflow: "hidden",
         background: "hsl(var(--card, 0 0% 100%))",
       }}
@@ -59,45 +60,58 @@ export function AccordionMdx({ title, icon, className, children }: AccordionMdxP
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-start",
-          gap: "0.5rem",
+          gap: "0.75rem",
           textAlign: "left",
           border: 0,
           cursor: "pointer",
-          background: "hsl(var(--muted, 210 20% 92%))",
+          background: "transparent",
           color: "hsl(var(--foreground, 220 30% 15%))",
-          fontWeight: 600,
-          padding: "0.95rem 1rem",
+          fontFamily: "inherit",
+          fontSize: "inherit",
+          fontWeight: 500,
+          lineHeight: 1.5,
+          padding: "0.875rem 1.25rem",
         }}
       >
         <ChevronRight
           className="mdx-accordion-chevron"
           aria-hidden="true"
           size={16}
+          strokeWidth={1.5}
           style={{
             transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
             transition: "transform 0.2s ease",
             flexShrink: 0,
             color: "hsl(var(--foreground, 220 30% 15%) / 0.74)",
-            marginRight: "0.4rem",
           }}
         />
-        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.75rem",
+            flex: 1,
+            minWidth: 0,
+          }}
+        >
           {resolvedIcon ? (
             <span
+              className="mdx-accordion-icon"
               aria-hidden="true"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                minWidth: "1.45rem",
-                height: "1.45rem",
+                width: "1rem",
+                height: "1rem",
+                flexShrink: 0,
                 color: "hsl(var(--foreground, 220 30% 15%))",
               }}
             >
               {resolvedIcon}
             </span>
           ) : null}
-          <span>{title}</span>
+          <span style={{ minWidth: 0, overflowWrap: "anywhere" }}>{title}</span>
         </span>
       </button>
       <div
@@ -107,7 +121,9 @@ export function AccordionMdx({ title, icon, className, children }: AccordionMdxP
         hidden={!isOpen}
         className="mdx-accordion-content"
         style={{
-          padding: "0.75rem 0.8rem",
+          minWidth: 0,
+          overflowX: "auto",
+          padding: "0 1.25rem 0.875rem",
           background: "hsl(var(--card, 0 0% 100%))",
           color: "hsl(var(--card-foreground, 220 30% 15%))",
         }}

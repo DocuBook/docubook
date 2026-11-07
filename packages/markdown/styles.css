@@ -1,3 +1,41 @@
+.mdx-accordion-group > .mdx-accordion-group-item + .mdx-accordion-group-item {
+  border-top: 1px solid hsl(var(--border-color, 210 20% 85%));
+}
+
+.mdx-accordion-header {
+  transition: background-color 0.15s ease;
+}
+
+.mdx-accordion-header:hover {
+  background: hsl(var(--muted, 210 20% 92%) / 0.55) !important;
+}
+
+.mdx-accordion-header:focus-visible {
+  outline: 2px solid hsl(var(--primary, 210 81% 56%));
+  outline-offset: -3px;
+}
+
+.mdx-accordion-icon > svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.mdx-accordion-content > :first-child {
+  margin-top: 0;
+}
+
+.mdx-accordion-content > :last-child {
+  margin-bottom: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mdx-accordion-header,
+  .mdx-accordion-chevron {
+    transition: none !important;
+  }
+}
+
 .mdx-expandable-code {
   width: max-content !important;
   background-color: transparent !important;
