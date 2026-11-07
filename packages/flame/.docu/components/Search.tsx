@@ -169,7 +169,7 @@ export function AskAiButton({
         onFocus={intent}
         aria-keyshortcuts="Control+I Meta+I"
         className={cn(
-          "border-base-300 bg-base-200/50 text-base-content/70 hover:border-base-content/20 hover:bg-base-200 hover:text-base-content flex h-9 w-full items-center gap-2 rounded-full border px-3 text-sm transition-colors",
+          "border-base-300 bg-base-200/50 text-base-content/70 hover:border-base-content/20 hover:bg-base-200 hover:text-base-content flex h-9 w-full items-center gap-2 rounded-lg border px-3 text-sm transition-colors",
           className
         )}
       >
@@ -189,7 +189,7 @@ export function AskAiButton({
       title="Ask AI (Ctrl/⌘ I)"
       aria-keyshortcuts="Control+I Meta+I"
       className={cn(
-        "border-base-300 bg-base-200/50 text-base-content/60 hover:border-primary/40 hover:bg-primary/10 hover:text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors",
+        "border-base-300 bg-base-200/50 text-base-content/60 hover:border-primary/40 hover:bg-primary/10 hover:text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors",
         className
       )}
     >
@@ -397,7 +397,7 @@ function SearchTrigger({ onClick, onIntent }: { onClick: () => void; onIntent?: 
         <SearchIcon className="text-base-content/60 h-5 w-5" />
       </div>
       <div className="relative hidden w-full lg:block">
-        <div className="border-base-300 bg-base-200/50 text-base-content/50 hover:border-base-content/20 hover:bg-base-200 flex h-9 w-full items-center gap-2 rounded-full border px-3 text-sm transition-colors">
+        <div className="border-base-300 bg-base-200/50 text-base-content/50 hover:border-base-content/20 hover:bg-base-200 flex h-9 w-full items-center gap-2 rounded-lg border px-3 text-sm transition-colors">
           <SearchIcon className="h-4 w-4 shrink-0" />
           <span className="flex-1 text-left">Search</span>
           <div className="flex items-center gap-0.5">
