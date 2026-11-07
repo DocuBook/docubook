@@ -17,6 +17,7 @@ type Hooks = {
   start: Array<(config: DocuConfig) => unknown>;
   frontmatter: FrontmatterHook[];
   head: Array<(ctx: PageContext) => string | string[]>;
+  html: Array<Parameters<PluginBuilder["transformHtml"]>[0]>;
   end: Array<(config: DocuConfig, pages: PageMeta[], ctx: { outDir: string }) => unknown>;
   request: Array<Parameters<PluginBuilder["handleRequest"]>[0]>;
 };
@@ -47,12 +48,12 @@ const countingEngine = async (fonts: Parameters<typeof createEngine>[0]): Promis
 };
 
 function setup(plugin: DocuBookPlugin, config: DocuConfig): Hooks {
-  const hooks: Hooks = { start: [], frontmatter: [], head: [], end: [], request: [] };
+  const hooks: Hooks = { start: [], frontmatter: [], head: [], html: [], end: [], request: [] };
   const noop = () => {};
   const builder = {
     config,
     onLoad: noop,
-    transformHtml: noop,
+    transformHtml: (cb: Hooks["html"][number]) => hooks.html.push(cb),
     injectBody: noop,
     remarkPlugins: noop,
     rehypePlugins: noop,
@@ -110,6 +111,18 @@ function load(
       [
         hooks.head[0]({ pageType: "docs", slug: "", frontmatter: {}, ...ctx } as PageContext),
       ].flat(),
+    html: async (html: string, ctx: Partial<PageContext> = {}) => {
+      for (const callback of hooks.html) {
+        html = await callback(html, {
+          pageType: "home",
+          slug: "",
+          frontmatter: {},
+          config,
+          ...ctx,
+        } as PageContext);
+      }
+      return html;
+    },
     end: (slugs: string[]) =>
       hooks.end[0](
         config,
@@ -260,18 +273,101 @@ describe("injectHead", () => {
     expect(run.head({ slug: "a", frontmatter: { image: "./me.png" } })).toEqual([]);
     expect(run.head({ slug: "a", frontmatter: { og: false } })).toEqual([]);
   });
+});
 
-  it("gives the landing page an absolute og:image unless meta.ogImage sets one", () => {
-    const tags = load().head({ pageType: "home" });
-    expect(tags[0]).toMatch(
-      /^<meta property="og:image" content="https:\/\/acme\.dev\/docs\/assets\/og\/home\.[0-9a-f]{8}\.png">$/
+describe("home image priority", () => {
+  const fallback = "https://acme.dev/docs/fallback.png";
+  const shell = (tags = "") =>
+    `<html><head><meta name="description" content="Site description">${tags}</head><body><img src="${fallback}"></body></html>`;
+
+  it("adds matching OpenGraph and Twitter images when no fallback is configured", async () => {
+    const html = await load().html(shell());
+    const image = html.match(/<meta property="og:image" content="([^"]+)">/)?.[1];
+    expect(image).toMatch(/^https:\/\/acme\.dev\/docs\/assets\/og\/home\.[0-9a-f]{8}\.png$/);
+    expect(html).toContain(`<meta name="twitter:image" content="${image}">`);
+    expect(html).toContain(`<meta property="og:image:alt" content="Ship docs fast.">`);
+    expect(html).toContain(`<meta name="twitter:image:alt" content="Ship docs fast.">`);
+  });
+
+  it.each([
+    `property="og:image" content="${fallback}"`,
+    `content='${fallback}' property='og:image'`,
+    `PROPERTY="OG:IMAGE" CONTENT="${fallback}"`,
+    `property=og:image content="${fallback}"`,
+  ])("replaces the site's fallback metadata: %s", async (attributes) => {
+    const config = makeConfig({ ogImage: "/docs/fallback.png" });
+    const run = load({}, config);
+    const html = await run.html(
+      shell(
+        `<meta ${attributes}><meta name="twitter:image" content="${fallback}"><meta property="og:image:width" content="50"><meta property="og:image:alt" content="Old alt">`
+      )
     );
-    expect(tags).toContain(`<meta property="og:image:alt" content="Ship docs fast.">`);
-    expect(load({}, makeConfig({ ogImage: "/docs/og.png" })).head({ pageType: "home" })).toEqual(
-      []
+    const head = html.split("</head>")[0];
+    expect(head).not.toContain(fallback);
+    expect(head.match(/property="og:image"/g)).toHaveLength(1);
+    expect(head.match(/name="twitter:image"/g)).toHaveLength(1);
+    expect(head.match(/property="og:image:width"/g)).toHaveLength(1);
+    expect(head).toContain(`property="og:image:width" content="1200"`);
+    expect(head).not.toContain("Old alt");
+    expect(html).toContain(`<meta name="description" content="Site description">`);
+    expect(html).toContain(`<body><img src="${fallback}"></body>`);
+    expect(config.meta.ogImage).toBe("/docs/fallback.png");
+    expect(await run.html(html)).toBe(html);
+  });
+
+  it("keeps fallback metadata when home cards are disabled or the app owns home", async () => {
+    const html = shell(`<meta property="og:image" content="${fallback}">`);
+    const disabled = load({ pages: { home: false } }, makeConfig({ ogImage: fallback }));
+    expect(await disabled.html(html)).toBe(html);
+    const ownHome = load({}, makeConfig({ ogImage: fallback }, { experimental: { pages: true } }));
+    expect(await ownHome.html(html)).toBe(html);
+  });
+
+  it("does not change documentation or 404 metadata", async () => {
+    const run = load({}, makeConfig({ ogImage: fallback }));
+    const html = shell(`<meta property="og:image" content="${fallback}">`);
+    expect(await run.html(html, { pageType: "docs" })).toBe(html);
+    expect(await run.html(html, { pageType: "notFound" })).toBe(html);
+  });
+
+  it("preserves metadata examples in other attributes, comments, scripts, and styles", async () => {
+    const examples = [
+      `<meta content="Use property='og:image' for social cards" name="description">`,
+      `<!-- <meta property="og:image" content="comment"> -->`,
+      `<script nonce="test">const example = '<meta property="og:image" content="example">';</script>`,
+      `<style>.example::after { content: '<meta property="og:image">'; }</style>`,
+    ];
+    const html = await load().html(shell(examples.join("")));
+    for (const example of examples) expect(html).toContain(example);
+  });
+
+  it("never joins the text around a dropped tag into new markup", async () => {
+    const html = await load().html(
+      shell(
+        `<!-<meta property="og:image" content="${fallback}">-- x --><scr<meta name="twitter:image" content="${fallback}">ipt>`
+      )
     );
-    expect(load({ pages: { home: false } }).head({ pageType: "home" })).toEqual([]);
-    expect(load().head({ pageType: "notFound" })).toEqual([]);
+    const head = html.split("</head>")[0];
+    expect(head).not.toContain(fallback);
+    expect(head).not.toContain("<!--");
+    expect(head).not.toContain("<script");
+    expect(head).toContain(`<!- -- x --><scr ipt>`);
+  });
+
+  it("renders and serves the advertised home card even with a global fallback", async () => {
+    const run = load({}, makeConfig({ ogImage: fallback }));
+    const html = await run.html(shell());
+    const image = new URL(html.match(/<meta property="og:image" content="([^"]+)">/)![1]);
+    await run.start();
+    await run.end(ALL);
+    const files = await cards();
+    expect(files).toContain(image.pathname.split("/").at(-1));
+    const response = await run.request(image.pathname);
+    expect(response?.status).toBe(200);
+    expect(pngSize(new Uint8Array(await response!.arrayBuffer()))).toEqual({
+      width: 1200,
+      height: 630,
+    });
   });
 });
 

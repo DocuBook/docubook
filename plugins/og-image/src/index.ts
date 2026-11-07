@@ -6,8 +6,9 @@
  *
  * - `transformFrontmatter` points `frontmatter.image` at the page's card, and
  *   flame's own SEO code turns it into an absolute `og:image`;
- * - `injectHead` adds the card's size, type and alt text, and an `og:image`
- *   on the landing page when `meta.ogImage` does not set one;
+ * - `injectHead` adds the card's size, type and alt text on docs pages;
+ * - `transformHtml` gives the landing page a generated image in place of
+ *   the site's default OpenGraph and Twitter images;
  * - `onEnd` renders the cards into `<docs>/assets/og/`, skipping the ones
  *   whose inputs did not change;
  * - `handleRequest` renders a card on demand during `flame dev`.
@@ -102,6 +103,41 @@ function escapeAttr(value: string): string {
     .replace(/"/g, "&quot;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+}
+
+function isImageMeta(tag: string): boolean {
+  const attributes = tag.matchAll(/\s([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g);
+  const attribute = [...attributes].find((match) => /^(property|name)$/i.test(match[1]));
+  const name = (attribute?.[2] ?? attribute?.[3] ?? attribute?.[4] ?? "").toLowerCase();
+  return (
+    name === "og:image" ||
+    name.startsWith("og:image:") ||
+    name === "twitter:image" ||
+    name === "twitter:image:alt"
+  );
+}
+
+/** Replace fallback image metadata without changing the rest of the page. */
+function replaceHomeImageTags(html: string, tags: string[]): string {
+  const headEnd = html.search(/<\/head\s*>/i);
+  if (headEnd < 0) return html;
+  const head = html.slice(0, headEnd);
+  const tokens = head.matchAll(
+    /<!--[\s\S]*?-->|<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>|<meta\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi
+  );
+  // One pass over the head, copying the text between dropped tags. A dropped
+  // tag leaves a space unless it sat on a tag boundary, so the text around it
+  // can never join into new markup such as `<!--` or `<script`.
+  let out = "";
+  let kept = 0;
+  for (const token of tokens) {
+    if (!/^<meta\b/i.test(token[0]) || !isImageMeta(token[0])) continue;
+    out += head.slice(kept, token.index);
+    if (out && !/[>\s]$/.test(out)) out += " ";
+    kept = token.index + token[0].length;
+  }
+  out += head.slice(kept);
+  return `${out}${tags.join("")}${html.slice(headEnd)}`;
 }
 
 function sizeTags(card: Card): string[] {
@@ -235,7 +271,7 @@ export default function pluginOgImage(
 
       const site = resolveSite(config, resolved, root);
       const plan = (card: Card): PlannedCard => planCard(card, site, resolved, version);
-      const wantsHome = () => site.hasLanding && resolved.pages.home && !config.meta?.ogImage;
+      const wantsHome = () => site.hasLanding && resolved.pages.home;
 
       let runtime: Promise<Runtime> | undefined;
       const ready = () =>
@@ -289,14 +325,21 @@ export default function pluginOgImage(
             ? sizeTags(planned.card)
             : [];
         }
-        if (ctx.pageType === "home" && wantsHome()) {
-          const planned = plan(homeCard(config));
-          return [
-            `<meta property="og:image" content="${escapeAttr(cardUrl(site, planned.file))}">`,
-            ...sizeTags(planned.card),
-          ];
-        }
         return [];
+      });
+
+      build.transformHtml((html, ctx) => {
+        if (ctx.pageType !== "home" || !wantsHome()) return html;
+        const planned = plan(homeCard(config));
+        const image = escapeAttr(cardUrl(site, planned.file));
+        // Flame has already emitted meta.ogImage as fallback SEO. Replace it
+        // for home only; keep the config available as a fallback on docs pages.
+        return replaceHomeImageTags(html, [
+          `<meta property="og:image" content="${image}">`,
+          `<meta name="twitter:image" content="${image}">`,
+          `<meta name="twitter:image:alt" content="${escapeAttr(planned.card.title)}">`,
+          ...sizeTags(planned.card),
+        ]);
       });
 
       build.onEnd(async (_config, pages, { outDir }) => {

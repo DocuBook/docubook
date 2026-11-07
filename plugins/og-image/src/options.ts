@@ -24,7 +24,7 @@ export interface PagesOption {
   docs?: boolean;
   /** The docs index (`docs/index.mdx`). Default `true`. */
   index?: boolean;
-  /** The landing page, when `meta.ogImage` does not already set its image. Default `true`. */
+  /** The landing page. Its generated card takes priority over `meta.ogImage`. Default `true`. */
   home?: boolean;
 }
 

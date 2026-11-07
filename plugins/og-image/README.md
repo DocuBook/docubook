@@ -25,7 +25,7 @@ Set `meta.baseURL`: social sites only read absolute image URLs.
 
 - Sets each docs page's `image` to its card, so Flame writes the `og:image` tag as it does for an image you set yourself.
 - Adds `og:image:width`, `og:image:height`, `og:image:type` and `og:image:alt`.
-- Gives the landing page a card too, unless `meta.ogImage` already sets its image.
+- Gives the landing page a card too, taking priority over `meta.ogImage` for OpenGraph and Twitter previews. Set `pages.home` to `false` to use `meta.ogImage` on home instead.
 - Writes the cards to `<docs prefix>/assets/og/`, e.g. `/docs/assets/og/guides/setup.1a2b3c4d.png`. The hash in the name changes with the card's text, so social sites fetch the new card instead of a cached one.
 - Serves the same cards from `flame dev`.
 
@@ -42,13 +42,13 @@ og:
 
 ## Options
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `layout` | `"card"` \| `"minimal"` | `"card"` | `card` adds the section name, a page-kind chip, a logo tile and a brand bar. `minimal` shows logo, title, description and domain on a plain background. |
-| `logo` | string \| `false` | `navbar.logo.src` | Logo file: a project path (`brand/logo.svg`) or a site path (`/docs/assets/logo.svg`). SVG, PNG, JPEG or WebP, at most 1 MB. `false` renders no logo. |
-| `siteName` | string | `navbar.logoText`, then `meta.title` | Name in the card's top row. |
-| `pages` | `{ docs?, index?, home? }` | all `true` | Which pages get a card. |
-| `fonts` | `{ path, weight?, style? }[]` | none | Fonts tried before the built-in Geist, which covers Latin-1 only. Add one for titles in other scripts. |
+| Option     | Type                          | Default                              | Description                                                                                                                                             |
+| ---------- | ----------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `layout`   | `"card"` \| `"minimal"`       | `"card"`                             | `card` adds the section name, a page-kind chip, a logo tile and a brand bar. `minimal` shows logo, title, description and domain on a plain background. |
+| `logo`     | string \| `false`             | `navbar.logo.src`                    | Logo file: a project path (`brand/logo.svg`) or a site path (`/docs/assets/logo.svg`). SVG, PNG, JPEG or WebP, at most 1 MB. `false` renders no logo.   |
+| `siteName` | string                        | `navbar.logoText`, then `meta.title` | Name in the card's top row.                                                                                                                             |
+| `pages`    | `{ docs?, index?, home? }`    | all `true`                           | Which pages get a card.                                                                                                                                 |
+| `fonts`    | `{ path, weight?, style? }[]` | none                                 | Fonts tried before the built-in Geist, which covers Latin-1 only. Add one for titles in other scripts.                                                  |
 
 The build warns when a title has characters no loaded font can draw, and names the pages.
 
