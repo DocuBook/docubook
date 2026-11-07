@@ -76,6 +76,23 @@
 }
 
 /* Match Flame's mobile/tablet breakpoint, including configured panel widths. */
+@media (width >= 1024px) {
+  .DocSearch-Sidepanel-Container:is(.floating, .inline):is(
+      .side-left,
+      .side-right
+    )[data-flame-docked] {
+    inset: var(--flame-ask-ai-top) var(--flame-ask-ai-right) var(--flame-ask-ai-bottom)
+      var(--flame-ask-ai-left);
+    width: clamp(280px, var(--sp-width, 360px), var(--flame-ask-ai-max-width));
+    height: auto;
+    border: 1px solid hsl(var(--border-color));
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 4px rgb(0 0 0 / 0.06);
+    z-index: 40;
+    transition: none;
+  }
+}
+
 @media (width < 1024px) {
   .DocSearch-Sidepanel-Container:is(.floating, .inline):is(.side-left, .side-right) {
     inset: 0;

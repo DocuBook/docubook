@@ -207,3 +207,148 @@
 .dark .punctuation {
   color: #9ca3af;
 }
+
+/* Ask AI reserves space beside the existing document box; the plugin owns its box. */
+.toc-dots,
+.desktop-sidebar-compact {
+  display: none;
+}
+
+@media (width >= 1024px) {
+  .docs-workspace {
+    --docs-gutter: 32px;
+  }
+
+  .docs-layout[data-ask-ai-side="right"] .docs-workspace {
+    padding-right: calc(var(--docs-gutter) + var(--flame-ask-ai-width) + 16px);
+  }
+
+  .docs-layout[data-ask-ai-side="left"] .docs-workspace {
+    padding-left: calc(var(--docs-gutter) + var(--flame-ask-ai-width) + 16px);
+  }
+
+  .docs-layout[data-ask-ai-side] .docs-article {
+    padding-inline: 24px;
+  }
+
+  .docs-layout[data-ask-ai-side] .docs-columns {
+    max-width: none;
+  }
+
+  .docs-layout[data-ask-ai-side] #toc-island {
+    top: 0;
+    flex: none;
+    width: 44px;
+    min-width: 44px;
+    padding: 28px 0;
+  }
+
+  .docs-layout[data-ask-ai-side] .toc-full {
+    display: none;
+  }
+
+  .docs-layout[data-ask-ai-side] .toc-dots {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 44px;
+    padding: 14px 0;
+  }
+
+  .toc-dots-track {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 28px;
+    max-height: min(336px, 100%);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .toc-dot-link {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
+  }
+
+  .toc-dot-link:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+  }
+
+  .toc-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-base-content) 30%, transparent);
+  }
+
+  .toc-dot-link:is(:hover, :focus-visible, [aria-current]) .toc-dot {
+    background: var(--color-primary);
+  }
+
+  .toc-dot-link[aria-current] .toc-dot {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
+  }
+
+  .toc-dots-tooltip {
+    position: absolute;
+    right: 100%;
+    z-index: 30;
+    transform: translateY(-50%);
+    width: max-content;
+    max-width: min(280px, 65vw);
+    padding: 8px 12px;
+    border: 1px solid var(--color-base-300);
+    border-radius: 8px;
+    background: var(--color-base-100);
+    color: var(--color-base-content);
+    box-shadow: 0 4px 14px rgb(0 0 0 / 0.12);
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    pointer-events: none;
+  }
+}
+
+@media (1024px <= width < 1280px) {
+  .docs-layout[data-ask-ai-side] #sidebar-island {
+    width: 64px;
+  }
+
+  .docs-layout[data-ask-ai-side]
+    :is(
+      .desktop-sidebar-name,
+      .desktop-sidebar-search,
+      .desktop-sidebar-menu,
+      .desktop-sidebar-footer
+    ) {
+    display: none;
+  }
+
+  .docs-layout[data-ask-ai-side] .desktop-sidebar-logo {
+    justify-content: center;
+    padding-inline: 8px;
+  }
+
+  .docs-layout[data-ask-ai-side] .desktop-sidebar-compact {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding-block: 8px;
+  }
+
+  .desktop-sidebar-compact > :is(a, button) {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+  }
+}

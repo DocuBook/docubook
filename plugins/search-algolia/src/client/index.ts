@@ -13,6 +13,7 @@
 
 import type { SearchProvider } from "@docubook/flame";
 import type { ClientConfig } from "../options";
+import { createPanelLayout } from "./panel-layout";
 // Extracted to `style.css` by the library build (not injected); loaded with a
 // <link> on first use, see loadStylesheet().
 import "./style.css";
@@ -114,6 +115,7 @@ function focusSoon(selector: string) {
 export default function createSearchProvider(config: ClientConfig): SearchProvider {
   let panelInstance: SidepanelInstance | null = null;
   let modalInstance: DocSearchInstance | null = null;
+  let actionRevision = 0;
 
   // Focus returns to the element that opened a surface (the sidebar trigger,
   // or wherever the reader was for a shortcut) once both surfaces are closed.
@@ -158,6 +160,7 @@ export default function createSearchProvider(config: ClientConfig): SearchProvid
   );
 
   const assistant = config.assistant;
+  const panelLayout = createPanelLayout();
   const loadPanel = retryable<SidepanelInstance>(() =>
     Promise.all([import("@docsearch/sidepanel-js"), loadStylesheet()]).then(
       ([{ default: sidepanel }]) =>
@@ -169,10 +172,21 @@ export default function createSearchProvider(config: ClientConfig): SearchProvid
             apiKey: assistant!.apiKey,
             indices: assistant!.indices,
             searchParameters: assistant!.searchParameters,
-            panel: assistant!.panel,
+            panel: {
+              ...assistant!.panel,
+              // Flame reserves the space itself; upstream inline mode would
+              // also push <main>, shrinking the document twice.
+              ...(document.querySelector(".docs-workspace") ? { variant: "floating" } : {}),
+            },
             keyboardShortcuts: { "Ctrl/Cmd+I": false },
-            onOpen: () => focusSoon(".DocSearch-Sidepanel textarea"),
-            onClose: onSurfaceClose,
+            onOpen: () => {
+              panelLayout.open();
+              focusSoon(".DocSearch-Sidepanel textarea");
+            },
+            onClose: () => {
+              panelLayout.close();
+              onSurfaceClose();
+            },
             onReady,
           } as Parameters<typeof sidepanel>[0])
         ).then((instance) => (panelInstance = instance))
@@ -185,6 +199,7 @@ export default function createSearchProvider(config: ClientConfig): SearchProvid
 
   return {
     open() {
+      const revision = ++actionRevision;
       rememberFocus();
       // One surface at a time: search replaces an open Ask AI panel.
       if (panelInstance?.isOpen) {
@@ -193,12 +208,14 @@ export default function createSearchProvider(config: ClientConfig): SearchProvid
       }
       void loadModal()
         .then((instance) => {
+          if (revision !== actionRevision) return;
           if (!instance.isOpen) instance.open();
         })
         .catch(logLoadError);
     },
     askAi: assistant
       ? () => {
+          const revision = ++actionRevision;
           if (panelInstance?.isOpen) {
             panelInstance.close();
             return;
@@ -209,9 +226,16 @@ export default function createSearchProvider(config: ClientConfig): SearchProvid
             modalInstance.close();
           }
           void loadPanel()
-            .then((instance) => instance.open())
+            .then((instance) => {
+              if (revision === actionRevision) instance.open();
+            })
             .catch(logLoadError);
         }
       : undefined,
+    close() {
+      actionRevision++;
+      if (modalInstance?.isOpen) modalInstance.close();
+      if (panelInstance?.isOpen) panelInstance.close();
+    },
   };
 }

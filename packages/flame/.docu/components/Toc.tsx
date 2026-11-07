@@ -5,6 +5,7 @@ import { ListIcon } from "lucide-react";
 import { cn } from "../node/utils";
 import { ScrollTo } from "./ScrollTo";
 import { TocItem } from "../node/types";
+import { TocDots } from "./TocDots";
 
 interface TocProps {
   tocs: TocItem[];
@@ -36,16 +37,16 @@ export default function Toc({ tocs }: TocProps) {
     // Desktop-only TOC — on mobile this island is display:none but still
     // mounted; letting its observer run would hijack the URL hash while the
     // mobile bar owns TOC behavior there.
-    if (typeof window === "undefined" || window.innerWidth < 1024) return;
+    if (typeof window === "undefined") return;
     if (!tocs.length) return;
 
-    const isDesktop = window.innerWidth >= 1024;
-    const container = isDesktop ? document.getElementById("scroll-container") : null;
+    const container = document.getElementById("scroll-container");
     const scrollTarget = container || window;
-    const offset = getAnchorOffset();
 
     const handleScroll = () => {
+      if (window.innerWidth < 1024) return;
       if (clickedIdRef.current) return;
+      const offset = getAnchorOffset();
 
       let currentId: string | null = null;
       for (const toc of tocs) {
@@ -53,13 +54,21 @@ export default function Toc({ tocs }: TocProps) {
         const el = document.getElementById(id);
         if (!el) continue;
 
-        const top = container ? el.offsetTop - container.scrollTop : el.getBoundingClientRect().top;
+        const top = el.getBoundingClientRect().top - (container?.getBoundingClientRect().top ?? 0);
 
         if (top <= offset) {
           currentId = id;
         } else {
           break;
         }
+      }
+
+      if (
+        container &&
+        container.scrollHeight > container.clientHeight &&
+        container.scrollTop + container.clientHeight >= container.scrollHeight - 1
+      ) {
+        currentId = tocs[tocs.length - 1].href.slice(1);
       }
 
       if (currentId !== activeIdRef.current) {
@@ -83,9 +92,14 @@ export default function Toc({ tocs }: TocProps) {
         : handleScroll;
 
     scrollTarget.addEventListener("scroll", listener, { passive: true });
+    window.addEventListener("resize", listener);
+    const resize = container ? new ResizeObserver(listener) : null;
+    if (container) resize?.observe(container);
 
     return () => {
       scrollTarget.removeEventListener("scroll", listener);
+      window.removeEventListener("resize", listener);
+      resize?.disconnect();
       if (throttleTimer) clearTimeout(throttleTimer);
     };
   }, [tocs, getAnchorOffset]);
@@ -119,7 +133,7 @@ export default function Toc({ tocs }: TocProps) {
   const activeItemRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (activeId && activeItemRef.current && !clickedIdRef.current) {
+    if (activeId && activeItemRef.current?.offsetParent && !clickedIdRef.current) {
       activeItemRef.current.scrollIntoView({
         block: "nearest",
         behavior: "smooth",
@@ -129,111 +143,108 @@ export default function Toc({ tocs }: TocProps) {
 
   if (!tocs.length) return null;
 
+  const navigateToHeading = (id: string) => {
+    handleLinkClick(id);
+    const element = document.getElementById(id);
+    if (!element) return;
+    const scroller = window.innerWidth >= 1024 ? document.getElementById("scroll-container") : null;
+    const offset = getAnchorOffset();
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "instant"
+      : "smooth";
+    if (scroller) {
+      scroller.scrollTo({
+        top:
+          element.getBoundingClientRect().top -
+          scroller.getBoundingClientRect().top +
+          scroller.scrollTop -
+          offset,
+        behavior,
+      });
+    } else {
+      window.scrollTo({
+        top: element.getBoundingClientRect().top + window.scrollY - offset,
+        behavior,
+      });
+    }
+  };
+
   return (
-    <div className="flex h-full min-h-0 w-full flex-col gap-2">
-      <div className="flex shrink-0 items-center gap-2">
-        <ListIcon className="h-4 w-4" />
-        <h3 className="text-sm font-medium">On this page</h3>
-      </div>
+    <>
+      <div className="toc-full flex h-full min-h-0 w-full flex-col gap-2">
+        <div className="flex shrink-0 items-center gap-2">
+          <ListIcon className="h-4 w-4" />
+          <h3 className="text-sm font-medium">On this page</h3>
+        </div>
 
-      <div className="relative min-h-0 flex-1 overflow-y-auto pr-1">
-        <div className="relative text-sm">
-          <div className="bg-base-300 absolute top-0 left-0 h-full w-px" />
+        <div className="relative min-h-0 flex-1 overflow-y-auto pr-1">
+          <div className="relative text-sm">
+            <div className="bg-base-300 absolute top-0 left-0 h-full w-px" />
 
-          <div className="flex flex-col">
-            {tocs.map(({ href, level, text }) => {
-              const id = href.slice(1);
-              const isActive = activeId === id;
-              const levelPadding = (level - 2) * 16;
+            <div className="flex flex-col">
+              {tocs.map(({ href, level, text }) => {
+                const id = href.slice(1);
+                const isActive = activeId === id;
+                const levelPadding = (level - 2) * 16;
 
-              return (
-                <div
-                  key={href}
-                  ref={isActive ? activeItemRef : undefined}
-                  className={cn(
-                    "relative flex items-center transition-all duration-200",
-                    isActive && "bg-primary/5"
-                  )}
-                >
+                return (
                   <div
+                    key={href}
+                    ref={isActive ? activeItemRef : undefined}
                     className={cn(
-                      "flex shrink-0 items-center px-1 py-2 transition-all duration-200",
-                      isActive && "border-primary -ml-px border-l-[3px]"
+                      "relative flex items-center transition-all duration-200",
+                      isActive && "bg-primary/5"
                     )}
                   >
                     <div
                       className={cn(
-                        "h-px transition-colors duration-200",
-                        isActive ? "bg-primary w-3" : "bg-base-300 w-2"
+                        "flex shrink-0 items-center px-1 py-2 transition-all duration-200",
+                        isActive && "border-primary -ml-px border-l-[3px]"
                       )}
-                    />
-                    <div
-                      className={cn(
-                        "h-1.5 w-1.5 shrink-0 rounded-full transition-colors duration-300",
-                        isActive ? "bg-primary" : "bg-base-300"
-                      )}
-                    />
-                  </div>
+                    >
+                      <div
+                        className={cn(
+                          "h-px transition-colors duration-200",
+                          isActive ? "bg-primary w-3" : "bg-base-300 w-2"
+                        )}
+                      />
+                      <div
+                        className={cn(
+                          "h-1.5 w-1.5 shrink-0 rounded-full transition-colors duration-300",
+                          isActive ? "bg-primary" : "bg-base-300"
+                        )}
+                      />
+                    </div>
 
-                  <a
-                    href={href}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleLinkClick(id);
-                      const el = document.getElementById(id);
-                      if (el) {
-                        // Manual scroll with the same offset the observer uses —
-                        // scrollIntoView ignores scroll-margin-top on iOS Safari
-                        // window-scroll, landing the heading under the sticky
-                        // mobile bar.
-                        const offset = getAnchorOffset();
-                        const scroller =
-                          window.innerWidth >= 1024
-                            ? document.getElementById("scroll-container")
-                            : null;
-                        const elTop = el.getBoundingClientRect().top;
-                        if (scroller) {
-                          // Container scroll space: element offset within the
-                          // container minus the anchor offset (the container
-                          // itself may sit below the viewport top, e.g. under
-                          // the navbar).
-                          scroller.scrollTo({
-                            top:
-                              elTop -
-                              scroller.getBoundingClientRect().top +
-                              scroller.scrollTop -
-                              offset,
-                            behavior: "smooth",
-                          });
-                        } else {
-                          window.scrollTo({
-                            top: elTop + window.scrollY - offset,
-                            behavior: "smooth",
-                          });
-                        }
-                      }
-                    }}
-                    className={cn(
-                      "flex flex-1 items-center py-2 transition-all duration-200",
-                      isActive
-                        ? "text-primary font-medium"
-                        : "text-base-content/60 hover:text-base-content"
-                    )}
-                    style={{ paddingLeft: `${levelPadding + 6}px` }}
-                  >
-                    <span className="line-clamp-2 text-sm break-words">{text}</span>
-                  </a>
-                </div>
-              );
-            })}
+                    <a
+                      href={href}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigateToHeading(id);
+                      }}
+                      className={cn(
+                        "flex flex-1 items-center py-2 transition-all duration-200",
+                        isActive
+                          ? "text-primary font-medium"
+                          : "text-base-content/60 hover:text-base-content"
+                      )}
+                      style={{ paddingLeft: `${levelPadding + 6}px` }}
+                    >
+                      <span className="line-clamp-2 text-sm break-words">{text}</span>
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-2 grid grid-cols-[28px_minmax(0,1fr)] items-start px-4 text-sm">
+            <div aria-hidden="true" />
+            <ScrollTo className="mt-0" onScrollToTop={handleScrollToTop} />
           </div>
         </div>
-
-        <div className="mt-2 grid grid-cols-[28px_minmax(0,1fr)] items-start px-4 text-sm">
-          <div aria-hidden="true" />
-          <ScrollTo className="mt-0" onScrollToTop={handleScrollToTop} />
-        </div>
       </div>
-    </div>
+      <TocDots tocs={tocs} activeId={activeId} onNavigate={navigateToHeading} />
+    </>
   );
 }

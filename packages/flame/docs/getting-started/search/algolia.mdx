@@ -89,9 +89,9 @@ Ask AI needs an agent in [Algolia Agent Studio](https://www.algolia.com/doc/guid
 | `indices` | string[] | Indices sent with each question. Only for an agent whose search tool is in `dynamic` mode. A `static` tool rejects them, so leave this out to use the indices configured on the agent. |
 | `searchParameters` | object | Search parameters per index name, e.g. `{ "YOUR_INDEX_NAME": { "distinct": false } }`. |
 | `suggestedQuestions` | boolean | Show suggested questions when a conversation starts. |
-| `variant` | `"floating"` \| `"inline"` | `floating` (default) opens over the page; `inline` pushes the page aside. |
+| `variant` | `"floating"` \| `"inline"` | Fallback presentation for hosts without split-workspace support. On current Flame, the desktop panel always docks beside the document box. |
 | `side` | `"left"` \| `"right"` | Side the panel opens from. Default `right`. |
-| `width` / `expandedWidth` | number \| string | Panel width in pixels or any CSS width. DocSearch defaults: `360px` and `580px`. |
+| `width` / `expandedWidth` | number \| string | Preferred desktop width in pixels or any CSS width. Defaults: `360px` and `580px`, clamped to leave room for the document. |
 | `translations` | object | DocSearch [Sidepanel translations](https://docsearch.algolia.com/docs/sidepanel/api). |
 
 ## Register for DocSearch

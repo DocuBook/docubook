@@ -1,17 +1,27 @@
 "use client";
 
 import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   ChevronDown,
   ChevronUp,
   EllipsisVertical,
   PanelRight,
   PanelRightClose,
+  Search as SearchIcon,
 } from "lucide-react";
 import { Dropdown } from "@docubook/ui-react/dropdown";
-import { cn, docsAssetSrc, docsNavActive, docsNavHref, withDeployPath } from "../node/utils";
+import {
+  cn,
+  docsAssetSrc,
+  docsHtmlHref,
+  docsNavActive,
+  docsNavHref,
+  withDeployPath,
+} from "../node/utils";
 import Anchor from "./Anchor";
-import { Context } from "./Context";
+import { Context, getFirstItemHref } from "./Context";
+import { renderLucideIcon } from "./Lucide";
 import Menu from "./Menu";
 import { ThemeToggle } from "./Theme";
 import { GitHubLink } from "./Navbar";
@@ -20,6 +30,7 @@ import { TocProgressCircle, tocProgress } from "./TocProgress";
 import { revealScrollTop } from "./toc-list-scroll";
 import type { TocItem } from "../node/types";
 import { config as docuConfig, routes, basePath, deployPath } from "../node/client-routes";
+import { dismissSearchSurfaces, SEARCH_OPEN_EVENT } from "../node/search-provider";
 
 interface SidebarProps {
   tocs?: TocItem[];
@@ -39,42 +50,97 @@ export default function Sidebar({ tocs = [], title, repoUrl, className }: Sideba
 
 function DesktopSidebar({ className, repoUrl }: { className?: string; repoUrl?: string }) {
   const askAi = useAskAi();
+  const [navigationOpen, setNavigationOpen] = useState(false);
+  const closeNavigation = useCallback(() => setNavigationOpen(false), []);
   return (
-    <div className={cn("flex h-full flex-col", className)}>
-      {/* Logo */}
-      <div className="flex h-14 shrink-0 items-center px-5">
-        <a href={withDeployPath(basePath || "/", deployPath)} className="flex items-center gap-2">
-          {docuConfig.navbar?.logo?.src && (
-            <img
-              src={docsAssetSrc(docuConfig.navbar.logo.src, basePath, deployPath)}
-              alt={docuConfig.navbar.logo.alt || ""}
-              className="h-6 w-6"
-            />
-          )}
-          {docuConfig.navbar?.logoText && (
-            <span className="text-primary text-lg font-semibold">{docuConfig.navbar.logoText}</span>
-          )}
-        </a>
-      </div>
+    <>
+      <div className={cn("desktop-sidebar flex h-full flex-col", className)}>
+        {/* Logo */}
+        <div className="desktop-sidebar-logo flex h-14 shrink-0 items-center px-5">
+          <a href={withDeployPath(basePath || "/", deployPath)} className="flex items-center gap-2">
+            {docuConfig.navbar?.logo?.src && (
+              <img
+                src={docsAssetSrc(docuConfig.navbar.logo.src, basePath, deployPath)}
+                alt={docuConfig.navbar.logo.alt || ""}
+                className="h-6 w-6"
+              />
+            )}
+            {docuConfig.navbar?.logoText && (
+              <span className="desktop-sidebar-name text-primary text-lg font-semibold">
+                {docuConfig.navbar.logoText}
+              </span>
+            )}
+          </a>
+        </div>
 
-      {/* Search, plus Ask AI when the search plugin offers it */}
-      <div className="flex shrink-0 items-center gap-2 px-4 pb-3">
-        <Search className="min-w-0 flex-1" />
-        {askAi && <AskAiButton config={askAi} />}
-      </div>
+        {/* Search, plus Ask AI when the search plugin offers it */}
+        <div className="desktop-sidebar-search flex shrink-0 items-center gap-2 px-4 pb-3">
+          <Search className="min-w-0 flex-1" />
+          {askAi && <AskAiButton config={askAi} />}
+        </div>
 
-      {/* Context + Menu */}
-      <div className="flex-1 overflow-y-auto px-4">
-        <Context className="mb-2" />
-        <Menu routes={routes} />
-      </div>
+        {/* Context + Menu */}
+        <div className="desktop-sidebar-menu flex-1 overflow-y-auto px-4">
+          <Context className="mb-2" />
+          <Menu routes={routes} />
+        </div>
 
-      {/* Bottom: Theme + GitHub */}
-      <div className="border-base-200 flex items-center justify-between border-t px-4 py-3">
-        <ThemeToggle />
-        <GitHubLink repoUrl={repoUrl} />
+        {/* Bottom: Theme + GitHub */}
+        <nav className="desktop-sidebar-compact" aria-label="Compact documentation navigation">
+          <button
+            type="button"
+            aria-label="Open navigation"
+            title="Open navigation"
+            onClick={() => setNavigationOpen(true)}
+          >
+            <PanelRight className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Search documentation"
+            title="Search documentation"
+            onClick={() =>
+              document
+                .querySelector<HTMLButtonElement>(
+                  ".desktop-sidebar-search button[aria-label='Search documentation']"
+                )
+                ?.click()
+            }
+          >
+            <SearchIcon className="h-5 w-5" />
+          </button>
+          {routes
+            .filter((route) => route.context)
+            .map((route) => {
+              const label = route.context?.title || route.title;
+              return (
+                <Anchor
+                  key={route.href}
+                  href={withDeployPath(
+                    docsHtmlHref(`${basePath}${getFirstItemHref(route)}`),
+                    deployPath
+                  )}
+                  aria-label={label}
+                  title={label}
+                  activeWhen={(path) =>
+                    path.startsWith(docsNavHref(route.href, basePath, deployPath))
+                  }
+                  activeClassName="text-primary bg-primary/10"
+                >
+                  {renderLucideIcon(route.context?.icon || "BookOpen", "h-5 w-5")}
+                </Anchor>
+              );
+            })}
+          {askAi && <AskAiButton config={askAi} />}
+        </nav>
+
+        <div className="desktop-sidebar-footer border-base-200 flex items-center justify-between border-t px-4 py-3">
+          <ThemeToggle />
+          <GitHubLink repoUrl={repoUrl} />
+        </div>
       </div>
-    </div>
+      <MobileDrawer open={navigationOpen} onClose={closeNavigation} repoUrl={repoUrl} />
+    </>
   );
 }
 
@@ -89,6 +155,7 @@ export function MobileBar({
 }) {
   const [tocExpanded, setTocExpanded] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
   const [activeId, setActiveId] = useState<string | null>(null);
   // Share of sections reached, for the progress circle beside the title
   const [progress, setProgress] = useState(0);
@@ -282,7 +349,7 @@ export function MobileBar({
         )}
       </div>
 
-      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} repoUrl={repoUrl} />
+      <MobileDrawer open={drawerOpen} onClose={closeDrawer} repoUrl={repoUrl} />
     </div>
   );
 }
@@ -352,28 +419,69 @@ function MobileDrawer({
   repoUrl?: string;
 }) {
   const askAi = useAskAi();
+  const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
+    if (!open) return;
+    dismissSearchSurfaces();
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    const layout = document.querySelector<HTMLElement>(".docs-layout");
+    const previousInert = layout?.inert ?? false;
+    document.body.style.overflow = "hidden";
+    if (layout) layout.inert = true;
+    const focusFrame = requestAnimationFrame(() => {
+      drawerRef.current
+        ?.querySelector<HTMLButtonElement>('button[aria-label="Close navigation"]')
+        ?.focus();
+    });
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+      if (event.key !== "Tab") return;
+      const focusable = [
+        ...(drawerRef.current?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input, select, textarea, [tabindex="0"]'
+        ) ?? []),
+      ].filter((element) => element.getClientRects().length > 0);
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
     };
-  }, [open]);
+    window.addEventListener("keydown", handleKey);
+    window.addEventListener(SEARCH_OPEN_EVENT, onClose);
+    return () => {
+      cancelAnimationFrame(focusFrame);
+      document.body.style.overflow = previousOverflow;
+      if (layout) layout.inert = previousInert;
+      window.removeEventListener("keydown", handleKey);
+      window.removeEventListener(SEARCH_OPEN_EVENT, onClose);
+      if (previousFocus?.isConnected && previousFocus.getClientRects().length)
+        previousFocus.focus();
+    };
+  }, [open, onClose]);
 
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100]">
+  return createPortal(
+    <div className="flame-navigation-overlay fixed inset-0 z-[1100]">
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="bg-base-100 absolute top-0 right-0 flex h-full w-80 max-w-[85vw] flex-col shadow-xl">
+      <div
+        ref={drawerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Documentation navigation"
+        className="bg-base-100 absolute top-0 right-0 flex h-full w-80 max-w-[85vw] flex-col shadow-xl"
+      >
         <div className="border-base-200 flex items-center justify-between border-b px-4 py-3">
           <div className="flex items-center gap-2">
             <GitHubLink repoUrl={repoUrl} />
@@ -399,6 +507,7 @@ function MobileDrawer({
           <Menu onNavigate={onClose} routes={routes} />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

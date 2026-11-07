@@ -6,6 +6,7 @@ import {
   resetSearchProviderCache,
   runSearchProvider,
   searchProviderUrl,
+  dismissSearchSurfaces,
   type SearchProviderConfig,
 } from "../node/search-provider";
 
@@ -128,6 +129,56 @@ describe("loadSearchProvider", () => {
 });
 
 describe("runSearchProvider", () => {
+  it("closes an already loaded provider when navigation takes over", async () => {
+    const provider = { open: vi.fn(), close: vi.fn() };
+    await runSearchProvider("search", { module: "p.js" }, "/p.js", async () => ({
+      default: () => provider,
+    }));
+    dismissSearchSurfaces();
+    await vi.waitFor(() => expect(provider.close).toHaveBeenCalledOnce());
+  });
+
+  it("cancels a pending open when the drawer opens before the chunk loads", async () => {
+    const provider = { open: vi.fn(), close: vi.fn() };
+    let finish!: (module: { default: () => typeof provider }) => void;
+    const opening = runSearchProvider(
+      "search",
+      { module: "p.js" },
+      "/p.js",
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    dismissSearchSurfaces();
+    finish({ default: () => provider });
+    await opening;
+    expect(provider.open).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(provider.close).toHaveBeenCalledOnce());
+  });
+
+  it("allows a new intent after dismissal without a stale close cancelling it", async () => {
+    const provider = { open: vi.fn(), askAi: vi.fn(), close: vi.fn() };
+    let finish!: (module: { default: () => typeof provider }) => void;
+    const config = { module: "p.js", askAi: true };
+    const first = runSearchProvider(
+      "search",
+      config,
+      "/p.js",
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    dismissSearchSurfaces();
+    const latest = runSearchProvider("askAi", config, "/p.js");
+    finish({ default: () => provider });
+    await Promise.all([first, latest]);
+    expect(provider.open).not.toHaveBeenCalled();
+    expect(provider.askAi).toHaveBeenCalledOnce();
+    expect(provider.close).not.toHaveBeenCalled();
+  });
+
   it("opens search", async () => {
     const provider = { open: vi.fn(), askAi: vi.fn() };
     await runSearchProvider("search", { module: "p.js" }, "/p.js", async () => ({
