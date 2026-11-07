@@ -1,5 +1,29 @@
 # @docubook/flame
 
+## 2.7.0
+
+### Minor Changes
+
+- [#491](https://github.com/DocuBook/docubook/pull/491) [`5665075`](https://github.com/DocuBook/docubook/commit/5665075c51a789e0ddda91563e1fd1b73f89ec7c) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Keep the page cache when `docu.json` lists plugins. `flame build` used to re-render every docs page on every build as soon as one plugin was configured; it now skips unchanged pages as it does without plugins. Upgrading or rebuilding a plugin package, or editing a local plugin file, still re-renders every page. Per-page hooks (`transformFrontmatter` to `transformHtml`) now run only for pages that are rendered again; `onEnd` still receives every page. Run `flame build --force` after editing a file that a local plugin imports.
+
+### Patch Changes
+
+- [#500](https://github.com/DocuBook/docubook/pull/500) [`4733c4b`](https://github.com/DocuBook/docubook/commit/4733c4b0e4240192b4087f9894fb8cd9f42e603e) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Add backdrop blur to the built-in search dialog and mobile navigation drawer.
+
+- [#504](https://github.com/DocuBook/docubook/pull/504) [`620eda7`](https://github.com/DocuBook/docubook/commit/620eda7b4a01b4e1996a973b27033012044dbea4) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Reduce article-to-TOC spacing and the TOC minimum width on narrow desktops so documentation retains more reading space. Tighten the TOC dot rail while Ask AI is docked on narrow desktops.
+
+- [#498](https://github.com/DocuBook/docubook/pull/498) [`bac0581`](https://github.com/DocuBook/docubook/commit/bac05815ce748e3e19b70bc4acd9a9206fa2abdb) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Align the search bar and desktop and mobile Ask AI buttons with the rounded corners used by other sidebar controls.
+
+- [#503](https://github.com/DocuBook/docubook/pull/503) [`f756952`](https://github.com/DocuBook/docubook/commit/f7569521429e887a92b8cef9c735f753ee33e532) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Dock Ask AI in a separate box beside the documentation on desktop. Reserve space for the configured panel width, preserve the reading position, and show accessible, evenly spaced TOC dots with active sections and heading tooltips. Use compact navigation on narrow desktops while keeping Ask AI fullscreen on mobile. The compact navigation action explicitly closes Ask AI and restores the full sidebar with visible focus. Keep the mobile navigation drawer above the document and dismiss search and Ask AI when it opens.
+
+- [#501](https://github.com/DocuBook/docubook/pull/501) [`0d8c42f`](https://github.com/DocuBook/docubook/commit/0d8c42fe414500f6660b8fb33015ad809047815a) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Show a static page title in the mobile bar when no table of contents is available, instead of an expandable empty panel.
+
+- [#493](https://github.com/DocuBook/docubook/pull/493) [`22774fb`](https://github.com/DocuBook/docubook/commit/22774fb9e5bff2c27f9168e72868cb3313d6bce8) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - The project template's `.gitignore` ignores `.docu/og-image.json`, the record `@docubook/plugin-og-image` keeps of the social cards it has rendered.
+
+- [#499](https://github.com/DocuBook/docubook/pull/499) [`58db2aa`](https://github.com/DocuBook/docubook/commit/58db2aa071ab32d89dcb1cc2727fa036dcebe609) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Remove the Made with DocuBook credit from the documentation footer. Omit the footer entirely when no social links are configured.
+- Updated dependencies [[`7544523`](https://github.com/DocuBook/docubook/commit/754452393b3b42a8c9a4bbfdee6b59c9f0ba0211), [`f03c39f`](https://github.com/DocuBook/docubook/commit/f03c39f851027aa03492806760e65e00753cbc4f)]:
+  - @docubook/markdown@2.7.0
+
 ## 2.6.0
 
 ### Minor Changes
