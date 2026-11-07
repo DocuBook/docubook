@@ -75,6 +75,26 @@
   }
 }
 
+/* Match Flame's mobile/tablet breakpoint, including configured panel widths. */
+@media (width < 1024px) {
+  .DocSearch-Sidepanel-Container:is(.floating, .inline):is(.side-left, .side-right) {
+    inset: 0;
+    width: 100%;
+    height: calc(var(--sp-vh, 1vh) * 100);
+    height: 100dvh;
+    border-radius: 0;
+  }
+
+  .DocSearch-Sidepanel-Action-expand {
+    display: none;
+  }
+
+  html:has(.DocSearch-Sidepanel-Container.is-open),
+  body:has(.DocSearch-Sidepanel-Container.is-open) {
+    overflow: hidden;
+  }
+}
+
 .DocSearch-Hit a:focus-visible {
   outline: 2px solid var(--docsearch-focus-color);
 }
