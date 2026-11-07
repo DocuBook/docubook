@@ -47,7 +47,7 @@ The `minimal` layout keeps only the logo, site name, title, description and doma
 }
 ```
 
-The landing page gets a card from `home.hero.headline` and `meta.description`, unless `meta.ogImage` already sets its image.
+The landing page gets a card from `home.hero.headline` and `meta.description`. When the plugin is enabled, this card takes priority over `meta.ogImage` for OpenGraph and Twitter previews. Set `pages.home` to `false` to keep using `meta.ogImage` on home. The global image remains a fallback for documentation pages without their own image.
 
 ## Per page
 
