@@ -10,16 +10,19 @@ export function CardsMdx({ cols = 2, children, style }: CardsMdxProps) {
   const columnCount = Math.max(1, Math.min(4, cols));
 
   return (
-    <div
-      className="docubook-card-group"
-      style={
-        {
-          "--docubook-card-group-template": `repeat(${columnCount}, minmax(240px, 1fr))`,
-          ...style,
-        } as CSSProperties
-      }
-    >
-      {children}
+    <div className="docubook-card-group-container">
+      <div
+        className="docubook-card-group"
+        data-columns={columnCount}
+        style={
+          {
+            "--docubook-card-group-template": `repeat(${columnCount}, minmax(0, 1fr))`,
+            ...style,
+          } as CSSProperties
+        }
+      >
+        {children}
+      </div>
     </div>
   );
 }
