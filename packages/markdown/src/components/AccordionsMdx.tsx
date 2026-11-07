@@ -19,7 +19,11 @@ export function AccordionsMdx({ children }: AccordionsMdxProps) {
         style={{
           margin: "1rem 0",
           display: "grid",
-          gap: "0.85rem",
+          minWidth: 0,
+          border: "1px solid hsl(var(--border-color, 210 20% 85%))",
+          borderRadius: 16,
+          overflow: "hidden",
+          background: "hsl(var(--card, 0 0% 100%))",
         }}
       >
         {children}

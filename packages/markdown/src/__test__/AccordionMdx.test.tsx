@@ -1,8 +1,27 @@
-import { describe, it, expect } from "vitest";
-import { render } from "@testing-library/react";
+import { describe, it, expect, afterEach } from "vitest";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 import { AccordionMdx } from "../components/AccordionMdx";
 
+afterEach(cleanup);
+
 describe("AccordionMdx", () => {
+  it("toggles its labelled panel with click, Enter and Space", () => {
+    const { getByRole } = render(<AccordionMdx title="Details">Content</AccordionMdx>);
+    const trigger = getByRole("button", { name: "Details" });
+    const panel = getByRole("region", { hidden: true });
+    expect(trigger.getAttribute("aria-controls")).toBe(panel.id);
+    expect(panel.getAttribute("aria-labelledby")).toBe(trigger.id);
+    expect(panel.hidden).toBe(true);
+
+    fireEvent.click(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(panel.hidden).toBe(false);
+    fireEvent.keyDown(trigger, { key: "Enter" });
+    expect(panel.hidden).toBe(true);
+    fireEvent.keyDown(trigger, { key: " " });
+    expect(panel.hidden).toBe(false);
+  });
+
   it("renders with valid icon", () => {
     const { container } = render(
       <AccordionMdx title="Test" icon="Home">

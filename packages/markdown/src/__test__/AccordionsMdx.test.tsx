@@ -1,9 +1,31 @@
-import { describe, it, expect } from "vitest";
-import { render } from "@testing-library/react";
+import { describe, it, expect, afterEach } from "vitest";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 import { AccordionsMdx } from "../components/AccordionsMdx";
 import { AccordionMdx } from "../components/AccordionMdx";
 
+afterEach(cleanup);
+
 describe("AccordionsMdx", () => {
+  it("opens one panel at a time and allows closing the active panel", () => {
+    const { getByRole } = render(
+      <AccordionsMdx>
+        <AccordionMdx title="First">Content 1</AccordionMdx>
+        <AccordionMdx title="Second">Content 2</AccordionMdx>
+      </AccordionsMdx>
+    );
+    const first = getByRole("button", { name: "First" });
+    const second = getByRole("button", { name: "Second" });
+    fireEvent.click(first);
+    expect(getByRole("region", { name: "First" }).hidden).toBe(false);
+    fireEvent.click(second);
+    expect(first.getAttribute("aria-expanded")).toBe("false");
+    const panel = getByRole("region", { name: "Second" });
+    expect(panel.hidden).toBe(false);
+    fireEvent.keyDown(second, { key: "Enter" });
+    expect(second.getAttribute("aria-expanded")).toBe("false");
+    expect(panel.hidden).toBe(true);
+  });
+
   it("renders group with multiple accordions", () => {
     const { container } = render(
       <AccordionsMdx>
