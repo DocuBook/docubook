@@ -1,6 +1,6 @@
 {
   "name": "@docubook/plugin-og-image",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Social preview cards for DocuBook Flame: a 1200×630 OpenGraph image for every page, rendered at build time from its frontmatter with Takumi.",
   "type": "module",
   "main": "./dist/index.js",
