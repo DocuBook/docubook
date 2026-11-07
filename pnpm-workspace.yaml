@@ -24,6 +24,3 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
-minimumReleaseAgeExclude:
-  # 0.1.2 published 2026-11-06; drop once it is older than the release-age window.
-  - "@docubook/plugin-search-algolia@0.1.2"
