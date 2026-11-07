@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   DocuBookPlugin,
   DocuConfig,
@@ -154,9 +154,38 @@ beforeEach(async () => {
   );
   await writeFile(join(root, "docs/guides/hidden.mdx"), "---\ntitle: Hidden\nog: false\n---\n");
 });
-afterEach(() => rm(root, { recursive: true, force: true }));
+afterEach(async () => {
+  vi.unstubAllEnvs();
+  vi.restoreAllMocks();
+  await rm(root, { recursive: true, force: true });
+});
 
 const ALL = ["guides/setup", "guides/custom", "guides/hidden"];
+
+describe("default logger", () => {
+  it.each([
+    { level: undefined, info: true, warn: true },
+    { level: "debug", info: true, warn: true },
+    { level: "info", info: true, warn: true },
+    { level: "warn", info: false, warn: true },
+    { level: "error", info: false, warn: false },
+    { level: "unknown", info: true, warn: true },
+  ])("filters console output at LOG_LEVEL=$level", async ({ level, info, warn }) => {
+    vi.stubEnv("LOG_LEVEL", level);
+    const stdout = vi.spyOn(console, "log").mockImplementation(() => {});
+    const stderr = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const run = load({ logo: "missing.svg" }, makeConfig(), { log: undefined });
+    await run.start();
+    await run.end(ALL);
+    await run.end(ALL); // Cached builds must honor the same level.
+    expect((await cards()).length).toBeGreaterThan(0);
+    if (info) expect(stdout).toHaveBeenCalledWith(expect.stringContaining("[plugin:og-image]"));
+    else expect(stdout).not.toHaveBeenCalled();
+    if (warn)
+      expect(stderr).toHaveBeenCalledWith(expect.stringContaining("was not found in the project"));
+    else expect(stderr).not.toHaveBeenCalled();
+  });
+});
 
 describe("transformFrontmatter", () => {
   it("points a page without an image at its card", () => {

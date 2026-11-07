@@ -28,3 +28,6 @@ allowBuilds:
 minimumReleaseAgeExclude:
   # 0.1.3 published 2026-11-07; remove after the 24-hour release-age window.
   - "@docubook/plugin-search-algolia@0.1.3"
+# Remove this patch when Flame adopts the OG Image release with the LOG_LEVEL fix.
+patchedDependencies:
+  "@docubook/plugin-og-image@0.1.0": patches/@docubook__plugin-og-image@0.1.0.patch
