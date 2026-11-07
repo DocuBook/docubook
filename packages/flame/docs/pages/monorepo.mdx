@@ -1,0 +1,102 @@
+---
+title: Project Layouts & Monorepos
+description: Choose where docu.json lives, run Flame in the correct workspace, and assemble a combined static artifact.
+---
+
+The directory containing `docu.json` determines where Flame reads `docs/` and writes `.docu/dist/`. This filesystem root is independent of `meta.basePath`, which determines the docs URL prefix. Start with the [shared configuration](/docs/pages/overview#configure-flame).
+
+## Application and docs in one project
+
+```text
+acme/
+├── package.json
+├── docu.json
+├── docs/
+│   ├── index.mdx
+│   └── guide.mdx
+├── src/              # application source
+├── dist/             # application's output, for example Vite
+└── .docu/dist/       # Flame's output
+```
+
+Install Flame alongside the existing application dependencies. Add `docs:dev` and `docs:build` scripts as shown in the overview. Run both tools from this directory.
+
+For Vite, a combined build can use:
+
+```json:package.json
+{
+  "scripts": {
+    "build:app": "vite build",
+    "docs:build": "flame build",
+    "build": "npm run build:app && npm run docs:build && cp -R .docu/dist/. dist/"
+  }
+}
+```
+
+The copy command preserves `/docs` inside `dist/`; copying `.docu/dist/docs/` into `dist/docs/docs/` would duplicate the prefix. The command uses POSIX `cp`. For a Windows build, perform the same copy with Node's `fs.cpSync` or your build tool.
+
+## Separate workspaces in a monorepo
+
+```text
+acme/
+├── package.json
+├── package-lock.json
+└── apps/
+    ├── web/
+    │   ├── package.json       # name: @acme/web
+    │   └── dist/
+    └── documentation/
+        ├── package.json       # name: @acme/docs
+        ├── docu.json
+        ├── docs/
+        └── .docu/dist/
+```
+
+The root `package.json` declares `"workspaces": ["apps/*"]`. Install Flame in the docs workspace:
+
+```shell
+npm install -D @docubook/flame --workspace @acme/docs
+```
+
+Keep the `dev` and `build` scripts in `apps/documentation/package.json` local to that project:
+
+```json:apps/documentation/package.json
+{
+  "name": "@acme/docs",
+  "private": true,
+  "scripts": {
+    "dev": "PORT=3001 flame dev",
+    "build": "flame build"
+  }
+}
+```
+
+Merge these fields with the package and dependency entries created by npm. From the repository root, run the workspaces explicitly:
+
+```shell
+# Separate terminals for development
+npm run dev --workspace @acme/web
+npm run dev --workspace @acme/docs
+
+# Static production build, assuming the web workspace writes dist/
+npm run build --workspace @acme/web
+npm run build --workspace @acme/docs
+cp -R apps/documentation/.docu/dist/. apps/web/dist/
+```
+
+Publish `apps/web/dist/`. For server-rendered applications, publish the two workspaces independently and use the hosting guide's external rewrite instead of copying into an adapter's output.
+
+Flame searches for the nearest `docu.json` from its current working directory upward, checking at most six directories including the starting directory. It does not search child workspaces or combine multiple configs. If no config is found, it falls back to the working directory and config loading reports the missing file. A root-level config can therefore be selected when a child workspace has none.
+
+## Match the host's working directory
+
+| Host build starts in | Docs build command | Flame output relative to that directory |
+| --- | --- | --- |
+| Repository root | `npm run build --workspace @acme/docs` | `apps/documentation/.docu/dist` |
+| `apps/documentation` | `npm run build` | `.docu/dist` |
+
+Use a workspace-aware install from the repository lockfile. A host's project root, install directory and publish directory are separate settings; account for each when writing copy commands. If the host limits access to files outside the selected project root, use a repository-root build or enable the platform's workspace support.
+
+Each independently deployed docs project can reserve its own prefix, for example `/docs` and `/handbook`. Build them separately and route each complete prefix to its corresponding output. Give overlapping prefixes an explicit routing policy.
+
+Verify that the selected workspace's `.docu/dist/docs/guide.html` exists, then follow the [combined-site checks](/docs/pages/overview#develop-and-verify) on a preview deployment.

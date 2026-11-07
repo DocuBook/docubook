@@ -1,0 +1,91 @@
+---
+title: Vercel
+description: Publish a combined static application and Flame artifact, or proxy a dedicated docs deployment from a server-rendered app.
+---
+
+Complete the [shared configuration](/docs/pages/overview#configure-flame) and your framework guide first. Set `meta.baseURL` to the public application URL and keep `meta.basePath: "/docs"`.
+
+## One static deployment
+
+Use this path when the application produces static files. Set `npm run build` to build the application, build Flame, then copy `.docu/dist/.` into the application's output. For a Vite app, use:
+
+```json:package.json
+{
+  "scripts": {
+    "build:app": "vite build",
+    "docs:build": "flame build",
+    "build": "npm run build:app && npm run docs:build && cp -R .docu/dist/. dist/"
+  }
+}
+```
+
+Configure the Vercel project to publish the combined artifact:
+
+```json:vercel.json
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "cleanUrls": true
+}
+```
+
+Use `out` for a Next.js static export, `build` for SvelteKit's default static adapter output, or `.output/public` for Nuxt static generation. Keep the copy destination and output directory aligned. These are settings for the static application deployment; a server-rendered application keeps its framework's deployment output.
+
+With [`cleanUrls`](https://vercel.com/docs/project-configuration/vercel-json#cleanurls), a request for a docs `.html` URL redirects to its extensionless form.
+
+### SPA routes
+
+If the static application needs a client-side routing fallback, exclude the docs prefix from that fallback. Add this `rewrites` array to the configuration above:
+
+```json:vercel.json
+{
+  "rewrites": [
+    {
+      "source": "/((?!docs(?:/|$)).*)",
+      "destination": "/index"
+    }
+  ]
+}
+```
+
+The destination is `/index` because this example enables `cleanUrls`. Existing files are served before the fallback. A nonexistent `/docs/...` URL stays outside the app shell and returns a platform or application 404. See [Vercel routing configuration](https://vercel.com/docs/project-configuration/vercel-json#rewrites).
+
+The presence of `docs/404.html` alone does not configure a docs-specific 404 on Vercel. To return Flame's 404 with the correct status, use the separate docs deployment below or a request handler. Rewriting every missing guide to the 404 file as an ordinary successful rewrite would return the wrong status.
+
+## Separate docs deployment
+
+This path also supports Next.js, Nuxt, SvelteKit and Astro applications with server rendering.
+
+Create a second Vercel project for the directory containing `docu.json`. Use the **Other** framework preset, a supported Node version and these build settings:
+
+| Setting | Value |
+| --- | --- |
+| Build command | `npm run docs:build && cp .docu/dist/docs/404.html .docu/dist/404.html` |
+| Output directory | `.docu/dist` |
+| Clean URLs | `true` in the docs project's `vercel.json` |
+
+If the workspace calls its Flame build script `build`, use `npm run build` in that command. The copy adds a root fallback **only to the dedicated docs artifact**, allowing Vercel to return Flame's page for missing docs. Verify that the docs origin serves `/docs/guide` and returns HTTP 404 for a missing guide before adding the proxy.
+
+In the application project's `vercel.json`, merge this external rewrite before any application catch-all:
+
+```json:vercel.json
+{
+  "rewrites": [
+    {
+      "source": "/docs/:path*",
+      "destination": "https://acme-docs.vercel.app/docs/:path*"
+    }
+  ]
+}
+```
+
+The destination must preserve `/docs`. This is an external rewrite, so the browser continues to use the application URL. Vercel documents [external rewrites across frameworks](https://vercel.com/docs/routing/rewrites#framework-considerations). Ensure the docs deployment is reachable from the proxy and its access protection permits these requests.
+
+For Next.js, configure the rule here or in [`next.config`](/docs/pages/frameworks/nextjs), with one owner for the production boundary. Build and output settings remain those of the application framework.
+
+## Monorepos and verification
+
+The project root controls where Vercel reads its configuration. Select the application workspace for the app project and the docs workspace for the docs project, with workspace-aware dependency installation. If the build needs both workspaces, use a repository-root build and the [monorepo copy paths](/docs/pages/monorepo).
+
+Use a preview deployment to run the [combined-site checks](/docs/pages/overview#develop-and-verify). Confirm `/docs` as well as `/docs/guide.html` and its extensionless destination, check the search index, and inspect the status of a missing docs page. Vercel's routing configuration does not replace the framework guide's local development proxy.

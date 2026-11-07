@@ -1,0 +1,101 @@
+---
+title: Cloudflare
+description: Host combined static files on Cloudflare Pages or Workers, and keep Flame routes separate from SPA and server-rendered fallbacks.
+---
+
+Complete the [shared setup](/docs/pages/overview#configure-flame) and your framework's build integration. Use the public application URL for `baseURL`, `/docs` for `basePath`, and copy the normal Flame build into the application's static output.
+
+## Cloudflare Pages
+
+For a static application that writes `dist/`, use these Pages build settings:
+
+| Setting | Value |
+| --- | --- |
+| Build command | `npm run build` — the combined app, docs and copy command |
+| Build output directory | `dist` |
+| Root directory | The project containing that build script |
+
+The published directory must contain the application's `index.html`, `docs/guide.html`, `docs/404.html` and `docs/_flame/`. Adjust the output directory for your framework, and use the [monorepo guide](/docs/pages/monorepo) if the build starts at the repository root.
+
+Pages resolves HTML paths and normalizes `.html` URLs. Its custom 404 lookup walks up from the requested path, so a missing docs route can use `/docs/404.html`. Include the application's own **root `404.html`** for a static multi-page site. Without one, Pages enables its default SPA behavior; verify docs misses carefully or use the explicit Worker routing below. See [Pages serving behavior](https://developers.cloudflare.com/pages/configuration/serving-pages/).
+
+## Workers with static assets
+
+For a static multi-page application, install Wrangler as a development dependency and configure the merged output:
+
+```shell
+npm install -D wrangler
+```
+
+```json:wrangler.jsonc
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "acme",
+  "compatibility_date": "2026-11-07",
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}
+```
+
+Build with `npm run build`, preview with `npx wrangler dev`, then deploy with `npx wrangler deploy`. Change the asset directory to match the framework's output. The HTML handling serves flat docs pages at clean URLs; `404-page` selects the nearest `404.html` with HTTP 404. See [Workers static site routing](https://developers.cloudflare.com/workers/static-assets/routing/static-site-generation/).
+
+## Workers with a SPA fallback
+
+A global `single-page-application` fallback also applies to missing docs pages. For explicit separation, use a Worker that serves existing assets, handles docs misses, then falls back to the app for other navigation requests.
+
+Add `"main": "worker.mjs"` to the Wrangler configuration above and replace its `assets` object with:
+
+```json:wrangler.jsonc
+{
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none",
+    "run_worker_first": true
+  }
+}
+```
+
+Create the Worker beside `wrangler.jsonc`:
+
+```javascript:worker.mjs
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const asset = await env.ASSETS.fetch(request);
+    if (asset.status !== 404) return asset;
+
+    const docs = url.pathname === "/docs" || url.pathname.startsWith("/docs/");
+    if (docs) {
+      const fallback = new URL("/docs/404", url);
+      const page = await env.ASSETS.fetch(new Request(fallback, request));
+      return new Response(request.method === "HEAD" ? null : page.body, {
+        status: 404,
+        headers: page.headers,
+      });
+    }
+
+    const navigation = request.method === "GET" &&
+      request.headers.get("Accept")?.includes("text/html");
+    if (navigation) {
+      const homepage = new URL("/", url);
+      return env.ASSETS.fetch(new Request(homepage, request));
+    }
+    return asset;
+  },
+};
+```
+
+The fallback fetches use canonical HTML URLs (`/docs/404` and `/`) so the asset binding returns the page body instead of a clean-URL redirect. The Worker runs before assets so it can choose the correct fallback; this configuration invokes it for each request. See [asset bindings and Worker routing](https://developers.cloudflare.com/workers/static-assets/binding/). Preview with `npx wrangler dev` and request a missing docs URL with `curl -I` to confirm its 404 status.
+
+## Server-rendered applications
+
+Keep the application's Cloudflare adapter and its generated configuration. The standalone static Wrangler examples above are for static output; an SSR adapter owns its Worker entry point and asset layout.
+
+Deploy Flame separately on Pages or Workers, and forward `/docs` plus `/docs/*` from the application's request entry point to that deployment. Route docs before the framework renderer, preserve the path, query and upstream status, and map any upstream-origin redirect back to the public application URL. Keep Flame's `baseURL` at that public URL. For a dedicated docs origin on Pages, include a root copy of the docs 404 so the site has a root fallback.
+
+Test the adapter's actual deployment, including static assets and navigation requests: its own fallback rules may differ from a static site. Use the [shared verification steps](/docs/pages/overview#develop-and-verify), including a nested docs refresh, search assets and a missing docs page.

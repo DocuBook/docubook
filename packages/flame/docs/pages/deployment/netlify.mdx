@@ -1,0 +1,65 @@
+---
+title: Netlify
+description: Configure a combined static artifact or a separate docs proxy, with a docs-scoped 404 before the application fallback.
+---
+
+Complete the [shared setup](/docs/pages/overview#configure-flame) and your framework's build integration. Keep the docs prefix at `/docs` and use the public application's URL as `meta.baseURL`.
+
+## Publish a combined static artifact
+
+For a static application that writes `dist/`, configure Netlify as follows:
+
+```toml:netlify.toml
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/docs"
+  to = "/docs/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/docs/*"
+  to = "/docs/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+```
+
+The build script must build the application, run `flame build`, then copy `.docu/dist/.` into `dist/`. See the [React](/docs/pages/frameworks/react), [Vue](/docs/pages/frameworks/vue) or other framework guide for the exact destination.
+
+Existing static files take precedence because these rules are not forced. Valid docs therefore load normally, missing docs return the docs 404, and other application routes reach the SPA fallback. Keep docs rules before the catch-all and omit the final rule for a multi-page application. See [Netlify custom 404 and redirect options](https://docs.netlify.com/manage/routing/redirects/redirect-options/).
+
+Change `publish` to the combined output of your framework, such as `out`, `build` or `.output/public`. In a monorepo, make it relative to the configured build base directory and use the [workspace copy paths](/docs/pages/monorepo).
+
+## Separate docs deployment
+
+For an SSR application or independent workspaces, publish Flame as a second Netlify site. Use a supported Node runtime, the docs build command, and `.docu/dist` as the publish directory. Apply the two docs-specific 404 rules above on that site, with no application SPA catch-all.
+
+In the application site's configuration, proxy the docs prefix before any catch-all rule:
+
+```toml:netlify.toml
+[[redirects]]
+  from = "/docs"
+  to = "https://acme-docs.netlify.app/docs/"
+  status = 200
+
+[[redirects]]
+  from = "/docs/*"
+  to = "https://acme-docs.netlify.app/docs/:splat"
+  status = 200
+```
+
+With an external destination, status 200 configures a proxy rewrite rather than a browser redirect. The destination keeps `/docs`, and the docs origin handles its own file resolution and 404 response. See [Netlify rewrites and proxies](https://docs.netlify.com/manage/routing/redirects/rewrites-proxies/).
+
+Keep the application framework's Netlify adapter and its build settings. Do not set an SSR app's publish directory to Flame's `.docu/dist`. Ensure `/docs` is also reserved in any framework or edge-function routing, and that the upstream site is accessible to the proxy.
+
+## Development and verification
+
+For ordinary local development, use the framework guide's proxy and run both dev servers. Netlify deployment rules do not automatically configure the framework's dev server. Use a Netlify preview deployment to verify the production routing.
+
+Check `/`, `/docs/`, `/docs/guide.html`, the search index, a hashed asset URL and `/docs/missing`. The missing route must return HTTP 404, including when docs are proxied. A successful response containing the app shell usually means a SPA fallback is running before the docs boundary. See the [shared verification steps](/docs/pages/overview#develop-and-verify).

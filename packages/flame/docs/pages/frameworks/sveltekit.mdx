@@ -1,0 +1,64 @@
+---
+title: SvelteKit
+description: Connect SvelteKit to Flame during development and deploy static or server-rendered applications alongside the docs.
+---
+
+Complete the [shared setup](/docs/pages/overview#configure-flame) and reserve `/docs`. SvelteKit and Flame keep their own rendering and routing.
+
+## Develop on one local origin
+
+Keep the existing SvelteKit plugin and add the Vite dev proxy:
+
+```typescript:vite.config.ts
+import { sveltekit } from "@sveltejs/kit/vite";
+import { defineConfig } from "vite";
+
+const docsProxy = {
+  target: "http://localhost:3001",
+  changeOrigin: true,
+};
+
+export default defineConfig({
+  plugins: [sveltekit()],
+  server: {
+    port: 5173,
+    strictPort: true,
+    proxy: {
+      "^/docs(?:/|$)": docsProxy,
+      "/__hmr": docsProxy,
+    },
+  },
+});
+```
+
+Start `npm run dev` and `npm run docs:dev` in separate terminals. Visit `http://localhost:5173/docs/`. Forwarding `/__hmr` preserves Flame's development reload stream. See [Vite proxy options](https://vite.dev/config/server-options#server-proxy).
+
+## Use full document navigation
+
+```svelte:src/lib/DocsLink.svelte
+<a href="/docs/" data-sveltekit-reload rel="external">Documentation</a>
+```
+
+[`data-sveltekit-reload`](https://svelte.dev/docs/kit/link-options#data-sveltekit-reload) makes the browser load a new document. `rel="external"` also keeps the link out of SvelteKit's prerender crawl. Exclude the docs prefix from service worker navigation handling.
+
+## Build with adapter-static
+
+Use this path when the application is already configured for [`@sveltejs/adapter-static`](https://svelte.dev/docs/kit/adapter-static). Its default pages and assets directory is `build/`. Complete the application's prerender configuration before combining the builds.
+
+```shell
+npx vite build
+npm run docs:build
+cp -R .docu/dist/. build/
+```
+
+Publish `build/`. If `pages` and `assets` use customized adapter directories, copy the complete Flame tree into the directory the host serves at `/`, and include it in the published artifact. Keep `/docs` out of SvelteKit's own generated routes.
+
+The host must serve the docs and its missing-page responses before applying an SPA fallback. Choose [Vercel](/docs/pages/deployment/vercel), [Cloudflare](/docs/pages/deployment/cloudflare) or [Netlify](/docs/pages/deployment/netlify).
+
+## Deploy with server rendering
+
+Keep the application's chosen adapter. Deploy Flame's `.docu/dist/` to its own static site and proxy `/docs` plus `/docs/*` at the public entry point. Use [external rewrites on Vercel](/docs/pages/deployment/vercel#separate-docs-deployment), the [Cloudflare routing boundary](/docs/pages/deployment/cloudflare#server-rendered-applications) or [Netlify's proxy](/docs/pages/deployment/netlify#separate-docs-deployment).
+
+Copying docs into an adapter's internal output without registering them with that adapter can leave the files out of deployment. A separate docs deployment avoids depending on those output internals.
+
+Verify a direct nested docs URL, the docs link, search assets and a missing guide with the [shared checks](/docs/pages/overview#develop-and-verify).
