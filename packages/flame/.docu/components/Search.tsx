@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   Search as SearchIcon,
   FileText,
@@ -45,6 +46,8 @@ import {
   readSearchProviderConfig,
   runSearchProvider,
   searchProviderUrl,
+  SEARCH_DISMISS_EVENT,
+  SEARCH_OPEN_EVENT,
   type SearchProviderAction,
   type SearchProviderConfig,
 } from "../node/search-provider";
@@ -199,7 +202,12 @@ export function AskAiButton({
 }
 
 function BuiltinSearch({ className }: SearchProps) {
-  const { ref: modalRef, open, close } = useModal();
+  const { ref: modalRef, open: openModal, close } = useModal();
+  const [portalReady, setPortalReady] = useState(false);
+  const open = useCallback(() => {
+    window.dispatchEvent(new Event(SEARCH_OPEN_EVENT));
+    openModal();
+  }, [openModal]);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -208,16 +216,27 @@ function BuiltinSearch({ className }: SearchProps) {
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
   useEffect(() => {
+    setPortalReady(true);
+    window.addEventListener(SEARCH_DISMISS_EVENT, close);
+    return () => window.removeEventListener(SEARCH_DISMISS_EVENT, close);
+  }, [close]);
+
+  useEffect(() => {
     if (cmdKRegistered) return;
     cmdKRegistered = true;
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        const dialog = modalRef.current;
+        const dialog = document.querySelector<HTMLDialogElement>("dialog[data-flame-search][open]");
         if (dialog?.open) {
-          close();
+          dialog.close();
         } else {
-          open();
+          const trigger = [
+            ...document.querySelectorAll<HTMLButtonElement>(
+              'button[aria-label="Search documentation"]'
+            ),
+          ].find((button) => button.getClientRects().length > 0);
+          trigger?.click();
         }
       }
     };
@@ -226,7 +245,7 @@ function BuiltinSearch({ className }: SearchProps) {
       window.removeEventListener("keydown", handler);
       cmdKRegistered = false;
     };
-  }, [open, close, modalRef]);
+  }, []);
 
   useEffect(() => {
     const dialog = modalRef.current;
@@ -246,7 +265,7 @@ function BuiltinSearch({ className }: SearchProps) {
     });
     observer.observe(dialog, { attributes: true, attributeFilter: ["open"] });
     return () => observer.disconnect();
-  }, [modalRef, indexLoaded]);
+  }, [modalRef, indexLoaded, portalReady]);
 
   const handleQueryChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -292,92 +311,97 @@ function BuiltinSearch({ className }: SearchProps) {
   return (
     <div className={className}>
       <SearchTrigger onClick={open} />
-      <Modal
-        ref={modalRef}
-        closeOnBackdrop
-        className="items-start pt-[15vh] backdrop-blur-sm"
-        boxClassName="w-[calc(100%-2rem)] max-w-[640px] p-0 mx-auto relative z-10"
-      >
-        <div onKeyDown={handleKeyDown}>
-          <div className="px-4 pt-4 pb-2">
-            <div className="border-base-300 flex items-center gap-3 rounded-lg border px-4 py-2.5">
-              <SearchIcon className="text-primary h-5 w-5 shrink-0" />
-              <input
-                ref={inputRef}
-                value={query}
-                onChange={handleQueryChange}
-                placeholder="Search documentation..."
-                autoFocus
-                className="placeholder:text-base-content/40 h-8 w-full border-none bg-transparent text-base ring-0 outline-none focus:ring-0 focus:outline-none"
-                aria-label="Search documentation"
-              />
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery("");
-                    setResults([]);
-                    inputRef.current?.focus();
-                  }}
-                  className="text-primary hover:text-primary/80 shrink-0 text-xs"
-                >
-                  Clear
-                </button>
-              )}
-              <button type="button" onClick={close} className="shrink-0">
-                <Kbd size="sm" className="hover:bg-base-200 cursor-pointer text-xs">
-                  esc
-                </Kbd>
-              </button>
-            </div>
-          </div>
+      {portalReady &&
+        createPortal(
+          <Modal
+            ref={modalRef}
+            data-flame-search=""
+            closeOnBackdrop
+            className="items-start pt-[15vh] backdrop-blur-sm"
+            boxClassName="w-[calc(100%-2rem)] max-w-[640px] p-0 mx-auto relative z-10"
+          >
+            <div onKeyDown={handleKeyDown}>
+              <div className="px-4 pt-4 pb-2">
+                <div className="border-base-300 flex items-center gap-3 rounded-lg border px-4 py-2.5">
+                  <SearchIcon className="text-primary h-5 w-5 shrink-0" />
+                  <input
+                    ref={inputRef}
+                    value={query}
+                    onChange={handleQueryChange}
+                    placeholder="Search documentation..."
+                    autoFocus
+                    className="placeholder:text-base-content/40 h-8 w-full border-none bg-transparent text-base ring-0 outline-none focus:ring-0 focus:outline-none"
+                    aria-label="Search documentation"
+                  />
+                  {query && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuery("");
+                        setResults([]);
+                        inputRef.current?.focus();
+                      }}
+                      className="text-primary hover:text-primary/80 shrink-0 text-xs"
+                    >
+                      Clear
+                    </button>
+                  )}
+                  <button type="button" onClick={close} className="shrink-0">
+                    <Kbd size="sm" className="hover:bg-base-200 cursor-pointer text-xs">
+                      esc
+                    </Kbd>
+                  </button>
+                </div>
+              </div>
 
-          <div className="max-h-100 overflow-y-auto px-3 py-2">
-            {query.trim().length >= 2 && results.length === 0 && (
-              <p className="text-base-content/50 py-8 text-center text-sm">
-                No results for &ldquo;<span className="text-primary">{query}</span>&rdquo;
-              </p>
-            )}
+              <div className="max-h-100 overflow-y-auto px-3 py-2">
+                {query.trim().length >= 2 && results.length === 0 && (
+                  <p className="text-base-content/50 py-8 text-center text-sm">
+                    No results for &ldquo;<span className="text-primary">{query}</span>&rdquo;
+                  </p>
+                )}
 
-            {query.trim().length >= 2 && results.length > 0 && (
-              <GroupedResults
-                results={results}
-                selectedIndex={selectedIndex}
-                itemRefs={itemRefs}
-                onSelect={close}
-              />
-            )}
+                {query.trim().length >= 2 && results.length > 0 && (
+                  <GroupedResults
+                    results={results}
+                    selectedIndex={selectedIndex}
+                    itemRefs={itemRefs}
+                    onSelect={close}
+                  />
+                )}
 
-            {query.trim().length < 2 && (
-              <p className="text-base-content/40 py-8 text-center text-sm">
-                Type to search documentation
-              </p>
-            )}
-          </div>
+                {query.trim().length < 2 && (
+                  <p className="text-base-content/40 py-8 text-center text-sm">
+                    Type to search documentation
+                  </p>
+                )}
+              </div>
 
-          <div className="border-base-300 hidden items-center gap-3 border-t px-4 py-2.5 md:flex">
-            <div className="flex items-center gap-1">
-              <Kbd size="sm">
-                <FnKey.Down />
-              </Kbd>
-              <Kbd size="sm">
-                <FnKey.Up />
-              </Kbd>
-              <span className="text-base-content/50 text-xs">navigate</span>
+              <div className="border-base-300 hidden items-center gap-3 border-t px-4 py-2.5 md:flex">
+                <div className="flex items-center gap-1">
+                  <Kbd size="sm">
+                    <FnKey.Down />
+                  </Kbd>
+                  <Kbd size="sm">
+                    <FnKey.Up />
+                  </Kbd>
+                  <span className="text-base-content/50 text-xs">navigate</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Kbd size="sm">
+                    <CornerDownLeft className="h-3 w-3" />
+                  </Kbd>
+                  <span className="text-base-content/50 text-xs">select</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Kbd size="xs">esc</Kbd>
+                  <span className="text-base-content/50 text-xs">close</span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <Kbd size="sm">
-                <CornerDownLeft className="h-3 w-3" />
-              </Kbd>
-              <span className="text-base-content/50 text-xs">select</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Kbd size="xs">esc</Kbd>
-              <span className="text-base-content/50 text-xs">close</span>
-            </div>
-          </div>
-        </div>
-      </Modal>
+          </Modal>,
+          document.body
+        )}
     </div>
   );
 }

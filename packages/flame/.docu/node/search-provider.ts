@@ -36,6 +36,8 @@ export interface SearchProvider {
    * shortcut toggles). Only called when the config sets `askAi: true`.
    */
   askAi?(): void;
+  /** Close search and Ask AI when another surface, such as navigation, opens. */
+  close?(): void;
 }
 
 export type SearchProviderFactory = (
@@ -91,6 +93,23 @@ export function searchProviderUrl(
 }
 
 let pending: { url: string; provider: Promise<SearchProvider> } | null = null;
+let actionRevision = 0;
+
+export const SEARCH_DISMISS_EVENT = "flame:search-dismiss";
+export const SEARCH_OPEN_EVENT = "flame:search-open";
+
+/** Dismiss current surfaces and invalidate opens waiting for a downloaded chunk. */
+export function dismissSearchSurfaces(): void {
+  const revision = ++actionRevision;
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(SEARCH_DISMISS_EVENT));
+  if (pending) {
+    void pending.provider
+      .then((provider) => {
+        if (revision === actionRevision) provider.close?.();
+      })
+      .catch(() => {});
+  }
+}
 
 /**
  * Import the provider module once per URL and build the provider. A failed
@@ -124,8 +143,11 @@ export async function runSearchProvider(
   url: string,
   importModule?: (url: string) => Promise<{ default?: unknown }>
 ): Promise<void> {
+  const revision = ++actionRevision;
   try {
     const provider = await loadSearchProvider(config, url, importModule);
+    if (revision !== actionRevision) return;
+    if (typeof window !== "undefined") window.dispatchEvent(new Event(SEARCH_OPEN_EVENT));
     if (action === "askAi") {
       if (config.askAi) provider.askAi?.();
     } else {
@@ -139,4 +161,5 @@ export async function runSearchProvider(
 /** @internal Reset the module cache between tests. */
 export function resetSearchProviderCache(): void {
   pending = null;
+  actionRevision++;
 }

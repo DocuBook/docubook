@@ -22,7 +22,7 @@ export interface AskAiOptions {
   suggestedQuestions?: boolean;
   /** Per-index search parameters for the agent, keyed by index name. */
   searchParameters?: Record<string, Record<string, unknown>>;
-  /** `floating` covers the page (default); `inline` pushes it aside. */
+  /** Fallback presentation on hosts without Flame's desktop split workspace. */
   variant?: "floating" | "inline";
   /** Side the panel slides in from. Default `right`. */
   side?: "left" | "right";

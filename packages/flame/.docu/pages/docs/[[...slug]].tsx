@@ -41,7 +41,7 @@ export default function DocsPage({
   const tocsJson = JSON.stringify(tocs);
 
   return (
-    <div className="flex w-full flex-1 px-0 pb-4 lg:h-[calc(100vh-4rem)] lg:px-8 lg:pb-8">
+    <div className="docs-workspace flex w-full flex-1 px-0 pb-4 lg:h-[calc(100vh-4rem)] lg:px-8 lg:pb-8">
       <div
         id="scroll-container"
         className="bg-base-100 border-base-300 relative flex w-full flex-col items-start rounded-b-3xl border shadow-md max-lg:scroll-p-54 lg:h-full lg:flex-row lg:overflow-y-auto lg:rounded-xl"
@@ -55,9 +55,9 @@ export default function DocsPage({
           data-repo={repoUrl || ""}
         />
 
-        <div className="flex w-full flex-col lg:flex-row 2xl:mx-auto 2xl:max-w-[1300px]">
+        <div className="docs-columns flex w-full flex-col lg:flex-row 2xl:mx-auto 2xl:max-w-[1300px]">
           <div
-            className={`w-full min-w-0 ${tocs.length > 0 ? "flex-[7]" : "mx-auto max-w-[820px]"} px-4 py-6 lg:px-12 lg:py-10`}
+            className={`docs-article w-full min-w-0 ${tocs.length > 0 ? "flex-[7]" : "mx-auto max-w-[820px]"} px-4 py-6 lg:px-12 lg:py-10`}
           >
             <DocsBreadcrumb paths={slug} />
             <Typography>

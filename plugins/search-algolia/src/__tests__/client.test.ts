@@ -3,8 +3,9 @@ import type { ClientConfig } from "../options";
 import createSearchProvider, { retryable } from "../client/index";
 
 const docsearch = vi.hoisted(() => vi.fn());
+const sidepanel = vi.hoisted(() => vi.fn());
 vi.mock("@docsearch/js/docsearch", () => ({ default: docsearch }));
-vi.mock("@docsearch/sidepanel-js", () => ({ default: vi.fn() }));
+vi.mock("@docsearch/sidepanel-js", () => ({ default: sidepanel }));
 
 /** Just enough DOM for the provider: mount points and the stylesheet <link>. */
 class FakeElement {
@@ -68,6 +69,7 @@ describe("createSearchProvider", () => {
 
   afterEach(() => {
     docsearch.mockReset();
+    sidepanel.mockReset();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
@@ -96,5 +98,74 @@ describe("createSearchProvider", () => {
     provider.open();
     await vi.waitFor(() => expect(instance.open).toHaveBeenCalledTimes(2));
     expect(docsearch).toHaveBeenCalledTimes(2);
+  });
+
+  it("closes the active surfaces when the host opens navigation", async () => {
+    const search = {
+      isOpen: false,
+      open: vi.fn(() => {
+        search.isOpen = true;
+      }),
+      close: vi.fn(() => {
+        search.isOpen = false;
+      }),
+    };
+    const panel = {
+      isOpen: false,
+      open: vi.fn(() => {
+        panel.isOpen = true;
+      }),
+      close: vi.fn(() => {
+        panel.isOpen = false;
+      }),
+    };
+    docsearch.mockImplementation(({ onReady }) => {
+      onReady();
+      return search;
+    });
+    sidepanel.mockImplementation(({ onReady }) => {
+      onReady();
+      return panel;
+    });
+    const provider = createSearchProvider({
+      ...config,
+      askAi: true,
+      assistant: { appId: "APP123", apiKey: "search-key", agentId: "agent", panel: {} },
+    });
+    provider.open();
+    await vi.waitFor(() => expect(search.open).toHaveBeenCalledOnce());
+    provider.close?.();
+    expect(search.close).toHaveBeenCalledOnce();
+    provider.askAi?.();
+    await vi.waitFor(() => expect(panel.open).toHaveBeenCalledOnce());
+    provider.close?.();
+    expect(panel.close).toHaveBeenCalledOnce();
+  });
+
+  it("does not reopen Ask AI after dismissal while its panel is initializing", async () => {
+    const search = { isOpen: false, open: vi.fn(), close: vi.fn() };
+    const panel = { isOpen: false, open: vi.fn(), close: vi.fn() };
+    let ready!: () => void;
+    docsearch.mockImplementation(({ onReady }) => {
+      onReady();
+      return search;
+    });
+    sidepanel.mockImplementation(({ onReady }) => {
+      ready = onReady;
+      return panel;
+    });
+    const provider = createSearchProvider({
+      ...config,
+      askAi: true,
+      assistant: { appId: "APP123", apiKey: "search-key", agentId: "agent", panel: {} },
+    });
+    provider.askAi?.();
+    await vi.waitFor(() => expect(sidepanel).toHaveBeenCalledOnce());
+    provider.close?.();
+    ready();
+    // A fresh intent may open it, but the dismissed intent must not open it
+    // again when the same initialization promise resolves.
+    provider.askAi?.();
+    await vi.waitFor(() => expect(panel.open).toHaveBeenCalledOnce());
   });
 });
