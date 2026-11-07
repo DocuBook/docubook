@@ -7,7 +7,6 @@ import {
   EllipsisVertical,
   PanelRight,
   PanelRightClose,
-  FileText,
 } from "lucide-react";
 import { Dropdown } from "@docubook/ui-react/dropdown";
 import { cn, docsAssetSrc, docsNavActive, docsNavHref, withDeployPath } from "../node/utils";
@@ -185,6 +184,7 @@ export function MobileBar({
   }, [activeId, tocExpanded, revealActive]);
 
   const activeSection = tocs.find((t) => t.href.slice(1) === activeId);
+  const hasToc = tocs.length > 0;
   const displayTitle = activeSection?.text || title || "On this page";
   const toggleToc = useCallback(() => setTocExpanded((p) => !p), []);
 
@@ -222,27 +222,32 @@ export function MobileBar({
             })}
           </Dropdown>
 
-          <button
-            type="button"
-            onClick={toggleToc}
-            // -ml-1 cancels the row gap, so this button starts where the 32px
-            // menu trigger ends: no dead strip between them and no overlap.
-            // pl-1 keeps the ring close to the menu dots.
-            className="btn btn-ghost btn-sm -ml-1 min-w-0 flex-1 justify-between pl-1"
-            aria-label={`${tocExpanded ? "Collapse" : "Expand"} table of contents${
-              tocs.length > 0 ? `, ${Math.round(progress * 100)}% of sections read` : ""
-            }`}
-          >
-            <span className="flex min-w-0 items-center gap-2">
-              {tocs.length > 0 && <TocProgressCircle value={progress} />}
-              <span className="truncate text-sm font-medium">{displayTitle}</span>
+          {hasToc ? (
+            <button
+              type="button"
+              onClick={toggleToc}
+              // -ml-1 cancels the row gap, so this button starts where the 32px
+              // menu trigger ends: no dead strip between them and no overlap.
+              // pl-1 keeps the ring close to the menu dots.
+              className="btn btn-ghost btn-sm -ml-1 min-w-0 flex-1 justify-between pl-1"
+              aria-expanded={tocExpanded}
+              aria-label={`${tocExpanded ? "Collapse" : "Expand"} table of contents, ${Math.round(progress * 100)}% of sections read`}
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                <TocProgressCircle value={progress} />
+                <span className="truncate text-sm font-medium">{displayTitle}</span>
+              </span>
+              {tocExpanded ? (
+                <ChevronUp className="text-base-content/50 h-4 w-4 shrink-0" />
+              ) : (
+                <ChevronDown className="text-base-content/50 h-4 w-4 shrink-0" />
+              )}
+            </button>
+          ) : (
+            <span className="-ml-1 min-w-0 flex-1 truncate pl-1 text-sm font-medium">
+              {displayTitle}
             </span>
-            {tocExpanded ? (
-              <ChevronUp className="text-base-content/50 h-4 w-4 shrink-0" />
-            ) : (
-              <ChevronDown className="text-base-content/50 h-4 w-4 shrink-0" />
-            )}
-          </button>
+          )}
 
           <Search />
 
@@ -256,7 +261,7 @@ export function MobileBar({
           </button>
         </div>
 
-        {tocExpanded && (
+        {hasToc && tocExpanded && (
           // overscroll-contain: reaching either end of the list must not
           // scroll the page behind it, which would also change the active
           // heading under the reader's finger.
@@ -265,21 +270,14 @@ export function MobileBar({
             data-toc-list=""
             className="border-base-200 max-h-[60vh] overflow-y-auto overscroll-contain border-t px-4 py-2"
           >
-            {tocs.length > 0 ? (
-              <MobileTocList
-                tocs={tocs}
-                activeId={activeId}
-                onSelect={(id) => {
-                  setTocExpanded(false);
-                  setActiveId(id);
-                }}
-              />
-            ) : (
-              <div className="flex flex-col items-center py-6 text-center">
-                <FileText className="text-base-content/30 mb-2 h-7 w-7" />
-                <p className="text-base-content/50 text-sm">No headings on this page</p>
-              </div>
-            )}
+            <MobileTocList
+              tocs={tocs}
+              activeId={activeId}
+              onSelect={(id) => {
+                setTocExpanded(false);
+                setActiveId(id);
+              }}
+            />
           </div>
         )}
       </div>
