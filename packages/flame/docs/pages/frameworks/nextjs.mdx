@@ -14,6 +14,7 @@ const docsOrigin = process.env.DOCS_ORIGIN ?? "http://localhost:3001";
 const development = process.env.NODE_ENV === "development";
 
 export default {
+  compress: !development,
   async rewrites() {
     return {
       beforeFiles: [
@@ -34,7 +35,9 @@ export default {
 
 Merge the rules with any existing rewrites. `beforeFiles` gives the reserved docs prefix precedence over Next.js routes; the prefix is preserved at the upstream server. The development-only rule forwards Flame's SSE reload stream. See [Next.js rewrites](https://nextjs.org/docs/app/api-reference/config/next-config-js/rewrites).
 
-Start Next.js with the application's usual `npm run dev`. Visit `/` and `/docs/` through `http://localhost:3000`. Reserve the docs prefix in any authentication middleware or proxy hooks as well.
+`compress: !development` disables Next.js response compression in development so small SSE reload events are delivered without waiting for a compression buffer. Production compression stays enabled. See [Next.js compression configuration](https://nextjs.org/docs/app/api-reference/config/next-config-js/compress).
+
+Start Next.js with the application's usual `npm run dev`. Visit `/` and `/docs` through `http://localhost:3000`. Reserve the docs prefix in any authentication middleware or proxy hooks as well.
 
 ## Link across the boundary
 
@@ -42,7 +45,7 @@ Use a standard anchor so navigation loads Flame's complete HTML:
 
 ```tsx:app/components/DocsLink.tsx
 export function DocsLink() {
-  return <a href="/docs/">Documentation</a>;
+  return <a href="/docs">Documentation</a>;
 }
 ```
 
@@ -53,6 +56,10 @@ Keep application navigation components for Next.js routes. A docs navigation nee
 Publish the docs workspace's `.docu/dist/` on a static host. Configure `DOCS_ORIGIN` in the **Next.js build environment** to the docs deployment's origin, for example `https://acme-docs.example`, then build Next.js normally. The config is evaluated during the build; changing this value requires rebuilding the application.
 
 The upstream deployment must serve the artifact at its root, with docs under `/docs`. Keep Flame's `meta.baseURL` set to the public application URL. Enable extensionless HTML resolution on the upstream host so redirects to clean URLs also resolve through the proxy. Ensure deployment protection does not block requests from the application.
+
+Match the docs origin's slash policy to Next.js. With the default `trailingSlash: false`, the origin must serve `/docs` and extensionless docs pages without redirecting to a trailing-slash URL. Next.js redirects `/docs/` to `/docs` before rewrites; if the origin sends it back to `/docs/`, the browser loops. Changing the docs link alone does not prevent this. See [Next.js trailing slash behavior](https://nextjs.org/docs/app/api-reference/config/next-config-js/trailingSlash).
+
+For Cloudflare Workers assets, override the Cloudflare guide's `auto-trailing-slash` setting with `"html_handling": "drop-trailing-slash"`. Directory-index hosts such as Cloudflare Pages and Netlify need a matching normalization layer before using this recipe with Next.js's default redirects. If your application uses `trailingSlash: true` instead, the origin must also consistently serve extensionless HTML routes with trailing slashes. Verify `/docs`, `/docs/` and both slash forms of a nested guide through the public app, and confirm redirects terminate at the intended page.
 
 On Vercel, an [external rewrite](/docs/pages/deployment/vercel#separate-docs-deployment) is another place to configure this boundary. Choose one owner for the rewrite. Keep the Next.js preset and its normal output settings; `.docu/dist` is the output directory of the separate docs project.
 
