@@ -1,0 +1,78 @@
+---
+title: React with Vite
+description: Develop a React application alongside Flame and merge both static builds for deployment.
+---
+
+Use this guide for a React application built with Vite. First add Flame, `docu.json`, content and the `docs:*` scripts from the [shared setup](/docs/pages/overview#configure-flame). Keep `meta.basePath` set to `/docs`.
+
+## Local development
+
+Keep the React plugin and add a proxy to the existing Vite configuration:
+
+```typescript:vite.config.ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+const docsProxy = {
+  target: "http://localhost:3001",
+  changeOrigin: true,
+};
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    strictPort: true,
+    proxy: {
+      "^/docs(?:/|$)": docsProxy,
+      "/__hmr": docsProxy,
+    },
+  },
+});
+```
+
+The `/docs` prefix is preserved when forwarding. `/__hmr` forwards Flame's reload event stream; it uses SSE rather than a WebSocket. Vite's own reload connection stays with Vite. These rules use [Vite's dev proxy](https://vite.dev/config/server-options#server-proxy).
+
+Start the two servers in separate terminals:
+
+```shell
+npm run dev
+```
+
+```shell
+npm run docs:dev
+```
+
+Visit `http://localhost:5173/` for the application and `http://localhost:5173/docs/` for the documentation. Opening `http://localhost:3001/docs/` directly is also supported.
+
+## Link to the documentation
+
+Use a normal document navigation from the React application:
+
+```tsx:src/DocsLink.tsx
+export function DocsLink() {
+  return <a href="/docs/">Documentation</a>;
+}
+```
+
+With React Router, a plain anchor or [`Link` with `reloadDocument`](https://reactrouter.com/api/components/Link#reloaddocument) lets the browser load Flame's page. Keep the docs prefix outside your application route handlers and service worker navigation fallback.
+
+## Build the combined site
+
+Merge these build scripts into `package.json`:
+
+```json:package.json
+{
+  "scripts": {
+    "build:app": "vite build",
+    "docs:build": "flame build",
+    "build": "npm run build:app && npm run docs:build && cp -R .docu/dist/. dist/"
+  }
+}
+```
+
+Run `npm run build` and publish `dist/`. The React app owns `dist/index.html` and its assets; Flame's files live in `dist/docs/`. If you customize Vite's `build.outDir`, update the copy destination and the host's publish directory together.
+
+`server.proxy` applies to development only. Configure production routing with the [Vercel](/docs/pages/deployment/vercel), [Cloudflare](/docs/pages/deployment/cloudflare), [Heroku](/docs/pages/deployment/heroku) or [Netlify](/docs/pages/deployment/netlify) guide. A SPA fallback must leave existing docs files and missing docs routes to the docs handler.
+
+Verify the homepage, direct access to `/docs/guide.html`, navigation through the docs link, and the status of a missing docs page using the [shared checks](/docs/pages/overview#develop-and-verify).

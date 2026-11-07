@@ -16,6 +16,8 @@ Flame builds a fully static site — no server runtime is required. `flame build
 
 The `docs/` directory is the prefix from `meta.basePath` — change it to `/handbook` and pages are written to `.docu/dist/handbook/`, set it to `""` and they land at the dist root. A project that serves its own landing page can switch the generated one off with `experimental.pages`, which also keeps the 404 page and the bundles under the docs prefix — see [Bring your own pages](/docs/getting-started/base-path#bring-your-own-pages).
 
+To deploy Flame next to an existing application with `experimental.pages`, use the dedicated [Vercel](/docs/pages/deployment/vercel), [Cloudflare](/docs/pages/deployment/cloudflare), [Heroku](/docs/pages/deployment/heroku) or [Netlify](/docs/pages/deployment/netlify) guide. Those recipes cover combined artifacts, separate docs deployments and docs-specific 404 handling.
+
 Pages are emitted as flat `.html` files, and internal links are generated with the `.html` suffix so navigation works on any static host that serves files by exact path — with **zero configuration**.
 
 Whether the `.html` suffix stays visible in the browser address bar depends on your provider's **clean URL** support. Some providers strip the suffix automatically, others need a small config file, and a few cannot rewrite URLs at all.

@@ -1,0 +1,96 @@
+---
+title: Heroku
+description: Build an application and Flame together, then serve the static artifact through one Heroku web process.
+---
+
+Heroku needs a web process to serve the built files. This example uses a static application, such as React or Vue with Vite, and Express. Start with the [shared setup](/docs/pages/overview#configure-flame) and the framework's combined build, which writes the application and `/docs` into `dist/`.
+
+## Add the runtime server
+
+Install Express as a runtime dependency:
+
+```shell
+npm install express@^5
+```
+
+Create a server at the project root. The docs handler must run before the application's SPA fallback:
+
+```javascript:server.mjs
+import express from "express";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const app = express();
+const output = fileURLToPath(new URL("./dist/", import.meta.url));
+const docs = join(output, "docs");
+
+app.use("/docs", express.static(docs, { extensions: ["html"] }));
+app.use("/docs", (_request, response) => {
+  response.status(404).sendFile(join(docs, "404.html"));
+});
+
+app.use(express.static(output, { extensions: ["html"] }));
+app.use((request, response) => {
+  if (["GET", "HEAD"].includes(request.method) && request.accepts("html")) {
+    response.sendFile(join(output, "index.html"));
+  } else {
+    response.sendStatus(404);
+  }
+});
+
+app.listen(Number(process.env.PORT ?? 3000), "0.0.0.0");
+```
+
+The mounted static handler serves `/docs/`, flat `.html` pages and their extensionless forms. The next handler returns Flame's 404 with status 404 for any unmatched docs path. Express documents these [static file options](https://expressjs.com/en/5x/api/express/#express.static). For a multi-page application, replace the final SPA handler with the application's own 404 handling.
+
+## Configure build and startup
+
+Merge these fields into `package.json`, keeping the existing combined `build` script and dependencies:
+
+```json:package.json
+{
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "heroku-postbuild": "npm run build"
+  }
+}
+```
+
+Heroku's classic Node.js buildpack runs `heroku-postbuild` in place of its automatic `build` step. This command therefore calls the combined build explicitly. Build dependencies such as Flame and Vite must be installed during this step; Express stays in `dependencies` for startup after pruning. Commit `package-lock.json`. See [Node.js build steps](https://devcenter.heroku.com/articles/nodejs-classic-buildpack-builds) and [supported Node versions](https://devcenter.heroku.com/articles/nodejs-support).
+
+Add the web process declaration:
+
+```text:Procfile
+web: npm start
+```
+
+The server listens on Heroku's assigned `PORT`. One web process serves both application and docs; running two independent development servers does not expose both through the same Heroku app. See [Heroku's process and port requirements](https://devcenter.heroku.com/articles/preparing-a-codebase-for-heroku-deployment).
+
+Use the Node.js classic buildpack for this recipe. It builds the artifact during deployment; `flame dev` and `flame preview` are local development tools rather than the production process.
+
+## Verify before and after deployment
+
+Run locally:
+
+```shell
+npm run build
+PORT=8080 npm start
+```
+
+In another terminal:
+
+```shell
+curl -I http://localhost:8080/
+curl -I http://localhost:8080/docs/guide.html
+curl -I http://localhost:8080/docs/guide
+curl -I http://localhost:8080/docs/missing
+```
+
+The application and guide should succeed, and the last request should return 404. Deploy using your Heroku Git or dashboard integration, then repeat the checks against the app URL. If startup fails, inspect the build log for the combined build and the runtime log for the assigned port. Keep `meta.baseURL` set to the public domain.
+
+For an [npm monorepo](/docs/pages/monorepo), install from the repository lockfile, run the two workspace builds in `heroku-postbuild`, copy into `apps/web/dist/`, and start the server from the web workspace. Adjust the server's output path to its own location.
+
+For an existing server-rendered app, add a docs static mount or upstream proxy to the production server before its framework catch-all, and keep the framework's startup command. A serverless deployment adapter may need a different integration; use a separate docs deployment when the server cannot mount static files.

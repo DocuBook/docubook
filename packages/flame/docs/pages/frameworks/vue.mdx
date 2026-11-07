@@ -1,0 +1,66 @@
+---
+title: Vue with Vite
+description: Serve Flame next to a Vue application while keeping Vue Router and the documentation routes separate.
+---
+
+Use this guide for a Vue application built with Vite. Complete the [shared setup](/docs/pages/overview#configure-flame) in the Vue project, with `experimental.pages: true` and `meta.basePath: "/docs"`. For Nuxt, use the [Nuxt guide](/docs/pages/frameworks/nuxt).
+
+## Local development
+
+Extend the existing Vite configuration:
+
+```typescript:vite.config.ts
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+
+const docsProxy = {
+  target: "http://localhost:3001",
+  changeOrigin: true,
+};
+
+export default defineConfig({
+  plugins: [vue()],
+  server: {
+    port: 5173,
+    strictPort: true,
+    proxy: {
+      "^/docs(?:/|$)": docsProxy,
+      "/__hmr": docsProxy,
+    },
+  },
+});
+```
+
+Run `npm run dev` and `npm run docs:dev` in separate terminals. The app is at `http://localhost:5173/`, and docs are at `http://localhost:5173/docs/`. The proxy preserves the docs prefix and forwards the SSE reload endpoint. See [Vite's proxy configuration](https://vite.dev/config/server-options#server-proxy).
+
+## Link from Vue
+
+Let the browser load the docs as a complete document:
+
+```vue:src/components/DocsLink.vue
+<template>
+  <a href="/docs/">Documentation</a>
+</template>
+```
+
+Use this anchor at the boundary between the application and Flame. Vue Router's `RouterLink` and `router.push` handle application navigation; docs use their own HTML and browser bundle. Keep service worker navigation rules from serving the Vue shell for `/docs` requests. See [Vue Router navigation](https://router.vuejs.org/guide/essentials/navigation.html).
+
+## Build and publish
+
+Keep Vite's existing build, then append the docs build and copy:
+
+```json:package.json
+{
+  "scripts": {
+    "build:app": "vite build",
+    "docs:build": "flame build",
+    "build": "npm run build:app && npm run docs:build && cp -R .docu/dist/. dist/"
+  }
+}
+```
+
+Run `npm run build` and publish `dist/`. For an npm workspace, use the [monorepo commands](/docs/pages/monorepo) and adjust the copy destination to the Vue workspace's output.
+
+Configure the host using [Vercel](/docs/pages/deployment/vercel), [Cloudflare](/docs/pages/deployment/cloudflare), [Heroku](/docs/pages/deployment/heroku) or [Netlify](/docs/pages/deployment/netlify). The dev proxy does not carry into production. Serve `/docs/*` before the Vue SPA fallback so a missing guide returns 404 instead of the app shell.
+
+Verify clicking the docs link, refreshing a nested docs URL, loading search and requesting a missing guide with the [shared checks](/docs/pages/overview#develop-and-verify).

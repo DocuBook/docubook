@@ -1,0 +1,62 @@
+---
+title: Astro
+description: Serve Astro pages and Flame documentation on one origin, with local proxies and a combined static build.
+---
+
+Add Flame using the [shared setup](/docs/pages/overview#configure-flame). Astro owns the application pages, and Flame owns `/docs`. Keep `meta.baseURL` set to the URL visitors use for the combined site.
+
+## Local development
+
+Merge the following into the existing Astro configuration:
+
+```javascript:astro.config.mjs
+import { defineConfig } from "astro/config";
+
+const docsProxy = {
+  target: "http://localhost:3001",
+  changeOrigin: true,
+};
+
+export default defineConfig({
+  vite: {
+    server: {
+      proxy: {
+        "^/docs(?:/|$)": docsProxy,
+        "/__hmr": docsProxy,
+      },
+    },
+  },
+});
+```
+
+Astro accepts [additional Vite configuration](https://docs.astro.build/en/reference/configuration-reference/#vite). The docs proxy preserves `/docs` and forwards Flame's SSE reload stream.
+
+Run `npm run dev` and `npm run docs:dev` in separate terminals. Astro normally serves the application at `http://localhost:4321/`; the documentation is available at `http://localhost:4321/docs/`.
+
+## Link from Astro
+
+```astro:src/components/DocsLink.astro
+<a href="/docs/" data-astro-reload>Documentation</a>
+```
+
+The anchor performs a full document navigation. If the application uses Astro's client router, [`data-astro-reload`](https://docs.astro.build/en/guides/view-transitions/#preventing-client-side-navigation) keeps the docs link on that path so Flame's scripts initialize in their own document.
+
+## Static build
+
+For Astro's static output, build the application before copying the docs:
+
+```shell
+npx astro build
+npm run docs:build
+cp -R .docu/dist/. dist/
+```
+
+Publish `dist/`. Update the destination if Astro's `outDir` is customized. Keep the Flame tree's `/docs` prefix intact, and reserve that route prefix in Astro's page tree.
+
+Choose [Vercel](/docs/pages/deployment/vercel), [Cloudflare](/docs/pages/deployment/cloudflare), [Heroku](/docs/pages/deployment/heroku) or [Netlify](/docs/pages/deployment/netlify) for the production configuration. Astro's local proxy does not configure the production host.
+
+## Server-rendered build
+
+For an Astro application with server rendering, keep its adapter and deployment settings. Deploy Flame's `.docu/dist/` independently and forward `/docs` plus `/docs/*` using the host's external rewrite. This keeps the integration independent of the adapter's output layout.
+
+See [Vercel](/docs/pages/deployment/vercel#separate-docs-deployment), [Cloudflare](/docs/pages/deployment/cloudflare#server-rendered-applications) or [Netlify](/docs/pages/deployment/netlify#separate-docs-deployment). Check the upstream docs 404 and clean-URL behavior as well as the app homepage using the [shared verification steps](/docs/pages/overview#develop-and-verify).

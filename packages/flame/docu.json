@@ -190,6 +190,66 @@
       ]
     },
     {
+      "title": "Bring Your Own Pages",
+      "href": "/pages",
+      "noLink": true,
+      "items": [
+        {
+          "title": "Overview (Experimental)",
+          "href": "/overview"
+        },
+        {
+          "title": "Project Layouts & Monorepos",
+          "href": "/monorepo"
+        },
+        {
+          "title": "React with Vite",
+          "href": "/frameworks/react"
+        },
+        {
+          "title": "Vue with Vite",
+          "href": "/frameworks/vue"
+        },
+        {
+          "title": "Next.js",
+          "href": "/frameworks/nextjs"
+        },
+        {
+          "title": "Nuxt",
+          "href": "/frameworks/nuxt"
+        },
+        {
+          "title": "SvelteKit",
+          "href": "/frameworks/sveltekit"
+        },
+        {
+          "title": "Astro",
+          "href": "/frameworks/astro"
+        },
+        {
+          "title": "Deploy to Vercel",
+          "href": "/deployment/vercel"
+        },
+        {
+          "title": "Deploy to Cloudflare",
+          "href": "/deployment/cloudflare"
+        },
+        {
+          "title": "Deploy to Heroku",
+          "href": "/deployment/heroku"
+        },
+        {
+          "title": "Deploy to Netlify",
+          "href": "/deployment/netlify"
+        }
+      ],
+      "context": {
+        "icon": "LayersPlus",
+        "description": "Serve Flame alongside your application",
+        "title": "Pages"
+      }
+    },
+    {
       "title": "Components",
       "href": "/components",
       "noLink": true,

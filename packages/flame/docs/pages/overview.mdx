@@ -1,0 +1,156 @@
+---
+title: Bring Your Own Pages
+description: Keep your application at the site root and serve Flame documentation under a dedicated prefix with experimental.pages.
+---
+
+`experimental.pages` lets an existing application own the homepage while Flame builds the documentation under a prefix such as `/docs`. The application and the docs can use different frameworks, live in the same project or separate workspaces, and share a public origin.
+
+This is an experimental option: its configuration and behavior may change. The integration happens through static files and HTTP routes. Flame still renders its own docs with React; the application keeps its own router, layouts and state.
+
+## Feature scope
+
+The framework and hosting guides are integration recipes. The flag changes Flame's output and root-page behavior; the application and hosting configuration complete the integration.
+
+| Capability | Provided by Flame | Configured in your application or host |
+| --- | --- | --- |
+| Bring your own homepage | Skips Flame's landing page and landing bundle; ignores `home` | Build and serve the application's homepage |
+| Reserve a docs prefix | Places docs, browser bundles, search index and 404 under `meta.basePath` | Reserve the prefix before application catch-all routes |
+| Share an origin across frameworks | Produces a separate static docs artifact | Merge static outputs, or proxy a separate docs deployment |
+| Develop locally | Runs the docs server and sends Markdown reload notifications | Run the app alongside it and forward docs plus `/__hmr` if sharing a local origin |
+| Use a monorepo | Resolves one project from the nearest ancestor `docu.json` | Select the workspace, orchestrate builds and assemble or route their outputs |
+| Show the docs 404 | Writes the docs 404 file | Select it for missing docs URLs while preserving HTTP 404 |
+
+Application pages stay with their framework. This flag does not discover project `pages/` files containing React, Vue or Svelte components, share application routers or state, or provide application APIs and authentication. Flame reads documentation from `docs/` and renders it with its own components. Its output directory remains `.docu/dist/`.
+
+The recipes have not all been exercised through real deployments of every framework and hosting combination. Use the verification steps below on the actual combined application, including its adapter and routing configuration.
+
+## Prerequisites
+
+| Requirement | Check | Reference |
+| --- | --- | --- |
+| A runtime supported by Flame | `node --version`, `bun --version` or `deno --version` | [Installation](/docs/getting-started/installation) |
+| An existing application with working dev and build commands | Run the application's current scripts | Choose a framework guide below |
+| A path reserved for documentation | These examples use `/docs` | [Base Path & Subpaths](/docs/getting-started/base-path) |
+
+The examples use npm and a POSIX shell. Use your project's package manager throughout and commit its lockfile. In Windows PowerShell, set a port with `$env:PORT = "3001"` before running `npx flame dev` instead of using `PORT=3001` inline.
+
+## Configure Flame
+
+From the directory that will contain `docu.json`, install Flame:
+
+```shell
+npm install -D @docubook/flame
+```
+
+Add the configuration and content manually when extending an existing application. `flame init` copies a standalone project template, including `package.json`, so reserve it for a new, empty directory.
+
+```json:docu.json
+{
+  "$schema": "https://cdn.jsdelivr.net/npm/@docubook/flame/docu.schema.json",
+  "meta": {
+    "title": "Acme Docs",
+    "baseURL": "https://acme.example",
+    "basePath": "/docs"
+  },
+  "experimental": {
+    "pages": true
+  }
+}
+```
+
+Use the public application URL for `meta.baseURL`, including any deployment subpath. Keep the docs prefix in `meta.basePath` only: putting `/docs` in both settings produces `/docs/docs/…`. Local development ignores the deployment subpath.
+
+The framework and hosting examples assume deployment at the origin root. If the combined site is published under `/product`, use `baseURL: "https://acme.example/product"`, keep `basePath: "/docs"`, and adjust production links and public routing rules to `/product/docs/…`.
+
+Create `docs/index.mdx` and `docs/guide.mdx`, each with frontmatter and some content:
+
+```markdown:docs/guide.mdx
+---
+title: Guide
+description: Learn how to use Acme.
+---
+
+Welcome to the guide.
+```
+
+Merge these scripts into the existing `package.json`; keep the application's scripts:
+
+```json:package.json
+{
+  "scripts": {
+    "docs:dev": "PORT=3001 flame dev",
+    "docs:build": "flame build",
+    "docs:preview": "flame preview"
+  }
+}
+```
+
+With the flag enabled, a normal `flame build` produces:
+
+```text
+.docu/dist/
+└── docs/
+    ├── index.html
+    ├── guide.html
+    ├── 404.html
+    ├── assets/       # copied from docs/assets, when present
+    └── _flame/       # JS, CSS, manifest and search index
+```
+
+Flame skips the generated landing page and its bundle, ignores `home`, and moves its 404 and browser bundles under the docs prefix. Remove `home` to silence the warning. `docs/index.mdx` is optional; without it there is no generated docs index.
+
+:::warning{title="Reserve a prefix when sharing a site"}
+Use a nonempty `basePath` such as `/docs`. With `""` or `/`, the docs use the root page paths, `index.html` and `404.html`, which conflicts with an application at the same deployment root. Flame warns but still builds this valid docs-only configuration.
+:::
+
+## Choose a framework and hosting model
+
+| Application | Guide | Static output used in the guide |
+| --- | --- | --- |
+| React with Vite | [React](/docs/pages/frameworks/react) | `dist/` |
+| Vue with Vite | [Vue](/docs/pages/frameworks/vue) | `dist/` |
+| Next.js | [Next.js](/docs/pages/frameworks/nextjs) | `out/` with static export; separate docs deployment for SSR |
+| Nuxt | [Nuxt](/docs/pages/frameworks/nuxt) | `.output/public/` with static generation |
+| SvelteKit | [SvelteKit](/docs/pages/frameworks/sveltekit) | `build/` with `adapter-static` |
+| Astro | [Astro](/docs/pages/frameworks/astro) | `dist/` in static mode |
+
+For a static application, build both projects and copy Flame's output into the application's output **after** its build. Flame always writes to its own `.docu/dist/`; it has no custom output-directory option. Build tools may empty their output directory, so copying the docs first can remove them again. Keep `.docu/dist/` as Flame's build directory and copy from it into the final artifact.
+
+For an application with server rendering, keep the framework's deployment adapter and deploy the docs separately. Forward `/docs` and `/docs/*` to that docs deployment, preserving the prefix, query string, response status and content type. The public URL can still be `https://acme.example/docs/…`.
+
+See [project layouts and monorepos](/docs/pages/monorepo), then choose [Vercel](/docs/pages/deployment/vercel), [Cloudflare](/docs/pages/deployment/cloudflare), [Heroku](/docs/pages/deployment/heroku) or [Netlify](/docs/pages/deployment/netlify).
+
+## Develop and verify
+
+Run `npm run docs:dev` and the application's dev server in separate terminals. `flame dev` serves docs only; its `/` redirects to `/docs`. The framework guides show local proxy rules where supported. Forward `/__hmr` as well as `/docs`: Flame uses a server-sent event stream at `/__hmr` for reload notifications. This development endpoint is separate from the production docs prefix.
+
+Restart `flame dev` after editing `docu.json`, including changes to `experimental.pages`, `basePath`, routes or icons. Configuration is loaded and cached at startup; the Markdown watcher does not reload it. Changes to the app's proxy configuration may also require restarting its dev server.
+
+Navigate from the application to docs with a full document navigation so the browser loads Flame's HTML, styles and scripts. Each framework guide shows the appropriate link. Service workers and application-wide navigation handlers must also leave `/docs` requests to the network.
+
+After deployment, verify the following with the browser and `curl -I` (follow redirects with `curl -IL`):
+
+| Request or action | Expected result |
+| --- | --- |
+| `/` | The application's homepage |
+| `/docs/` | The docs index, if authored |
+| `/docs/guide.html` | The guide, or a clean-URL redirect that ends at the guide on the public application origin |
+| `/docs/_flame/search-index.json` | JSON, with a successful status |
+| A JS or CSS URL copied from the docs page | The actual asset and its correct content type |
+| `/docs/does-not-exist` | HTTP 404; configure the host if it should show Flame's docs 404 |
+| Click the application's docs link, then reload a nested docs page | Both load the documentation |
+
+`flame preview` previews Flame's own artifact. Use the host's local preview or a preview deployment to verify the combined application and its routing rules.
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| Homepage changes to docs | A root `basePath`, or standalone Flame entry points were copied | Use `/docs` and a normal `flame build` |
+| Docs work directly but fail after clicking a link | The application router intercepted navigation | Use the full document link from the framework guide |
+| JS or search requests return the app's HTML | A catch-all SPA rewrite handles docs requests | Route docs before the application's fallback |
+| Docs edits cause no reload or repeated reloads | `/__hmr` is missing from the local proxy | Forward the SSE endpoint without buffering, or open the Flame dev server directly |
+| Config, routes or icons stay unchanged | `docu.json` is cached by the running server | Restart `flame dev` and reload the browser |
+| The wrong docs project builds | The command found a different ancestor `docu.json` | Run it in the intended [workspace](/docs/pages/monorepo) |
+
+:::info{title="Standalone deploy helpers"}
+These guides use `flame build` for composition with an application. GitHub Pages deployment via `flame deploy` uses `FLAME_STANDALONE=1`, adding a root redirect and root 404. The generated Docker nginx configuration also redirects `/` to the docs. Use those helpers when Flame owns the deployment, or adapt their routing before serving a combined site. See [command behavior](/docs/getting-started/base-path#what-the-commands-do).
+:::

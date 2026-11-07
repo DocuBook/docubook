@@ -1,0 +1,60 @@
+---
+title: Nuxt
+description: Develop Nuxt and Flame together, then use a merged static artifact or a separate documentation deployment.
+---
+
+Add Flame with the [shared setup](/docs/pages/overview#configure-flame), keeping `/docs` reserved for documentation. Nuxt owns the application pages; Flame owns its docs HTML and browser bundle.
+
+## Local development
+
+Run `npm run docs:dev` on port 3001. Keep Nuxt on port 3000 and add a development proxy:
+
+```typescript:nuxt.config.ts
+export default defineNuxtConfig({
+  $development: {
+    routeRules: {
+      "/docs": { proxy: "http://localhost:3001/docs" },
+      "/docs/**": { proxy: "http://localhost:3001/docs/**" },
+      "/__hmr": { proxy: "http://localhost:3001/__hmr" },
+    },
+  },
+});
+```
+
+Preserve any existing Nuxt options. Start the app with `npm run dev` and visit `http://localhost:3000/docs/`. The exact `/docs` rule and the `/docs/**` wildcard preserve the docs prefix and query parameters when forwarding. Nitro can normalize the index request `/docs/` to `/docs`; Flame serves its docs index at either path. The `/__hmr` rule streams Flame's reload events. `$development` limits these localhost targets to development. See [Nitro's route rules](https://v2.nitro.build/config#routerules).
+
+Use these route rules rather than a prefix-only `nitro.devProxy` target: that proxy strips the matched mount path before forwarding, so a target without `/docs` sends the guide to the wrong upstream URL.
+
+## Navigate to docs
+
+Use a native anchor in the Nuxt application:
+
+```vue:app/components/DocsLink.vue
+<template>
+  <a href="/docs/">Documentation</a>
+</template>
+```
+
+This loads a complete document at the framework boundary. Keep `/docs` outside application catch-all pages, link interception and service worker navigation rules.
+
+## Static generation
+
+For an application that already supports Nuxt static generation, build it first, then add Flame's files:
+
+```shell
+npx nuxt generate
+npm run docs:build
+cp -R .docu/dist/. .output/public/
+```
+
+Publish `.output/public/`. The docs copy happens after generation so Nuxt's output cleanup does not remove it. The development proxy is used only by the local server; production routes come from the host. See [Nuxt deployment](https://nuxt.com/docs/4.x/getting-started/deployment).
+
+For separate workspaces, use the [monorepo build](/docs/pages/monorepo) and copy the docs artifact into the Nuxt workspace's `.output/public/`.
+
+## Server-rendered deployment
+
+Keep the Nuxt deployment adapter and normal build command. Publish Flame's `.docu/dist/` separately, then use the host's external proxy for `/docs` and `/docs/*`. Keep both the prefix and the response status when forwarding. `meta.baseURL` remains the public application URL.
+
+Use the platform instructions for [Vercel](/docs/pages/deployment/vercel#separate-docs-deployment), [Cloudflare](/docs/pages/deployment/cloudflare#server-rendered-applications) or [Netlify](/docs/pages/deployment/netlify#separate-docs-deployment). The `$development.routeRules` configuration above provides local development only.
+
+After deployment, refresh a nested guide, follow the application docs link and confirm a nonexistent guide returns 404 instead of a Nuxt page. See the [shared verification steps](/docs/pages/overview#develop-and-verify).
