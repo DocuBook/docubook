@@ -80,9 +80,20 @@ interface Runtime {
   fingerprint: string;
 }
 
+const LOG_LEVELS: Record<string, number> = { debug: 0, info: 1, warn: 2, error: 3 };
+
+function shouldLog(level: "info" | "warn"): boolean {
+  const currentLevel = LOG_LEVELS[process.env.LOG_LEVEL ?? "info"] ?? LOG_LEVELS.info;
+  return LOG_LEVELS[level] >= currentLevel;
+}
+
 const consoleLogger: Logger = {
-  info: (message) => console.log(`${LOG_PREFIX} ${message}`),
-  warn: (message) => console.warn(`${LOG_PREFIX} ${message}`),
+  info(message) {
+    if (shouldLog("info")) console.log(`${LOG_PREFIX} ${message}`);
+  },
+  warn(message) {
+    if (shouldLog("warn")) console.warn(`${LOG_PREFIX} ${message}`);
+  },
 };
 
 function escapeAttr(value: string): string {

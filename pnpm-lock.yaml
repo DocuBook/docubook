@@ -163,6 +163,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  '@docubook/plugin-og-image>@docubook/flame': workspace:*
   '@docubook/plugin-search-algolia>@docubook/flame': workspace:*
   flatted: '>=3.4.2'
   postcss: '>=8.5.18'
@@ -179,6 +180,9 @@ overrides:
   mermaid>katex: 0.18.10
   '@tailwindcss/typography>postcss-selector-parser': 7.1.7
   '@sentry/bundler-plugins>glob': 14.0.3
+
+patchedDependencies:
+  '@docubook/plugin-og-image@0.1.0': 24cc5516926b3c36d589caba928ffd6caecb23781af9ce4a5bcdf7505028eb65
 
 importers:
 
@@ -357,9 +361,12 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
+      '@docubook/plugin-og-image':
+        specifier: npm:@docubook/plugin-og-image@^0.1.0
+        version: 0.1.0(patch_hash=24cc5516926b3c36d589caba928ffd6caecb23781af9ce4a5bcdf7505028eb65)(@docubook/flame@packages+flame)(csstype@3.2.3)(react@19.3.1)
       '@docubook/plugin-search-algolia':
-        specifier: npm:@docubook/plugin-search-algolia@^0.1.2
-        version: 0.1.2(@docubook/flame@packages+flame)
+        specifier: npm:@docubook/plugin-search-algolia@^0.1.3
+        version: 0.1.3(@docubook/flame@packages+flame)
       '@types/node':
         specifier: ^22.20.5
         version: 22.20.5
@@ -490,7 +497,7 @@ importers:
         version: 2.19.0(csstype@3.2.3)(react@19.3.1)
     devDependencies:
       '@docubook/flame':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/flame
       '@types/node':
         specifier: ^22.20.5
@@ -810,10 +817,18 @@ packages:
   '@docsearch/sidepanel-js@5.2.0':
     resolution: {integrity: sha512-g3H479KRvjZOts58sxu2NKNCh6noQVk/GemB7tkKBKfGtWDdO9pSISpNfaO6aGpZM6hBUjAz+SRZQB4GAnhJvQ==}
 
-  '@docubook/plugin-search-algolia@0.1.2':
-    resolution: {integrity: sha512-lZSR8qZuIEaowXrkiERf4xFJkH+byXZ51Xi7r/IQprc2I6qqj8SY0xPsDM4ireBctkLk5ueLh19bmB4P5vVRMw==}
+  '@docubook/plugin-og-image@0.1.0':
+    resolution: {integrity: sha512-P0pytO69X9JXH8iEMERIuycNhtjWhO+vJfwlV9yZTuSNZf07qxwhaBHyflI0oQvmi0MBNTyB29KuwYhrd62W3g==}
     peerDependencies:
       '@docubook/flame': workspace:*
+
+  '@docubook/plugin-search-algolia@0.1.3':
+    resolution: {integrity: sha512-8mb/FTJWh/qeIqRHtByqJBBeKPS3snNU8EChF6qhv/wNsYPvkqG/Ajjpz4mqpBtsVTBs7L8vDDGELZ/d73zyUw==}
+    peerDependencies:
+      '@docubook/flame': workspace:*
+
+  '@docubook/themes-colors@2.2.1':
+    resolution: {integrity: sha512-52KAkLafaDOByIKBI4LcXgwVqn0Q4l5RtW15ovah1NVBuMqsrk8H5fnAJdxsnNpDVPLv2U2nUUrvXCn9j2f9sw==}
 
   '@esbuild/aix-ppc64@0.28.1':
     resolution: {integrity: sha512-Svl7tq8k/08+p6CXPpRjQ1fKX+1odH/BQbb48fV6fj3CWHhsoIOoY87w1oHXm0qEpkIK3ZfVgp0hed3XBXzXMQ==}
@@ -4184,9 +4199,22 @@ snapshots:
 
   '@docsearch/sidepanel-js@5.2.0': {}
 
-  '@docubook/plugin-search-algolia@0.1.2(@docubook/flame@packages+flame)':
+  '@docubook/plugin-og-image@0.1.0(patch_hash=24cc5516926b3c36d589caba928ffd6caecb23781af9ce4a5bcdf7505028eb65)(@docubook/flame@packages+flame)(csstype@3.2.3)(react@19.3.1)':
+    dependencies:
+      '@11ty/gray-matter': 3.0.0
+      '@docubook/flame': link:packages/flame
+      '@docubook/themes-colors': 2.2.1
+      '@takumi-rs/core': 2.19.0(csstype@3.2.3)(react@19.3.1)
+    transitivePeerDependencies:
+      - csstype
+      - preact
+      - react
+
+  '@docubook/plugin-search-algolia@0.1.3(@docubook/flame@packages+flame)':
     dependencies:
       '@docubook/flame': link:packages/flame
+
+  '@docubook/themes-colors@2.2.1': {}
 
   '@esbuild/aix-ppc64@0.28.1':
     optional: true

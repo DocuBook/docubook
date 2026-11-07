@@ -115,7 +115,8 @@
         "indexName": "docsearch_docubook",
         "askAi": "cdd1d1a2-5e49-400e-a093-3cdcc838731c"
       }
-    ]
+    ],
+    "@docubook/plugin-og-image"
   ],
   "routes": [
     {

@@ -1,0 +1,30 @@
+diff --git a/dist/index.js b/dist/index.js
+index b8cebcca4c5fbb6a2893651074d92405a6d06be3..52f4947ecc11af9f471cb76396e68bc413fd845e 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -776,9 +776,23 @@ async function publishCards(jobs, cardDir, manifestPath, render) {
+ var MAX_LOGO_BYTES = 1048576;
+ /** Cards kept in memory by the dev server. */
+ var DEV_CACHE_SIZE = 50;
++var LOG_LEVELS = {
++	debug: 0,
++	info: 1,
++	warn: 2,
++	error: 3
++};
++function shouldLog(level) {
++	const currentLevel = LOG_LEVELS[process.env.LOG_LEVEL ?? "info"] ?? LOG_LEVELS.info;
++	return LOG_LEVELS[level] >= currentLevel;
++}
+ var consoleLogger = {
+-	info: (message) => console.log(`${LOG_PREFIX} ${message}`),
+-	warn: (message) => console.warn(`${LOG_PREFIX} ${message}`)
++	info(message) {
++		if (shouldLog("info")) console.log(`${LOG_PREFIX} ${message}`);
++	},
++	warn(message) {
++		if (shouldLog("warn")) console.warn(`${LOG_PREFIX} ${message}`);
++	}
+ };
+ function escapeAttr(value) {
+ 	return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
