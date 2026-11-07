@@ -181,9 +181,6 @@ overrides:
   '@tailwindcss/typography>postcss-selector-parser': 7.1.7
   '@sentry/bundler-plugins>glob': 14.0.3
 
-patchedDependencies:
-  '@docubook/plugin-og-image@0.1.0': 24cc5516926b3c36d589caba928ffd6caecb23781af9ce4a5bcdf7505028eb65
-
 importers:
 
   .:
@@ -362,8 +359,8 @@ importers:
         version: 4.6.7
     devDependencies:
       '@docubook/plugin-og-image':
-        specifier: npm:@docubook/plugin-og-image@^0.1.0
-        version: 0.1.0(patch_hash=24cc5516926b3c36d589caba928ffd6caecb23781af9ce4a5bcdf7505028eb65)(@docubook/flame@packages+flame)(csstype@3.2.3)(react@19.3.1)
+        specifier: npm:@docubook/plugin-og-image@^0.1.1
+        version: 0.1.1(@docubook/flame@packages+flame)(csstype@3.2.3)(react@19.3.1)
       '@docubook/plugin-search-algolia':
         specifier: npm:@docubook/plugin-search-algolia@^0.1.3
         version: 0.1.3(@docubook/flame@packages+flame)
@@ -817,8 +814,8 @@ packages:
   '@docsearch/sidepanel-js@5.2.0':
     resolution: {integrity: sha512-g3H479KRvjZOts58sxu2NKNCh6noQVk/GemB7tkKBKfGtWDdO9pSISpNfaO6aGpZM6hBUjAz+SRZQB4GAnhJvQ==}
 
-  '@docubook/plugin-og-image@0.1.0':
-    resolution: {integrity: sha512-P0pytO69X9JXH8iEMERIuycNhtjWhO+vJfwlV9yZTuSNZf07qxwhaBHyflI0oQvmi0MBNTyB29KuwYhrd62W3g==}
+  '@docubook/plugin-og-image@0.1.1':
+    resolution: {integrity: sha512-+WxtNEu24otDbZMMT833mTDvMxkEt6+51s5gvdUbtqXIcmFYzW2Og/WClDDFCVGV41eT4G/ueWzjlqM+eAA0ow==}
     peerDependencies:
       '@docubook/flame': workspace:*
 
@@ -4199,7 +4196,7 @@ snapshots:
 
   '@docsearch/sidepanel-js@5.2.0': {}
 
-  '@docubook/plugin-og-image@0.1.0(patch_hash=24cc5516926b3c36d589caba928ffd6caecb23781af9ce4a5bcdf7505028eb65)(@docubook/flame@packages+flame)(csstype@3.2.3)(react@19.3.1)':
+  '@docubook/plugin-og-image@0.1.1(@docubook/flame@packages+flame)(csstype@3.2.3)(react@19.3.1)':
     dependencies:
       '@11ty/gray-matter': 3.0.0
       '@docubook/flame': link:packages/flame
