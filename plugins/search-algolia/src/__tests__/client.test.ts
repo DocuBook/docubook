@@ -142,6 +142,38 @@ describe("createSearchProvider", () => {
     expect(panel.close).toHaveBeenCalledOnce();
   });
 
+  it("leaves focus to the host after dismissal but restores it after a normal close", async () => {
+    const trigger = Object.assign(new FakeElement(), { focus: vi.fn() });
+    Object.defineProperty(document, "activeElement", { value: trigger, configurable: true });
+    let onClose!: () => void;
+    const instance = {
+      isOpen: false,
+      open: vi.fn(() => {
+        instance.isOpen = true;
+      }),
+      close: vi.fn(() => {
+        instance.isOpen = false;
+      }),
+    };
+    docsearch.mockImplementation((options) => {
+      onClose = options.onClose;
+      options.onReady();
+      return instance;
+    });
+    const provider = createSearchProvider(config);
+    provider.open();
+    await vi.waitFor(() => expect(instance.open).toHaveBeenCalledOnce());
+    provider.close?.();
+    onClose(); // DocSearch may deliver its close callback after navigation focuses.
+    expect(trigger.focus).not.toHaveBeenCalled();
+
+    provider.open();
+    await vi.waitFor(() => expect(instance.open).toHaveBeenCalledTimes(2));
+    instance.close();
+    onClose();
+    expect(trigger.focus).toHaveBeenCalledOnce();
+  });
+
   it("does not reopen Ask AI after dismissal while its panel is initializing", async () => {
     const search = { isOpen: false, open: vi.fn(), close: vi.fn() };
     const panel = { isOpen: false, open: vi.fn(), close: vi.fn() };

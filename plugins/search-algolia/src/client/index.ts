@@ -234,6 +234,9 @@ export default function createSearchProvider(config: ClientConfig): SearchProvid
       : undefined,
     close() {
       actionRevision++;
+      // Host navigation manages focus after dismissal. A delayed onClose
+      // must not return it to the search or Ask AI trigger afterwards.
+      lastFocused = null;
       if (modalInstance?.isOpen) modalInstance.close();
       if (panelInstance?.isOpen) panelInstance.close();
     },

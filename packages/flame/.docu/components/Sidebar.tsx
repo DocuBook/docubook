@@ -50,97 +50,119 @@ export default function Sidebar({ tocs = [], title, repoUrl, className }: Sideba
 
 function DesktopSidebar({ className, repoUrl }: { className?: string; repoUrl?: string }) {
   const askAi = useAskAi();
-  const [navigationOpen, setNavigationOpen] = useState(false);
-  const closeNavigation = useCallback(() => setNavigationOpen(false), []);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const [navigationRequested, setNavigationRequested] = useState(false);
+
+  useEffect(() => {
+    const sidebar = sidebarRef.current;
+    if (!navigationRequested || !sidebar) return;
+    const focusNavigation = () => {
+      const target = [
+        ...sidebar.querySelectorAll<HTMLElement>(
+          ".desktop-sidebar-menu nav a[href], .desktop-sidebar-menu nav button"
+        ),
+        ...sidebar.querySelectorAll<HTMLElement>(".desktop-sidebar-search button"),
+      ].find((element) => element.getClientRects().length > 0);
+      if (!target) return;
+      target.focus();
+      setNavigationRequested(false);
+    };
+    // The provider may close asynchronously. Wait for the full sidebar to
+    // become visible before moving focus away from the hidden rail button.
+    const observer = new ResizeObserver(focusNavigation);
+    observer.observe(sidebar);
+    focusNavigation();
+    return () => observer.disconnect();
+  }, [navigationRequested]);
   return (
-    <>
-      <div className={cn("desktop-sidebar flex h-full flex-col", className)}>
-        {/* Logo */}
-        <div className="desktop-sidebar-logo flex h-14 shrink-0 items-center px-5">
-          <a href={withDeployPath(basePath || "/", deployPath)} className="flex items-center gap-2">
-            {docuConfig.navbar?.logo?.src && (
-              <img
-                src={docsAssetSrc(docuConfig.navbar.logo.src, basePath, deployPath)}
-                alt={docuConfig.navbar.logo.alt || ""}
-                className="h-6 w-6"
-              />
-            )}
-            {docuConfig.navbar?.logoText && (
-              <span className="desktop-sidebar-name text-primary text-lg font-semibold">
-                {docuConfig.navbar.logoText}
-              </span>
-            )}
-          </a>
-        </div>
-
-        {/* Search, plus Ask AI when the search plugin offers it */}
-        <div className="desktop-sidebar-search flex shrink-0 items-center gap-2 px-4 pb-3">
-          <Search className="min-w-0 flex-1" />
-          {askAi && <AskAiButton config={askAi} />}
-        </div>
-
-        {/* Context + Menu */}
-        <div className="desktop-sidebar-menu flex-1 overflow-y-auto px-4">
-          <Context className="mb-2" />
-          <Menu routes={routes} />
-        </div>
-
-        {/* Bottom: Theme + GitHub */}
-        <nav className="desktop-sidebar-compact" aria-label="Compact documentation navigation">
-          <button
-            type="button"
-            aria-label="Open navigation"
-            title="Open navigation"
-            onClick={() => setNavigationOpen(true)}
-          >
-            <PanelRight className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            aria-label="Search documentation"
-            title="Search documentation"
-            onClick={() =>
-              document
-                .querySelector<HTMLButtonElement>(
-                  ".desktop-sidebar-search button[aria-label='Search documentation']"
-                )
-                ?.click()
-            }
-          >
-            <SearchIcon className="h-5 w-5" />
-          </button>
-          {routes
-            .filter((route) => route.context)
-            .map((route) => {
-              const label = route.context?.title || route.title;
-              return (
-                <Anchor
-                  key={route.href}
-                  href={withDeployPath(
-                    docsHtmlHref(`${basePath}${getFirstItemHref(route)}`),
-                    deployPath
-                  )}
-                  aria-label={label}
-                  title={label}
-                  activeWhen={(path) =>
-                    path.startsWith(docsNavHref(route.href, basePath, deployPath))
-                  }
-                  activeClassName="text-primary bg-primary/10"
-                >
-                  {renderLucideIcon(route.context?.icon || "BookOpen", "h-5 w-5")}
-                </Anchor>
-              );
-            })}
-          {askAi && <AskAiButton config={askAi} />}
-        </nav>
-
-        <div className="desktop-sidebar-footer border-base-200 flex items-center justify-between border-t px-4 py-3">
-          <ThemeToggle />
-          <GitHubLink repoUrl={repoUrl} />
-        </div>
+    <div ref={sidebarRef} className={cn("desktop-sidebar flex h-full flex-col", className)}>
+      {/* Logo */}
+      <div className="desktop-sidebar-logo flex h-14 shrink-0 items-center px-5">
+        <a href={withDeployPath(basePath || "/", deployPath)} className="flex items-center gap-2">
+          {docuConfig.navbar?.logo?.src && (
+            <img
+              src={docsAssetSrc(docuConfig.navbar.logo.src, basePath, deployPath)}
+              alt={docuConfig.navbar.logo.alt || ""}
+              className="h-6 w-6"
+            />
+          )}
+          {docuConfig.navbar?.logoText && (
+            <span className="desktop-sidebar-name text-primary text-lg font-semibold">
+              {docuConfig.navbar.logoText}
+            </span>
+          )}
+        </a>
       </div>
-      <MobileDrawer open={navigationOpen} onClose={closeNavigation} repoUrl={repoUrl} />
-    </>
+
+      {/* Search, plus Ask AI when the search plugin offers it */}
+      <div className="desktop-sidebar-search flex shrink-0 items-center gap-2 px-4 pb-3">
+        <Search className="min-w-0 flex-1" />
+        {askAi && <AskAiButton config={askAi} />}
+      </div>
+
+      {/* Context + Menu */}
+      <div className="desktop-sidebar-menu flex-1 overflow-y-auto px-4">
+        <Context className="mb-2" />
+        <Menu routes={routes} />
+      </div>
+
+      {/* Bottom: Theme + GitHub */}
+      <nav className="desktop-sidebar-compact" aria-label="Compact documentation navigation">
+        <button
+          type="button"
+          aria-label="Close Ask AI and show navigation"
+          title="Close Ask AI and show navigation"
+          onClick={() => {
+            setNavigationRequested(true);
+            dismissSearchSurfaces();
+          }}
+        >
+          <PanelRight className="h-5 w-5" />
+        </button>
+        <button
+          type="button"
+          aria-label="Search documentation"
+          title="Search documentation"
+          onClick={() =>
+            document
+              .querySelector<HTMLButtonElement>(
+                ".desktop-sidebar-search button[aria-label='Search documentation']"
+              )
+              ?.click()
+          }
+        >
+          <SearchIcon className="h-5 w-5" />
+        </button>
+        {routes
+          .filter((route) => route.context)
+          .map((route) => {
+            const label = route.context?.title || route.title;
+            return (
+              <Anchor
+                key={route.href}
+                href={withDeployPath(
+                  docsHtmlHref(`${basePath}${getFirstItemHref(route)}`),
+                  deployPath
+                )}
+                aria-label={label}
+                title={label}
+                activeWhen={(path) =>
+                  path.startsWith(docsNavHref(route.href, basePath, deployPath))
+                }
+                activeClassName="text-primary bg-primary/10"
+              >
+                {renderLucideIcon(route.context?.icon || "BookOpen", "h-5 w-5")}
+              </Anchor>
+            );
+          })}
+        {askAi && <AskAiButton config={askAi} />}
+      </nav>
+
+      <div className="desktop-sidebar-footer border-base-200 flex items-center justify-between border-t px-4 py-3">
+        <ThemeToggle />
+        <GitHubLink repoUrl={repoUrl} />
+      </div>
+    </div>
   );
 }
 
@@ -461,8 +483,16 @@ function MobileDrawer({
       if (layout) layout.inert = previousInert;
       window.removeEventListener("keydown", handleKey);
       window.removeEventListener(SEARCH_OPEN_EVENT, onClose);
-      if (previousFocus?.isConnected && previousFocus.getClientRects().length)
-        previousFocus.focus();
+      const focusTarget = [
+        document.querySelector<HTMLElement>(
+          '#mobile-bar-island button[aria-label="Open navigation"]'
+        ),
+        previousFocus,
+        ...document.querySelectorAll<HTMLElement>(
+          '.desktop-sidebar-search button[aria-label="Search documentation"]'
+        ),
+      ].find((element) => element?.isConnected && element.getClientRects().length > 0);
+      focusTarget?.focus();
     };
   }, [open, onClose]);
 
