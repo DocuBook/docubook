@@ -53,7 +53,7 @@ Requires `@docubook/flame` with search provider support (`DevServerContext.asset
 
 On Flame versions with split-workspace support, Ask AI docks in its own box beside the documentation at desktop widths (1024px and above). The document keeps its own box and scroll position, and its TOC becomes evenly spaced dots with heading titles on hover or keyboard focus. Each dot navigates to a section, and the active section is highlighted. Use the panel's expand/collapse button to adjust its width; the document automatically shares the available space. On narrower screens Ask AI fills the viewport. Closing it restores the document and full TOC. The `variant` option remains a fallback for hosts without this layout support.
 
-Opening Flame's navigation drawer dismisses search and Ask AI. Opening search or Ask AI while navigation is open returns to that surface, so only one overlay stays active.
+On narrow desktops, the compact rail's navigation button explicitly closes Ask AI and reveals the full sidebar, moving focus into the visible navigation. On mobile, opening Flame's navigation drawer dismisses search and Ask AI. Opening search or Ask AI while navigation is open returns to that surface, so only one overlay stays active.
 
 ## Development
 
