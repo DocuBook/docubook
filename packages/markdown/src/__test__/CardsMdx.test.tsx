@@ -16,6 +16,9 @@ describe("CardsMdx", () => {
       </CardsMdx>
     );
     expect(container.querySelector(".docubook-card-group")).not.toBeNull();
+    expect(container.querySelector(".docubook-card-group")?.parentElement?.className).toBe(
+      "docubook-card-group-container"
+    );
     expect(container.textContent).toContain("Card 1");
     expect(container.textContent).toContain("Card 2");
   });
@@ -24,12 +27,14 @@ describe("CardsMdx", () => {
     const { container } = render(<CardsMdx cols={10}>child</CardsMdx>);
     const el = container.querySelector(".docubook-card-group") as HTMLElement;
     expect(el?.style.getPropertyValue("--docubook-card-group-template")).toContain("repeat(4");
+    expect(el?.getAttribute("data-columns")).toBe("4");
   });
 
   it("defaults cols to 2", () => {
     const { container } = render(<CardsMdx>child</CardsMdx>);
     const el = container.querySelector(".docubook-card-group") as HTMLElement;
     expect(el?.style.getPropertyValue("--docubook-card-group-template")).toContain("repeat(2");
+    expect(el?.getAttribute("data-columns")).toBe("2");
   });
 
   it("passes style prop", () => {
