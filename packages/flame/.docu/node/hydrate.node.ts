@@ -221,14 +221,23 @@ export function enqueueClientBuild<T>(task: () => Promise<T>): Promise<T> {
 
 export function buildClientBundle(
   /** slug → compiled MDX ESM module source (program format) for static hydration. */
-  mdxSources: Record<string, string> = {}
+  mdxSources: Record<string, string> = {},
+  options: ClientBundleOptions = {}
 ): Promise<AssetManifest> {
-  return enqueueClientBuild(() => runClientBuild(mdxSources));
+  return enqueueClientBuild(() => runClientBuild(mdxSources, options));
 }
 
-async function runClientBuild(mdxSources: Record<string, string>): Promise<AssetManifest> {
+/** See the Bun variant in hydrate.ts: a dev build never touches the build's bundles or manifest. */
+export interface ClientBundleOptions {
+  dev?: boolean;
+}
+
+async function runClientBuild(
+  mdxSources: Record<string, string>,
+  options: ClientBundleOptions
+): Promise<AssetManifest> {
   await mkdir(ASSETS_DIR, { recursive: true });
-  await cleanOldBundles();
+  if (!options.dev) await cleanOldBundles();
   const nodeEnv = process.env.NODE_ENV || "development";
   // Vite assigns process.env.NODE_ENV = "production" when it is unset and
   // leaves it that way. Under the dev server that flips servedDeployPath()
@@ -336,6 +345,6 @@ async function runClientBuild(mdxSources: Record<string, string>): Promise<Asset
     ...(includeHome && homeJs ? { home: { js: homeJs, css: siteCss } } : {}),
     notFound: { css: siteCss },
   };
-  await writeFile(join(ASSETS_DIR, "manifest.json"), JSON.stringify(manifest));
+  if (!options.dev) await writeFile(join(ASSETS_DIR, "manifest.json"), JSON.stringify(manifest));
   return manifest;
 }

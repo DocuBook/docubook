@@ -33,6 +33,8 @@ Astro accepts [additional Vite configuration](https://docs.astro.build/en/refere
 
 Run `npm run dev` and `npm run docs:dev` in separate terminals. Astro normally serves the application at `http://localhost:4321/`; the documentation is available at `http://localhost:4321/docs/`.
 
+Both Flame commands write to the same `.docu/dist/` tree. `flame dev` serves its own bundle from there and leaves the bundles and `manifest.json` of the last `flame build` untouched, so a built artifact stays valid while the dev server runs. A dev-server bundle is not deployable: it is unminified and carries no precompiled MDX modules, so always run `flame build` before copying docs into the application's output. Dev bundles accumulate in `.docu/dist/docs/_flame/` until the next `flame build` cleans them.
+
 ## Link from Astro
 
 ```astro:src/components/DocsLink.astro
@@ -43,7 +45,7 @@ The anchor performs a full document navigation. If the application uses Astro's 
 
 ## Static build
 
-For Astro's static output, build the application before copying the docs:
+For Astro's static output, build the application first: `astro build` empties `dist/`, so docs copied before it would be removed. Then build Flame and copy its whole output, keeping the `/docs` prefix:
 
 ```shell
 npx astro build
@@ -51,7 +53,22 @@ npm run docs:build
 cp -R .docu/dist/. dist/
 ```
 
-Publish `dist/`. Update the destination if Astro's `outDir` is customized. Keep the Flame tree's `/docs` prefix intact, and reserve that route prefix in Astro's page tree.
+As one `build` script, with Flame's docs 404 promoted to the site's root 404 so missing URLs anywhere on the host get a 404 page:
+
+```json:package.json
+{
+  "scripts": {
+    "docs:build": "flame build",
+    "build": "astro build && npm run docs:build && cp -R .docu/dist/. dist/ && cp dist/docs/404.html dist/404.html"
+  }
+}
+```
+
+Publish `dist/`. Update the destination if Astro's `outDir` is customized. Keep the Flame tree's `/docs` prefix intact, and reserve that route prefix in Astro's page tree: a `src/pages/docs/` directory in Astro would collide with it.
+
+Flame writes depth-relative asset URLs such as `../../docs/_flame/client-abc123.js`, which resolve from the docs page's own URL. Serve docs pages at their extensionless or `.html` URL, never with a trailing slash: at `/docs/guide/` the browser resolves the bundle one directory too deep, the request 404s and no interactive component on the page initializes. On Vercel this is `trailingSlash: false`. `astro preview` serves `/docs/guide/` as-is without redirecting, so verify locally with `/docs/guide`.
+
+In a monorepo where the Astro app and the docs are separate workspaces, the copy path crosses workspaces, for example `cp -R ../docs/.docu/dist/. dist/`; see [project layouts](/docs/pages/monorepo) and the [Vercel monorepo example](/docs/pages/deployment/vercel#monorepo-with-turborepo).
 
 Choose [Vercel](/docs/pages/deployment/vercel), [Cloudflare](/docs/pages/deployment/cloudflare), [Heroku](/docs/pages/deployment/heroku) or [Netlify](/docs/pages/deployment/netlify) for the production configuration. Astro's local proxy does not configure the production host.
 

@@ -32,7 +32,33 @@ Configure the Vercel project to publish the combined artifact:
 
 Use `out` for a Next.js static export, `build` for SvelteKit's default static adapter output, or `.output/public` for Nuxt static generation. Keep the copy destination and output directory aligned. These are settings for the static application deployment; a server-rendered application keeps its framework's deployment output.
 
-With [`cleanUrls`](https://vercel.com/docs/project-configuration/vercel-json#cleanurls), a request for a docs `.html` URL redirects to its extensionless form.
+With [`cleanUrls`](https://vercel.com/docs/project-configuration/vercel-json#cleanurls), a request for a docs `.html` URL redirects to its extensionless form. Add `"trailingSlash": false` as well: Flame's asset URLs are relative to the docs page, and a page served at `/docs/guide/` would request its bundle from `/docs/docs/_flame/`, which does not exist. With `trailingSlash: false` Vercel redirects `/docs/guide/` to `/docs/guide`.
+
+### Monorepo with Turborepo
+
+When the application and the docs are separate workspaces, let the task runner build the docs workspace before the application and let the application's `build` script do the copy. This is the configuration that publishes docubook.pro, where the Astro app is the `@docubook/web` workspace in `pages/` and depends on the Flame workspace:
+
+```json:vercel.json
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "pnpm install --filter=@docubook/web...",
+  "buildCommand": "turbo build --filter=@docubook/web...",
+  "outputDirectory": "pages/dist",
+  "cleanUrls": true,
+  "trailingSlash": false
+}
+```
+
+```json:pages/package.json
+{
+  "scripts": {
+    "build": "astro build && cp -R ../packages/flame/.docu/dist/. dist/ && cp dist/docs/404.html dist/404.html"
+  }
+}
+```
+
+The `...` suffix on the filter includes the workspace's dependencies, so Turborepo runs the Flame workspace's `build` first and `.docu/dist/` is fresh when Astro's script copies it. `framework: null` keeps Vercel from applying the Astro preset to a root that is not the Astro project. Set the project root to the repository root in the Vercel dashboard so both workspaces are available to the build.
 
 ### SPA routes
 
