@@ -5,7 +5,7 @@
 //   node pages/scripts/build-mascot.mjs panda
 //
 // shortcut: the bottom fade is an alpha ramp without the blurred bands of build.py, upgrade if the cut shoulder line shows.
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

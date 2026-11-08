@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "build": "astro build && cp -R ../packages/flame/.docu/dist/. dist/ && cp dist/docs/404.html dist/404.html",
     "preview": "astro preview",
-    "typecheck": "astro check",
+    "typecheck": "astro sync && tsc --noEmit",
     "test": "node --experimental-strip-types --test src/**/*.test.ts"
   },
   "dependencies": {

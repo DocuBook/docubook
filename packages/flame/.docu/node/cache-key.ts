@@ -608,13 +608,6 @@ export function hookMemoryPressure(clear: () => void): void {
 }
 
 /**
- * Hash of compiled MDX module sources (sorted keys + content).
- * Used to skip the JS bundle rebuild when no page content changed.
- *
- * `extraStamp` folds inputs the MDX sources cannot see — the stylesheet
- * fingerprint (`cssBundleStamp()`) — so a CSS-only edit still rebuilds assets.
- */
-/**
  * Whether the `manifest.json` found on disk is the one the last build wrote:
  * `__assets__.hash` starts with that build's manifest JSON. Anything else —
  * a dev-server manifest, a hand edit — must not be adopted on a bundle cache
@@ -624,6 +617,13 @@ export function manifestMatchesCache(manifestJson: string, cachedAssetsHash: unk
   return typeof cachedAssetsHash === "string" && cachedAssetsHash.startsWith(manifestJson + "\0");
 }
 
+/**
+ * Hash of compiled MDX module sources (sorted keys + content).
+ * Used to skip the JS bundle rebuild when no page content changed.
+ *
+ * `extraStamp` folds inputs the MDX sources cannot see — the stylesheet
+ * fingerprint (`cssBundleStamp()`) — so a CSS-only edit still rebuilds assets.
+ */
 export function hashMdxSources(mdxSources: Record<string, string>, extraStamp = ""): string {
   const h = createHash("sha256");
   const slugs = Object.keys(mdxSources).sort();
