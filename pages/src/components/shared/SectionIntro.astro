@@ -1,0 +1,16 @@
+---
+// Pen "Section introduction": label + big heading on the left, a short description (or a mono label) bottom-right.
+import TechnicalLabel from "../ui/TechnicalLabel.astro";
+interface Props { label: string; heading: string; description?: string; aside?: string; tone?: "light" | "dark"; class?: string }
+const { label, heading, description, aside, tone = "light", class: className = "" } = Astro.props;
+const dark = tone === "dark";
+---
+
+<div class:list={["flex flex-col justify-between gap-8 lg:flex-row lg:items-end", className]}>
+  <div class="flex max-w-[800px] flex-col gap-[18px]">
+    <TechnicalLabel tone="accent">{label}</TechnicalLabel>
+    <h2 class:list={["text-4xl font-semibold leading-[1.05] tracking-tight whitespace-pre-line sm:text-5xl lg:text-[58px]", dark ? "text-dark-ink" : "text-ink"]}>{heading}</h2>
+  </div>
+  {description && <p class:list={["max-w-[318px] text-[17px] leading-relaxed", dark ? "text-dark-muted" : "text-muted"]}>{description}</p>}
+  {aside && <TechnicalLabel tone={dark ? "dark-muted" : "muted"}>{aside}</TechnicalLabel>}
+</div>

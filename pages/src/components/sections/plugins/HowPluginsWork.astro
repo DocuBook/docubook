@@ -1,0 +1,11 @@
+---
+import { pluginSteps } from "../../../content/home";
+import SectionIntro from "../../shared/SectionIntro.astro";
+import Steps from "../../shared/Steps.astro";
+import Container from "../../ui/Container.astro";
+---
+
+<Container as="section" class="flex flex-col gap-12 pb-24">
+  <SectionIntro label="How it works / Four steps" heading={"From docu.json\nto npm."} description="A plugin is a name and a setup function. Configure it, write it, pick the hooks it needs, then keep it local or publish it." />
+  <Steps steps={pluginSteps} />
+</Container>

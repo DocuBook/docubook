@@ -1,6 +1,7 @@
 packages:
   - "packages/*"
   - "plugins/*"
+  - "pages"
 overrides:
   "@docubook/plugin-og-image>@docubook/flame": "workspace:*"
   "@docubook/plugin-search-algolia>@docubook/flame": "workspace:*"

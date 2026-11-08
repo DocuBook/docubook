@@ -1,0 +1,16 @@
+---
+// Pen "Features/Plugins introduction": label, 84px headline, description bottom-left, mono aside bottom-right.
+import Container from "../ui/Container.astro";
+import TechnicalLabel from "../ui/TechnicalLabel.astro";
+interface Props { label: string; heading: string; description: string; aside?: string }
+const { label, heading, description, aside } = Astro.props;
+---
+
+<Container as="section" class="flex flex-col gap-[26px] pt-[72px] pb-16">
+  <TechnicalLabel tone="accent">{label}</TechnicalLabel>
+  <h1 class="text-5xl font-semibold leading-[1.05] tracking-tight whitespace-pre-line sm:text-6xl lg:text-[84px]">{heading}</h1>
+  <div class="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+    <p class="max-w-[635px] text-[19px] leading-relaxed text-muted">{description}</p>
+    {aside && <TechnicalLabel>{aside}</TechnicalLabel>}
+  </div>
+</Container>

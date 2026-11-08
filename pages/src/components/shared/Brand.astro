@@ -1,0 +1,19 @@
+---
+import { site } from "../../content/site";
+import SpriteMascot from "./SpriteMascot.astro";
+// `collapsible`: the wordmark folds away once the page is scrolled, and returns when the footer is in view and the mascot has left for it.
+interface Props { mascot?: boolean; collapsible?: boolean }
+const { mascot = true, collapsible = false } = Astro.props;
+---
+
+<a href="/" class="flex items-center gap-1.5">
+  {mascot && <span class="brand-mascot block size-11 max-w-11 overflow-hidden"><SpriteMascot directions="/mascots/panda-directions.webp" reactions="/mascots/panda-reactions.webp" size={56} class="-m-1.5" /></span>}
+  <span class:list={["text-[23px] font-bold text-accent", collapsible && "brand-text max-w-[8em] overflow-hidden whitespace-nowrap"]}>{site.name}</span>
+</a>
+
+<style>
+  .brand-text, .brand-mascot { transition: opacity 0.25s ease, max-width 0.35s ease, margin 0.35s ease, scale 0.3s ease; }
+  :global([data-scrolled]:not([data-footer-visible])) .brand-text { max-width: 0; margin-left: -0.375rem; opacity: 0; }
+  :global([data-footer-visible]) .brand-mascot { scale: 0; opacity: 0; max-width: 0; margin-right: -0.625rem; }
+  @media (prefers-reduced-motion: reduce) { .brand-text, .brand-mascot { transition: none; } }
+</style>

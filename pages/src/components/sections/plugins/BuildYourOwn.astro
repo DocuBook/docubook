@@ -1,0 +1,78 @@
+---
+import { examplePlugin } from "../../../content/plugins";
+import { site } from "../../../content/site";
+import Button from "../../ui/Button.astro";
+import Container from "../../ui/Container.astro";
+import TechnicalLabel from "../../ui/TechnicalLabel.astro";
+
+// Build-time highlighter for the one snippet above: regex tokens, Shiki-like classes, no dependency.
+// shortcut: handles only the syntax this snippet uses, swap for Shiki if the sample grows.
+const rules: [RegExp, string][] = [
+  [/^"[^"]*"/, "str"],
+  [/^(?:import|type|from|const|export|default|new)\b/, "kw"],
+  [/^[A-Z][\w$]*/, "type"],
+  [/^[a-z_$][\w$]*(?=\()/, "fn"],
+  [/^[a-z_$][\w$]*(?=:)/, "prop"],
+  [/^[\w$]+/, ""],
+  [/^\s+/, ""],
+  [/^./, "pun"],
+];
+// Twoslash-style type info, keyed by token text: a pinned query box under the declaration, hover popups elsewhere.
+const types: Record<string, string> = { plugin: "const plugin: DocuBookPlugin", build: "(parameter) build: PluginBuilder" };
+const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const html = examplePlugin
+  .split("\n")
+  .map((line) => {
+    let rest = line;
+    let out = "";
+    const pinned = /^const plugin\b/.test(line);
+    while (rest) {
+      const [re, cls] = rules.find(([re]) => re.test(rest))!;
+      const text = rest.match(re)![0];
+      rest = rest.slice(text.length);
+      // The declaration line gets a pinned query box instead of a hover popup, so the two never overlap.
+      const hover = text in types && !pinned;
+      out += hover ? `<span class="tw" data-type="${types[text]}" tabindex="0">${esc(text)}</span>` : cls ? `<span class="${cls}">${esc(text)}</span>` : esc(text);
+    }
+    return pinned ? `${out}\n<span class="tw-query">${types.plugin}</span>` : out;
+  })
+  .join("\n");
+---
+
+<Container as="section" class="py-24">
+  <div class="flex flex-col gap-10 rounded border border-rule bg-card p-6 lg:flex-row lg:items-center lg:gap-8 lg:p-8 xl:gap-[60px] xl:p-10">
+    <div class="flex flex-1 flex-col gap-[23px]">
+      <TechnicalLabel tone="accent">Build your own / Twelve lines</TechnicalLabel>
+      <h2 class="text-4xl font-semibold leading-[1.1] tracking-tight lg:text-[30px] xl:text-[50px]">Your first plugin<br />fits on one screen.</h2>
+      <p class="text-[17px] leading-relaxed text-muted">Export a name and a setup function. Pick a hook, return your result, and point docu.json at the file. Errors in setup stop both build and dev, so a broken plugin never ships.</p>
+      <div class="flex flex-wrap gap-3">
+        <Button href="/docs/getting-started/plugins">Read the plugin guide</Button>
+        <Button href={`${site.github}/tree/main/plugins`} variant="ghost" external>Browse plugin examples</Button>
+      </div>
+      <TechnicalLabel class="normal-case!">@docubook/plugin-* or docubook-plugin-*</TechnicalLabel>
+    </div>
+    <div class="flex w-full flex-col gap-4 rounded bg-dark p-[26px] font-mono lg:max-w-[440px] lg:shrink-0 lg:p-5 xl:max-w-[560px] xl:p-[26px]">
+      <div class="text-xs font-medium text-dark-muted">plugins/last-updated.ts</div>
+      <pre class="code overflow-x-auto text-[13px] leading-[1.7] text-dark-code sm:overflow-visible lg:text-xs xl:text-[13px]"><code set:html={html} /></pre>
+      <hr class="h-px border-0 bg-dark-rule" />
+      <span class="text-xs text-ok">docu.json  →  "plugins": ["./plugins/last-updated"]</span>
+    </div>
+  </div>
+</Container>
+
+
+<style>
+  /* Shiki vitesse-dark palette, by token class. */
+  .code :global(.kw) { color: #4d9375; }
+  .code :global(.str) { color: #c98a7d; }
+  .code :global(.fn) { color: #80a665; }
+  .code :global(.type) { color: #5da9a7; }
+  .code :global(.prop) { color: #b8a965; }
+  .code :global(.pun) { color: #666666; }
+  /* Twoslash: dotted identifiers show their type on hover or focus; the pinned query box sits under its line. */
+  .code :global(.tw) { position: relative; text-decoration: underline dotted #666; text-underline-offset: 3px; }
+  .code :global(.tw::after) { content: attr(data-type); position: absolute; left: 0; top: 100%; z-index: 1; margin-top: 2px; white-space: nowrap; border: 1px solid var(--color-dark-rule); border-radius: 3px; background: var(--color-dark-card); padding: 2px 8px; font-size: 11px; line-height: 1.6; color: var(--color-dark-muted); opacity: 0; pointer-events: none; transition: opacity 120ms; }
+  .code :global(.tw:hover::after), .code :global(.tw:focus-visible::after) { opacity: 1; }
+  .code :global(.tw-query) { display: inline-block; margin-left: 6ch; border: 1px solid var(--color-dark-rule); border-radius: 3px; background: var(--color-dark-card); padding: 0 8px; font-size: 11px; color: var(--color-dark-muted); }
+  .code :global(.tw-query::before) { content: "^?"; margin-right: 8px; color: #666666; }
+</style>

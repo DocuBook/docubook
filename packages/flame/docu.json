@@ -7,53 +7,17 @@
     "favicon": "/docs/assets/images/favicon.ico",
     "verification": {
       "algolia-site-verification": "3977D491A9531EBA"
-    }
+    },
+    "basePath": "/docs"
+  },
+  "experimental": {
+    "pages": true
   },
   "sidebar": {
     "context": "separator"
   },
   "themes": {
     "colors": "default"
-  },
-  "home": {
-    "hero": {
-      "tagline": "DocuBook Flame - v2",
-      "headline": "Compile markdown. Deploy anything.",
-      "description": "No runtime, no server to run, no lock-in. One markdown format, readable by humans and agents alike, compiled to flat static HTML — deploy anywhere.",
-      "actions": [
-        {
-          "text": "Get Started",
-          "link": "/docs/getting-started/introduction",
-          "theme": "primary"
-        },
-        {
-          "text": "GitHub",
-          "link": "https://github.com/DocuBook/docubook",
-          "theme": "ghost",
-          "icon": "github"
-        }
-      ]
-    },
-    "features": [
-      {
-        "icon": "Zap",
-        "title": "Lightning Fast",
-        "description": "Powered by Bun for instant builds and hot module replacement.",
-        "link": "/docs"
-      },
-      {
-        "icon": "Paintbrush",
-        "title": "Themeable",
-        "description": "Customize with Tailwind CSS and DaisyUI for beautiful documentation.",
-        "link": "/docs/getting-started/themes"
-      },
-      {
-        "icon": "Search",
-        "title": "Full-Text Search",
-        "description": "Built-in search with Algolia integration for easy content discovery.",
-        "link": "/docs/getting-started/search/built-in"
-      }
-    ]
   },
   "navbar": {
     "logo": {

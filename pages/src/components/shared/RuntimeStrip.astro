@@ -1,0 +1,26 @@
+---
+import Container from "../ui/Container.astro";
+import Bun from "../ui/icons/Bun.astro";
+import Deno from "../ui/icons/Deno.astro";
+import NodeJs from "../ui/icons/NodeJs.astro";
+import TechnicalLabel from "../ui/TechnicalLabel.astro";
+---
+
+<div class="border-y border-rule">
+  <Container class="flex flex-col gap-8 py-[34px] lg:flex-row lg:items-center lg:justify-between lg:gap-6 xl:gap-8">
+    <div class="flex flex-col gap-2">
+      <TechnicalLabel tone="accent">Build-time freedom</TechnicalLabel>
+      <p class="text-base text-ink">Your toolchain. Your choice.</p>
+    </div>
+    <ul class="flex flex-wrap items-center gap-7 lg:shrink-0 xl:gap-11">
+      {[["Bun", Bun], ["Node.js", NodeJs], ["Deno", Deno]].map(([r, Logo]) => (
+        <li class="flex items-center gap-2.5 text-[22px] font-semibold text-ink xl:text-[27px]"><Logo class="size-5" />{r}</li>
+      ))}
+    </ul>
+    <div class="hidden h-12 w-px bg-rule lg:block" aria-hidden="true"></div>
+    <div class="flex max-w-[238px] flex-col gap-2">
+      <TechnicalLabel tone="ink">At deploy time? None.</TechnicalLabel>
+      <p class="text-[13px] leading-relaxed text-muted">The generated site needs no runtime or server process.</p>
+    </div>
+  </Container>
+</div>

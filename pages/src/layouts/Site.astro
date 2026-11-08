@@ -1,0 +1,46 @@
+---
+import "../styles/global.css";
+import { site } from "../content/site";
+import Container from "../components/ui/Container.astro";
+import Footer from "../components/shared/Footer.astro";
+import Navbar from "../components/shared/Navbar.astro";
+
+interface Props { title?: string; description?: string }
+const { title, description = site.description } = Astro.props;
+const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · Compile Markdown. Deploy anything.`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <script is:inline>
+      // Re-apply the theme preset picked on the home page before first paint. Pages only; /docs is a separate Flame build.
+      try { const c = localStorage.getItem("theme-accent"); if (c) document.documentElement.style.setProperty("--color-accent", c); } catch {}
+    </script>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/docs/assets/images/favicon.ico" />
+    <link rel="preconnect" href={`https://${__ASK_AI__.appId}-dsn.algolia.net`} crossorigin />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL("/docs/assets/images/og.png", Astro.site)} />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body class="bg-paper font-sans text-ink antialiased">
+    <header class="sticky top-0 z-50 before:absolute before:inset-0 before:-z-10 before:bg-paper/70 before:backdrop-blur-md"><Container><Navbar /></Container></header>
+    <main><slot /></main>
+    <Footer />
+    <script>
+      const root = document.documentElement;
+      const onScrolled = () => root.toggleAttribute("data-scrolled", scrollY > 8);
+      addEventListener("scroll", onScrolled, { passive: true });
+      onScrolled();
+      new IntersectionObserver(([e]) => root.toggleAttribute("data-footer-visible", e.isIntersecting)).observe(document.querySelector("footer")!);
+    </script>
+  </body>
+</html>

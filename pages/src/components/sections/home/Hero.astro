@@ -1,0 +1,32 @@
+---
+import { site } from "../../../content/site";
+import Button from "../../ui/Button.astro";
+import Container from "../../ui/Container.astro";
+import GitHub from "../../ui/icons/GitHub.astro";
+import TechnicalLabel from "../../ui/TechnicalLabel.astro";
+---
+
+<Container as="section" class="flex flex-col gap-7 pt-16 pb-14">
+  <p class="flex items-center gap-2.5">
+    <span class="size-1.5 rounded-full bg-accent" aria-hidden="true"></span>
+    <TechnicalLabel tone="ink">Compile Markdown</TechnicalLabel>
+    <span class="text-[15px] text-muted" aria-hidden="true">/</span>
+    <TechnicalLabel>Deploy anything</TechnicalLabel>
+  </p>
+  <h1 class="text-5xl font-semibold leading-[1.02] tracking-tight sm:text-7xl xl:text-[108px]">
+    A modern toolkit for documentation that fits your stack.
+  </h1>
+  <div class="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
+    <p class="max-w-[635px] text-[19px] leading-relaxed text-muted">
+      No runtime, no server to run, no lock-in. One markdown format, readable by humans and agents alike, compiled
+      to flat static HTML — deploy anywhere.
+    </p>
+    <div class="flex flex-col gap-3.5 lg:shrink-0 lg:items-end">
+      <div class="flex gap-3">
+        <Button href="/docs/getting-started/introduction">Get Started</Button>
+        <Button href={site.github} variant="ghost" external>GitHub <GitHub /></Button>
+      </div>
+      <TechnicalLabel>Open source. MIT licensed. Yours.</TechnicalLabel>
+    </div>
+  </div>
+</Container>

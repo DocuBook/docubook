@@ -1,0 +1,12 @@
+---
+// Lucide icon by kebab-case name, so content files can stay plain data.
+import { ArrowRight, ArrowUpRight, Check, CloudUpload, Copy, CornerDownLeft, ExternalLink, FileCode2, FilePenLine, FileText, Flame, Folder, FolderOpen, GitFork, Globe, LockKeyhole, Scale, Search, Server, Sparkles, Star, Terminal, Upload } from "@lucide/astro";
+const icons = { "arrow-right": ArrowRight, "arrow-up-right": ArrowUpRight, check: Check, "cloud-upload": CloudUpload, copy: Copy, "corner-down-left": CornerDownLeft, "external-link": ExternalLink, "file-code-2": FileCode2, "file-pen-line": FilePenLine, "file-text": FileText, flame: Flame, folder: Folder, "folder-open": FolderOpen, "git-fork": GitFork, globe: Globe, "lock-keyhole": LockKeyhole, scale: Scale, search: Search, server: Server, sparkles: Sparkles, star: Star, terminal: Terminal, upload: Upload };
+export type IconName = keyof typeof icons;
+interface Props { name: IconName | string; size?: number; class?: string; strokeWidth?: number }
+const { name, size = 16, class: className = "", strokeWidth = 1.75 } = Astro.props;
+const Svg = icons[name as IconName];
+if (!Svg) throw new Error(`Unknown icon "${name}"`);
+---
+
+<Svg size={size} stroke-width={strokeWidth} class={className} aria-hidden="true" />

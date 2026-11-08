@@ -1,0 +1,30 @@
+---
+import { officialPlugins } from "../../../content/plugins";
+import SectionIntro from "../../shared/SectionIntro.astro";
+import Container from "../../ui/Container.astro";
+import OgPreview from "./OgPreview.astro";
+import SearchPreview from "./SearchPreview.astro";
+const cards = [
+  { ...officialPlugins.ogImage, Preview: OgPreview },
+  { ...officialPlugins.algolia, Preview: SearchPreview },
+];
+---
+
+<section class="bg-dark text-dark-ink">
+  <Container class="flex flex-col gap-[42px] py-[88px]">
+    <SectionIntro tone="dark" label="Official plugins / Ready to install" heading={"One line in docu.json.\nOne feature shipped."} aside="Built on the same hooks" />
+    <div class="grid gap-6 lg:grid-cols-2">
+      {cards.map(({ pkg, version, title, description, chips, Preview }) => (
+        <article class="flex flex-col gap-[22px] rounded border border-dark-rule bg-dark-card p-[30px]">
+          <div class="flex items-center justify-between font-mono text-xs font-medium"><span class="text-accent">{pkg}</span><span class="text-dark-muted">{version}</span></div>
+          <h3 class="text-[34px] font-semibold leading-[1.1] whitespace-pre-line">{title}</h3>
+          <p class="text-[15px] leading-relaxed text-dark-muted">{description}</p>
+          <Preview />
+          <ul class="mt-auto flex flex-wrap gap-2">
+            {chips.map((c) => <li class="rounded border border-dark-rule px-2.5 py-1.5 font-mono text-[11px] font-medium uppercase text-dark-muted">{c}</li>)}
+          </ul>
+        </article>
+      ))}
+    </div>
+  </Container>
+</section>

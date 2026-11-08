@@ -1,0 +1,104 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+/* Tokens from the pen.dev design (docubook.pen). */
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-paper: #f5f3ed;
+  --color-ink: #20211e;
+  --color-muted: #72736b;
+  --color-accent: #348fea;
+  --color-rule: #d9d9cf;
+  --color-card: #ebebe3;
+  --color-dark: #1b1d1b;
+  --color-dark-card: #252824;
+  --color-dark-rule: #3a3d36;
+  --color-dark-muted: #8d9587;
+  --color-dark-ink: #f5f3ed;
+  --color-dark-code: #e5e7db;
+  --color-ok: #b5cc91;
+}
+
+/* Preflight resets buttons to cursor: default; every button on this site is clickable. */
+button {
+  cursor: pointer;
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* DocSearch side panel: same mapping as @docubook/plugin-search-algolia, with the site tokens.
+   The navbar button is the only trigger, so DocSearch's own button stays hidden.
+   :root:root outranks DocSearch's :root[data-theme="dark"] block. */
+.DocSearch-SidepanelButton {
+  display: none !important;
+}
+:root:root {
+  --docsearch-font-family: inherit;
+  --docsearch-primary-color: var(--color-accent);
+  --docsearch-primary-dark-color: var(--color-accent);
+  --docsearch-soft-primary-color: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  --docsearch-highlight-color: var(--color-accent);
+  --docsearch-focus-color: var(--color-accent);
+  --docsearch-logo-color: var(--color-accent);
+  --docsearch-text-color: var(--color-ink);
+  --docsearch-secondary-text-color: var(--color-muted);
+  --docsearch-muted-color: var(--color-muted);
+  --docsearch-muted-color-darker: color-mix(in srgb, var(--color-muted) 25%, transparent);
+  --docsearch-icon-color: var(--color-muted);
+  --docsearch-subtle-color: var(--color-rule);
+  --docsearch-background-color: var(--color-card);
+  --docsearch-border-radius: 4px;
+  --docsearch-container-background: rgb(0 0 0 / 0.4);
+  --docsearch-modal-background: var(--color-paper);
+  --docsearch-modal-radius: 4px;
+  --docsearch-searchbox-background: var(--color-paper);
+  --docsearch-searchbox-focus-background: var(--color-paper);
+  --docsearch-hit-color: var(--color-ink);
+  --docsearch-hit-background: var(--color-paper);
+  --docsearch-hit-focus-background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  --docsearch-hit-highlight-color: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  --docsearch-hit-shadow: none;
+  --docsearch-key-background: var(--color-card);
+  --docsearch-key-color: var(--color-muted);
+  --docsearch-key-pressed-shadow: none;
+  --docsearch-footer-background: var(--color-paper);
+  --docsearch-footer-shadow: 0 -1px 0 0 var(--color-rule);
+  --docsearch-dropdown-menu-background: var(--color-paper);
+  --docsearch-dropdown-menu-item-hover-background: var(--color-card);
+  --docsearch-popover-background: var(--color-paper);
+  --docsearch-popover-arrow-color: var(--color-paper);
+  --docsearch-chip-text-color: var(--color-accent);
+  --docsearch-chip-background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  --docsearch-menu-trigger-active-background: color-mix(
+    in srgb,
+    var(--color-accent) 10%,
+    transparent
+  );
+  --docsearch-menu-trigger-active-text-color: var(--color-accent);
+  --docsearch-code-block-background: var(--color-card);
+  --docsearch-success-color: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  --docsearch-sidepanel-text-base: var(--color-ink);
+  --docsearch-sidepanel-accent-muted: var(--color-muted);
+}
+
+/* Below the desktop navbar breakpoint the Ask AI panel takes the whole viewport, the same
+   rules DocSearch itself applies up to 768px (it switches to a floating card from 769px). */
+@media (width < 1024px) {
+  .DocSearch-Sidepanel-Container.floating {
+    width: 100svw !important;
+    height: 100dvh !important;
+    inset: 0 !important;
+    border-radius: 0 !important;
+    transform: translate(100%) !important;
+  }
+  .DocSearch-Sidepanel-Container.floating.is-open {
+    transform: none !important;
+  }
+}
