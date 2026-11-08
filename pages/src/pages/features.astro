@@ -1,0 +1,14 @@
+---
+import Site from "../layouts/Site.astro";
+import FeatureGrid from "../components/sections/features/FeatureGrid.astro";
+import ClosingCta from "../components/shared/ClosingCta.astro";
+import PageIntro from "../components/shared/PageIntro.astro";
+import RuntimeStrip from "../components/shared/RuntimeStrip.astro";
+---
+
+<Site title="Features" description="Twelve things Flame does well: no runtime, a Markdown contract, directives, incremental builds, search, plugins, themes and more.">
+  <PageIntro label="Features / What Flame brings" heading={"Everything the docs need.\nNothing they don’t."} description="Flame is a build-time bridge between tooling and content. It reads Markdown, compiles it with React, and writes flat HTML. Twelve things it does well, in one place." aside="Bun / Node / Deno. Same output." />
+  <FeatureGrid />
+  <RuntimeStrip />
+  <ClosingCta />
+</Site>

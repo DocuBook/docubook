@@ -354,7 +354,8 @@ describe("base path cache invalidation", () => {
   const SOURCES = { "getting-started/intro": "export default function MDXContent(){}" };
 
   it("folds the resolved base path into the bundle hash", () => {
-    expect(basePathStamp()).toBe("/docs");
+    // This repository: /docs prefix with experimental.pages on.
+    expect(basePathStamp()).toBe("/docs+pages");
     expect(hashMdxSources(SOURCES)).toMatch(/^[a-f0-9]{16}$/);
   });
 
@@ -392,7 +393,7 @@ describe("base path cache invalidation", () => {
     expect(prefixStamp("/docs", "")).toBe("/docs");
     expect(prefixStamp("/docs", "/repo")).toBe("/docs@/repo");
     expect(prefixStamp("", "/repo")).toBe("/@/repo");
-    expect(basePathStamp()).toBe(prefixStamp("/docs", ""));
+    expect(basePathStamp()).toBe(prefixStamp("/docs", "") + "+pages");
   });
 });
 

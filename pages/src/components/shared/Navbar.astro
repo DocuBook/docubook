@@ -1,0 +1,76 @@
+---
+import { site } from "../../content/site";
+import AskAiButton from "../islands/AskAiButton";
+import Brand from "./Brand.astro";
+import GitHub from "../ui/icons/GitHub.astro";
+import TechnicalLabel from "../ui/TechnicalLabel.astro";
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const items = site.nav.map((item) => ({ ...item, active: item.href.replace(/\/$/, "") === path }));
+---
+
+<nav class="flex h-16 items-center justify-between" aria-label="Main">
+  <Brand collapsible />
+  <ul class="hidden items-center gap-[34px] text-sm lg:flex">
+    {items.map((item) => (
+      <li>
+        <a href={item.href} class:list={[item.active ? "font-semibold text-accent" : "text-ink"]} aria-current={item.active ? "page" : undefined} {...("external" in item ? { "data-astro-reload": true } : {})}>{item.label}</a>
+      </li>
+    ))}
+  </ul>
+  <div class="hidden items-center gap-[26px] lg:flex">
+    <a href={site.github} target="_blank" rel="noreferrer" class="flex items-center gap-2 text-sm text-ink"><GitHub class="size-[17px]" /> GitHub</a>
+    <AskAiButton client:idle />
+  </div>
+  <button type="button" class="burger relative z-50 -mr-2 flex size-11 flex-col items-center justify-center gap-[5px] lg:hidden" aria-expanded="false" aria-controls="mobile-menu" aria-label="Menu" data-nav-toggle>
+    <span class="block h-0.5 w-6 bg-ink"></span>
+    <span class="block h-0.5 w-6 bg-ink"></span>
+    <span class="block h-0.5 w-6 bg-ink"></span>
+  </button>
+</nav>
+
+<div id="mobile-menu" class="drawer fixed inset-0 z-40 flex flex-col bg-paper px-5 pb-6 lg:hidden" aria-hidden="true">
+  <div class="flex h-16 shrink-0 items-center"><Brand /></div>
+  <ul class="flex flex-col gap-2 border-t border-rule pt-8 text-4xl font-semibold tracking-tight">
+    {items.map((item) => (
+      <li>
+        <a href={item.href} class:list={["block py-3", item.active ? "text-accent" : "text-ink"]} aria-current={item.active ? "page" : undefined} {...("external" in item ? { "data-astro-reload": true } : {})}>{item.label}</a>
+      </li>
+    ))}
+  </ul>
+  <div class="mt-auto flex flex-col gap-4">
+    <TechnicalLabel>Open source. MIT licensed. Yours.</TechnicalLabel>
+    <div class="flex gap-3">
+      <a href={site.github} target="_blank" rel="noreferrer" class="flex h-[50px] flex-1 items-center justify-center gap-2.5 rounded border border-rule bg-paper text-sm font-semibold text-ink"><GitHub class="size-[17px]" /> GitHub</a>
+      <button type="button" class="flex h-[50px] flex-1 items-center justify-center gap-2.5 rounded bg-ink text-sm font-semibold text-white" data-ask-ai-trigger>
+        Ask AI
+        <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" /><path d="M20 3v4" /><path d="M22 5h-4" /><path d="M4 17v2" /><path d="M5 18H3" /></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .burger span { transition: transform 0.3s ease, opacity 0.2s ease; }
+  :global([data-menu-open]) .burger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  :global([data-menu-open]) .burger span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  :global([data-menu-open]) .burger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .drawer { opacity: 0; visibility: hidden; transform: translateY(-12px); transition: opacity 0.25s ease, transform 0.3s ease, visibility 0.3s; }
+  :global([data-menu-open]) .drawer { opacity: 1; visibility: visible; transform: none; }
+  :global([data-menu-open] body) { overflow: hidden; }
+  @media (prefers-reduced-motion: reduce) { .burger span, .drawer { transition: none; } }
+</style>
+
+<script>
+  const root = document.documentElement;
+  const toggle = document.querySelector<HTMLButtonElement>("[data-nav-toggle]")!;
+  const menu = document.getElementById("mobile-menu")!;
+  const set = (open: boolean) => {
+    root.toggleAttribute("data-menu-open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+    menu.setAttribute("aria-hidden", String(!open));
+  };
+  toggle.addEventListener("click", () => set(!root.hasAttribute("data-menu-open")));
+  menu.querySelectorAll("a, [data-ask-ai-trigger]").forEach((el) => el.addEventListener("click", () => set(false)));
+  addEventListener("keydown", (e) => e.key === "Escape" && set(false));
+  matchMedia("(min-width: 1024px)").addEventListener("change", (e) => e.matches && set(false));
+</script>

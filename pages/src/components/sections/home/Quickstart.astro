@@ -1,0 +1,47 @@
+---
+import { quickstart } from "../../../content/home";
+import Container from "../../ui/Container.astro";
+import Icon from "../../ui/Icon.astro";
+import TechnicalLabel from "../../ui/TechnicalLabel.astro";
+---
+
+<Container as="section" class="flex flex-col gap-12 py-24 lg:flex-row lg:items-center xl:gap-[90px]">
+  <div class="flex max-w-[500px] shrink-0 flex-col gap-[23px] lg:max-w-[360px] xl:max-w-[500px]">
+    <TechnicalLabel tone="accent">06 / From zero to docs</TechnicalLabel>
+    <h2 class="text-3xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-[40px] xl:text-[58px]">Three commands.<br />One fresh start.</h2>
+    <p class="text-[17px] leading-relaxed text-muted">Install Flame, initialize your project, and start the development server. Your next page starts here.</p>
+    <a href="/docs/getting-started/quick-start-guide" data-astro-reload class="flex items-center gap-2.5 text-sm font-semibold">Read the getting started guide <Icon name="arrow-up-right" size={17} /></a>
+  </div>
+  <div class="flex w-full flex-col gap-[17px] lg:max-w-[720px]">
+    <div class="overflow-hidden rounded-lg bg-dark font-mono">
+      <div class="flex h-[58px] items-center gap-7 border-b border-dark-rule px-6 text-[13px]" role="tablist" aria-label="Runtime">
+        {quickstart.runtimes.map((r, i) => <button type="button" role="tab" data-tab={i} aria-selected={i === 0} class="flex h-full items-center border-b border-transparent px-[5px] text-dark-muted aria-selected:border-accent aria-selected:text-dark-ink">{r.name}</button>)}
+        <button type="button" data-copy class="ml-auto text-dark-muted hover:text-dark-ink" aria-label="Copy commands"><Icon name="copy" size={16} class="[[data-copied]_&]:hidden" /><Icon name="check" size={16} class="hidden text-ok [[data-copied]_&]:block" /></button>
+      </div>
+      {quickstart.runtimes.map((r, i) => (
+        <ol role="tabpanel" data-panel={i} data-commands={r.commands.join("\n")} class:list={["flex flex-col gap-[26px] p-[30px]", i !== 0 && "hidden"]}>
+          {r.commands.map((cmd, j) => <li class="flex flex-col gap-[9px]"><span class="text-[11px] text-dark-muted">{quickstart.comments[j]}</span><code class="text-[15px] text-dark-code xl:text-[17px]">$ {cmd}</code></li>)}
+        </ol>
+      ))}
+    </div>
+    <TechnicalLabel>Local development uses a runtime. Your published HTML doesn’t.</TechnicalLabel>
+  </div>
+</Container>
+
+<script>
+  const tabs = document.querySelectorAll<HTMLButtonElement>("[data-tab]");
+  const panels = document.querySelectorAll<HTMLElement>("[data-panel]");
+  tabs.forEach((tab) =>
+    tab.addEventListener("click", () => {
+      tabs.forEach((t) => t.setAttribute("aria-selected", String(t === tab)));
+      panels.forEach((p) => p.classList.toggle("hidden", p.dataset.panel !== tab.dataset.tab));
+    })
+  );
+  const copy = document.querySelector<HTMLButtonElement>("[data-copy]")!;
+  copy.addEventListener("click", async () => {
+    const active = document.querySelector<HTMLElement>("[data-panel]:not(.hidden)")!;
+    await navigator.clipboard.writeText(active.dataset.commands!);
+    copy.toggleAttribute("data-copied", true);
+    setTimeout(() => copy.removeAttribute("data-copied"), 1500);
+  });
+</script>

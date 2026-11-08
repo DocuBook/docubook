@@ -1,0 +1,14 @@
+---
+import Site from "../layouts/Site.astro";
+import BuildYourOwn from "../components/sections/plugins/BuildYourOwn.astro";
+import HowPluginsWork from "../components/sections/plugins/HowPluginsWork.astro";
+import OfficialPlugins from "../components/sections/plugins/OfficialPlugins.astro";
+import PageIntro from "../components/shared/PageIntro.astro";
+---
+
+<Site title="Plugins" description="Extend Flame's build pipeline and dev server through hooks. Official plugins for OpenGraph cards and Algolia DocSearch, or build your own.">
+  <PageIntro label="Plugins / Extend the pipeline" heading={"Hook the build.\nNever fork it."} description="Plugins attach to Flame's build pipeline and dev server through hooks. Register them in docu.json as an npm package, a factory with options, or a local file. Nine hooks, run in order, on Bun, Node and Deno." />
+  <HowPluginsWork />
+  <OfficialPlugins />
+  <BuildYourOwn />
+</Site>

@@ -1,0 +1,41 @@
+---
+// Left: the layout a card is built from. Right: the card Takumi renders.
+import Icon from "../../ui/Icon.astro";
+const bar = (w: string, h = "h-1.5", tone = "bg-dark-rule") => `${w} ${h} rounded-sm ${tone}`;
+---
+
+<div class="flex flex-col items-center gap-3.5 sm:flex-row lg:flex-col xl:flex-row">
+  <div class="flex w-full flex-1 flex-col gap-2.5">
+    <span class="font-mono text-[10px] font-medium text-dark-muted">FRONTMATTER → LAYOUT</span>
+    <div class="relative flex h-[150px] flex-col justify-between overflow-hidden rounded border border-dark-rule bg-dark p-3.5" aria-hidden="true">
+      <i class="og-scan absolute inset-x-0 top-0 h-0.5 bg-accent"></i>
+      <div class="flex items-center gap-2"><i class="size-[18px] rounded-[3px] border border-dark-muted"></i><i class={bar("w-16")}></i></div>
+      <div class="flex flex-col gap-1.5"><i class={bar("w-[170px]", "h-3", "bg-dark-muted")}></i><i class={bar("w-[120px]", "h-3", "bg-dark-muted")}></i><i class={bar("w-[200px]")}></i><i class={bar("w-[150px]")}></i></div>
+      <div class="flex items-center justify-between"><i class={bar("w-[70px]")}></i><i class={bar("w-10", "h-1", "bg-accent")}></i></div>
+    </div>
+    <span class="font-mono text-[10px] text-dark-muted">title · description · logo · colours</span>
+  </div>
+  <Icon name="arrow-right" size={18} class="rotate-90 text-dark-muted sm:rotate-0 lg:rotate-90 xl:rotate-0" />
+  <div class="flex w-full flex-1 flex-col gap-2.5">
+    <span class="font-mono text-[10px] font-medium text-accent">RENDERED WITH TAKUMI</span>
+    <div class="og-render flex h-[150px] flex-col justify-between overflow-hidden rounded bg-paper p-3.5 text-ink">
+      <div class="flex items-center gap-[7px]"><img src="/images/docubook-icon.svg" alt="" class="size-[18px]" /><span class="text-[11px] font-bold text-accent">DocuBook</span></div>
+      <div class="flex flex-col gap-1">
+        <span class="font-mono text-[7px] font-medium uppercase text-muted">Getting started</span>
+        <span class="text-[17px] font-semibold leading-tight">Configuration</span>
+        <span class="text-[9px] leading-snug text-muted">Every option in docu.json, in one place.</span>
+      </div>
+      <div class="flex items-center justify-between"><span class="font-mono text-[8px] text-muted">docs.docubook.pro</span><i class="h-1 w-10 rounded-sm bg-accent"></i></div>
+    </div>
+    <span class="font-mono text-[10px] text-dark-muted">1200 × 630 · PNG · A FEW MILLISECONDS</span>
+  </div>
+</div>
+
+<style>
+  /* Scan-to-render: a scan line sweeps the layout while the Takumi card reveals top to bottom in step, on a 6s loop. */
+  .og-scan { box-shadow: 0 0 12px 2px color-mix(in srgb, var(--color-accent) 70%, transparent); animation: og-scan 6s ease-in-out infinite; }
+  .og-render { animation: og-render 6s ease-in-out infinite; }
+  @keyframes og-scan { 0%, 5% { translate: 0 0; opacity: 1; } 38% { translate: 0 150px; opacity: 1; } 40%, 100% { translate: 0 150px; opacity: 0; } }
+  @keyframes og-render { 0%, 5% { clip-path: inset(0 0 100% 0); opacity: 1; } 38%, 88% { clip-path: inset(0); opacity: 1; } 95%, 100% { clip-path: inset(0); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .og-scan { display: none; } .og-render { animation: none; } }
+</style>

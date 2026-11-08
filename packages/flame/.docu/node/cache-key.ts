@@ -608,6 +608,16 @@ export function hookMemoryPressure(clear: () => void): void {
 }
 
 /**
+ * Whether the `manifest.json` found on disk is the one the last build wrote:
+ * `__assets__.hash` starts with that build's manifest JSON. Anything else —
+ * a dev-server manifest, a hand edit — must not be adopted on a bundle cache
+ * hit, or every page keeps pointing at a bundle that no longer exists.
+ */
+export function manifestMatchesCache(manifestJson: string, cachedAssetsHash: unknown): boolean {
+  return typeof cachedAssetsHash === "string" && cachedAssetsHash.startsWith(manifestJson + "\0");
+}
+
+/**
  * Hash of compiled MDX module sources (sorted keys + content).
  * Used to skip the JS bundle rebuild when no page content changed.
  *

@@ -1,0 +1,44 @@
+---
+import { site } from "../../content/site";
+import Brand from "./Brand.astro";
+import Container from "../ui/Container.astro";
+import SpriteMascot from "./SpriteMascot.astro";
+import SectionRule from "../ui/SectionRule.astro";
+import TechnicalLabel from "../ui/TechnicalLabel.astro";
+const year = new Date().getFullYear();
+---
+
+<div class="relative">
+  <div class="peek absolute top-0 left-1/2 size-32"><SpriteMascot directions="/mascots/panda-directions.webp" reactions="/mascots/panda-reactions.webp" size={128} boop /></div>
+  <footer class="relative z-10 bg-dark text-dark-ink">
+  <Container class="flex flex-col gap-12 pt-14 pb-7">
+    <div class="flex flex-col justify-between gap-10 md:flex-row">
+      <div class="flex max-w-[570px] flex-col gap-5">
+        <Brand mascot={false} />
+        <p class="max-w-[360px] text-[15px] leading-relaxed text-dark-muted">
+          A modern toolkit for documentation: write Markdown, ship static files, keep your own stack.
+        </p>
+      </div>
+      <div class="flex w-[220px] flex-col gap-[15px] text-[13px] text-dark-code">
+        <TechnicalLabel tone="dark-muted">Open source</TechnicalLabel>
+        <a href={site.github} target="_blank" rel="noreferrer">GitHub ↗</a>
+        <a href={site.npm} target="_blank" rel="noreferrer">npm ↗</a>
+      </div>
+    </div>
+    <div class="flex flex-col gap-[22px]">
+      <SectionRule tone="dark" />
+      <div class="flex flex-col justify-between gap-2 sm:flex-row">
+        <TechnicalLabel tone="dark-muted">© {year} DocuBook. MIT licensed.</TechnicalLabel>
+        <TechnicalLabel tone="dark-muted">CommonMark in. Static HTML out.</TechnicalLabel>
+      </div>
+    </div>
+  </Container>
+</footer>
+</div>
+
+<style>
+  /* Hidden behind the footer (which paints above it), then rises to peek over the edge when the footer is in view. */
+  .peek { translate: -50% 0; transition: translate 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.15); }
+  :global([data-footer-visible]) .peek { translate: -50% -78%; }
+  @media (prefers-reduced-motion: reduce) { .peek { transition: none; } }
+</style>

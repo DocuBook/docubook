@@ -1,0 +1,45 @@
+---
+import { hosts, outputTree } from "../../../content/home";
+import Container from "../../ui/Container.astro";
+import Icon from "../../ui/Icon.astro";
+import SectionRule from "../../ui/SectionRule.astro";
+import TechnicalLabel from "../../ui/TechnicalLabel.astro";
+---
+
+<Container as="section" class="flex flex-col gap-[60px] pb-24">
+  <SectionRule />
+  <div class="flex flex-col gap-12 lg:flex-row lg:items-center lg:gap-10 xl:gap-20">
+    <div class="flex w-full flex-col gap-[30px] rounded bg-[#edede5] p-[30px] lg:max-w-[500px] lg:shrink-0 xl:max-w-[680px] xl:shrink">
+      <div class="flex items-center justify-between"><TechnicalLabel>Output / Just files</TechnicalLabel><Icon name="folder-open" size={17} class="text-muted" /></div>
+      <div class="flex flex-col items-start gap-6 sm:flex-row sm:items-center lg:flex-col lg:items-start xl:flex-row xl:items-center">
+        <pre class="flex w-full flex-col gap-[18px] rounded bg-dark p-[22px] font-mono text-xs text-dark-muted sm:w-[234px]"><span class="flex items-center gap-2 text-[13px] text-dark-code"><span class="folder relative size-[17px]" aria-hidden="true"><Icon name="folder" size={17} class="folder-closed" /><Icon name="folder-open" size={17} class="folder-open absolute inset-0" /></span>your-built-docs/</span>{outputTree.map((l) => <span>{l}</span>)}</pre>
+        <Icon name="arrow-right" size={22} class="hidden text-muted sm:block lg:hidden xl:block" />
+        <ul class="flex w-full flex-col gap-2.5">
+          {hosts.map((h) => (
+            <li class="flex items-center gap-4 rounded border border-rule bg-paper px-[22px] py-[18px]">
+              <Icon name={h.icon} size={22} class="text-ink" />
+              <div class="flex flex-1 flex-col gap-1.5"><span class="text-[15px] font-semibold">{h.title}</span><span class="font-mono text-[11px] uppercase text-muted">{h.hint}</span></div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+    <div class="flex max-w-[520px] flex-col gap-[23px]">
+      <TechnicalLabel tone="accent">07 / Hosting is your call</TechnicalLabel>
+      <h2 class="text-3xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-4xl xl:text-[58px]">Keep the docs.<br />Lose the lock-in.</h2>
+      <p class="text-[17px] leading-relaxed text-muted">Flame’s job ends at the build. The output is flat static HTML, ready for a static host or your own infrastructure. No DocuBook server to deploy. No platform to stay on.</p>
+      <ul class="flex gap-5 font-mono text-[11px]">
+        {["Portable files", "No server process"].map((q) => <li class="flex items-center gap-[7px]"><Icon name="check" size={14} class="text-accent" />{q}</li>)}
+      </ul>
+    </div>
+  </div>
+</Container>
+
+<style>
+  /* Folder icon: closed and open marks crossfade on a 3s loop. */
+  .folder :global(.folder-closed) { animation: folder-closed 3s ease infinite; }
+  .folder :global(.folder-open) { opacity: 0; animation: folder-open 3s ease infinite; }
+  @keyframes folder-open { 0%, 40% { opacity: 0; } 50%, 90% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes folder-closed { 0%, 40% { opacity: 1; } 50%, 90% { opacity: 0; } 100% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .folder :global(*) { animation: none; } }
+</style>

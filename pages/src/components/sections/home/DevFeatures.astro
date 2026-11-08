@@ -1,0 +1,96 @@
+---
+import { themePresets } from "../../../content/home";
+import SectionIntro from "../../shared/SectionIntro.astro";
+import Container from "../../ui/Container.astro";
+import Icon from "../../ui/Icon.astro";
+import TechnicalLabel from "../../ui/TechnicalLabel.astro";
+const results = ["Deploy a static site", "Understanding the build output"];
+---
+
+<section class="bg-dark text-dark-ink">
+  <Container class="flex flex-col gap-[42px] py-[88px]">
+    <SectionIntro tone="dark" label="04 / Built for the work between builds" heading="Less friction. More flow." aside="Small toolchain. Real control." />
+
+    <div class="grid gap-6 lg:grid-cols-[766fr_490fr]">
+      <div class="flex flex-col justify-between gap-6 rounded border border-dark-rule bg-dark-card p-[30px]">
+        <div class="flex max-w-[328px] flex-col gap-[13px]">
+          <TechnicalLabel tone="dark-muted">Built in theme</TechnicalLabel>
+          <h3 class="text-3xl font-semibold leading-tight">Your docs.<br />Your design language.</h3>
+          <p class="text-[15px] leading-relaxed text-dark-muted">Pick a preset or set one brand color. Light and dark palettes follow, no CSS to hand-craft.</p>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="flex gap-[7px]" role="group" aria-label="Theme presets">{themePresets.map((t, i) => <button type="button" data-theme-swatch={t.color} aria-label={`${t.name} theme`} aria-pressed={i === 0} class="size-[18px] rounded-full border border-dark-muted aria-pressed:ring-2 aria-pressed:ring-dark-ink aria-pressed:ring-offset-2 aria-pressed:ring-offset-dark-card" style={`background:${t.color}`}></button>)}</span>
+          <span class="font-mono text-[11px] text-dark-muted">ONE COLOR. A WHOLE THEME.</span>
+        </div>
+      </div>
+      <div class="flex flex-col gap-[15px] rounded border border-dark-rule p-[30px]">
+        <TechnicalLabel tone="dark-muted">Fast builds + HMR</TechnicalLabel>
+        <h3 class="text-3xl font-semibold leading-tight">Stay in the edit.</h3>
+        <p class="text-[15px] leading-relaxed text-dark-muted">A fast build loop and hot module replacement keep local development moving.</p>
+        <pre class="terminal mt-[18px] flex flex-col gap-[11px] font-mono text-xs" aria-label="$ bun run dev. Ready for changes. Edit. Save. Keep writing."><span class="flex text-[13px] text-dark-code"><span class="term-type">$ bun run dev</span><span class="term-caret" aria-hidden="true">▍</span></span><span class="term-line-2 text-ok">✓  Ready for changes</span><span class="term-line-3 text-dark-muted">↳  Edit. Save. Keep writing.</span></pre>
+      </div>
+    </div>
+
+    <div class="flex flex-col items-start gap-10 pt-2.5 lg:flex-row lg:items-center lg:gap-[85px]">
+      <div class="flex max-w-[430px] flex-col gap-4">
+        <TechnicalLabel tone="dark-muted">05 / Algolia integration</TechnicalLabel>
+        <h3 class="text-[34px] font-semibold leading-tight">Good answers deserve<br />to be found.</h3>
+        <p class="text-[15px] leading-relaxed text-dark-muted">Connect Algolia for full-text search. Help readers find the right page, not another dead end.</p>
+      </div>
+      <div class="flex w-full flex-col gap-[13px] rounded border border-dark-rule bg-dark-card p-[18px] lg:flex-1">
+        <div class="search flex h-8 items-center gap-3 font-mono"><Icon name="search" size={18} class="text-dark-muted" /><span class="flex flex-1 text-sm text-dark-code"><span class="search-type">deploy</span><span class="term-caret" aria-hidden="true">▍</span></span><span class="text-[10px] text-dark-muted">ESC</span></div>
+        <hr class="h-px border-0 bg-dark-rule" />
+        {results.map((r, i) => (
+          <div class:list={["search-result flex items-center gap-[13px] rounded-[3px] p-[11px]", i === 0 ? "search-result-1 bg-[#353b2f]" : "search-result-2"]}>
+            <Icon name="file-text" size={18} class="text-dark-muted" />
+            <div class="flex flex-1 flex-col gap-[5px]"><span class="text-[13px] font-medium text-dark-code">{r}</span><span class="font-mono text-[10px] text-dark-muted">Guides / Deployment</span></div>
+            <Icon name="corner-down-left" size={14} class="text-dark-muted" />
+          </div>
+        ))}
+        <span class="font-mono text-[10px] text-dark-muted">FULL-TEXT SEARCH WITH ALGOLIA</span>
+      </div>
+    </div>
+  </Container>
+</section>
+
+<style>
+  /* Terminal demo: one 6s cycle. Type the command, show two result lines, fade out, repeat. */
+  .terminal > span { animation-duration: 6s; animation-timing-function: ease; animation-iteration-count: infinite; }
+  .terminal > span:first-child { animation-name: term-fade; }
+  .term-type { overflow: hidden; white-space: nowrap; animation: term-type 6s steps(13, end) infinite; } /* 13 = chars in "$ bun run dev" */
+  .term-caret { animation: term-caret 1s steps(1) infinite; }
+  .terminal > .term-line-2 { animation-name: term-in-2; }
+  .terminal > .term-line-3 { animation-name: term-in-3; }
+  @keyframes term-fade { 0%, 88% { opacity: 1; } 95%, 100% { opacity: 0; } }
+  @keyframes term-type { 0%, 5% { width: 0; } 28%, 100% { width: 13ch; } }
+  @keyframes term-caret { 50% { opacity: 0; } }
+  @keyframes term-in-2 { 0%, 32% { opacity: 0; translate: 0 4px; } 40%, 88% { opacity: 1; translate: none; } 95%, 100% { opacity: 0; translate: none; } }
+  @keyframes term-in-3 { 0%, 44% { opacity: 0; translate: 0 4px; } 52%, 88% { opacity: 1; translate: none; } 95%, 100% { opacity: 0; translate: none; } }
+  /* Search demo: one 7s cycle. Type the query, results drop in, highlight steps down then back up, fade out, repeat. */
+  .search-type { overflow: hidden; white-space: nowrap; animation: search-type 7s steps(6, end) infinite; } /* 6 = chars in "deploy" */
+  .search-result { animation-duration: 7s; animation-timing-function: ease; animation-iteration-count: infinite; animation-name: search-in, search-pick-1; }
+  .search-result-2 { animation-name: search-in, search-pick-2; }
+  @keyframes search-type { 0%, 7% { width: 0; } 24%, 100% { width: 6ch; } }
+  @keyframes search-in { 0%, 28% { opacity: 0; translate: 0 4px; } 33%, 90% { opacity: 1; translate: none; } 97%, 100% { opacity: 0; translate: none; } }
+  @keyframes search-pick-1 { 0%, 49% { background-color: #353b2f; } 50%, 71% { background-color: transparent; } 72%, 100% { background-color: #353b2f; } }
+  @keyframes search-pick-2 { 0%, 49% { background-color: transparent; } 50%, 71% { background-color: #353b2f; } 72%, 100% { background-color: transparent; } }
+  @media (prefers-reduced-motion: reduce) { .terminal *, .terminal > span, .search *, .search-result { animation: none; } }
+</style>
+
+<script>
+  // Swatch click swaps the site accent token; every bg/text-accent utility follows. The layout re-applies the saved pick on load.
+  const swatches = document.querySelectorAll<HTMLButtonElement>("[data-theme-swatch]");
+  const select = (b: HTMLButtonElement) => {
+    document.documentElement.style.setProperty("--color-accent", b.dataset.themeSwatch!);
+    swatches.forEach((s) => s.setAttribute("aria-pressed", String(s === b)));
+  };
+  swatches.forEach((b) =>
+    b.addEventListener("click", () => {
+      select(b);
+      try { localStorage.setItem("theme-accent", b.dataset.themeSwatch!); } catch {}
+    })
+  );
+  const saved = (() => { try { return localStorage.getItem("theme-accent"); } catch { return null; } })();
+  const current = [...swatches].find((b) => b.dataset.themeSwatch === saved);
+  if (current) select(current);
+</script>

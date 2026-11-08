@@ -12,6 +12,7 @@ import {
   hashMdxSources,
   hookMemoryPressure,
   isTailwindRelevantCss,
+  manifestMatchesCache,
   packagesStamp,
   pluginsStamp,
   readStyleCss,
@@ -561,5 +562,25 @@ describe("previousPageKeys — pages a discarded cache recorded", () => {
     expect(existsSync(join(out, "gone.html"))).toBe(false);
     expect(existsSync(join(out, "kept.html"))).toBe(true);
     rmSync(out, { recursive: true, force: true });
+  });
+});
+
+describe("manifestMatchesCache", () => {
+  const manifest = JSON.stringify({
+    docs: { js: "client-abc.js", css: "docs-1.css" },
+    notFound: { css: "site-1.css" },
+  });
+  it("accepts the manifest the last build recorded", () => {
+    expect(manifestMatchesCache(manifest, `${manifest}\0config-stamp`)).toBe(true);
+  });
+  it("rejects a manifest written by another process", () => {
+    const devManifest = JSON.stringify({
+      docs: { js: "client-dev.js", css: "docs-1.css" },
+      notFound: { css: "site-1.css" },
+    });
+    expect(manifestMatchesCache(devManifest, `${manifest}\0config-stamp`)).toBe(false);
+  });
+  it("rejects when the cache has no assets entry", () => {
+    expect(manifestMatchesCache(manifest, undefined)).toBe(false);
   });
 });

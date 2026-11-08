@@ -1,0 +1,37 @@
+---
+// Pen "Markdown to documentation": editor on the left, the rendered docs page on the right.
+import { demoSource } from "../../../content/home";
+import Container from "../../ui/Container.astro";
+import Icon from "../../ui/Icon.astro";
+import TechnicalLabel from "../../ui/TechnicalLabel.astro";
+import MarkdownPlayground from "../../islands/MarkdownPlayground";
+---
+
+<Container as="section" class="flex flex-col gap-[18px] pb-12">
+  <div class="flex items-center justify-between">
+    <TechnicalLabel tone="ink">01 / Plain text → published docs</TechnicalLabel>
+    <TechnicalLabel class="hidden sm:inline">Your content. Nothing in the way.</TechnicalLabel>
+  </div>
+
+  <div class="overflow-hidden rounded-lg border border-dark-rule bg-dark text-dark-code">
+    <div class="flex h-[54px] items-center justify-between border-b border-dark-rule px-[22px]">
+      <div class="flex items-center gap-5">
+        <span class="flex gap-1.5" aria-hidden="true">{[0, 1, 2].map(() => <i class="size-[7px] rounded-full bg-dark-muted"></i>)}</span>
+        <TechnicalLabel tone="dark-muted" class="normal-case text-dark-code">docubook / playground</TechnicalLabel>
+      </div>
+      <div class="flex items-center gap-2.5"><Icon name="flame" size={16} class="text-accent" /><TechnicalLabel class="text-dark-code">Flame compiles to HTML</TechnicalLabel></div>
+    </div>
+
+    <MarkdownPlayground client:visible source={demoSource.join("\n")} />
+
+    <div class="flex h-10 items-center justify-between border-t border-dark-rule px-[22px] font-mono text-[11px]">
+      <span class="flex items-center gap-2"><Icon name="check" size={13} class="text-ok" />index.md → index.html</span>
+      <span class="hidden text-dark-muted sm:inline">STATIC HTML  /  NO SERVER REQUIRED</span>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between">
+    <TechnicalLabel>CommonMark + directives. Flat HTML out.</TechnicalLabel>
+    <a href="/docs/getting-started/formatting" data-astro-reload class="hidden sm:inline"><TechnicalLabel>The source stays readable ↗</TechnicalLabel></a>
+  </div>
+</Container>

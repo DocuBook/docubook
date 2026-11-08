@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+
+    <path id="head" d="M512 176 C716 176 860 296 864 476 L894 540 L858 562 L886 610 L836 626
+      C784 744 664 800 512 800 C360 800 240 744 188 626 L138 610 L166 562 L130 540 L160 476
+      C164 296 308 176 512 176 Z"/>
+    <path id="chest" d="M336 1010 C336 840 420 770 512 770 C604 770 688 840 688 1010 Z"/>
+    <path id="patchL" d="M268 430 C276 370 352 352 446 404 C494 436 500 520 456 572 C408 626 316 624 280 568 C256 530 262 470 268 430 Z"/>
+    <path id="patchR" d="M756 430 C748 370 672 352 578 404 C530 436 524 520 568 572 C616 626 708 624 744 568 C768 530 762 470 756 430 Z"/>
+    <path id="nose" d="M454 612 C454 584 570 584 570 612 C570 646 534 670 512 676 C490 670 454 646 454 612 Z"/>
+    <clipPath id="badgeClip"><circle cx="512" cy="548" r="452"/></clipPath>
+        <mask id="shadeMask">
+      <use href="#head" fill="#fff"/><use href="#head" fill="#000" transform="translate(40 -34)"/>
+    </mask>
+  </defs>
+
+  <g stroke="#0d2b52" stroke-linejoin="round" stroke-linecap="round">
+    <!-- badge = the panda's body -->
+    <circle cx="512" cy="548" r="452" fill="#2483e2" stroke-width="16"/>
+    <g clip-path="url(#badgeClip)">
+      <use href="#chest" fill="#fff" stroke-width="14"/>
+    </g>
+
+    <!-- ears sit on the head -->
+    <circle cx="292" cy="228" r="104" fill="#2483e2" stroke-width="16"/>
+    <circle cx="732" cy="228" r="104" fill="#2483e2" stroke-width="16"/>
+    <circle cx="300" cy="238" r="50" fill="#5aa4ec" stroke="none"/>
+    <circle cx="724" cy="238" r="50" fill="#5aa4ec" stroke="none"/>
+
+    <!-- head -->
+    <use href="#head" fill="#fff" stroke="none"/>
+    <rect width="1024" height="1024" fill="#e2eefb" mask="url(#shadeMask)" stroke="none"/>
+    <use href="#head" fill="none" stroke-width="16"/>
+
+    <!-- eye patches -->
+    <use href="#patchL" fill="#2483e2" stroke="none"/>
+    <use href="#patchR" fill="#2483e2" stroke="none"/>
+
+    <!-- big gopher eyes -->
+    <circle cx="378" cy="476" r="74" fill="#fff" stroke-width="13"/>
+    <circle cx="646" cy="476" r="74" fill="#fff" stroke-width="13"/>
+    <circle cx="396" cy="488" r="30" fill="#0d2b52" stroke="none"/>
+    <circle cx="628" cy="488" r="30" fill="#0d2b52" stroke="none"/>
+    <circle cx="406" cy="476" r="10" fill="#fff" stroke="none"/>
+    <circle cx="638" cy="476" r="10" fill="#fff" stroke="none"/>
+
+    <!-- heavy brows angled in: the strong look -->
+    <path d="M286 382 L462 424 M738 382 L562 424" fill="none" stroke-width="34"/>
+
+    <!-- snout -->
+    <ellipse cx="512" cy="648" rx="128" ry="92" fill="#fff" stroke-width="12"/>
+    <use href="#nose" fill="#0d2b52" stroke="none"/>
+    <path d="M512 672 L512 698 M446 704 C476 724 500 718 512 698 C524 718 548 724 578 704"
+      fill="none" stroke-width="14"/>
+  </g>
+</svg>

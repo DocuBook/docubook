@@ -145,12 +145,24 @@ async function buildTailwindCss(
   return { file: cachedFile, content: cssContent };
 }
 
+export interface ClientBundleOptions {
+  /**
+   * Dev-server build. `flame dev` shares `ASSETS_DIR` with `flame build`, so a
+   * dev bundle must leave the build's hashed bundles and `manifest.json` alone:
+   * deleting them 404s every static page, and a dev manifest (no MDX modules,
+   * unminified) would be adopted by the next cached build. Dev bundles pile up
+   * until the next build cleans them.
+   */
+  dev?: boolean;
+}
+
 export async function buildClientBundle(
   /** slug → compiled MDX ESM module source (program format) for static hydration. */
-  mdxSources: Record<string, string> = {}
+  mdxSources: Record<string, string> = {},
+  options: ClientBundleOptions = {}
 ): Promise<AssetManifest> {
   await mkdir(ASSETS_DIR, { recursive: true });
-  await cleanOldBundles();
+  if (!options.dev) await cleanOldBundles();
 
   const nodeEnv = process.env.NODE_ENV || "development";
   // No landing page is rendered when the project brings its own pages, so its
@@ -270,6 +282,6 @@ export async function buildClientBundle(
     ...(includeHome && homeJs ? { home: { js: homeJs, css: siteCss } } : {}),
     notFound: { css: siteCss },
   };
-  await Bun.write(join(ASSETS_DIR, "manifest.json"), JSON.stringify(manifest));
+  if (!options.dev) await Bun.write(join(ASSETS_DIR, "manifest.json"), JSON.stringify(manifest));
   return manifest;
 }

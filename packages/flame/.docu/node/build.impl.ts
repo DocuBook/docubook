@@ -71,6 +71,7 @@ import {
   BUILD_CACHE_VERSION,
   atomicWriteFile,
   hashMdxSources,
+  manifestMatchesCache,
   hookMemoryPressure,
   renderToolchainStamp,
   runtimeStamp,
@@ -170,7 +171,8 @@ let assetManifest: AssetManifest = {
 async function resolveAssetManifest(
   bundleHit: boolean,
   mdxSources: Record<string, string>,
-  bringOwnPages: boolean
+  bringOwnPages: boolean,
+  cachedAssetsHash: unknown
 ): Promise<AssetManifest> {
   if (!bundleHit) return buildClientBundle(mdxSources);
   try {
@@ -183,7 +185,11 @@ async function resolveAssetManifest(
       (bringOwnPages
         ? manifest.home === undefined
         : typeof manifest.home?.js === "string" && typeof manifest.home.css === "string") &&
-      typeof manifest.notFound?.css === "string"
+      typeof manifest.notFound?.css === "string" &&
+      // Only the manifest this build wrote, with its bundle still on disk: a
+      // dev-server run or a half-finished build must trigger a rebundle.
+      manifestMatchesCache(JSON.stringify(manifest), cachedAssetsHash) &&
+      existsSync(join(ASSETS_DIR, manifest.docs.js))
     ) {
       return manifest as AssetManifest;
     }
@@ -477,7 +483,12 @@ export async function runBuild(): Promise<void> {
     isCacheEntry(lastBundle) &&
     lastBundle.hash === bundleHash &&
     existsSync(join(ASSETS_DIR, "manifest.json"));
-  assetManifest = await resolveAssetManifest(bundleHit, mdxSources, bringOwnPages);
+  assetManifest = await resolveAssetManifest(
+    bundleHit,
+    mdxSources,
+    bringOwnPages,
+    cache["__assets__"]?.hash
+  );
   logger.bundleDone(Math.round(performance.now() - t));
 
   inlineThemeCss = computeInlineThemeCss();

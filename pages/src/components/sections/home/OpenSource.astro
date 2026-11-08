@@ -1,0 +1,79 @@
+---
+import { site } from "../../../content/site";
+const repo = new URL(site.github).pathname.slice(1);
+import Container from "../../ui/Container.astro";
+import Icon from "../../ui/Icon.astro";
+import GitHub from "../../ui/icons/GitHub.astro";
+import TechnicalLabel from "../../ui/TechnicalLabel.astro";
+---
+
+<section class="border-y border-rule bg-[#fffefa]">
+  <Container class="flex flex-col gap-12 py-[82px] lg:flex-row lg:items-center xl:gap-[110px]">
+    <div class="flex max-w-[620px] flex-col gap-[21px] lg:max-w-[440px] xl:max-w-[620px]">
+      <TechnicalLabel tone="accent">08 / Open by default</TechnicalLabel>
+      <h2 class="text-3xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-[40px] xl:text-[58px]">Open source.<br />Not a walled garden.</h2>
+      <p class="text-[17px] leading-relaxed text-muted">An open-source alternative to Mintlify or GitBook. Read the code, open an issue, or help shape what comes next. DocuBook is MIT licensed — and built in the open.</p>
+    </div>
+    <a href={site.github} target="_blank" rel="noreferrer" class="flex w-full flex-col gap-[23px] rounded border border-rule p-[29px] lg:max-w-[550px]">
+      <div class="flex items-center gap-3">
+        <span class="gh-mark relative size-[26px]" aria-hidden="true">
+          <GitHub class="gh-logo absolute inset-0 size-[26px]" />
+          <Icon name="star" size={26} class="gh-star absolute inset-0 text-accent fill-current" />
+          <i class="gh-ring absolute inset-0 rounded-full border-2 border-accent"></i>
+          <i class="gh-ring gh-ring-2 absolute inset-0 rounded-full border border-accent"></i>
+        </span>
+        <span class="whitespace-nowrap text-lg font-semibold xl:text-xl">DocuBook / docubook</span>
+      </div>
+      <p class="text-[15px] leading-relaxed text-muted">A markdown-first documentation framework.<br />Human-readable source. Flat static output.</p>
+      <div class="flex flex-wrap items-center gap-5 font-mono text-[11px] text-muted" data-repo={repo}>
+        <span class="flex items-center gap-[7px]"><Icon name="star" size={15} /><span data-stat="stars">–</span> stars</span>
+        <span class="flex items-center gap-[7px]"><Icon name="git-fork" size={15} /><span data-stat="forks">–</span> forks</span>
+        <span class="flex items-center gap-[7px]"><Icon name="scale" size={15} /><span data-stat="license">MIT</span> license</span>
+      </div>
+      <hr class="h-px border-0 bg-rule" />
+      <div class="flex items-center justify-between font-mono text-[11px] text-muted">github.com/DocuBook/docubook <Icon name="arrow-up-right" size={21} /></div>
+    </a>
+  </Container>
+</section>
+
+<style>
+  /* GitHub mark flips to a star with a splash every 6s, and stays a star while the card is hovered: a nudge to go star the repo. */
+  .gh-mark :global(.gh-logo), .gh-mark :global(.gh-star), .gh-mark :global(.gh-ring) { animation-duration: 6s; animation-timing-function: ease; animation-iteration-count: infinite; }
+  .gh-mark :global(.gh-logo) { animation-name: gh-logo; }
+  .gh-mark :global(.gh-star) { opacity: 0; animation-name: gh-star; }
+  .gh-mark :global(.gh-ring) { opacity: 0; animation-name: gh-ring; }
+  .gh-mark :global(.gh-ring-2) { animation-delay: 0.15s; }
+  a:hover .gh-mark :global(*) { animation: none; }
+  a:hover .gh-mark :global(.gh-logo) { opacity: 0; }
+  a:hover .gh-mark :global(.gh-star) { opacity: 1; }
+  @keyframes gh-logo { 0%, 55% { opacity: 1; scale: 1; } 61%, 88% { opacity: 0; scale: 0.5; } 95%, 100% { opacity: 1; scale: 1; } }
+  @keyframes gh-star { 0%, 56% { opacity: 0; scale: 0.3; rotate: -40deg; } 63% { opacity: 1; scale: 1.2; rotate: 8deg; } 67%, 88% { opacity: 1; scale: 1; rotate: 0deg; } 95%, 100% { opacity: 0; scale: 0.3; rotate: 0deg; } }
+  @keyframes gh-ring { 0%, 56% { opacity: 0; scale: 0.6; } 59% { opacity: 0.9; scale: 0.8; } 75%, 100% { opacity: 0; scale: 2.1; } }
+  @media (prefers-reduced-motion: reduce) { .gh-mark :global(*) { animation: none; } }
+</style>
+
+<script>
+  // Repo stats from the GitHub API, cached in localStorage for 7 days. On any failure the static text stays.
+  const root = document.querySelector<HTMLElement>("[data-repo]")!;
+  const key = `gh:${root.dataset.repo}`;
+  const ttl = 7 * 24 * 60 * 60 * 1000;
+  const compact = new Intl.NumberFormat("en", { notation: "compact" });
+  type Stats = { stars: number; forks: number; license: string | null };
+  async function stats(): Promise<Stats> {
+    const cached = JSON.parse(localStorage.getItem(key) ?? "null") as { at: number; data: Stats } | null;
+    if (cached && Date.now() - cached.at < ttl) return cached.data;
+    const res = await fetch(`https://api.github.com/repos/${root.dataset.repo}`, { headers: { Accept: "application/vnd.github+json" } });
+    if (!res.ok) throw new Error(res.statusText);
+    const j = await res.json();
+    const data: Stats = { stars: j.stargazers_count, forks: j.forks_count, license: j.license?.spdx_id ?? null };
+    localStorage.setItem(key, JSON.stringify({ at: Date.now(), data }));
+    return data;
+  }
+  stats()
+    .then(({ stars, forks, license }) => {
+      root.querySelector("[data-stat=stars]")!.textContent = compact.format(stars);
+      root.querySelector("[data-stat=forks]")!.textContent = compact.format(forks);
+      if (license) root.querySelector("[data-stat=license]")!.textContent = license;
+    })
+    .catch(() => {});
+</script>

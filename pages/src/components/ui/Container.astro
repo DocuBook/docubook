@@ -1,0 +1,7 @@
+---
+// 1440 canvas with 80px gutters in the pen file = 1280 content column.
+interface Props { class?: string; as?: "div" | "section" | "footer" | "header" | "nav" }
+const { class: className = "", as: Tag = "div" } = Astro.props;
+---
+
+<Tag class:list={["mx-auto w-full max-w-[1440px] px-5 md:px-10 lg:px-20", className]}><slot /></Tag>

@@ -1,0 +1,18 @@
+---
+import { site } from "../../content/site";
+import Button from "../ui/Button.astro";
+import Container from "../ui/Container.astro";
+import Icon from "../ui/Icon.astro";
+import TechnicalLabel from "../ui/TechnicalLabel.astro";
+---
+
+<Container as="section" class="flex flex-col gap-8 py-[88px]">
+  <p class="flex items-center gap-[11px]"><Icon name="flame" size={17} class="text-accent" /><TechnicalLabel tone="ink">Less platform. More publishing.</TechnicalLabel></p>
+  <div class="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
+    <h2 class="max-w-[900px] text-3xl font-semibold leading-[1.05] tracking-tight sm:text-5xl xl:text-[58px]">Write like a document. Keep plain Markdown. Ship a docs site.</h2>
+    <div class="flex flex-col items-start gap-[18px] lg:shrink-0 lg:items-end lg:pb-1.5 xl:shrink">
+      <Button href="/docs/getting-started/introduction">Get Started</Button>
+      <a href={site.github} target="_blank" rel="noreferrer" class="whitespace-nowrap text-[13px] text-muted xl:whitespace-normal">Or explore the source on GitHub ↗</a>
+    </div>
+  </div>
+</Container>

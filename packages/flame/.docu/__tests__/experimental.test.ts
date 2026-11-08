@@ -66,9 +66,9 @@ describe("experimental.pages — resolveOwnPages", () => {
     expect(resolveOwnPages(config({ experimental: { pages: 1 } }))).toBe(false);
   });
 
-  it("reads the flame docu.json default through the config singleton", () => {
-    // This repository's own docs ship the generated landing page.
-    expect(ownPages()).toBe(false);
+  it("reads the flame docu.json flag through the config singleton", () => {
+    // This repository's docs live under /docs behind the DocuBook pages site.
+    expect(ownPages()).toBe(true);
     expect(assertValidExperimental()).toEqual([]);
   });
 });
@@ -159,9 +159,9 @@ describe("experimental.pages — output layout", () => {
   it("keeps bundles at the dist-root /assets while the flag is off", () => {
     expect(resolveBundlePath(false, "/docs")).toBe("/assets");
     expect(resolveBundlePath(false, "")).toBe("/assets");
-    // This repository: flag off, so the bundle directory is unchanged.
-    expect(bundlePath()).toBe("/assets");
-    expect(ASSETS_DIR).toBe(`${DIST_DIR}/assets`);
+    // This repository: flag on, so the bundle directory sits inside the prefix.
+    expect(bundlePath()).toBe("/docs/_flame");
+    expect(ASSETS_DIR).toBe(`${DIST_DIR}/docs/_flame`);
   });
 
   it("moves bundles under the docs prefix under the flag", () => {
@@ -176,7 +176,8 @@ describe("experimental.pages — output layout", () => {
     expect(resolveNotFoundPath(false, "/docs")).toBe("/404.html");
     expect(resolveNotFoundPath(true, "/docs")).toBe("/docs/404.html");
     expect(resolveNotFoundPath(true, "")).toBe("/404.html");
-    expect(notFoundPath()).toBe("/404.html");
+    // This repository: flag on, so the 404 lives inside the prefix.
+    expect(notFoundPath()).toBe("/docs/404.html");
   });
 
   it("links bundles relative to the dist root at any page depth", () => {
@@ -316,9 +317,9 @@ describe("experimental.pages — standalone deploys", () => {
     expect(needsStandaloneRoot(false, "/docs")).toBe(false);
   });
 
-  it("is a no-op for a project without the flag even when requested", () => {
+  it("is honored for this project, which has the flag and a prefix", () => {
     process.env[STANDALONE_ENV] = "1";
-    expect(standaloneRoot()).toBe(false);
+    expect(standaloneRoot()).toBe(true);
   });
 
   it("writes a script-free redirect that resolves under any deployment path", () => {
@@ -390,9 +391,9 @@ describe("experimental.pages — cache invalidation", () => {
   it("folds the flag into the base-path stamp without changing the off form", () => {
     expect(ownPagesStamp(false)).toBe("");
     expect(ownPagesStamp(true)).toBe("+pages");
-    // Flag off in this repository: byte-identical to the pre-flag stamp, so
-    // existing caches stay valid.
-    expect(basePathStamp()).toBe(prefixStamp(basePath(), ""));
+    // Flag on in this repository: the stamp carries the +pages suffix, so a
+    // cache built before the flag was turned on is invalidated.
+    expect(basePathStamp()).toBe(prefixStamp(basePath(), "") + ownPagesStamp(true));
     expect(prefixStamp("/docs", "") + ownPagesStamp(true)).toBe("/docs+pages");
   });
 

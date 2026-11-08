@@ -1,0 +1,19 @@
+---
+// Pen "Action": 50px tall, 22px side padding, radius 4, 14/600 label. Icon goes in the default slot after the label.
+interface Props { href: string; variant?: "primary" | "dark" | "ghost"; external?: boolean; class?: string }
+const { href, variant = "primary", external = false, class: className = "" } = Astro.props;
+const variants = {
+  primary: "bg-accent text-white",
+  dark: "bg-ink text-white",
+  ghost: "bg-paper text-ink border border-rule",
+};
+---
+
+<a
+  href={href}
+  class:list={["inline-flex h-[50px] items-center gap-2.5 rounded px-[22px] text-sm font-semibold", variants[variant], className]}
+  {...external ? { target: "_blank", rel: "noreferrer" } : {}}
+  {...href.startsWith("/docs") ? { "data-astro-reload": true } : {}}
+>
+  <slot />
+</a>

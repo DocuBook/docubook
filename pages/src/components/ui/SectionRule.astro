@@ -1,0 +1,6 @@
+---
+interface Props { tone?: "light" | "dark"; class?: string }
+const { tone = "light", class: className = "" } = Astro.props;
+---
+
+<hr class:list={["h-px w-full border-0", tone === "dark" ? "bg-dark-rule" : "bg-rule", className]} />

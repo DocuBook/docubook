@@ -1,0 +1,87 @@
+---
+// Two 3x3 sprite sheets: nine head directions, nine expressions. Vanilla port of page-mascot (MIT, Kamran Ahmed).
+// The pointer's angle picks a direction cell; a scroll glances up or down; a boop (click) plays an expression.
+interface Props { directions: string; reactions: string; size: number; label?: string; boop?: boolean; class?: string }
+const { directions, reactions, size, label = "panda", boop = false, class: className = "" } = Astro.props;
+const Tag = boop ? "button" : "span";
+---
+
+<Tag
+  class:list={["sprite-mascot relative block shrink-0 select-none", boop && "cursor-pointer", className]}
+  style={`width:${size}px;height:${size}px`}
+  data-sprite-mascot
+  {...(boop ? { type: "button", "aria-label": `Boop the ${label}` } : { role: "img", "aria-label": label })}
+>
+  <span class="squash relative block size-full origin-[50%_78%]">
+    <span class="layer absolute inset-0 bg-no-repeat bg-size-[300%_300%] bg-position-[50%_50%]" style={`background-image:url(${directions})`} data-directions></span>
+    <span class="layer absolute inset-0 bg-no-repeat bg-size-[300%_300%] opacity-0" style={`background-image:url(${reactions})`} data-reactions></span>
+  </span>
+</Tag>
+
+<script>
+  const DIRECTIONS = ["up-left", "up", "up-right", "left", "center", "right", "down-left", "down", "down-right"];
+  const REACTIONS = ["blink", "heart", "sparkle", "surprised", "wink", "bashful", "sleepy", "dizzy", "delighted"];
+  const CLOCKWISE = ["right", "down-right", "down", "down-left", "left", "up-left", "up", "up-right"]; // atan2, y down
+  const SECTOR = (Math.PI * 2) / CLOCKWISE.length;
+  const HYSTERESIS = 0.12;
+  const DEAD_ZONE = 70;
+  const PAYOFFS = ["heart", "sparkle", "delighted"];
+  const SQUASH: Keyframe[] = [
+    { transform: "scale(1, 1)", easing: "ease-in" },
+    { transform: "scale(1.10, 0.86)", offset: 0.18, easing: "ease-out" },
+    { transform: "scale(0.95, 1.08)", offset: 0.45, easing: "ease-in-out" },
+    { transform: "scale(1.03, 0.97)", offset: 0.72, easing: "ease-in-out" },
+    { transform: "scale(1, 1)" },
+  ];
+  const cell = (el: HTMLElement, list: string[], name: string) => {
+    const i = list.indexOf(name);
+    el.style.backgroundPosition = `${(i % 3) * 50}% ${Math.floor(i / 3) * 50}%`;
+  };
+  const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
+  const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let pointer: { x: number; y: number } | null = null;
+  let glance: string | null = null;
+  let settle: ReturnType<typeof setTimeout>;
+  let lastY = scrollY;
+
+  const mascots = [...document.querySelectorAll<HTMLElement>("[data-sprite-mascot]")].map((root) => {
+    const dirs = root.querySelector<HTMLElement>("[data-directions]")!;
+    const reacts = root.querySelector<HTMLElement>("[data-reactions]")!;
+    const state = { sector: -1, timers: [] as number[], boops: 0, at: 0 };
+    const aim = () => {
+      if (glance) return cell(dirs, DIRECTIONS, glance);
+      if (!pointer || !fine) return cell(dirs, DIRECTIONS, "center");
+      const r = root.getBoundingClientRect();
+      if (!r.width) return;
+      const dx = pointer.x - (r.left + r.width / 2);
+      const dy = pointer.y - (r.top + r.height / 2);
+      if (Math.hypot(dx, dy) < DEAD_ZONE) { state.sector = -1; return cell(dirs, DIRECTIONS, "center"); }
+      const angle = Math.atan2(dy, dx);
+      if (state.sector !== -1 && Math.abs(wrap(angle - state.sector * SECTOR)) < SECTOR / 2 + HYSTERESIS) return;
+      state.sector = (Math.round(angle / SECTOR) + CLOCKWISE.length) % CLOCKWISE.length;
+      cell(dirs, DIRECTIONS, CLOCKWISE[state.sector]);
+    };
+    const show = (name: string | null) => { if (name) cell(reacts, REACTIONS, name); reacts.style.opacity = name ? "1" : "0"; dirs.style.opacity = name ? "0" : "1"; };
+    if (root.tagName === "BUTTON") root.addEventListener("click", () => {
+      state.timers.forEach(clearTimeout); state.timers = [];
+      const later = (ms: number, next: string | null) => state.timers.push(window.setTimeout(() => show(next), ms));
+      const now = Date.now();
+      state.boops = now - state.at < 1600 ? state.boops + 1 : 1; state.at = now;
+      if (state.boops >= 4) { state.boops = 0; show("dizzy"); later(1100, null); }
+      else { show("blink"); later(120, PAYOFFS[(state.boops - 1) % PAYOFFS.length]); later(560, null); }
+      if (!reduced) root.querySelector<HTMLElement>(".squash")!.animate(SQUASH, { duration: 420, easing: "linear" });
+    });
+    return { aim };
+  });
+  const aimAll = () => mascots.forEach((m) => m.aim());
+  addEventListener("pointermove", (e) => { pointer = { x: e.clientX, y: e.clientY }; aimAll(); }, { passive: true });
+  addEventListener("scroll", () => {
+    const dy = scrollY - lastY; lastY = scrollY;
+    if (Math.abs(dy) > 4) glance = dy > 0 ? "down" : "up";
+    aimAll();
+    clearTimeout(settle);
+    settle = setTimeout(() => { glance = null; aimAll(); }, 300);
+  }, { passive: true });
+</script>

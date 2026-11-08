@@ -1,0 +1,26 @@
+---
+import Site from "../layouts/Site.astro";
+import ClosingCta from "../components/shared/ClosingCta.astro";
+import RuntimeStrip from "../components/shared/RuntimeStrip.astro";
+import Deployment from "../components/sections/home/Deployment.astro";
+import DevFeatures from "../components/sections/home/DevFeatures.astro";
+import Hero from "../components/sections/home/Hero.astro";
+import MarkdownDemo from "../components/sections/home/MarkdownDemo.astro";
+import OpenSource from "../components/sections/home/OpenSource.astro";
+import Pipeline from "../components/sections/home/Pipeline.astro";
+import PluginsIntro from "../components/sections/home/PluginsIntro.astro";
+import Quickstart from "../components/sections/home/Quickstart.astro";
+---
+
+<Site title="Home">
+  <Hero />
+  <MarkdownDemo />
+  <RuntimeStrip />
+  <Pipeline />
+  <PluginsIntro />
+  <DevFeatures />
+  <Quickstart />
+  <Deployment />
+  <OpenSource />
+  <ClosingCta />
+</Site>

@@ -1,0 +1,11 @@
+---
+import { pipeline } from "../../../content/home";
+import SectionIntro from "../../shared/SectionIntro.astro";
+import Steps from "../../shared/Steps.astro";
+import Container from "../../ui/Container.astro";
+---
+
+<Container as="section" class="flex flex-col gap-12 py-24">
+  <SectionIntro label="02 / A shorter path to publish" heading={"A file. A compiler.\nThe whole web."} description="No platform between your words and your readers. Just a straightforward path from source to site." />
+  <Steps steps={pipeline} />
+</Container>

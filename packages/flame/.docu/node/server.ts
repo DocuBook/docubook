@@ -67,7 +67,7 @@ await initSentry();
 
 logger.bundleStart();
 let t = performance.now();
-const assetManifest = await buildClientBundle();
+const assetManifest = await buildClientBundle({}, { dev: true });
 logger.bundleDone(Math.round(performance.now() - t));
 
 const inlineThemeCss = computeInlineThemeCss();

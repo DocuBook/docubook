@@ -1,0 +1,8 @@
+---
+// Mono 12/500 uppercase label used above headings, in steps and in the footer.
+interface Props { tone?: "ink" | "muted" | "accent" | "dark-muted"; class?: string; as?: "p" | "span" }
+const { tone = "muted", class: className = "", as: Tag = "span" } = Astro.props;
+const tones = { ink: "text-ink", muted: "text-muted", accent: "text-accent", "dark-muted": "text-dark-muted" };
+---
+
+<Tag class:list={["font-mono text-xs font-medium uppercase tracking-normal", tones[tone], className]}><slot /></Tag>
