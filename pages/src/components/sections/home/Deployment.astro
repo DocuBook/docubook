@@ -12,7 +12,7 @@ import TechnicalLabel from "../../ui/TechnicalLabel.astro";
     <div class="flex w-full flex-col gap-[30px] rounded bg-[#edede5] p-[30px] lg:max-w-[500px] lg:shrink-0 xl:max-w-[680px] xl:shrink">
       <div class="flex items-center justify-between"><TechnicalLabel>Output / Just files</TechnicalLabel><Icon name="folder-open" size={17} class="text-muted" /></div>
       <div class="flex flex-col items-start gap-6 sm:flex-row sm:items-center lg:flex-col lg:items-start xl:flex-row xl:items-center">
-        <pre class="flex w-full flex-col gap-[18px] rounded bg-dark p-[22px] font-mono text-xs text-dark-muted sm:w-[234px]"><span class="flex items-center gap-2 text-[13px] text-dark-code"><span class="folder relative size-[17px]" aria-hidden="true"><Icon name="folder" size={17} class="folder-closed" /><Icon name="folder-open" size={17} class="folder-open absolute inset-0" /></span>your-built-docs/</span>{outputTree.map((l) => <span>{l}</span>)}</pre>
+        <pre class="flex w-full flex-col gap-[18px] rounded bg-dark p-[22px] font-mono text-xs text-dark-muted sm:w-[234px]"><span class="flex items-center gap-2 text-[13px] text-dark-code"><span class="folder relative size-[17px]" aria-hidden="true" data-animate><Icon name="folder" size={17} class="folder-closed" /><Icon name="folder-open" size={17} class="folder-open absolute inset-0" /></span>your-built-docs/</span>{outputTree.map((l) => <span>{l}</span>)}</pre>
         <Icon name="arrow-right" size={22} class="hidden text-muted sm:block lg:hidden xl:block" />
         <ul class="flex w-full flex-col gap-2.5">
           {hosts.map((h) => (
@@ -37,9 +37,10 @@ import TechnicalLabel from "../../ui/TechnicalLabel.astro";
 
 <style>
   /* Folder icon: closed and open marks crossfade on a 3s loop. */
-  .folder :global(.folder-closed) { animation: folder-closed 3s ease infinite; }
-  .folder :global(.folder-open) { opacity: 0; animation: folder-open 3s ease infinite; }
+  .folder[data-playing] :global(.folder-closed) { animation: folder-closed 3s ease infinite; }
+  .folder :global(.folder-open) { opacity: 0; }
+  .folder[data-playing] :global(.folder-open) { animation: folder-open 3s ease infinite; }
   @keyframes folder-open { 0%, 40% { opacity: 0; } 50%, 90% { opacity: 1; } 100% { opacity: 0; } }
   @keyframes folder-closed { 0%, 40% { opacity: 1; } 50%, 90% { opacity: 0; } 100% { opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .folder :global(*) { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .folder :global(*) { animation: none !important; } }
 </style>

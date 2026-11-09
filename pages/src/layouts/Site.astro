@@ -46,6 +46,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
       addEventListener("scroll", onScrolled, { passive: true });
       requestAnimationFrame(onScrolled); // scrollY forces a layout; read it once the first frame has one
       new IntersectionObserver(([e]) => root.toggleAttribute("data-footer-visible", e.isIntersecting)).observe(document.querySelector("footer")!);
+      // [data-animate]: CSS demos render their finished frame on load, even when already on screen, and start on the
+      // first scroll: from then on each loops only while near the viewport.
+      const play = new IntersectionObserver((entries) => entries.forEach((e) => e.target.toggleAttribute("data-playing", e.isIntersecting)), { rootMargin: "120px 0px" });
+      addEventListener("scroll", () => document.querySelectorAll("[data-animate]").forEach((el) => play.observe(el)), { once: true, passive: true });
     </script>
   </body>
 </html>
