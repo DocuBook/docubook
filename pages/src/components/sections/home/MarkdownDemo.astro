@@ -14,15 +14,8 @@ import MarkdownPlayground from "../../islands/MarkdownPlayground";
   </div>
 
   <div class="overflow-hidden rounded-lg border border-dark-rule bg-dark text-dark-code">
-    <div class="flex h-[54px] items-center justify-between border-b border-dark-rule px-[22px]">
-      <div class="flex items-center gap-5">
-        <span class="flex gap-1.5" aria-hidden="true">{[0, 1, 2].map(() => <i class="size-[7px] rounded-full bg-dark-muted"></i>)}</span>
-        <TechnicalLabel tone="dark-muted" class="normal-case text-dark-code">docubook / playground</TechnicalLabel>
-      </div>
-      <div class="flex items-center gap-2.5"><Icon name="flame" size={16} class="text-accent" /><TechnicalLabel class="text-dark-code">Flame compiles to HTML</TechnicalLabel></div>
-    </div>
-
-    <MarkdownPlayground client:visible source={demoSource.join("\n")} />
+    {/* The server render is the finished page; React only loads once the demo is scrolled toward its start line. */}
+    <MarkdownPlayground client:visible={{ rootMargin: "0px 0px -30% 0px" }} source={demoSource.join("\n")} />
 
     <div class="flex h-10 items-center justify-between border-t border-dark-rule px-[22px] font-mono text-[11px]">
       <span class="flex items-center gap-2"><Icon name="check" size={13} class="text-ok" />index.md → index.html</span>
