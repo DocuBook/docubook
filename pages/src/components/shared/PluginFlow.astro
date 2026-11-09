@@ -1,0 +1,127 @@
+---
+// Plugins as a pipeline graph: plugins on the left wire into the stages of Flame's build (the dark core in
+// the middle, never patched), and what each one adds lands on the right. One 8s cycle plays the four steps:
+// plugins light up (configure), wires connect to their stages (setup), the build pulse runs down the core and
+// branches out wherever a plugin is attached (hook), each plugin's source lights: npm or local (ship). The markup is the resting
+// frame, fully wired and readable; the loop runs only while [data-playing], on transform and opacity alone.
+import { pluginSteps } from "../../content/home";
+import Icon from "../ui/Icon.astro";
+import TechnicalLabel from "../ui/TechnicalLabel.astro";
+const rows = [
+  { stage: "Build start" },
+  { stage: "Frontmatter" },
+  { stage: "Head", plugin: "Analytics", source: "options", output: "Analytics tag", icon: "sparkles" },
+  { stage: "Page HTML", plugin: "Reading time", source: "local", output: "4 min read", icon: "file-text" },
+  { stage: "Build end", plugin: "Sitemap", source: "npm", output: "sitemap.xml", icon: "globe" },
+];
+---
+
+<div class="graph flex flex-col gap-14" data-animate>
+  <div class="relative grid grid-cols-[minmax(0,1fr)_28px_minmax(0,1.15fr)] gap-y-3 md:grid-cols-[minmax(0,1fr)_minmax(24px,0.6fr)_minmax(0,1.1fr)_minmax(24px,0.6fr)_minmax(0,1fr)]" aria-hidden="true">
+    <!-- Flame core: absolutely placed on the stage column, so it frames the stages without taking grid cells. -->
+    <div class="core absolute -left-3 right-0 -top-2.5 md:-right-3 -bottom-2.5 col-start-3 col-end-4 row-start-2 row-end-7 rounded-lg bg-dark">
+      <div class="absolute top-[30px] bottom-[30px] left-1/2 w-px overflow-hidden bg-dark-rule"><i class="rail-pulse"></i></div>
+    </div>
+
+    <TechnicalLabel class="pb-1">Plugins</TechnicalLabel>
+    <span></span>
+    <TechnicalLabel tone="accent" class="pb-1 text-center">Flame build</TechnicalLabel>
+    <span class="hidden md:block"></span>
+    <TechnicalLabel class="hidden pb-1 text-right md:block">On your site</TechnicalLabel>
+
+    {rows.map((row, n) => (
+      <>
+        <div class="flex h-11 items-center">
+          {row.plugin ? (
+            <span class="plugin relative flex h-full w-full items-center justify-between gap-2 rounded border border-rule bg-card px-3 text-sm font-medium text-ink" style={`--n:${n - 2}`}>
+              <i class="ring"></i>
+              <span class="relative flex min-w-0 items-center gap-2"><Icon name={row.icon!} size={15} class="shrink-0 text-muted" /><span class="truncate">{row.plugin}</span></span>
+              <span class="source relative hidden rounded-sm px-1 font-mono text-[10px] text-muted lg:inline"><i class="ring"></i>{row.source}</span>
+            </span>
+          ) : (
+            <span class="flex h-full w-full items-center rounded border border-dashed border-rule px-3 font-mono text-[11px] text-muted">open hook</span>
+          )}
+        </div>
+        <div class="relative flex items-center">
+          {row.plugin && <><i class="edge-line"></i><i class="edge-pulse edge-in" style={`--n:${n - 2}`}><i class="head"></i></i></>}
+        </div>
+        <div class="flex h-11 items-center justify-center pr-2.5 md:pr-0">
+          <span class="stage relative flex h-9 w-full items-center gap-2.5 rounded-full border border-dark-rule bg-dark-card px-4 text-sm text-dark-code" style={`--n:${n}`}>
+            <i class="ring"></i>
+            <i class="relative size-1.5 shrink-0 rounded-full bg-dark-muted"><i class="stage-dot absolute inset-0 rounded-full bg-accent"></i></i>
+            <span class="relative truncate">{row.stage}</span>
+          </span>
+        </div>
+        <div class="relative hidden items-center md:flex">
+          {row.output && <><i class="edge-line"></i><i class="edge-pulse edge-out" style={`--n:${n}`}><i class="head"></i></i></>}
+        </div>
+        <div class="hidden h-11 items-center md:flex">
+          {row.output && (
+            <span class="output relative flex h-full w-full items-center justify-between gap-2 rounded border border-rule bg-[#fffefa] px-3 text-sm text-ink" style={`--n:${n}`}>
+              <i class="ring"></i>
+              <span class="relative truncate">{row.output}</span>
+              <Icon name="check" size={15} class="relative shrink-0 text-ok" />
+            </span>
+          )}
+        </div>
+      </>
+    ))}
+  </div>
+
+  <ol class="grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-[30px]">
+    {pluginSteps.map((step, i) => (
+      <li class="step relative flex flex-col gap-3 border-t border-rule pt-5" style={`--i:${i}`}>
+        <i class="step-bar absolute -top-px left-0 h-0.5 w-full bg-accent" aria-hidden="true"></i>
+        <TechnicalLabel tone={step.highlight ? "accent" : "muted"}>{String(i + 1).padStart(2, "0")} / {step.label}</TechnicalLabel>
+        <h3 class="text-[20px] font-semibold leading-tight text-ink">{step.title}</h3>
+        <p class="text-[15px] leading-relaxed text-muted">{step.description}</p>
+      </li>
+    ))}
+  </ol>
+</div>
+
+<style>
+  .edge-line { position: absolute; inset-inline: 0; top: 50%; height: 1px; background: var(--color-rule); }
+  .edge-pulse { position: absolute; inset-inline: 0; top: calc(50% - 1px); height: 3px; overflow: hidden; opacity: 0; }
+  .head { position: absolute; inset: 0; width: 60%; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--color-accent)); translate: -100% 0; }
+  .ring { position: absolute; inset: -1px; border: 1.5px solid var(--color-accent); border-radius: inherit; opacity: 0; }
+  .stage-dot { opacity: 0; }
+  .rail-pulse { position: absolute; left: -1px; top: 0; width: 3px; height: 22%; border-radius: 2px; background: linear-gradient(180deg, transparent, var(--color-accent)); translate: 0 -100%; }
+  .step-bar { transform-origin: left; scale: 0 1; }
+  .graph[data-playing] .step { opacity: 0.5; }
+
+  /* 8s, four 2s steps: configure 0-2s, setup 2-4s, hook 4-6s, ship 6-8s. */
+  .graph[data-playing] :is(.ring, .edge-pulse, .head, .stage-dot, .rail-pulse, .source, .step, .step-bar) {
+    animation-duration: 8s;
+    animation-iteration-count: infinite;
+  }
+  /* Configure: each plugin lights in turn. */
+  .graph[data-playing] .plugin > .ring { animation-name: ring-on; animation-delay: calc(0.2s + var(--n) * 0.45s); }
+  /* Setup: a pulse runs each wire from the plugin into the stage it attaches to. */
+  .graph[data-playing] :is(.edge-in, .edge-in .head) { animation-delay: calc(2.1s + var(--n) * 0.45s); }
+  .graph[data-playing] .edge-pulse { animation-name: pulse-show; }
+  .graph[data-playing] .head { animation-name: pulse-run; animation-timing-function: ease-in-out; }
+  /* Hook: the build pulse runs down the core; each stage lights as it passes, attached ones send their output right. */
+  .graph[data-playing] .rail-pulse { animation-name: rail-run; animation-delay: 4s; animation-timing-function: linear; }
+  .graph[data-playing] .stage .ring { animation-name: ring-on; animation-delay: calc(4.1s + var(--n) * 0.36s); }
+  .graph[data-playing] .stage-dot { animation-name: dot-on; animation-delay: calc(4.1s + var(--n) * 0.36s); }
+  .graph[data-playing] :is(.edge-out, .edge-out .head) { animation-delay: calc(4.25s + var(--n) * 0.36s); }
+  .graph[data-playing] .output .ring { animation-name: ring-on; animation-delay: calc(4.55s + var(--n) * 0.36s); }
+  /* Ship: each plugin's source lights in turn, a package from npm or a file kept local. */
+  .graph[data-playing] .source .ring { animation-name: ring-on; animation-delay: calc(6.2s + var(--n) * 0.4s); }
+  .graph[data-playing] .source { animation-name: source-on; animation-delay: calc(6.2s + var(--n) * 0.4s); }
+  /* Captions follow the step in play. */
+  .graph[data-playing] .step { animation-name: step-on; animation-delay: calc(var(--i) * 2s); }
+  .graph[data-playing] .step-bar { animation-name: bar-on; animation-delay: calc(var(--i) * 2s); }
+
+  @keyframes ring-on { 0%, 14%, 100% { opacity: 0; } 2%, 10% { opacity: 1; } }
+  @keyframes pulse-show { 0%, 8%, 100% { opacity: 0; } 1%, 6% { opacity: 1; } }
+  @keyframes pulse-run { 0% { translate: -100% 0; } 7%, 100% { translate: 170% 0; } }
+  @keyframes rail-run { 0% { translate: 0 -100%; } 25%, 100% { translate: 0 460%; } }
+  @keyframes dot-on { 0%, 46%, 100% { opacity: 0; } 1%, 44% { opacity: 1; } }
+  @keyframes source-on { 0%, 12%, 100% { translate: 0 0; } 2%, 9% { translate: 0 -2px; } }
+  @keyframes step-on { 0%, 25%, 100% { opacity: 0.5; } 2%, 23% { opacity: 1; } }
+  @keyframes bar-on { 0%, 25%, 100% { scale: 0 1; } 4%, 21% { scale: 1 1; } }
+
+  @media (prefers-reduced-motion: reduce) { .graph * { animation: none !important; } .graph .step { opacity: 1 !important; } }
+</style>

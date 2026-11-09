@@ -1,11 +1,10 @@
 ---
-import { pluginSteps } from "../../../content/home";
 import SectionIntro from "../../shared/SectionIntro.astro";
-import Steps from "../../shared/Steps.astro";
+import PluginFlow from "../../shared/PluginFlow.astro";
 import Container from "../../ui/Container.astro";
 ---
 
 <Container as="section" class="flex flex-col gap-12 py-24">
   <SectionIntro label="03 / Extend without forking" heading={"Extend the build.\nKeep the core."} description="Sitemaps, analytics, reading time, custom transforms. Plugins attach to the build pipeline and dev server through hooks, so you never patch Flame itself. Zero plugins means zero behavior change." />
-  <Steps steps={pluginSteps} />
+  <PluginFlow />
 </Container>
