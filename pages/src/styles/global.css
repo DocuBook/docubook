@@ -50,12 +50,14 @@
   --color-muted: #64655d;
   --color-accent: #348fea;
   /* Accent for text and filled buttons on light surfaces: #348fea reaches only 3:1 on paper and 3.4:1 under
-     white, so small text uses this deeper cut (5.5:1 on paper, 6.1:1 under white). Derived from the accent so
-     the theme swatches on the home page still recolor it. */
-  --color-accent-ink: color-mix(in srgb, var(--color-accent) 70%, black);
+     white, so small text uses this deeper cut. Derived from the accent so the theme swatches on the home page
+     still recolor it; the ratio is set by the lightest preset (freshlime), which lands at 5.6:1 on paper and
+     6.2:1 under white. The default blue lands at 7.6:1 and 8.4:1. */
+  --color-accent-ink: color-mix(in srgb, var(--color-accent) 55%, black);
   /* Accent for small text on the dark surfaces: #348fea is 4.4:1 on dark-card and 3.4:1 on the lit search
-     row, so text there uses this lighter cut (6.5:1 and 4.8:1). */
-  --color-dark-accent: color-mix(in srgb, var(--color-accent) 75%, white);
+     row, so text there uses this lighter cut. The ratio is set by the darkest preset (coffee), which lands at
+     4.7:1 on the lit row and 6.1:1 on dark-card. The default blue lands at 5.8:1 and 7.4:1. */
+  --color-dark-accent: color-mix(in srgb, var(--color-accent) 60%, white);
   --color-rule: #d9d9cf;
   --color-card: #ebebe3;
   --color-dark: #1b1d1b;
