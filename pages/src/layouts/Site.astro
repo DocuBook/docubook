@@ -4,6 +4,9 @@ import { site } from "../content/site";
 import Container from "../components/ui/Container.astro";
 import Footer from "../components/shared/Footer.astro";
 import Navbar from "../components/shared/Navbar.astro";
+// The latin cuts the first screen paints with: preloaded so the swap lands before first paint.
+import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
+import plexMonoLatin from "@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2?url";
 
 interface Props { title?: string; description?: string }
 const { title, description = site.description } = Astro.props;
@@ -17,6 +20,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
+    <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={plexMonoLatin} as="font" type="font/woff2" crossorigin />
     <script is:inline>
       // Re-apply the theme preset picked on the home page before first paint. Pages only; /docs is a separate Flame build.
       try { const c = localStorage.getItem("theme-accent"); if (c) document.documentElement.style.setProperty("--color-accent", c); } catch {}
@@ -39,7 +44,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
       const root = document.documentElement;
       const onScrolled = () => root.toggleAttribute("data-scrolled", scrollY > 8);
       addEventListener("scroll", onScrolled, { passive: true });
-      onScrolled();
+      requestAnimationFrame(onScrolled); // scrollY forces a layout; read it once the first frame has one
       new IntersectionObserver(([e]) => root.toggleAttribute("data-footer-visible", e.isIntersecting)).observe(document.querySelector("footer")!);
     </script>
   </body>
