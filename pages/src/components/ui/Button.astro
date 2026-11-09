@@ -3,7 +3,7 @@
 interface Props { href: string; variant?: "primary" | "dark" | "ghost"; external?: boolean; class?: string }
 const { href, variant = "primary", external = false, class: className = "" } = Astro.props;
 const variants = {
-  primary: "bg-accent text-white",
+  primary: "bg-accent-ink text-white",
   dark: "bg-ink text-white",
   ghost: "bg-paper text-ink border border-rule",
 };

@@ -13,7 +13,7 @@ const items = site.nav.map((item) => ({ ...item, active: item.href.replace(/\/$/
   <ul class="hidden items-center gap-[34px] text-sm lg:flex">
     {items.map((item) => (
       <li>
-        <a href={item.href} class:list={[item.active ? "font-semibold text-accent" : "text-ink"]} aria-current={item.active ? "page" : undefined} {...("external" in item ? { "data-astro-reload": true } : {})}>{item.label}</a>
+        <a href={item.href} class:list={[item.active ? "font-semibold text-accent-ink" : "text-ink"]} aria-current={item.active ? "page" : undefined} {...("external" in item ? { "data-astro-reload": true } : {})}>{item.label}</a>
       </li>
     ))}
   </ul>
@@ -33,7 +33,7 @@ const items = site.nav.map((item) => ({ ...item, active: item.href.replace(/\/$/
   <ul class="flex flex-col gap-2 border-t border-rule pt-8 text-4xl font-semibold tracking-tight">
     {items.map((item) => (
       <li>
-        <a href={item.href} class:list={["block py-3", item.active ? "text-accent" : "text-ink"]} aria-current={item.active ? "page" : undefined} {...("external" in item ? { "data-astro-reload": true } : {})}>{item.label}</a>
+        <a href={item.href} class:list={["block py-3", item.active ? "text-accent-ink" : "text-ink"]} aria-current={item.active ? "page" : undefined} {...("external" in item ? { "data-astro-reload": true } : {})}>{item.label}</a>
       </li>
     ))}
   </ul>

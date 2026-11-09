@@ -8,7 +8,7 @@ import TechnicalLabel from "../../ui/TechnicalLabel.astro";
   <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
     {features.map((f, i) => (
       <li class:list={["flex min-h-[230px] flex-col gap-3.5 rounded border p-[30px]", f.highlight ? "border-dark bg-dark text-dark-ink" : "border-rule bg-card text-ink"]}>
-        <TechnicalLabel tone={f.highlight ? "accent" : "muted"}>{String(i + 1).padStart(2, "0")} / {f.label}</TechnicalLabel>
+        <TechnicalLabel tone={f.highlight ? "dark-accent" : "muted"}>{String(i + 1).padStart(2, "0")} / {f.label}</TechnicalLabel>
         <h2 class="text-[25px] font-semibold leading-tight">{f.title}</h2>
         <p class:list={["text-[15px] leading-relaxed", f.highlight ? "text-dark-muted" : "text-muted"]}>{f.description}</p>
       </li>

@@ -39,24 +39,33 @@
   line-gap-override: 0%;
 }
 
-/* Tokens from the pen.dev design (docubook.pen). */
+/* Tokens from the pen.dev design (docubook.pen). Muted greys sit a step darker/lighter than the pen values so
+   every small label clears WCAG AA (4.5:1) on paper, card and the dark hit rows. */
 @theme {
   --font-sans: "Inter Variable", "Inter Fallback", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", "IBM Plex Mono Fallback", ui-monospace, monospace;
 
   --color-paper: #f5f3ed;
   --color-ink: #20211e;
-  --color-muted: #72736b;
+  --color-muted: #64655d;
   --color-accent: #348fea;
+  /* Accent for text and filled buttons on light surfaces: #348fea reaches only 3:1 on paper and 3.4:1 under
+     white, so small text uses this deeper cut (5.5:1 on paper, 6.1:1 under white). Derived from the accent so
+     the theme swatches on the home page still recolor it. */
+  --color-accent-ink: color-mix(in srgb, var(--color-accent) 70%, black);
+  /* Accent for small text on the dark surfaces: #348fea is 4.4:1 on dark-card and 3.4:1 on the lit search
+     row, so text there uses this lighter cut (6.5:1 and 4.8:1). */
+  --color-dark-accent: color-mix(in srgb, var(--color-accent) 75%, white);
   --color-rule: #d9d9cf;
   --color-card: #ebebe3;
   --color-dark: #1b1d1b;
   --color-dark-card: #252824;
   --color-dark-rule: #3a3d36;
-  --color-dark-muted: #8d9587;
+  --color-dark-muted: #a0a89a;
   --color-dark-ink: #f5f3ed;
   --color-dark-code: #e5e7db;
   --color-ok: #b5cc91;
+  --color-ok-ink: #3d6e26;
 }
 
 /* Preflight resets buttons to cursor: default; every button on this site is clickable. */
