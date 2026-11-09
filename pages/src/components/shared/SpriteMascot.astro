@@ -1,9 +1,21 @@
 ---
 // Two 3x3 sprite sheets: nine head directions, nine expressions. Vanilla port of page-mascot (MIT, Kamran Ahmed).
 // The pointer's angle picks a direction cell; a scroll glances up or down; a boop (click) plays an expression.
-interface Props { directions: string; reactions: string; size: number; label?: string; boop?: boolean; class?: string }
-const { directions, reactions, size, label = "panda", boop = false, class: className = "" } = Astro.props;
+// Each sheet is an <img> three times the mascot's size, built at 1x/2x/3x for that size, and a cell is picked by
+// translating it: a compositor-only change, no repaint. Only a boopable mascot carries the reactions sheet;
+// `lazy` defers both until near the viewport.
+import { getImage } from "astro:assets";
+interface Props { directions: ImageMetadata; reactions?: ImageMetadata; size: number; label?: string; boop?: boolean; lazy?: boolean; class?: string }
+const { directions, reactions, size, label = "panda", boop = false, lazy = false, class: className = "" } = Astro.props;
 const Tag = boop ? "button" : "span";
+const sheet = async (src: ImageMetadata) => {
+  // Densities the 1080px source can actually fill: 1x/2x/3x in the navbar, 1x/2x in the footer.
+  const densities = [1, 2, 3].filter((d) => d === 1 || size * 3 * d <= src.width);
+  const img = await getImage({ src, width: size * 3, height: size * 3, densities, format: "webp", quality: 82 });
+  return { src: img.src, srcset: img.srcSet.attribute, alt: "", width: size * 3, height: size * 3, decoding: "async", draggable: "false", loading: lazy ? "lazy" : undefined } as const;
+};
+const dirs = await sheet(directions);
+const reacts = boop && reactions ? await sheet(reactions) : undefined;
 ---
 
 <Tag
@@ -13,10 +25,15 @@ const Tag = boop ? "button" : "span";
   {...(boop ? { type: "button", "aria-label": `Boop the ${label}` } : { role: "img", "aria-label": label })}
 >
   <span class="squash relative block size-full origin-[50%_78%]">
-    <span class="layer absolute inset-0 bg-no-repeat bg-size-[300%_300%] bg-position-[50%_50%]" style={`background-image:url(${directions})`} data-directions></span>
-    <span class="layer absolute inset-0 bg-no-repeat bg-size-[300%_300%] opacity-0" style={`background-image:url(${reactions})`} data-reactions></span>
+    <span class="layer absolute inset-0 overflow-hidden"><img {...dirs} class="sheet" data-directions /></span>
+    {reacts && <span class="layer absolute inset-0 overflow-hidden opacity-0"><img {...reacts} class="sheet" data-reactions /></span>}
   </span>
 </Tag>
+
+<style>
+  /* Starts on the center cell (1, 1) so the server-rendered frame is already the resting pose. */
+  .sheet { position: absolute; top: 0; left: 0; width: 300%; height: 300%; max-width: none; translate: -33.3333% -33.3333%; will-change: translate; }
+</style>
 
 <script>
   const DIRECTIONS = ["up-left", "up", "up-right", "left", "center", "right", "down-left", "down", "down-right"];
@@ -35,7 +52,7 @@ const Tag = boop ? "button" : "span";
   ];
   const cell = (el: HTMLElement, list: string[], name: string) => {
     const i = list.indexOf(name);
-    el.style.backgroundPosition = `${(i % 3) * 50}% ${Math.floor(i / 3) * 50}%`;
+    el.style.translate = `${(i % 3) * -33.3333}% ${Math.floor(i / 3) * -33.3333}%`;
   };
   const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
   const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -44,17 +61,18 @@ const Tag = boop ? "button" : "span";
   let pointer: { x: number; y: number } | null = null;
   let glance: string | null = null;
   let settle: ReturnType<typeof setTimeout>;
-  let lastY = scrollY;
+  let lastY: number | undefined;
+  let frame = 0;
 
   const mascots = [...document.querySelectorAll<HTMLElement>("[data-sprite-mascot]")].map((root) => {
     const dirs = root.querySelector<HTMLElement>("[data-directions]")!;
-    const reacts = root.querySelector<HTMLElement>("[data-reactions]")!;
+    const reacts = root.querySelector<HTMLElement>("[data-reactions]");
     const state = { sector: -1, timers: [] as number[], boops: 0, at: 0 };
-    const aim = () => {
+    // `r` is null unless the pointer is being tracked; aimAll reads every rect before it writes any cell.
+    const aim = (r: DOMRect | null) => {
       if (glance) return cell(dirs, DIRECTIONS, glance);
-      if (!pointer || !fine) return cell(dirs, DIRECTIONS, "center");
-      const r = root.getBoundingClientRect();
-      if (!r.width) return;
+      if (!r) return cell(dirs, DIRECTIONS, "center");
+      if (!r.width || !pointer) return;
       const dx = pointer.x - (r.left + r.width / 2);
       const dy = pointer.y - (r.top + r.height / 2);
       if (Math.hypot(dx, dy) < DEAD_ZONE) { state.sector = -1; return cell(dirs, DIRECTIONS, "center"); }
@@ -63,22 +81,36 @@ const Tag = boop ? "button" : "span";
       state.sector = (Math.round(angle / SECTOR) + CLOCKWISE.length) % CLOCKWISE.length;
       cell(dirs, DIRECTIONS, CLOCKWISE[state.sector]);
     };
-    const show = (name: string | null) => { if (name) cell(reacts, REACTIONS, name); reacts.style.opacity = name ? "1" : "0"; dirs.style.opacity = name ? "0" : "1"; };
-    if (root.tagName === "BUTTON") root.addEventListener("click", () => {
-      state.timers.forEach(clearTimeout); state.timers = [];
-      const later = (ms: number, next: string | null) => state.timers.push(window.setTimeout(() => show(next), ms));
-      const now = Date.now();
-      state.boops = now - state.at < 1600 ? state.boops + 1 : 1; state.at = now;
-      if (state.boops >= 4) { state.boops = 0; show("dizzy"); later(1100, null); }
-      else { show("blink"); later(120, PAYOFFS[(state.boops - 1) % PAYOFFS.length]); later(560, null); }
-      if (!reduced) root.querySelector<HTMLElement>(".squash")!.animate(SQUASH, { duration: 420, easing: "linear" });
-    });
-    return { aim };
+    if (reacts) {
+      const show = (name: string | null) => {
+        if (name) cell(reacts, REACTIONS, name);
+        reacts.parentElement!.style.opacity = name ? "1" : "0";
+        dirs.parentElement!.style.opacity = name ? "0" : "1";
+      };
+      root.addEventListener("click", () => {
+        state.timers.forEach(clearTimeout); state.timers = [];
+        const later = (ms: number, next: string | null) => state.timers.push(window.setTimeout(() => show(next), ms));
+        const now = Date.now();
+        state.boops = now - state.at < 1600 ? state.boops + 1 : 1; state.at = now;
+        if (state.boops >= 4) { state.boops = 0; show("dizzy"); later(1100, null); }
+        else { show("blink"); later(120, PAYOFFS[(state.boops - 1) % PAYOFFS.length]); later(560, null); }
+        if (!reduced) root.querySelector<HTMLElement>(".squash")!.animate(SQUASH, { duration: 420, easing: "linear" });
+      });
+    }
+    return { root, aim };
   });
-  const aimAll = () => mascots.forEach((m) => m.aim());
+  // One update per frame, all reads before all writes, so pointer and scroll never force a layout.
+  const aimAll = () => {
+    frame ||= requestAnimationFrame(() => {
+      frame = 0;
+      const track = pointer && fine && !glance;
+      const rects = mascots.map((m) => (track ? m.root.getBoundingClientRect() : null));
+      mascots.forEach((m, i) => m.aim(rects[i]));
+    });
+  };
   addEventListener("pointermove", (e) => { pointer = { x: e.clientX, y: e.clientY }; aimAll(); }, { passive: true });
   addEventListener("scroll", () => {
-    const dy = scrollY - lastY; lastY = scrollY;
+    const dy = lastY === undefined ? 0 : scrollY - lastY; lastY = scrollY;
     if (Math.abs(dy) > 4) glance = dy > 0 ? "down" : "up";
     aimAll();
     clearTimeout(settle);
