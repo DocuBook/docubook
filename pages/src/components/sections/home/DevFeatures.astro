@@ -27,7 +27,7 @@ const results = ["Deploy a static site", "Understanding the build output"];
         <TechnicalLabel tone="dark-muted">Fast builds + HMR</TechnicalLabel>
         <h3 class="text-3xl font-semibold leading-tight">Stay in the edit.</h3>
         <p class="text-[15px] leading-relaxed text-dark-muted">A fast build loop and hot module replacement keep local development moving.</p>
-        <pre class="terminal mt-[18px] flex flex-col gap-[11px] font-mono text-xs" aria-label="$ bun run dev. Ready for changes. Edit. Save. Keep writing."><span class="flex text-[13px] text-dark-code"><span class="term-type">$ bun run dev</span><span class="term-caret" aria-hidden="true">▍</span></span><span class="term-line-2 text-ok">✓  Ready for changes</span><span class="term-line-3 text-dark-muted">↳  Edit. Save. Keep writing.</span></pre>
+        <pre class="terminal mt-[18px] flex flex-col gap-[11px] font-mono text-xs" data-animate aria-label="$ bun run dev. Ready for changes. Edit. Save. Keep writing."><span class="flex text-[13px] text-dark-code"><span class="term-type">$ bun run dev</span><span class="term-caret" aria-hidden="true">▍</span></span><span class="term-line-2 text-ok">✓  Ready for changes</span><span class="term-line-3 text-dark-muted">↳  Edit. Save. Keep writing.</span></pre>
       </div>
     </div>
 
@@ -37,7 +37,7 @@ const results = ["Deploy a static site", "Understanding the build output"];
         <h3 class="text-[34px] font-semibold leading-tight">Good answers deserve<br />to be found.</h3>
         <p class="text-[15px] leading-relaxed text-dark-muted">Connect Algolia for full-text search. Help readers find the right page, not another dead end.</p>
       </div>
-      <div class="flex w-full flex-col gap-[13px] rounded border border-dark-rule bg-dark-card p-[18px] lg:flex-1">
+      <div class="search-card flex w-full flex-col gap-[13px] rounded border border-dark-rule bg-dark-card p-[18px] lg:flex-1" data-animate>
         <div class="search flex h-8 items-center gap-3 font-mono"><Icon name="search" size={18} class="text-dark-muted" /><span class="flex flex-1 text-sm text-dark-code"><span class="search-type">deploy</span><span class="term-caret" aria-hidden="true">▍</span></span><span class="text-[10px] text-dark-muted">ESC</span></div>
         <hr class="h-px border-0 bg-dark-rule" />
         {results.map((r, i) => (
@@ -54,27 +54,31 @@ const results = ["Deploy a static site", "Understanding the build output"];
 </section>
 
 <style>
+  /* Both demos render their finished frame (command typed, results shown, first hit picked) and only loop
+     while [data-playing], set by the layout when they are near the viewport. */
   /* Terminal demo: one 6s cycle. Type the command, show two result lines, fade out, repeat. */
-  .terminal > span { animation-duration: 6s; animation-timing-function: ease; animation-iteration-count: infinite; }
-  .terminal > span:first-child { animation-name: term-fade; }
-  .term-type { overflow: hidden; white-space: nowrap; animation: term-type 6s steps(13, end) infinite; } /* 13 = chars in "$ bun run dev" */
-  .term-caret { animation: term-caret 1s steps(1) infinite; }
-  .terminal > .term-line-2 { animation-name: term-in-2; }
-  .terminal > .term-line-3 { animation-name: term-in-3; }
+  .terminal[data-playing] > span { animation-duration: 6s; animation-timing-function: ease; animation-iteration-count: infinite; }
+  .terminal[data-playing] > span:first-child { animation-name: term-fade; }
+  .term-type { overflow: hidden; white-space: nowrap; }
+  [data-playing] .term-type { animation: term-type 6s steps(13, end) infinite; } /* 13 = chars in "$ bun run dev" */
+  [data-playing] .term-caret { animation: term-caret 1s steps(1) infinite; }
+  .terminal[data-playing] > .term-line-2 { animation-name: term-in-2; }
+  .terminal[data-playing] > .term-line-3 { animation-name: term-in-3; }
   @keyframes term-fade { 0%, 88% { opacity: 1; } 95%, 100% { opacity: 0; } }
   @keyframes term-type { 0%, 5% { width: 0; } 28%, 100% { width: 13ch; } }
   @keyframes term-caret { 50% { opacity: 0; } }
   @keyframes term-in-2 { 0%, 32% { opacity: 0; translate: 0 4px; } 40%, 88% { opacity: 1; translate: none; } 95%, 100% { opacity: 0; translate: none; } }
   @keyframes term-in-3 { 0%, 44% { opacity: 0; translate: 0 4px; } 52%, 88% { opacity: 1; translate: none; } 95%, 100% { opacity: 0; translate: none; } }
   /* Search demo: one 7s cycle. Type the query, results drop in, highlight steps down then back up, fade out, repeat. */
-  .search-type { overflow: hidden; white-space: nowrap; animation: search-type 7s steps(6, end) infinite; } /* 6 = chars in "deploy" */
-  .search-result { animation-duration: 7s; animation-timing-function: ease; animation-iteration-count: infinite; animation-name: search-in, search-pick-1; }
-  .search-result-2 { animation-name: search-in, search-pick-2; }
+  .search-type { overflow: hidden; white-space: nowrap; }
+  [data-playing] .search-type { animation: search-type 7s steps(6, end) infinite; } /* 6 = chars in "deploy" */
+  [data-playing] .search-result { animation-duration: 7s; animation-timing-function: ease; animation-iteration-count: infinite; animation-name: search-in, search-pick-1; }
+  [data-playing] .search-result-2 { animation-name: search-in, search-pick-2; }
   @keyframes search-type { 0%, 7% { width: 0; } 24%, 100% { width: 6ch; } }
   @keyframes search-in { 0%, 28% { opacity: 0; translate: 0 4px; } 33%, 90% { opacity: 1; translate: none; } 97%, 100% { opacity: 0; translate: none; } }
   @keyframes search-pick-1 { 0%, 49% { background-color: #353b2f; } 50%, 71% { background-color: transparent; } 72%, 100% { background-color: #353b2f; } }
   @keyframes search-pick-2 { 0%, 49% { background-color: transparent; } 50%, 71% { background-color: #353b2f; } 72%, 100% { background-color: transparent; } }
-  @media (prefers-reduced-motion: reduce) { .terminal *, .terminal > span, .search *, .search-result { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .terminal *, .terminal > span, .search-card * { animation: none !important; } }
 </style>
 
 <script>

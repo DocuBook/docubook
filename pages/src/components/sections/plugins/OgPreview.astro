@@ -4,7 +4,7 @@ import Icon from "../../ui/Icon.astro";
 const bar = (w: string, h = "h-1.5", tone = "bg-dark-rule") => `${w} ${h} rounded-sm ${tone}`;
 ---
 
-<div class="flex flex-col items-center gap-3.5 sm:flex-row lg:flex-col xl:flex-row">
+<div class="og flex flex-col items-center gap-3.5 sm:flex-row lg:flex-col xl:flex-row" data-animate>
   <div class="flex w-full flex-1 flex-col gap-2.5">
     <span class="font-mono text-[10px] font-medium text-dark-muted">FRONTMATTER → LAYOUT</span>
     <div class="relative flex h-[150px] flex-col justify-between overflow-hidden rounded border border-dark-rule bg-dark p-3.5" aria-hidden="true">
@@ -32,10 +32,12 @@ const bar = (w: string, h = "h-1.5", tone = "bg-dark-rule") => `${w} ${h} rounde
 </div>
 
 <style>
-  /* Scan-to-render: a scan line sweeps the layout while the Takumi card reveals top to bottom in step, on a 6s loop. */
-  .og-scan { box-shadow: 0 0 12px 2px color-mix(in srgb, var(--color-accent) 70%, transparent); animation: og-scan 6s ease-in-out infinite; }
-  .og-render { animation: og-render 6s ease-in-out infinite; }
+  /* Scan-to-render: a scan line sweeps the layout while the Takumi card reveals top to bottom in step, on a 6s loop.
+     At rest (and until near the viewport) the card is shown rendered and the scan line is hidden. */
+  .og-scan { box-shadow: 0 0 12px 2px color-mix(in srgb, var(--color-accent) 70%, transparent); opacity: 0; }
+  .og[data-playing] .og-scan { animation: og-scan 6s ease-in-out infinite; }
+  .og[data-playing] .og-render { animation: og-render 6s ease-in-out infinite; }
   @keyframes og-scan { 0%, 5% { translate: 0 0; opacity: 1; } 38% { translate: 0 150px; opacity: 1; } 40%, 100% { translate: 0 150px; opacity: 0; } }
   @keyframes og-render { 0%, 5% { clip-path: inset(0 0 100% 0); opacity: 1; } 38%, 88% { clip-path: inset(0); opacity: 1; } 95%, 100% { clip-path: inset(0); opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) { .og-scan { display: none; } .og-render { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .og-scan { display: none; } .og .og-render { animation: none !important; } }
 </style>

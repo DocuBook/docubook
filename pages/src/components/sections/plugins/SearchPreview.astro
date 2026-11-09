@@ -4,7 +4,7 @@ import { searchResults } from "../../../content/plugins";
 import Icon from "../../ui/Icon.astro";
 ---
 
-<div class="sq grid gap-3.5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2" aria-label="Search for nginx: three full-text hits in 12 ms. Ask AI answers how to serve the docs under /docs with nginx.">
+<div class="sq grid gap-3.5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2" data-animate aria-label="Search for nginx: three full-text hits in 12 ms. Ask AI answers how to serve the docs under /docs with nginx.">
   <div class="overflow-hidden rounded border border-dark-rule bg-dark">
     <div class="flex items-center justify-between px-3.5 py-3">
       <span class="flex items-center gap-2.5 font-mono text-[13px] text-dark-code"><Icon name="search" size={15} class="text-accent" /><span class="sq-type">nginx</span><span class="sq-caret text-accent" aria-hidden="true">▍</span></span>
@@ -36,17 +36,19 @@ import Icon from "../../ui/Icon.astro";
 </div>
 
 <style>
-  /* Search demo, one 9s cycle: type the query, hits land, the highlight steps down and back, Ask AI streams its answer, fade out, repeat. */
-  .sq-type, .sq-hits, .sq-q, .sq-a, .sq-src { animation-duration: 9s; animation-timing-function: ease; animation-iteration-count: infinite; }
-  .sq-type { overflow: hidden; white-space: nowrap; animation-name: sq-type; animation-timing-function: steps(5, end); } /* 5 = chars in "nginx" */
-  .sq-caret { animation: sq-caret 1s steps(1) infinite; }
-  .sq-hits { animation-name: sq-in-a; }
-  .sq .sq-hit-1 { animation-name: sq-in-a, sq-pick-1; }
-  .sq .sq-hit-2 { animation-name: sq-in-a, sq-pick-2; }
-  .sq .sq-hit-3 { animation-name: sq-in-a, sq-pick-3; }
-  .sq-q { animation-name: sq-in-b; }
-  .sq-a { animation-name: sq-stream; }
-  .sq-src { animation-name: sq-in-c; }
+  /* Search demo, one 9s cycle: type the query, hits land, the highlight steps down and back, Ask AI streams its answer, fade out, repeat.
+     The markup is the finished frame; the loop runs only while [data-playing] (near the viewport). */
+  .sq-type { overflow: hidden; white-space: nowrap; }
+  .sq[data-playing] :is(.sq-type, .sq-hits, .sq-q, .sq-a, .sq-src) { animation-duration: 9s; animation-timing-function: ease; animation-iteration-count: infinite; }
+  .sq[data-playing] .sq-type { animation-name: sq-type; animation-timing-function: steps(5, end); } /* 5 = chars in "nginx" */
+  .sq[data-playing] .sq-caret { animation: sq-caret 1s steps(1) infinite; }
+  .sq[data-playing] .sq-hits { animation-name: sq-in-a; }
+  .sq[data-playing] .sq-hit-1 { animation-name: sq-in-a, sq-pick-1; }
+  .sq[data-playing] .sq-hit-2 { animation-name: sq-in-a, sq-pick-2; }
+  .sq[data-playing] .sq-hit-3 { animation-name: sq-in-a, sq-pick-3; }
+  .sq[data-playing] .sq-q { animation-name: sq-in-b; }
+  .sq[data-playing] .sq-a { animation-name: sq-stream; }
+  .sq[data-playing] .sq-src { animation-name: sq-in-c; }
   @keyframes sq-type { 0%, 4% { width: 0; } 16%, 100% { width: 5ch; } }
   @keyframes sq-caret { 50% { opacity: 0; } }
   @keyframes sq-in-a { 0%, 18% { opacity: 0; translate: 0 4px; } 22%, 90% { opacity: 1; translate: none; } 97%, 100% { opacity: 0; translate: none; } }
@@ -56,5 +58,5 @@ import Icon from "../../ui/Icon.astro";
   @keyframes sq-pick-1 { 0%, 32% { background-color: #353b2f; } 33%, 55% { background-color: transparent; } 56%, 100% { background-color: #353b2f; } }
   @keyframes sq-pick-2 { 0%, 32% { background-color: transparent; } 33%, 43% { background-color: #353b2f; } 44%, 100% { background-color: transparent; } }
   @keyframes sq-pick-3 { 0%, 43% { background-color: transparent; } 44%, 55% { background-color: #353b2f; } 56%, 100% { background-color: transparent; } }
-  @media (prefers-reduced-motion: reduce) { .sq * { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .sq * { animation: none !important; } }
 </style>
