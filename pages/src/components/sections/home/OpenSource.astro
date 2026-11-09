@@ -14,6 +14,8 @@ const built = await fetch(`https://api.github.com/repos/${repo}`, {
 })
   .then((res) => (res.ok ? res.json() : null))
   .catch(() => null);
+// When the numbers above were fetched; 0 when the build kept the placeholders.
+const builtAt = built ? Date.now() : 0;
 const initial = {
   stars: built ? compact.format(built.stargazers_count) : "–",
   forks: built ? compact.format(built.forks_count) : "–",
@@ -39,7 +41,7 @@ const initial = {
         <span class="whitespace-nowrap text-lg font-semibold xl:text-xl">DocuBook / docubook</span>
       </div>
       <p class="text-[15px] leading-relaxed text-muted">A markdown-first documentation framework.<br />Human-readable source. Flat static output.</p>
-      <div class="flex flex-wrap items-center gap-5 font-mono text-[11px] text-muted" data-repo={repo}>
+      <div class="flex flex-wrap items-center gap-5 font-mono text-[11px] text-muted" data-repo={repo} data-built-at={builtAt}>
         <span class="flex items-center gap-[7px]"><Icon name="star" size={15} /><span data-stat="stars">{initial.stars}</span> stars</span>
         <span class="flex items-center gap-[7px]"><Icon name="git-fork" size={15} /><span data-stat="forks">{initial.forks}</span> forks</span>
         <span class="flex items-center gap-[7px]"><Icon name="scale" size={15} /><span data-stat="license">{initial.license}</span> license</span>
@@ -70,14 +72,18 @@ const initial = {
 
 <script>
   // Repo stats from the GitHub API, cached in localStorage for 7 days. On any failure the static text stays.
+  // The page already carries the stats fetched at build time: a cache entry older than the build never
+  // replaces them, and while they are younger than the TTL the browser does not refetch at all.
   const root = document.querySelector<HTMLElement>("[data-repo]")!;
+  const builtAt = Number(root.dataset.builtAt) || 0;
   const key = `gh:${root.dataset.repo}`;
   const ttl = 7 * 24 * 60 * 60 * 1000;
   const compact = new Intl.NumberFormat("en", { notation: "compact" });
   type Stats = { stars: number; forks: number; license: string | null };
-  async function stats(): Promise<Stats> {
+  async function stats(): Promise<Stats | null> {
     const cached = JSON.parse(localStorage.getItem(key) ?? "null") as { at: number; data: Stats } | null;
-    if (cached && Date.now() - cached.at < ttl) return cached.data;
+    if (cached && cached.at > builtAt && Date.now() - cached.at < ttl) return cached.data;
+    if (Date.now() - builtAt < ttl) return null;
     const res = await fetch(`https://api.github.com/repos/${root.dataset.repo}`, { headers: { Accept: "application/vnd.github+json" } });
     if (!res.ok) throw new Error(res.statusText);
     const j = await res.json();
@@ -90,7 +96,9 @@ const initial = {
     if (!e.isIntersecting) return;
     io.disconnect();
     stats()
-      .then(({ stars, forks, license }) => {
+      .then((data) => {
+        if (!data) return;
+        const { stars, forks, license } = data;
         root.querySelector("[data-stat=stars]")!.textContent = compact.format(stars);
         root.querySelector("[data-stat=forks]")!.textContent = compact.format(forks);
         if (license) root.querySelector("[data-stat=license]")!.textContent = license;
