@@ -1,5 +1,6 @@
 ---
 import { site } from "../../content/site";
+import directions from "../../assets/mascots/panda-directions.webp";
 import SpriteMascot from "./SpriteMascot.astro";
 // `collapsible`: the wordmark folds away once the page is scrolled, and returns when the footer is in view and the mascot has left for it.
 interface Props { mascot?: boolean; collapsible?: boolean }
@@ -7,7 +8,7 @@ const { mascot = true, collapsible = false } = Astro.props;
 ---
 
 <a href="/" class="flex items-center gap-1.5">
-  {mascot && <span class="brand-mascot block size-11 max-w-11 overflow-hidden"><SpriteMascot directions="/mascots/panda-directions.webp" reactions="/mascots/panda-reactions.webp" size={56} class="-m-1.5" /></span>}
+  {mascot && <span class="brand-mascot block size-11 max-w-11 overflow-hidden"><SpriteMascot directions={directions} size={56} class="-m-1.5" /></span>}
   <span class:list={["text-[23px] font-bold text-accent", collapsible && "brand-text max-w-[8em] overflow-hidden whitespace-nowrap"]}>{site.name}</span>
 </a>
 

@@ -2,6 +2,8 @@
 import { site } from "../../content/site";
 import Brand from "./Brand.astro";
 import Container from "../ui/Container.astro";
+import directions from "../../assets/mascots/panda-directions.webp";
+import reactions from "../../assets/mascots/panda-reactions.webp";
 import SpriteMascot from "./SpriteMascot.astro";
 import SectionRule from "../ui/SectionRule.astro";
 import TechnicalLabel from "../ui/TechnicalLabel.astro";
@@ -9,7 +11,7 @@ const year = new Date().getFullYear();
 ---
 
 <div class="relative">
-  <div class="peek absolute top-0 left-1/2 size-32"><SpriteMascot directions="/mascots/panda-directions.webp" reactions="/mascots/panda-reactions.webp" size={128} boop /></div>
+  <div class="peek absolute top-0 left-1/2 size-32"><SpriteMascot directions={directions} reactions={reactions} size={128} boop lazy /></div>
   <footer class="relative z-10 bg-dark text-dark-ink">
   <Container class="flex flex-col gap-12 pt-14 pb-7">
     <div class="flex flex-col justify-between gap-10 md:flex-row">
