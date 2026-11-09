@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { parseMarkdown, type Inline } from "../../lib/miniMarkdown";
 
-// Types the Markdown source into the editor and renders the parsed result beside it as it grows.
+// Server-renders the finished page so audits and no-JS visitors see the result, then replays it once
+// per page load: types the Markdown into the editor and renders the parsed result beside it as it grows,
+// starting when the demo has scrolled halfway up the viewport.
 const CHAR_MS = 22;
 const LINE_MS = 140;
-const HOLD_MS = 7000;
 
 // Same palette and shape as @docubook/markdown's Callout (left bar, 16% tint, 75% body).
 const CALLOUT: Record<string, { color: string; label: string }> = {
@@ -81,36 +82,60 @@ function Inlines({ inlines }: { inlines: Inline[] }) {
 }
 
 export default function MarkdownPlayground({ source }: { source: string }) {
-  const [typed, setTyped] = useState("");
+  const root = useRef<HTMLDivElement>(null);
+  const [typed, setTyped] = useState(source);
   const done = typed.length >= source.length;
 
   useEffect(() => {
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return setTyped(source);
+    const el = root.current;
+    if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let i = 0;
     let timer: ReturnType<typeof setTimeout>;
     const tick = () => {
-      i = i >= source.length ? 0 : i + 1;
+      i += 1;
       setTyped(source.slice(0, i));
-      const delay =
-        i >= source.length
-          ? HOLD_MS
-          : source[i - 1] === "\n"
-            ? LINE_MS
-            : CHAR_MS * (0.6 + Math.random() * 0.8);
-      timer = setTimeout(tick, delay);
+      if (i >= source.length) {
+        el.style.minHeight = "";
+        return;
+      }
+      timer = setTimeout(
+        tick,
+        source[i - 1] === "\n" ? LINE_MS : CHAR_MS * (0.6 + Math.random() * 0.8)
+      );
     };
-    timer = setTimeout(tick, 600);
-    return () => clearTimeout(timer);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        // Hold the finished height while the text regrows so the page below does not jump.
+        el.style.minHeight = `${el.offsetHeight}px`;
+        setTyped("");
+        timer = setTimeout(tick, 400);
+      },
+      { rootMargin: "0px 0px -50% 0px" }
+    );
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      clearTimeout(timer);
+    };
   }, [source]);
 
   const doc = useMemo(() => parseMarkdown(typed), [typed]);
   const lines = typed.split("\n");
 
   return (
-    <div className="grid lg:grid-cols-[55%_45%]">
+    <div ref={root} className="grid lg:grid-cols-[55%_45%]">
       <div className="border-dark-rule flex flex-col border-b lg:border-r lg:border-b-0">
         <div className="bg-dark-card flex h-[43px] items-center justify-between px-[23px] font-mono text-xs">
-          <span className="text-dark-code">index.md</span>
+          <span className="flex items-center gap-5">
+            <span className="flex gap-1.5" aria-hidden="true">
+              {["bg-[#ff5f57]", "bg-[#febc2e]", "bg-[#28c840]"].map((bg) => (
+                <i key={bg} className={`${bg} size-[7px] rounded-full`} />
+              ))}
+            </span>
+            <span className="text-dark-code">index.md</span>
+          </span>
           <span className="text-dark-muted font-medium uppercase">Markdown</span>
         </div>
         <ol
