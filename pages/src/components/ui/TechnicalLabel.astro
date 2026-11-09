@@ -1,8 +1,9 @@
 ---
 // Mono 12/500 uppercase label used above headings, in steps and in the footer.
-interface Props { tone?: "ink" | "muted" | "accent" | "dark-muted"; class?: string; as?: "p" | "span" }
+// "accent" is for light surfaces (deep accent, AA contrast on paper); "dark-accent" is the lighter cut for dark surfaces.
+interface Props { tone?: "ink" | "muted" | "accent" | "dark-muted" | "dark-accent"; class?: string; as?: "p" | "span" }
 const { tone = "muted", class: className = "", as: Tag = "span" } = Astro.props;
-const tones = { ink: "text-ink", muted: "text-muted", accent: "text-accent", "dark-muted": "text-dark-muted" };
+const tones = { ink: "text-ink", muted: "text-muted", accent: "text-accent-ink", "dark-muted": "text-dark-muted", "dark-accent": "text-dark-accent" };
 ---
 
 <Tag class:list={["font-mono text-xs font-medium uppercase tracking-normal", tones[tone], className]}><slot /></Tag>

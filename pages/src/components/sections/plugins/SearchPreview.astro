@@ -16,7 +16,7 @@ import Icon from "../../ui/Icon.astro";
       <div class:list={["sq-hits flex items-center gap-2.5 px-3.5 py-[9px]", `sq-hit-${i + 1}`, r.active && "bg-[#353b2f]"]}>
         <Icon name="file-text" size={14} class="text-dark-muted" />
         <div class="flex flex-1 flex-col gap-[3px]">
-          <span class="text-xs text-dark-code">{r.before}<mark class="bg-transparent font-semibold text-accent underline">{r.match}</mark>{r.after}</span>
+          <span class="text-xs text-dark-code">{r.before}<mark class="bg-transparent font-semibold text-dark-accent underline">{r.match}</mark>{r.after}</span>
           <span class="font-mono text-[9px] uppercase text-dark-muted">{r.crumb}</span>
         </div>
         {r.active && <Icon name="corner-down-left" size={12} class="text-dark-muted" />}
@@ -25,7 +25,7 @@ import Icon from "../../ui/Icon.astro";
   </div>
   <div class="flex flex-col gap-2.5 rounded border border-dark-rule bg-dark p-3.5">
     <div class="flex items-center justify-between font-mono">
-      <span class="flex items-center gap-[7px] text-[11px] font-medium text-accent"><Icon name="sparkles" size={14} />ASK AI</span>
+      <span class="flex items-center gap-[7px] text-[11px] font-medium text-dark-accent"><Icon name="sparkles" size={14} />ASK AI</span>
       <span class="text-[9px] text-dark-muted">⌘ I</span>
     </div>
     <hr class="h-px border-0 bg-dark-rule" />

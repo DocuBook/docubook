@@ -7,9 +7,10 @@ import { parseMarkdown, type Inline } from "../../lib/miniMarkdown";
 const CHAR_MS = 22;
 const LINE_MS = 140;
 
-// Same palette and shape as @docubook/markdown's Callout (left bar, 16% tint, 75% body).
+// Same shape as @docubook/markdown's Callout (left bar, 16% tint). The body is the colour mixed toward ink
+// rather than toward transparent so the 11px demo text stays above 4.5:1 on the tint.
 const CALLOUT: Record<string, { color: string; label: string }> = {
-  info: { color: "#348fea", label: "Info" },
+  info: { color: "var(--color-accent-ink)", label: "Info" },
   tip: { color: "hsl(137 50% 35%)", label: "Tip" },
   warning: { color: "hsl(36 100% 56%)", label: "Warning" },
   danger: { color: "hsl(0 85% 60%)", label: "Danger" },
@@ -48,7 +49,7 @@ function Callout({ name, title, children }: { name: string; title: string; child
       </div>
       <div
         className="leading-relaxed"
-        style={{ color: `color-mix(in srgb, ${color} 75%, transparent)` }}
+        style={{ color: `color-mix(in srgb, ${color} 75%, var(--color-ink))` }}
       >
         {children}
       </div>
@@ -165,23 +166,23 @@ export default function MarkdownPlayground({ source }: { source: string }) {
       <div className="text-ink flex flex-col bg-[#fffefa]">
         <div className="text-muted flex h-[43px] items-center justify-between bg-[#eaece4] px-5 font-mono text-[11px]">
           <span>your-docs / index.html</span>
-          <span className={done ? "text-ok" : ""}>{done ? "✓ built" : "compiling…"}</span>
+          <span className={done ? "text-ok-ink" : ""}>{done ? "✓ built" : "compiling…"}</span>
         </div>
         <article
           className="flex min-h-[471px] flex-col gap-3 px-8 pt-7 pb-6 lg:px-12"
           aria-live="polite"
         >
           {doc.frontmatter.title && (
-            <h3 className="text-[22px] font-bold">{doc.frontmatter.title}</h3>
+            <h2 className="text-[22px] font-bold">{doc.frontmatter.title}</h2>
           )}
           {doc.frontmatter.description && (
             <p className="text-muted text-[11px]">{doc.frontmatter.description}</p>
           )}
           {doc.blocks.map((b, i) =>
             b.type === "heading" ? (
-              <h4 key={i} className="mt-2 text-[15px] font-bold">
+              <h3 key={i} className="mt-2 text-[15px] font-bold">
                 {b.text}
-              </h4>
+              </h3>
             ) : b.type === "paragraph" ? (
               <p key={i} className="text-muted text-[11px] leading-relaxed">
                 <Inlines inlines={b.inlines} />
