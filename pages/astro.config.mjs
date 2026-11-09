@@ -20,6 +20,8 @@ const isDev = process.argv.includes("dev");
 export default defineConfig({
   site: docu.meta.baseURL,
   integrations: [react()],
+  // One small stylesheet: inlining it drops the render-blocking request in front of the first paint.
+  build: { inlineStylesheets: "always" },
   vite: {
     plugins: [tailwindcss()],
     define: {

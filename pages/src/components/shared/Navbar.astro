@@ -1,6 +1,6 @@
 ---
 import { site } from "../../content/site";
-import AskAiButton from "../islands/AskAiButton";
+import AskAiButton from "./AskAiButton.astro";
 import Brand from "./Brand.astro";
 import GitHub from "../ui/icons/GitHub.astro";
 import TechnicalLabel from "../ui/TechnicalLabel.astro";
@@ -19,7 +19,7 @@ const items = site.nav.map((item) => ({ ...item, active: item.href.replace(/\/$/
   </ul>
   <div class="hidden items-center gap-[26px] lg:flex">
     <a href={site.github} target="_blank" rel="noreferrer" class="flex items-center gap-2 text-sm text-ink"><GitHub class="size-[17px]" /> GitHub</a>
-    <AskAiButton client:idle />
+    <AskAiButton />
   </div>
   <button type="button" class="burger relative z-50 -mr-2 flex size-11 flex-col items-center justify-center gap-[5px] lg:hidden" aria-expanded="false" aria-controls="mobile-menu" aria-label="Menu" data-nav-toggle>
     <span class="block h-0.5 w-6 bg-ink"></span>
