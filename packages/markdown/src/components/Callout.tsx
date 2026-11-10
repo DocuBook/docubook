@@ -138,7 +138,10 @@ export function Callout({ type, title, children, style, className, ...props }: C
           <span style={{ color: token.header }}>{fallbackTitle}</span>
         </div>
       ) : null}
-      <div style={{ color: token.content, lineHeight: 1.5 }}>{children}</div>
+      {/* The class lets styles.css keep **bold** in the callout colour (see .mdx-callout-content). */}
+      <div className="mdx-callout-content" style={{ color: token.content, lineHeight: 1.5 }}>
+        {children}
+      </div>
     </aside>
   );
 }

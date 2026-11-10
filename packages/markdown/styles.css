@@ -200,6 +200,13 @@ pre[data-mermaid-align="center"] > svg {
   transform: rotate(45deg) translate(-0.5px, -1px);
 }
 
+/* Bold inside a callout keeps the callout's colour: `.prose strong` would paint it ink (white in
+   dark mode) on a tinted panel. It stands out by weight instead, a step above prose's 600. */
+.mdx-callout-content :is(strong, b) {
+  color: inherit;
+  font-weight: 700;
+}
+
 /* File tree (```filetree fence, legacy ::::tree): a bordered panel of mono rows with guide lines. */
 .mdx-tree {
   margin: 1.5rem 0;
