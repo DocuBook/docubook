@@ -87,6 +87,12 @@ html {
 .DocSearch-SidepanelButton {
   display: none !important;
 }
+/* The conversation history reuses the dialog's remove button (.DocSearch-Hit-action-button). The panel loads
+   the dialog stylesheet too, which hides that button outside a selected search hit, and sidepanel.css never
+   shows it again, so a conversation could not be removed. Same fix as @docubook/plugin-search-algolia. */
+.DocSearch-Sidepanel-RecentConversation .DocSearch-Hit-action-button {
+  display: block;
+}
 :root:root {
   --docsearch-font-family: inherit;
   --docsearch-primary-color: var(--color-accent);
