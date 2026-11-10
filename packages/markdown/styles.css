@@ -209,7 +209,7 @@ pre[data-mermaid-align="center"] > svg {
   font-weight: 700;
 }
 
-.mdx-callout-content :is(a, h1, h2, h3, h4, h5, h6, blockquote, th, dt, kbd) {
+.mdx-callout-content :is(a, h1, h2, h3, h4, h5, h6, blockquote, dt, kbd) {
   color: inherit;
 }
 
@@ -245,8 +245,15 @@ pre[data-mermaid-align="center"] > svg {
   border-inline-start-color: color-mix(in srgb, currentColor 40%, transparent);
 }
 
-.mdx-callout-content :is(hr, thead, tbody tr, th, td) {
+.mdx-callout-content hr {
   border-color: color-mix(in srgb, currentColor 25%, transparent);
+}
+
+/* Tables style themselves inline (TableMdx), so the callout retints them through their variables. */
+.mdx-callout-content {
+  --mdx-table-border: color-mix(in srgb, currentColor 25%, transparent);
+  --mdx-table-head-bg: color-mix(in srgb, currentColor 10%, transparent);
+  --mdx-table-head-color: currentColor;
 }
 
 /* File tree (```filetree fence, legacy ::::tree): a bordered panel of mono rows with guide lines. */

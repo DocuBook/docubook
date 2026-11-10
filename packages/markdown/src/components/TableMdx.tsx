@@ -6,12 +6,18 @@ import type {
   ThHTMLAttributes,
 } from "react";
 
+// Colours come from CSS variables with the theme values as fallbacks, so a container can retint its
+// tables without fighting these inline styles (a callout sets them from its own colour).
+const BORDER = "var(--mdx-table-border, hsl(var(--border-color, 210 20% 85%)))";
+const HEAD_BG = "var(--mdx-table-head-bg, hsl(var(--muted, 210 20% 92%)))";
+const HEAD_COLOR = "var(--mdx-table-head-color, hsl(var(--muted-foreground, 220 15% 50%)))";
+
 const tableShellStyle: CSSProperties = {
   position: "relative",
   width: "100%",
   overflowX: "auto",
   overflowY: "hidden",
-  border: "1px solid hsl(var(--border-color, 210 20% 85%))",
+  border: `1px solid ${BORDER}`,
   borderRadius: 10,
   margin: "1rem 0",
 };
@@ -19,7 +25,7 @@ const tableShellStyle: CSSProperties = {
 const cellBaseStyle: CSSProperties = {
   padding: "0.6rem 0.75rem",
   verticalAlign: "middle",
-  borderBottom: "1px solid hsl(var(--border-color, 210 20% 85%))",
+  borderBottom: `1px solid ${BORDER}`,
 };
 
 export function TableMdx({ style, ...props }: TableHTMLAttributes<HTMLTableElement>) {
@@ -44,7 +50,7 @@ export function TableHeaderMdx(props: HTMLAttributes<HTMLTableSectionElement>) {
     <thead
       {...props}
       style={{
-        background: "hsl(var(--muted, 210 20% 92%))",
+        background: HEAD_BG,
         ...props.style,
       }}
     />
@@ -60,8 +66,8 @@ export function TableFooterMdx(props: HTMLAttributes<HTMLTableSectionElement>) {
     <tfoot
       {...props}
       style={{
-        background: "hsl(var(--muted, 210 20% 92%))",
-        borderTop: "1px solid hsl(var(--border-color, 210 20% 85%))",
+        background: HEAD_BG,
+        borderTop: `1px solid ${BORDER}`,
         ...props.style,
       }}
     />
@@ -80,7 +86,7 @@ export function TableHeadMdx(props: ThHTMLAttributes<HTMLTableCellElement>) {
       style={{
         ...cellBaseStyle,
         textAlign: "left",
-        color: "hsl(var(--muted-foreground, 220 15% 50%))",
+        color: HEAD_COLOR,
         fontWeight: 600,
         ...props.style,
       }}

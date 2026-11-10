@@ -36,7 +36,7 @@ describe("Callout", () => {
     };
     // Links, headings, quotes, table heads, terms and kbd: prose gives each its own ink colour.
     expect(
-      rule(".mdx-callout-content :is(a, h1, h2, h3, h4, h5, h6, blockquote, th, dt, kbd)")
+      rule(".mdx-callout-content :is(a, h1, h2, h3, h4, h5, h6, blockquote, dt, kbd)")
     ).toMatch(/color:\s*inherit;/);
     expect(rule(".mdx-callout-content a")).toMatch(/text-decoration-color:\s*currentColor;/);
     expect(rule(".mdx-callout-content li::marker")).toMatch(/color:\s*inherit;/);
@@ -44,6 +44,11 @@ describe("Callout", () => {
     const inlineCode = rule(".mdx-callout-content :not(pre) > code");
     expect(inlineCode).toMatch(/color:\s*inherit;/);
     expect(inlineCode).toMatch(/background:\s*color-mix\(in srgb, currentColor/);
+    // Tables style themselves inline (TableMdx), so the callout retints them through variables.
+    const tableVars = rule(".mdx-callout-content");
+    expect(tableVars).toMatch(/--mdx-table-border:\s*color-mix\(in srgb, currentColor/);
+    expect(tableVars).toMatch(/--mdx-table-head-bg:\s*color-mix\(in srgb, currentColor/);
+    expect(tableVars).toMatch(/--mdx-table-head-color:\s*currentColor;/);
     // A code block keeps the page's body colour instead of inheriting the callout's.
     expect(rule(".mdx-callout-content .code-block-container")).toMatch(
       /color:\s*var\(--tw-prose-body, hsl\(var\(--foreground/
