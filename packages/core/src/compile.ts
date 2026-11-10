@@ -9,6 +9,7 @@ import rehypeCodeTitles from "rehype-code-titles";
 import { handleCodeTitles } from "./plugins/handleCodeTitles";
 import { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/handleCodeExpandable";
 import { rehypeMermaid } from "./plugins/rehypeMermaid";
+import { rehypeFileTree } from "./plugins/rehypeFileTree";
 import { remarkDirectiveToMdx } from "./plugins/remarkDirectiveToMdx";
 import { remarkGithubAlert } from "./plugins/remarkGithubAlert";
 import remarkDirective from "remark-directive";
@@ -100,6 +101,7 @@ export function createDefaultRehypePlugins(): Pluggable[] {
   return [
     preProcess,
     rehypeMermaid, // Transform ```mermaid before code transforms
+    rehypeFileTree, // Transform ```filetree before code transforms
     rehypeCodeTitles,
     handleCodeTitles,
     handleCodeExpandable, // Copy expandable metadata from <code> to <pre> before prism transforms nodes.

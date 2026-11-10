@@ -1,85 +1,150 @@
 ---
 title: File Tree
-description: Display hierarchical structures with a simple ASCII tree block.
+description: Turn an indented list in a fenced code block into an interactive, collapsible file tree.
 ---
 
-The File Tree component renders a hierarchical structure from a plain ASCII
-tree block — no nested directives needed. Write it the way you would in a
-README; the component parses the box-drawing characters into a collapsible,
-interactive tree.
+The File Tree component renders a fenced code block with the `filetree` language as an interactive
+tree. Write one entry per line and indent an entry to place it inside the entry above it. No
+connector characters are needed.
 
-## Basic Usage
+## Basic usage
 
-```md
-::::tree
-src/
-├─ App.tsx
-├─ index.tsx
-└─ components/
-│  ├─ Button.tsx
-│  └─ Card.tsx
-::::
+````md
+```filetree
+my-app/
+  src/
+    App.tsx
+    components/
+      Button.tsx
+      Card.tsx
+  package.json
+  README.md
+```
+````
+
+Renders as:
+
+```filetree
+my-app/
+  src/
+    App.tsx
+    components/
+      Button.tsx
+      Card.tsx
+  package.json
+  README.md
 ```
 
-Render as:
+Click a folder to collapse or expand it.
 
-::::tree
-src/
-├─ App.tsx
-├─ index.tsx
-└─ components/
-│  ├─ Button.tsx
-│  └─ Card.tsx
-::::
+## Indentation
 
-Folders (names ending in `/`) are collapsible — click the row or use the
-keyboard (←/→ collapse/expand, Enter/Space toggle).
+- An entry indented further than the line above it becomes that line's child.
+- An entry at the same indentation as an earlier entry becomes its sibling.
+- Any width works, as long as children sit deeper than their parent. Two or four spaces are the
+  usual choices. A tab counts as four spaces.
+- Several entries without indentation are shown as separate top-level entries.
 
-## Process Example
+## Folders and files
 
-```md
-::::tree
-build()
-├─ loadPlugins → plugin.setup(build)
-├─ onStart(config)
-├─ for each MDX file:
-│   ├── onLoad({filter})
-│   ├── transformFrontmatter()
-│   ├── compileMdx()
-│   ├── injectHead() / injectBody()
-│   └── transformHtml()
-├─ onEnd(config, pages)
-└─ write output
-::::
+An entry is a folder when its name ends in `/` or when it has children. A folder with a trailing
+slash and no children shows as an empty folder. Files get an icon by type: code, JSON, Markdown,
+images, configuration and lock files.
+
+````md
+```filetree
+src/routes/
+  +layout.svelte
+  +page.svelte
+  blog/
+    +page.ts
+    [slug]/
+      +page.svelte
+  drafts/
+```
+````
+
+```filetree
+src/routes/
+  +layout.svelte
+  +page.svelte
+  blog/
+    +page.ts
+    [slug]/
+      +page.svelte
+  drafts/
 ```
 
-Render as:
+## Notes on entries
 
-::::tree
+Text after `#` or `//`, separated from the name by a space, is shown as a muted note beside the entry.
+
+````md
+```filetree
+docs/
+  index.mdx          # home page
+  docu.json          # site configuration
+  getting-started/
+    introduction.mdx
+```
+````
+
+```filetree
+docs/
+  index.mdx          # home page
+  docu.json          # site configuration
+  getting-started/
+    introduction.mdx
+```
+
+## Label
+
+The title is not shown on the page. Screen readers announce the tree as "File tree"; give it a more
+specific label with `title="…"`, or with the `filetree:title` shorthand that code blocks also accept.
+
+````md
+```filetree title="Build hooks"
 build()
-├─ loadPlugins → plugin.setup(build)
-├─ onStart(config)
-├─ for each MDX file:
-│   ├── onLoad({filter})
-│   ├── transformFrontmatter()
-│   ├── compileMdx()
-│   ├── injectHead() / injectBody()
-│   └── transformHtml()
-├─ onEnd(config, pages)
-└─ write output
-::::
+  loadPlugins → plugin.setup(build)
+  onStart(config)
+  for each MDX file
+    onLoad({filter})
+    compileMdx()
+    transformHtml()
+  onEnd(config, pages)
+  write output
+```
+````
 
-## Props
+The tree also works for structures that are not files, such as this sequence of build steps:
 
-| Prop        | Type          | Default | Description                                  |
-| ----------- | ------------- | ------- | -------------------------------------------- |
-| `className` | string        | -       | Additional classes for the tree wrapper.     |
-| `style`     | CSSProperties | -       | Additional inline styles for the tree block. |
+```filetree title="Build hooks"
+build()
+  loadPlugins → plugin.setup(build)
+  onStart(config)
+  for each MDX file
+    onLoad({filter})
+    compileMdx()
+    transformHtml()
+  onEnd(config, pages)
+  write output
+```
 
-## Notes
+## Keyboard
 
-- Depth is derived from the `│` pipes and leading spaces before the
-  connector (`├─` / `└─`); folder = name ending in `/`.
-- The content is authored as plain text — box-drawing characters are
-  preserved by the markdown parser.
-- Everything inside `::::tree` … `::::` renders as one interactive tree.
+The tree is a single tab stop. Once it has focus:
+
+| Key | Action |
+| --- | ------ |
+| <kbd>↓</kbd> / <kbd>↑</kbd> | Move to the next or previous visible entry |
+| <kbd>→</kbd> | Expand a folder, or move into an expanded one |
+| <kbd>←</kbd> | Collapse a folder, or move to the parent folder |
+| <kbd>Home</kbd> / <kbd>End</kbd> | Move to the first or last visible entry |
+| <kbd>Enter</kbd> / <kbd>Space</kbd> | Toggle the focused folder |
+
+## Legacy `::::tree` directive
+
+Earlier versions wrote the tree as a `::::tree` directive with box-drawing connectors (`├─`, `└─`)
+and `│` pipes. Its body goes through the markdown parser, which strips leading spaces, so the pipes
+had to carry the depth. The directive still renders with the same component; use the `filetree`
+fence for new content.
