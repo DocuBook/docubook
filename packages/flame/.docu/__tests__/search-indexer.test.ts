@@ -166,6 +166,58 @@ Paragraph content.
   });
 
   // ==========================================
+  // UNIT TEST: Headings inside components
+  // ==========================================
+  describe("extractRecords() - Headings inside components", () => {
+    it("indexes a component's headings as content under the enclosing section", () => {
+      const records = extractRecords(
+        "getting-started/component-headings",
+        `---
+title: Install
+---
+## Setup
+
+::::tabs
+:::tab{title="npm"}
+## Install with npm
+Run the command.
+:::
+::::
+
+> [!NOTE]
+> ### Alert heading
+`
+      );
+
+      const sections = records.filter((r) => r.type !== "lvl1" && r.type !== "content");
+      expect(sections.map((r) => r.hierarchy.lvl2)).toEqual(["Setup"]);
+
+      const contents = records.filter((r) => r.type === "content");
+      expect(contents.map((r) => r.content)).toContain("Install with npm");
+      expect(contents.every((r) => r.url.endsWith("#setup"))).toBe(true);
+      expect(contents.some((r) => r.content?.includes(":::"))).toBe(false);
+      expect(contents.some((r) => r.content?.includes("Alert heading"))).toBe(true);
+      expect(contents.some((r) => r.content?.includes("###"))).toBe(false);
+    });
+
+    it("indexes headings after a component as sections again", () => {
+      const records = extractRecords(
+        "getting-started/after-component",
+        `:::tip
+## Inside
+:::
+
+## Outside
+`
+      );
+
+      expect(records.filter((r) => r.type === "lvl2").map((r) => r.hierarchy.lvl2)).toEqual([
+        "Outside",
+      ]);
+    });
+  });
+
+  // ==========================================
   // UNIT TEST: Record URLs
   // ==========================================
   describe("extractRecords() - Record URLs", () => {

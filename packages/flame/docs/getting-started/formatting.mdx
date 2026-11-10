@@ -267,6 +267,30 @@ Install with npm.
 4. **Author intent is explicit.** Closing makes it clear to readers (and
    agents) exactly which content belongs to which component.
 
+### No headings inside components
+
+Headings make up the page outline: the frontmatter `title` is the h1, and
+`##`–`######` are the page's sections. A component never renders an
+`<h1>`–`<h6>`. A `#`…`######` line inside a callout, card, tab, accordion,
+step or GFM alert renders as a plain paragraph that keeps its text and
+inline markup. It gets no anchor and no table-of-contents entry, and search
+indexes it as content of the section around it.
+
+This matters most for tabs and accordions. A heading in a hidden tab or a
+collapsed accordion would add a TOC link to content the reader cannot see.
+Name a component with its `title` prop, and put the section heading above
+the component:
+
+```md
+## Install
+
+::::tabs
+:::tab{title="npm"}
+Run `npm install`.
+:::
+::::
+```
+
 ### File tree
 
 A file tree is a fenced code block with the `filetree` language, not a

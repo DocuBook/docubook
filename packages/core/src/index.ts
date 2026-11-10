@@ -15,6 +15,7 @@ export { rehypeFileTree } from "./plugins/rehypeFileTree";
 export { rehypeCollectTocs } from "./plugins/rehypeCollectTocs";
 export { remarkDirectiveToMdx } from "./plugins/remarkDirectiveToMdx";
 export { remarkGithubAlert } from "./plugins/remarkGithubAlert";
+export { remarkComponentHeadings } from "./plugins/remarkComponentHeadings";
 export {
   extractFrontmatter,
   extractFrontmatterWithContent,

@@ -119,6 +119,7 @@ export function extractRecords(filePath: string, raw: string): SearchRecord[] {
   const lines = plainContent.split("\n");
   let currentParagraph: string[] = [];
   let inCodeBlock = false;
+  let componentDepth = 0;
 
   const flushParagraph = () => {
     if (currentParagraph.length > 0) {
@@ -154,11 +155,31 @@ export function extractRecords(filePath: string, raw: string): SearchRecord[] {
 
     if (/^import\s+[\w{*]/.test(trimmed) || /^export\s+[\w{*]/.test(trimmed)) continue;
 
+    // Container directive fences (`:::name{…}` opens, bare `:::` closes).
+    if (/^:{3,}[A-Za-z]/.test(trimmed)) {
+      flushParagraph();
+      componentDepth++;
+      continue;
+    }
+    if (/^:{3,}$/.test(trimmed)) {
+      flushParagraph();
+      componentDepth = Math.max(0, componentDepth - 1);
+      continue;
+    }
+
     const headingMatch = trimmed.match(/^(#{1,6})\s+(.+)$/);
     if (headingMatch) {
       flushParagraph();
       const level = headingMatch[1].length;
       const title = headingMatch[2].replace(/[*`[\]]/g, "").trim();
+
+      // A heading inside a component renders as a paragraph
+      // (remarkComponentHeadings): index its text as content, not a section.
+      if (componentDepth > 0) {
+        currentParagraph.push(title);
+        flushParagraph();
+        continue;
+      }
 
       if (level === 1) {
         // Frontmatter title is authoritative; use H1 only as a fallback.
@@ -196,6 +217,7 @@ export function extractRecords(filePath: string, raw: string): SearchRecord[] {
       .replace(/^[-*+]\s+/, "") // list markers
       .replace(/^\d+\.\s+/, "") // ordered list
       .replace(/^>\s+/, "") // blockquote
+      .replace(/^#{1,6}\s+/, "") // heading inside a GitHub alert / blockquote
       .replace(/\*\*([^*]+)\*\*/g, "$1")
       .replace(/\*([^*]+)\*/g, "$1")
       .replace(/`([^`]+)`/g, "$1")

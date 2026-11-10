@@ -16,7 +16,8 @@ raw MDX string
            ▼
 ┌─────────────────────────────┐
 │ COMPILE  (compile.ts)       │  serialize() → MDX compiled output
-│                             │  remark:  GFM, alerts, expandable, directives
+│                             │  remark:  GFM, alerts, expandable, directives,
+│                             │           component headings
 │                             │  rehype:  preProcess → mermaid → codeTitles
 │                             │           → expandable → prism → slug
 │                             │           → autolink-headings → postProcess
@@ -81,9 +82,10 @@ the GitHub label as title.
 | `rehypeCollectTocs` | Append `[rehypeCollectTocs, tocs]` after slugging and custom rehype plugins to collect final heading IDs during compilation | transformer |
 | `sluggify` | Legacy ASCII slug helper; not used for compiler heading IDs | `string` |
 | `createDefaultRehypePlugins` | Default rehype plugin stack | `Pluggable[]` |
-| `createDefaultRemarkPlugins` | Default remark stack (GFM, GitHub alerts, expandable, directives) | `Pluggable[]` |
+| `createDefaultRemarkPlugins` | Default remark stack (GFM, GitHub alerts, expandable, directives, component headings) | `Pluggable[]` |
 | `remarkDirectiveToMdx` | Convert `:::name{attrs}` directives into MDX component elements | transformer |
 | `remarkGithubAlert` | Convert GitHub alert blockquotes (`> [!NOTE]`) into callout components | transformer |
+| `remarkComponentHeadings` | Render headings inside component children (directives, GitHub alerts) as paragraphs, so components never emit h1–h6 or TOC entries | transformer |
 | `preProcess` / `postProcess` | Code-block metadata pre/post processing | transformer |
 | `handleCodeTitles` | Move code title metadata to `<pre>` attributes | transformer |
 | `handleCodeExpandableRemark` / `handleCodeExpandable` | Expandable code block remark/rehype plugins | transformer |
@@ -148,7 +150,7 @@ author — app-level users should not redeclare them.
 | -------- | -------- |
 | Frontmatter | `@11ty/gray-matter` |
 | MDX runtime | `@mdx-js/mdx`, `@mdx-js/react`, `vfile`, `vfile-matter`, `unist-util-remove` |
-| Remark plugins | `remark-gfm`, `remark-directive`, `remarkGithubAlert` (internal), `handleCodeExpandable` (internal) |
+| Remark plugins | `remark-gfm`, `remark-directive`, `remarkGithubAlert` (internal), `remarkComponentHeadings` (internal), `handleCodeExpandable` (internal) |
 | Rehype plugins | `rehype-autolink-headings`, `rehype-code-titles`, `rehype-prism-plus`, `rehype-slug` (internal code plugins) |
 | AST traversal | `unist-util-visit` |
 | Utilities | `clsx`, `tailwind-merge` |

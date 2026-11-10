@@ -88,10 +88,9 @@ describe("extractTocsFromRawMdx", () => {
     ]);
   });
 
-  it("recognizes setext headings and headings inside directives", () => {
+  it("recognizes setext headings and skips headings inside directives", () => {
     expect(extractTocsFromRawMdx("Section\n-------\n\n:::note\n## Nested\n:::")).toEqual([
       { level: 2, text: "Section", href: "#section" },
-      { level: 2, text: "Nested", href: "#nested" },
     ]);
   });
 
