@@ -27,6 +27,29 @@ describe("Callout", () => {
     expect(rule[1]).toMatch(/font-weight:\s*700;/);
   });
 
+  it("makes every prose-coloured child follow the callout colour", () => {
+    const rule = (selector: string) => {
+      const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const match = stylesCss.match(new RegExp(`${escaped} \\{([^}]*)\\}`));
+      if (!match) throw new Error(`${selector} not found in styles.css`);
+      return match[1];
+    };
+    // Links, headings, quotes, table heads, terms and kbd: prose gives each its own ink colour.
+    expect(
+      rule(".mdx-callout-content :is(a, h1, h2, h3, h4, h5, h6, blockquote, th, dt, kbd)")
+    ).toMatch(/color:\s*inherit;/);
+    expect(rule(".mdx-callout-content a")).toMatch(/text-decoration-color:\s*currentColor;/);
+    expect(rule(".mdx-callout-content li::marker")).toMatch(/color:\s*inherit;/);
+    // Inline code is tinted from the callout colour; code inside <pre> is left to the highlighter.
+    const inlineCode = rule(".mdx-callout-content :not(pre) > code");
+    expect(inlineCode).toMatch(/color:\s*inherit;/);
+    expect(inlineCode).toMatch(/background:\s*color-mix\(in srgb, currentColor/);
+    // A code block keeps the page's body colour instead of inheriting the callout's.
+    expect(rule(".mdx-callout-content .code-block-container")).toMatch(
+      /color:\s*var\(--tw-prose-body, hsl\(var\(--foreground/
+    );
+  });
+
   it("renders with the variant label as fallback title", () => {
     const { container } = render(<Callout type="warning">Warn</Callout>);
     const aside = container.querySelector("aside");
