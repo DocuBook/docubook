@@ -29,6 +29,13 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
+          # A PR can carry no commits of its own, e.g. when Renovate resets its branch to a main that
+          # already has the update. commitlint then exits 9 ("--from and --to point to the same
+          # commit"), so an empty range is skipped here instead of failing the check.
+          if [ "$(git rev-list --count "$BASE_SHA..$HEAD_SHA")" -eq 0 ]; then
+            echo "::notice::No commits between base and head, nothing to lint"
+            exit 0
+          fi
           OUTPUT=$(pnpm exec commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose 2>&1) && STATUS=0 || STATUS=$?
           echo "$OUTPUT"
           # The exit code alone is not trusted (it has reported 1 with 0
