@@ -1,6 +1,6 @@
 import type { Node, Parent } from "unist";
 import { visit } from "unist-util-visit";
-import type { ElementNode } from "../utils";
+import { getFenceCode, type ElementNode } from "../utils";
 
 interface TextNode extends Node {
   type: "text";
@@ -17,22 +17,11 @@ interface TextNode extends Node {
  */
 export const rehypeMermaid = () => (tree: Node) => {
   visit(tree, "element", (node: ElementNode, index: number | null, parent: Parent | null) => {
-    if (!parent || index === null || node.tagName !== "pre") return;
+    if (!parent || index === null) return;
 
-    const codeEl = node.children?.find(
-      (child) =>
-        (child as ElementNode).type === "element" && (child as ElementNode).tagName === "code"
-    ) as ElementNode | undefined;
-
-    if (!codeEl) return;
-
-    const classList = Array.isArray(codeEl.properties?.className)
-      ? (codeEl.properties.className as string[])
-      : typeof codeEl.properties?.className === "string"
-        ? (codeEl.properties.className as string).split(" ").filter(Boolean)
-        : [];
-
-    if (!classList.includes("language-mermaid")) return;
+    const fence = getFenceCode(node);
+    if (!fence || !fence.classList.includes("language-mermaid")) return;
+    const codeEl = fence.code;
 
     const textNode = codeEl.children?.find((child) => (child as TextNode).type === "text") as
       TextNode | undefined;

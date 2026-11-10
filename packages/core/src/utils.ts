@@ -16,6 +16,29 @@ export interface ElementNode extends Node {
   codeTitle?: string;
 }
 
+/** Class names of a hast element as a list, whether hast stored them as an array or a string. */
+export function classListOf(element: ElementNode | undefined): string[] {
+  const className = element?.properties?.className;
+  if (Array.isArray(className)) return className;
+  if (typeof className === "string") return className.split(" ").filter(Boolean);
+  return [];
+}
+
+/**
+ * The `<code>` child of a fenced `<pre>` and its class list, for plugins that swap a fence of one
+ * language for a component (```mermaid, ```filetree). Undefined when `node` is not such a block.
+ */
+export function getFenceCode(
+  node: ElementNode
+): { code: ElementNode; classList: string[] } | undefined {
+  if (node.tagName !== "pre") return undefined;
+  const code = node.children?.find(
+    (child) =>
+      (child as ElementNode).type === "element" && (child as ElementNode).tagName === "code"
+  ) as ElementNode | undefined;
+  return code ? { code, classList: classListOf(code) } : undefined;
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

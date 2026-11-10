@@ -1,6 +1,6 @@
 import type { Node, Parent } from "unist";
 import { visit } from "unist-util-visit";
-import type { ElementNode } from "../utils";
+import { getFenceCode, type ElementNode } from "../utils";
 
 interface TextNode extends Node {
   type: "text";
@@ -24,26 +24,16 @@ const LANGUAGE = "filetree";
  */
 export const rehypeFileTree = () => (tree: Node) => {
   visit(tree, "element", (node: ElementNode, index: number | null, parent: Parent | null) => {
-    if (!parent || index === null || node.tagName !== "pre") return;
+    if (!parent || index === null) return;
 
-    const codeEl = node.children?.find(
-      (child) =>
-        (child as ElementNode).type === "element" && (child as ElementNode).tagName === "code"
-    ) as ElementNode | undefined;
-    if (!codeEl) return;
-
-    const className = codeEl.properties?.className;
-    const classList = Array.isArray(className)
-      ? (className as string[])
-      : typeof className === "string"
-        ? className.split(" ").filter(Boolean)
-        : [];
-    const languageClass = classList.find(
+    const fence = getFenceCode(node);
+    if (!fence) return;
+    const languageClass = fence.classList.find(
       (item) => item === `language-${LANGUAGE}` || item.startsWith(`language-${LANGUAGE}:`)
     );
     if (!languageClass) return;
 
-    const content = (codeEl.children ?? [])
+    const content = (fence.code.children ?? [])
       .map((child) => ((child as TextNode).type === "text" ? (child as TextNode).value : ""))
       .join("");
     const shorthandTitle = languageClass.slice(`language-${LANGUAGE}`.length + 1);
