@@ -28,8 +28,9 @@ MDX's selling point — "Markdown + JSX" — comes at a price for documentation:
 - **JSX demands component knowledge.** Every tag must resolve to a registered component; unknown tags break the build or render nothing. The author has to know Flame's component inventory just to write a page.
 - **Markdown is the interop standard.** GitHub, GitLab, every editor, and every LLM produce and consume common markdown. JSX tags are the #1 source of "why does my page break" in MDX sites.
 
-::info{title="The MDX authors pointed here"}
-> This is not a break with MDX — it is the arc MDX itself started. Markdown was designed (2004) to read as plain text: a document that stays readable before it renders. MDX — "Markdown for the component era" — kept that promise while adding JSX. But the MDX 2 rewrite acknowledged that MDX 1's runtime evaluation came at a real cost in speed and predictability, and moved compilation to build time. Flame v2 completes that arc: content stays markdown, components are referenced by name through directives, and JSX never enters the authoring contract.
+:::info{title="The MDX authors pointed here"}
+This is not a break with MDX — it is the arc MDX itself started. Markdown was designed (2004) to read as plain text: a document that stays readable before it renders. MDX — "Markdown for the component era" — kept that promise while adding JSX. But the MDX 2 rewrite acknowledged that MDX 1's runtime evaluation came at a real cost in speed and predictability, and moved compilation to build time. Flame v2 completes that arc: content stays markdown, components are referenced by name through directives, and JSX never enters the authoring contract.
+:::
 
 The direction of v2: **the framework adapts to markdown, not the author to the framework.** Components are referenced by name through directives and resolved by Flame — the author (human or agent) never touches component internals.
 

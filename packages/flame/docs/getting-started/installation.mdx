@@ -37,13 +37,15 @@ deno task dev
 :::
 ::::
 
-::info{title="First run"}
-> Deno may show a freshness/cache warning on first run. If you see one, set `DENO_ALLOW_NEWER=true deno task dev` to bypass it.
+:::info{title="First run"}
+Deno may show a freshness/cache warning on first run. If you see one, set `DENO_ALLOW_NEWER=true deno task dev` to bypass it.
+:::
 
-::info{title="First run (Node.js / Deno only)"}
-> `flame init` only scaffolds files — `compile-lib.mjs` runs **lazily** on first `flame dev` or `flame build`, not during init.
+:::info{title="First run (Node.js / Deno only)"}
+`flame init` only scaffolds files — `compile-lib.mjs` runs **lazily** on first `flame dev` or `flame build`, not during init.
 This step precompiles TypeScript sources to `.docu/lib/` so Node.js and Deno can execute them.
 In a published npm package `.docu/lib` is already included, so the lazy compile never runs.
+:::
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
