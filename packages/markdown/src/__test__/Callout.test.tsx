@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
 import { Callout } from "../components/Callout";
+import stylesCss from "../../styles.css?raw";
 
 /** Raw inline style of the rendered callout — jsdom normalises colours, so
  * comparing full style strings is more robust than parsing them. */
@@ -9,6 +10,23 @@ function styleOf(container: HTMLElement): string {
 }
 
 describe("Callout", () => {
+  it("keeps bold text in the callout colour and raises its weight", () => {
+    const { container } = render(
+      <Callout type="info">
+        Use the <strong>search-only API key</strong> here.
+      </Callout>
+    );
+    const strong = container.querySelector("strong");
+    const content = strong?.parentElement;
+    expect(content?.classList.contains("mdx-callout-content")).toBe(true);
+    // The content colour is the type's token; bold inherits it instead of prose's ink colour.
+    expect(content?.getAttribute("style")).toContain("color:");
+    const rule = stylesCss.match(/\.mdx-callout-content :is\(strong, b\) \{([^}]*)\}/);
+    if (!rule) throw new Error("callout bold rule not found in styles.css");
+    expect(rule[1]).toMatch(/color:\s*inherit;/);
+    expect(rule[1]).toMatch(/font-weight:\s*700;/);
+  });
+
   it("renders with the variant label as fallback title", () => {
     const { container } = render(<Callout type="warning">Warn</Callout>);
     const aside = container.querySelector("aside");
