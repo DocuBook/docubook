@@ -11,6 +11,7 @@ export {
 export { handleCodeTitles } from "./plugins/handleCodeTitles";
 export { handleCodeExpandableRemark, handleCodeExpandable } from "./plugins/handleCodeExpandable";
 export { rehypeMermaid } from "./plugins/rehypeMermaid";
+export { rehypeFileTree } from "./plugins/rehypeFileTree";
 export { rehypeCollectTocs } from "./plugins/rehypeCollectTocs";
 export { remarkDirectiveToMdx } from "./plugins/remarkDirectiveToMdx";
 export { remarkGithubAlert } from "./plugins/remarkGithubAlert";

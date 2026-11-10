@@ -267,20 +267,25 @@ Install with npm.
 4. **Author intent is explicit.** Closing makes it clear to readers (and
    agents) exactly which content belongs to which component.
 
-### ASCII tree
+### File tree
 
-The File Tree component parses an ASCII tree — indent nested levels with the
-`│` pipe character (leading spaces are stripped by the markdown parser).
+A file tree is a fenced code block with the `filetree` language, not a
+directive. Write one entry per line and indent children under their parent;
+no connector characters are needed.
 
-```md
-::::tree
+````md
+```filetree
 src/
-├─ App.tsx
-└─ components/
-│  ├─ Button.tsx
-│  └─ Card.tsx
-::::
+  App.tsx
+  components/
+    Button.tsx
+    Card.tsx
 ```
+````
+
+The older `::::tree` directive still renders, but the markdown parser strips
+its leading spaces. See [File Tree](/docs/components/file-tree) for folders,
+notes and the screen reader label.
 
 ## File extensions
 
@@ -303,7 +308,7 @@ If you are migrating v1 content that uses JSX tags, use this mapping:
 | `<Accordion>` / `<Accordions>` | `:::accordion` / `::::accordions` |
 | `<Steps>` / `<Step>` | `::::steps` / `:::step` |
 | `<Note type="tip">` | `:::tip` |
-| `<Files>` / `<Folder>` / `<File>` | `::::tree` (ASCII) |
+| `<Files>` / `<Folder>` / `<File>` | ` ```filetree ` (indented list) |
 | `<Youtube>` | `::youtube` |
 | `<Tooltip>` | `:tooltip[label]{tip="…"}` |
 | `<Mermaid>` | ` ```mermaid ` (fenced) |

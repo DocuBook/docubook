@@ -1,43 +1,56 @@
-import { describe, it, expect } from "vitest";
-import { render } from "@testing-library/react";
+import { afterEach, describe, it, expect } from "vitest";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { TreeMdx } from "../components/TreeMdx";
 
-const ascii = `src/
+afterEach(cleanup);
+
+const fence = [
+  "my-app/",
+  "  src/",
+  "    App.tsx   # entry point",
+  "    components/",
+  "      Button.tsx",
+  "  package.json",
+].join("\n");
+
+const legacy = `src/
 ├─ App.tsx
 ├─ index.tsx
 └─ components/
 │  ├─ Button.tsx
 │  └─ Card.tsx`;
 
+const item = (name: string) => screen.getByRole("treeitem", { name: new RegExp(`^${name}`) });
+
 describe("TreeMdx", () => {
-  it("parses ASCII tree and renders nodes", () => {
-    const { container } = render(<TreeMdx>{ascii}</TreeMdx>);
-    expect(container.querySelector('[role="tree"]')).toBeTruthy();
-    expect(container.textContent).toContain("App.tsx");
-    expect(container.textContent).toContain("Button.tsx");
+  it("renders a ```filetree fence with its levels and notes, labelled by the title", () => {
+    render(<TreeMdx content={fence} title="Project layout" />);
+    expect(screen.getByRole("tree", { name: "Project layout" })).toBeTruthy();
+    // The title only names the tree; it is not drawn as a header.
+    expect(screen.queryByText("Project layout")).toBeNull();
+    expect(item("my-app").getAttribute("aria-level")).toBe("1");
+    expect(item("components").getAttribute("aria-level")).toBe("3");
+    expect(item("Button.tsx").getAttribute("aria-level")).toBe("4");
+    // Each item is named by its own row and note, never by its whole subtree.
+    expect(screen.getByRole("treeitem", { name: "App.tsx entry point" })).toBeTruthy();
+    expect(screen.getByRole("treeitem", { name: "src" })).toBeTruthy();
+    expect(item("Button.tsx").getAttribute("aria-posinset")).toBe("1");
+    expect(item("package.json").getAttribute("aria-setsize")).toBe("2");
   });
 
-  it("nests piped children under their folder", () => {
-    const { container } = render(<TreeMdx>{ascii}</TreeMdx>);
-    const btns = Array.from(container.querySelectorAll('button[aria-label*="Collapse"]'));
-    expect(btns.length).toBeGreaterThan(0);
-    // components harus jadi folder (collapsible)
-    const compBtn = btns.find((b) => b.getAttribute("aria-label")?.includes("components"));
-    expect(compBtn).toBeTruthy();
+  it("falls back to a generic label without a title", () => {
+    render(<TreeMdx content={fence} />);
+    expect(screen.getByRole("tree", { name: "File tree" })).toBeTruthy();
   });
 
-  it("Button and Card are file leaves (no collapse)", () => {
-    const { container } = render(<TreeMdx>{ascii}</TreeMdx>);
-    const allBtns = Array.from(container.querySelectorAll("button"));
-    const leaves = allBtns.filter(
-      (b) => b.textContent?.includes("Button.tsx") || b.textContent?.includes("Card.tsx")
-    );
-    // dirender sebagai row file, bukan folder collapsible
-    expect(leaves.length).toBe(2);
-    expect(leaves.every((b) => b.getAttribute("aria-expanded") === null)).toBe(true);
+  it("still renders the legacy ::::tree directive body", () => {
+    render(<TreeMdx>{legacy}</TreeMdx>);
+    expect(item("components").getAttribute("aria-expanded")).toBe("true");
+    expect(item("Card.tsx").getAttribute("aria-level")).toBe("3");
+    expect(item("Button.tsx").getAttribute("aria-expanded")).toBeNull();
   });
 
-  it("collects text from nested inline elements", () => {
+  it("collects text from nested inline elements in the legacy body", () => {
     const { container } = render(
       <TreeMdx>
         <p>
@@ -47,6 +60,69 @@ describe("TreeMdx", () => {
         </p>
       </TreeMdx>
     );
-    expect(container.textContent).toContain("{filter}");
+    expect(container.textContent).toContain("onLoad({filter})");
+  });
+
+  it("starts fully expanded and toggles a folder on click", () => {
+    render(<TreeMdx content={fence} />);
+    const components = item("components");
+    expect(screen.getByText("Button.tsx")).toBeTruthy();
+    fireEvent.click(within(components).getByText("components"));
+    expect(components.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByText("Button.tsx")).toBeNull();
+    fireEvent.click(within(components).getByText("components"));
+    expect(screen.getByText("Button.tsx")).toBeTruthy();
+  });
+
+  it("moves through visible items with the tree keyboard pattern", () => {
+    render(<TreeMdx content={fence} />);
+    const tree = screen.getByRole("tree");
+    const root = item("my-app");
+    expect(root.tabIndex).toBe(0);
+    root.focus();
+
+    fireEvent.keyDown(tree, { key: "ArrowDown" });
+    expect(document.activeElement).toBe(item("src"));
+    fireEvent.keyDown(tree, { key: "End" });
+    expect(document.activeElement).toBe(item("package.json"));
+    fireEvent.keyDown(tree, { key: "ArrowUp" });
+    expect(document.activeElement).toBe(item("Button.tsx"));
+
+    // Left on a file goes to its folder; Left again collapses it; Right expands, Right again enters.
+    fireEvent.keyDown(tree, { key: "ArrowLeft" });
+    expect(document.activeElement).toBe(item("components"));
+    fireEvent.keyDown(tree, { key: "ArrowLeft" });
+    expect(item("components").getAttribute("aria-expanded")).toBe("false");
+    fireEvent.keyDown(tree, { key: "ArrowRight" });
+    expect(item("components").getAttribute("aria-expanded")).toBe("true");
+    fireEvent.keyDown(tree, { key: "ArrowRight" });
+    expect(document.activeElement).toBe(item("Button.tsx"));
+
+    fireEvent.keyDown(tree, { key: "Home" });
+    expect(document.activeElement).toBe(root);
+    // Only one item is in the tab order at a time.
+    expect(screen.getAllByRole("treeitem").filter((el) => el.tabIndex === 0)).toEqual([root]);
+  });
+
+  it("renders only the tree, without code block chrome", () => {
+    const { container } = render(<TreeMdx content={fence} title="Project layout" />);
+    expect(screen.queryAllByRole("button")).toEqual([]);
+    expect(container.querySelector("pre, code")).toBeNull();
+    expect(container.querySelector(".mdx-tree > [role=tree]")).toBeTruthy();
+  });
+
+  it("gives files an icon by type and folders a folder icon", () => {
+    const { container } = render(<TreeMdx content={fence} />);
+    const icon = (name: string) =>
+      within(item(name)).getAllByText(name)[0].previousElementSibling?.getAttribute("class") ?? "";
+    expect(icon("my-app")).toContain("lucide-folder-open");
+    expect(icon("App.tsx")).toContain("lucide-file-code");
+    expect(icon("package.json")).toContain("lucide-file-braces");
+    expect(container.querySelector(".mdx-tree.not-prose")).toBeTruthy();
+  });
+
+  it("renders nothing for an empty tree", () => {
+    const { container } = render(<TreeMdx content={"\n"} />);
+    expect(container.firstChild).toBeNull();
   });
 });

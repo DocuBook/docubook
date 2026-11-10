@@ -199,3 +199,104 @@ pre[data-mermaid-align="center"] > svg {
   border-bottom: 2px solid hsl(var(--primary-foreground, 210 40% 98%));
   transform: rotate(45deg) translate(-0.5px, -1px);
 }
+
+/* File tree (```filetree fence, legacy ::::tree): a bordered panel of mono rows with guide lines. */
+.mdx-tree {
+  margin: 1.5rem 0;
+  padding: 0.5rem;
+  border: 1px solid hsl(var(--border-color, 210 20% 85%));
+  border-radius: 0.75rem;
+  background: hsl(var(--card, 0 0% 100%));
+  font-size: 0.875rem;
+  overflow-x: auto;
+}
+
+.mdx-tree-list,
+.mdx-tree-group {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* One guide line per level, aligned under the parent's chevron. */
+.mdx-tree-group {
+  margin-left: 1.05rem;
+  padding-left: 0.35rem;
+  border-left: 1px solid hsl(var(--border-color, 210 20% 85%));
+}
+
+.mdx-tree-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: max-content;
+  min-width: 100%;
+  padding: 0.22rem 0.5rem;
+  border-radius: 0.375rem;
+  color: hsl(var(--foreground, 220 30% 15%));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  white-space: nowrap;
+  cursor: default;
+  transition: background-color 0.15s ease;
+}
+
+.mdx-tree-row[aria-expanded] {
+  cursor: pointer;
+}
+
+.mdx-tree-row:hover {
+  background: hsl(var(--muted, 210 20% 92%) / 0.55);
+}
+
+.mdx-tree-row:focus {
+  outline: none;
+}
+
+.mdx-tree-row:focus-visible {
+  outline: 2px solid hsl(var(--primary, 210 81% 56%));
+  outline-offset: -2px;
+}
+
+.mdx-tree-chevron {
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground, 220 15% 50%));
+  transition: transform 0.15s ease;
+}
+
+.mdx-tree-row[aria-expanded="true"] > .mdx-tree-chevron {
+  transform: rotate(90deg);
+}
+
+.mdx-tree-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground, 220 15% 50%));
+}
+
+.mdx-tree-row[data-folder] > .mdx-tree-icon {
+  color: hsl(var(--primary, 210 81% 56%));
+}
+
+.mdx-tree-row[data-folder] > .mdx-tree-name {
+  font-weight: 600;
+}
+
+.mdx-tree-comment {
+  margin-left: 0.75rem;
+  color: hsl(var(--muted-foreground, 220 15% 50%));
+  font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  font-size: 0.8rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mdx-tree-row,
+  .mdx-tree-chevron {
+    transition: none;
+  }
+}

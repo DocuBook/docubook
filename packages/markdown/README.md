@@ -72,7 +72,7 @@ Built-ins are registered under these keys and authored as directives (the v2 aut
 | `Accordion` / `Accordions`            | `:::accordion` / `::::accordions`                                           |
 | `Card` / `Cards`                      | `:::card` / `::::cards`                                                     |
 | `Step` / `Steps`                      | `:::step` / `::::steps`                                                     |
-| `Tree`                                | `::::tree`                                                                  |
+| `Tree`                                | fenced `filetree` code block (legacy: `::::tree`)                           |
 | `Youtube`                             | `::youtube{videoId="…"}`                                                    |
 | `Tooltip`                             | `:tooltip[label]{tip="…"}`                                                  |
 | `Mermaid`                             | fenced `mermaid` code block                                                 |
