@@ -12,6 +12,7 @@ import { rehypeMermaid } from "./plugins/rehypeMermaid";
 import { rehypeFileTree } from "./plugins/rehypeFileTree";
 import { remarkDirectiveToMdx } from "./plugins/remarkDirectiveToMdx";
 import { remarkGithubAlert } from "./plugins/remarkGithubAlert";
+import { remarkComponentHeadings } from "./plugins/remarkComponentHeadings";
 import remarkDirective from "remark-directive";
 import type { ElementNode } from "./utils";
 import type { Pluggable } from "unified";
@@ -122,5 +123,6 @@ export function createDefaultRemarkPlugins(): Pluggable[] {
     handleCodeExpandableRemark,
     remarkDirective,
     remarkDirectiveToMdx,
+    remarkComponentHeadings, // Component children never render h1–h6.
   ];
 }
