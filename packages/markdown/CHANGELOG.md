@@ -1,5 +1,11 @@
 # @docubook/mdx-content
 
+## 2.8.1
+
+### Patch Changes
+
+- [#520](https://github.com/DocuBook/docubook/pull/520) [`87aed07`](https://github.com/DocuBook/docubook/commit/87aed07f05591e9af7bab7b7d1976f8e02cba9bd) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Keep `**bold**` inside a callout in the callout's own color. The typography styles painted it in the page's ink color (near black, or white in dark mode) on the tinted panel, so it ignored the type's color token. Bold in a callout now inherits that color and stands out by weight instead, raised from 600 to 700.
+
 ## 2.8.0
 
 ### Minor Changes
