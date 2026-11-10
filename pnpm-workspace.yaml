@@ -19,7 +19,7 @@ overrides:
   "js-yaml@4": "4.3.2"
   "mermaid>katex": "0.18.10"
   "@tailwindcss/typography>postcss-selector-parser": "7.1.7"
-  "@sentry/bundler-plugins>glob": "14.0.3"
+  "@sentry/bundler-plugins>glob": "14.0.4"
 allowBuilds:
   "@parcel/watcher": true
   bun: true
