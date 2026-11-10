@@ -137,7 +137,8 @@ export function TreeMdx({ content, title, className, style, children }: TreeMdxP
   const onKeyDown = (event: KeyboardEvent<HTMLUListElement>) => {
     const index = visible.findIndex((item) => item.id === tabStop);
     const current = visible[index];
-    if (!current) return;
+    // Modified keys belong to the browser and OS (Alt+← goes back, Ctrl+Home scrolls to the top).
+    if (!current || event.altKey || event.ctrlKey || event.metaKey) return;
     const isFolder = current.node.children.length > 0;
     const isOpen = isFolder && !collapsed.has(current.id);
     let handled = true;

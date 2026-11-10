@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect } from "vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { TreeMdx } from "../components/TreeMdx";
 
 afterEach(cleanup);
@@ -102,6 +102,28 @@ describe("TreeMdx", () => {
     expect(document.activeElement).toBe(root);
     // Only one item is in the tab order at a time.
     expect(screen.getAllByRole("treeitem").filter((el) => el.tabIndex === 0)).toEqual([root]);
+  });
+
+  it("leaves modified keys to the browser", () => {
+    render(<TreeMdx content={fence} />);
+    const tree = screen.getByRole("tree");
+    act(() => item("components").focus());
+    for (const modifier of [{ altKey: true }, { ctrlKey: true }, { metaKey: true }]) {
+      const left = new KeyboardEvent("keydown", {
+        key: "ArrowLeft",
+        bubbles: true,
+        cancelable: true,
+        ...modifier,
+      });
+      tree.dispatchEvent(left);
+      expect(left.defaultPrevented).toBe(false);
+      expect(item("components").getAttribute("aria-expanded")).toBe("true");
+    }
+    fireEvent.keyDown(tree, { key: "End", ctrlKey: true });
+    expect(document.activeElement).toBe(item("components"));
+    // The same key without a modifier is still handled.
+    fireEvent.keyDown(tree, { key: "ArrowLeft" });
+    expect(item("components").getAttribute("aria-expanded")).toBe("false");
   });
 
   it("renders only the tree, without code block chrome", () => {
