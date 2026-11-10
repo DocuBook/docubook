@@ -38,6 +38,33 @@ describe("TableMdx", () => {
     expect(container.querySelectorAll("td")).toHaveLength(3);
   });
 
+  it("reads its colours from variables a container can set, with theme fallbacks", () => {
+    const { container } = render(
+      <TableMdx>
+        <TableHeaderMdx>
+          <TableRowMdx>
+            <TableHeadMdx>Name</TableHeadMdx>
+          </TableRowMdx>
+        </TableHeaderMdx>
+        <TableBodyMdx>
+          <TableRowMdx>
+            <TableCellMdx>title</TableCellMdx>
+          </TableRowMdx>
+        </TableBodyMdx>
+      </TableMdx>
+    );
+    const style = (selector: string) =>
+      container.querySelector(selector)?.getAttribute("style") ?? "";
+    // A callout sets these variables; elsewhere the fallbacks keep the theme colours.
+    expect(style("th")).toContain("var(--mdx-table-head-color, hsl(var(--muted-foreground");
+    expect(style("th")).toContain("var(--mdx-table-border, hsl(var(--border-color");
+    expect(style("td")).toContain("var(--mdx-table-border, hsl(var(--border-color");
+    expect(style("thead")).toContain("var(--mdx-table-head-bg, hsl(var(--muted");
+    expect(container.querySelector("table")?.parentElement?.getAttribute("style")).toContain(
+      "var(--mdx-table-border"
+    );
+  });
+
   it("passes style prop", () => {
     const { container } = render(
       <TableMdx style={{ color: "red" }}>

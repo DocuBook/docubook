@@ -200,11 +200,60 @@ pre[data-mermaid-align="center"] > svg {
   transform: rotate(45deg) translate(-0.5px, -1px);
 }
 
-/* Bold inside a callout keeps the callout's colour: `.prose strong` would paint it ink (white in
-   dark mode) on a tinted panel. It stands out by weight instead, a step above prose's 600. */
+/* Callout body: everything follows the callout's colour token. `.prose` gives links, headings, inline
+   code, quotes, table heads, kbd and list markers their own ink colour (white in dark mode), which
+   reads as black or white text on the tinted panel. Lines and fills are tints of the same colour. */
 .mdx-callout-content :is(strong, b) {
+  /* Bold stands out by weight instead of colour, a step above prose's 600. */
   color: inherit;
   font-weight: 700;
+}
+
+.mdx-callout-content :is(a, h1, h2, h3, h4, h5, h6, blockquote, dt, kbd) {
+  color: inherit;
+}
+
+.mdx-callout-content a {
+  text-decoration-color: currentColor;
+}
+
+.mdx-callout-content li::marker {
+  color: inherit;
+}
+
+/* A code block is `not-prose`, so its plain text would inherit the callout colour. It takes the page's
+   body colour like code blocks elsewhere (prose's, or the theme foreground without Typography). Its
+   tokens are coloured by the highlighter either way. */
+.mdx-callout-content .code-block-container {
+  color: var(--tw-prose-body, hsl(var(--foreground, 220 30% 15%)));
+}
+
+/* Inline code only: code blocks inside a callout keep their own highlighting. */
+.mdx-callout-content :not(pre) > code {
+  color: inherit;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  border-color: color-mix(in srgb, currentColor 30%, transparent);
+}
+
+.mdx-callout-content kbd {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, currentColor 30%, transparent),
+    0 3px 0 color-mix(in srgb, currentColor 30%, transparent);
+}
+
+.mdx-callout-content blockquote {
+  border-inline-start-color: color-mix(in srgb, currentColor 40%, transparent);
+}
+
+.mdx-callout-content hr {
+  border-color: color-mix(in srgb, currentColor 25%, transparent);
+}
+
+/* Tables style themselves inline (TableMdx), so the callout retints them through their variables. */
+.mdx-callout-content {
+  --mdx-table-border: color-mix(in srgb, currentColor 25%, transparent);
+  --mdx-table-head-bg: color-mix(in srgb, currentColor 10%, transparent);
+  --mdx-table-head-color: currentColor;
 }
 
 /* File tree (```filetree fence, legacy ::::tree): a bordered panel of mono rows with guide lines. */
