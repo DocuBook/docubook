@@ -27,7 +27,7 @@ const reload = (item: object) => ("external" in item ? { "data-astro-reload": tr
       </li>
     ))}
     <li>
-      <button type="button" class:list={["flex items-center gap-1", resourcesActive ? "font-semibold text-accent-ink" : "text-ink"]} aria-expanded="false" aria-haspopup="true" data-mega-trigger>
+      <button type="button" class:list={["flex items-center gap-1", resourcesActive ? "font-semibold text-accent-ink" : "text-ink"]} aria-expanded="false" data-mega-trigger>
         Resources <Icon name="chevron-down" size={14} />
       </button>
     </li>

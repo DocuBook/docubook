@@ -32,10 +32,12 @@ export function mount(trigger: HTMLButtonElement, firstEvent: string) {
     const target = e.target as Node;
     if (isOpen() && !panel.contains(target) && !trigger.contains(target)) set(false);
   });
-  panel.addEventListener("focusout", (e) => {
-    const to = e.relatedTarget as Node | null;
-    if (to && to !== trigger && !panel.contains(to)) set(false);
-  });
+  // On the trigger too: Shift+Tab from it leaves backwards without ever entering the panel.
+  for (const el of [trigger, panel])
+    el.addEventListener("focusout", (e) => {
+      const to = e.relatedTarget as Node | null;
+      if (to && to !== trigger && !panel.contains(to)) set(false);
+    });
 
   if (firstEvent === "click" || (firstEvent === "mouseenter" && trigger.matches(":hover")))
     set(true);
