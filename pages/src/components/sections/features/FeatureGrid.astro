@@ -133,7 +133,7 @@ const stackCss = features.map((_, n) => {
         ))}
 
         {slots.map((s) => (
-          <div class:list={["chip absolute max-sm:hidden", s.feature.highlight && "chip-static"]} data-i={s.n} style={`left:${s.label.left};top:${s.label.top}`}>
+          <div class:list={["chip absolute max-sm:hidden lg:max-xl:hidden", s.feature.highlight && "chip-static"]} data-i={s.n} style={`left:${s.label.left};top:${s.label.top}`}>
             <span class="chip-drop block whitespace-nowrap rounded-[3px] border border-accent bg-white px-2 py-1 font-mono text-[10px] font-medium uppercase text-ink shadow-sm">{s.feature.label}</span>
           </div>
         ))}
