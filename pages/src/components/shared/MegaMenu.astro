@@ -1,0 +1,35 @@
+---
+// The Resources menu's panel: the submenu on the left, the mascot and Donate on the right. It renders inside a
+// <template>, so nothing here is displayed or fetched (the mascot included) until megaMenu.ts stamps it on the
+// first hover, focus or click of the navbar's trigger. Its styles are megaMenu.css, loaded at that same moment.
+import { getImage } from "astro:assets";
+import { site } from "../../content/site";
+import reactions from "../../assets/mascots/panda-reactions.webp";
+import Icon from "../ui/Icon.astro";
+interface Props { resources: { label: string; description: string; href: string; icon: string; active: boolean }[] }
+const { resources } = Astro.props;
+// Same size and settings as the footer's mascot, so the menu reuses the sheet the build already makes for it.
+const mascot = await getImage({ src: reactions, width: 384, height: 384, densities: [1, 2], format: "webp", quality: 82 });
+---
+
+<template id="mega-menu-template">
+  <div class="mega-menu" id="mega-menu" role="group" aria-label="Resources">
+    <div class="mm-list">
+      <p class="mm-label">Resources</p>
+      {resources.map((item) => (
+        <a href={item.href} class="mm-item" aria-current={item.active ? "page" : undefined} {...("external" in item ? { "data-astro-reload": true } : {})}>
+          <span class="mm-tile"><Icon name={item.icon} size={18} /></span>
+          <span class="mm-text"><span class="mm-title">{item.label}</span><span class="mm-desc">{item.description}</span></span>
+          <Icon name="arrow-right" size={16} class="mm-arrow" />
+        </a>
+      ))}
+    </div>
+    <div class="mm-support">
+      <span class="mm-mascot"><img src={mascot.src} srcset={mascot.srcSet.attribute} width="384" height="384" alt="" decoding="async" draggable="false" /></span>
+      <p class="mm-support-title">Keep DocuBook open.</p>
+      <p class="mm-support-desc">MIT licensed and built in the open. A donation keeps the work going.</p>
+      <a href={site.sponsor} target="_blank" rel="noreferrer" class="mm-donate"><Icon name="heart" size={16} /> Donate</a>
+      <span class="mm-via">Via GitHub Sponsors</span>
+    </div>
+  </div>
+</template>

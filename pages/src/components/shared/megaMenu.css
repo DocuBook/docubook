@@ -1,0 +1,169 @@
+/* The Resources menu (markup in MegaMenu.astro). Navbar.astro attaches this file with megaMenu.ts on the first
+   hover, focus or click of the trigger, never with the page, so every rule here is plain CSS on the site's
+   theme variables. */
+.mega-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  z-index: 50;
+  display: flex;
+  gap: 12px;
+  width: min(760px, calc(100vw - 40px));
+  padding: 12px;
+  border: 1px solid var(--color-rule);
+  border-radius: 8px;
+  background: #fffefa;
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--color-ink) 14%, transparent);
+  translate: -50% 0;
+  transition:
+    opacity 0.15s ease,
+    translate 0.15s ease;
+}
+.mega-menu[hidden] {
+  display: none;
+}
+@starting-style {
+  .mega-menu {
+    opacity: 0;
+    translate: -50% -6px;
+  }
+}
+[data-mega-trigger] svg {
+  transition: rotate 0.15s ease;
+}
+[data-mega-trigger][aria-expanded="true"] svg {
+  rotate: 180deg;
+}
+
+.mm-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 4px 4px;
+}
+.mm-label {
+  padding: 0 12px 8px;
+  color: var(--color-muted);
+  font: 500 12px/1.333 var(--font-mono);
+  text-transform: uppercase;
+}
+.mm-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 6px;
+}
+.mm-tile {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  background: var(--color-card);
+  color: var(--color-ink);
+}
+.mm-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+.mm-title {
+  color: var(--color-ink);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.mm-desc {
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.mm-arrow {
+  color: var(--color-accent-ink);
+  opacity: 0;
+}
+/* The current page takes the accent on its title and icon, as the navbar's active link does. It comes before
+   the hover rules so a hovered current item still gets the filled tile. */
+.mm-item[aria-current] :is(.mm-title, .mm-tile) {
+  color: var(--color-accent-ink);
+}
+.mm-item:is(:hover, :focus-visible) {
+  background: var(--color-paper);
+}
+.mm-item:is(:hover, :focus-visible) .mm-tile {
+  background: var(--color-accent-ink);
+  color: white;
+}
+.mm-item:is(:hover, :focus-visible) .mm-arrow {
+  opacity: 1;
+}
+
+.mm-support {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 264px;
+  padding: 20px;
+  border-radius: 6px;
+  background: var(--color-card);
+  text-align: center;
+}
+/* One cell of the 3x3 reactions sheet: "heart" is the second cell of the first row. */
+.mm-mascot {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  overflow: hidden;
+}
+.mm-mascot img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 300%;
+  max-width: none;
+  height: 300%;
+  translate: -33.3333% 0;
+}
+.mm-support-title {
+  color: var(--color-ink);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.mm-support-desc {
+  margin-top: -10px;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.mm-donate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 44px;
+  border-radius: 4px;
+  background: var(--color-accent-ink);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+}
+.mm-via {
+  color: var(--color-muted);
+  font: 400 10px/1.5 var(--font-mono);
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mega-menu,
+  [data-mega-trigger] svg {
+    transition: none;
+  }
+}

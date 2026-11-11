@@ -1,9 +1,8 @@
 ---
 import { examplePlugin } from "../../../content/plugins";
 import { site } from "../../../content/site";
+import CodeCard from "../../shared/CodeCard.astro";
 import Button from "../../ui/Button.astro";
-import Container from "../../ui/Container.astro";
-import TechnicalLabel from "../../ui/TechnicalLabel.astro";
 
 // Build-time highlighter for the one snippet above: regex tokens, Shiki-like classes, no dependency.
 // shortcut: handles only the syntax this snippet uses, swap for Shiki if the sample grows.
@@ -39,26 +38,13 @@ const html = examplePlugin
   .join("\n");
 ---
 
-<Container as="section" class="py-24">
-  <div class="flex flex-col gap-10 rounded border border-rule bg-card p-6 lg:flex-row lg:items-center lg:gap-8 lg:p-8 xl:gap-[60px] xl:p-10">
-    <div class="flex flex-1 flex-col gap-[23px]">
-      <TechnicalLabel tone="accent">Build your own / Twelve lines</TechnicalLabel>
-      <h2 class="text-3xl font-semibold leading-[1.1] tracking-tight lg:text-[30px] xl:text-[50px]">Your first plugin<br />fits on one screen.</h2>
-      <p class="text-[17px] leading-relaxed text-muted">Export a name and a setup function. Pick a hook, return your result, and point docu.json at the file. Errors in setup stop both build and dev, so a broken plugin never ships.</p>
-      <div class="flex flex-wrap gap-3">
-        <Button href="/docs/getting-started/plugins">Read the plugin guide</Button>
-        <Button href={`${site.github}/tree/main/plugins`} variant="ghost" external>Browse plugin examples</Button>
-      </div>
-      <TechnicalLabel class="normal-case!">@docubook/plugin-* or docubook-plugin-*</TechnicalLabel>
-    </div>
-    <div class="flex w-full flex-col gap-4 rounded bg-dark p-[26px] font-mono lg:max-w-[440px] lg:shrink-0 lg:p-5 xl:max-w-[560px] xl:p-[26px]">
-      <div class="text-xs font-medium text-dark-muted">plugins/last-updated.ts</div>
-      <pre class="code overflow-x-auto text-[13px] leading-[1.7] text-dark-code sm:overflow-visible lg:text-xs xl:text-[13px]"><code set:html={html} /></pre>
-      <hr class="h-px border-0 bg-dark-rule" />
-      <span class="text-xs text-ok">docu.json  →  "plugins": ["./plugins/last-updated"]</span>
-    </div>
-  </div>
-</Container>
+<CodeCard label="Build your own / Twelve lines" heading={"Your first plugin\nfits on one screen."} description="Export a name and a setup function. Pick a hook, return your result, and point docu.json at the file. Errors in setup stop both build and dev, so a broken plugin never ships." note="@docubook/plugin-* or docubook-plugin-*" file="plugins/last-updated.ts" result={'docu.json  →  "plugins": ["./plugins/last-updated"]'}>
+  <Fragment slot="actions">
+    <Button href="/docs/getting-started/plugins">Read the plugin guide</Button>
+    <Button href={`${site.github}/tree/main/plugins`} variant="ghost" external>Browse plugin examples</Button>
+  </Fragment>
+  <pre class="code overflow-x-auto text-[13px] leading-[1.7] text-dark-code sm:overflow-visible lg:text-xs xl:text-[13px]"><code set:html={html} /></pre>
+</CodeCard>
 
 
 <style>

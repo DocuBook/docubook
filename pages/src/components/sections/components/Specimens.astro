@@ -1,0 +1,109 @@
+---
+// Six components as specimens: the Markdown that writes each one on the left, what Flame renders on the right.
+// The right side is drawn in the site's own styles, not the docs runtime. Tabs, the accordion and the file tree
+// still respond like the real ones, with no script: radio inputs switch the tabs, <details> folds the other two.
+import { specimens } from "../../../content/components";
+import Container from "../../ui/Container.astro";
+import Icon from "../../ui/Icon.astro";
+import TechnicalLabel from "../../ui/TechnicalLabel.astro";
+
+// Directive lines take the accent and fences are dimmed, as in the home page's editor.
+const tone = (line: string) => (/^\s*:{2,}/.test(line) ? "text-accent" : /^\s*`{3}/.test(line) ? "text-[#8b8f7a]" : "text-dark-code");
+// How each callout type is drawn. The words come from the specimen's `render` in content/components.ts.
+const calloutLook = {
+  tip: { icon: "lightbulb", look: "border-ok-ink bg-ok-ink/15 text-ok-ink" },
+  info: { icon: "info", look: "border-accent-ink bg-accent-ink/15 text-accent-ink" },
+};
+const capitalize = (word: string) => word[0].toUpperCase() + word.slice(1);
+const summary = "flex cursor-pointer list-none items-center [&::-webkit-details-marker]:hidden";
+// 24px tall: the folders are tap targets.
+const row = "flex items-center gap-[7px] py-1";
+---
+
+<Container as="section" class="grid gap-6 pb-24 xl:grid-cols-2">
+  {specimens.map((specimen, i) => (
+    <article class="flex flex-col overflow-hidden rounded-lg border border-rule bg-[#fffefa]">
+      <header class="flex items-center justify-between border-b border-rule bg-card px-5 py-3.5">
+        <TechnicalLabel tone="ink" as="p">{String(i + 1).padStart(2, "0")} / {specimen.name}</TechnicalLabel>
+        <a href={`/docs/components/${specimen.slug}`} data-astro-reload class="font-mono text-[11px] uppercase text-muted hover:text-accent-ink" aria-label={`${specimen.name} in the docs`}>Docs ↗</a>
+      </header>
+      <div class="flex flex-1 flex-col sm:min-h-[230px] sm:flex-row">
+        <pre class="overflow-x-auto bg-dark p-5 font-mono text-xs leading-[1.7] sm:w-[55%] sm:shrink-0"><code>{specimen.source.split("\n").map((line) => <span class:list={["block", tone(line)]}>{line || " "}</span>)}</code></pre>
+        <div class="flex flex-1 flex-col justify-center p-5">
+          {specimen.kind === "callout" && (
+            <div class="flex flex-col gap-2.5">
+              {specimen.render.map((callout) => (
+                <div class:list={["rounded-[10px] border-l-4 py-2 pr-3 pl-3 text-xs leading-normal", calloutLook[callout.type].look]}>
+                  <p class="flex items-center gap-1.5 font-bold"><Icon name={calloutLook[callout.type].icon} size={14} />{"title" in callout ? callout.title : capitalize(callout.type)}</p>
+                  <p class="mt-0.5">{callout.body}</p>
+                </div>
+              ))}
+            </div>
+          )}
+          {specimen.kind === "tabs" && (
+            <div class="group flex flex-col gap-2.5">
+              <div class="flex gap-[18px] border-b border-rule text-[13px]" role="radiogroup" aria-label="Language">
+                {specimen.render.map((tab, k) => (
+                  <label class="-mb-px cursor-pointer border-b-2 border-transparent pb-2 text-muted hover:text-ink has-checked:border-accent-ink has-checked:font-semibold has-checked:text-ink has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent-ink">
+                    <input type="radio" name="specimen-tab" value={k} checked={k === 0} class="sr-only" />{tab.title}
+                  </label>
+                ))}
+              </div>
+              {specimen.render.map((tab, k) => (
+                <div class:list={["hidden flex-col gap-2 rounded-md bg-dark p-3 font-mono", k === 0 ? "group-has-[[value='0']:checked]:flex" : "group-has-[[value='1']:checked]:flex"]}><span class="text-[10px] text-dark-muted">{tab.file}</span><code class="text-[11px] text-dark-code">{tab.code}</code></div>
+              ))}
+            </div>
+          )}
+          {specimen.kind === "steps" && (
+            <ol class="flex flex-col">
+              {specimen.render.map((step, k) => (
+                <li class="flex gap-3">
+                  {/* The rail stretches with its row, so the line runs unbroken from one number to the next. */}
+                  <span class="flex flex-col items-center">
+                    <span class="grid size-[22px] shrink-0 place-items-center rounded-full border border-rule bg-paper font-mono text-[11px] text-ink">{k + 1}</span>
+                    {k < specimen.render.length - 1 && <span class="w-px flex-1 bg-rule" />}
+                  </span>
+                  <span class:list={["flex flex-col items-start gap-1.5 pt-0.5", k < specimen.render.length - 1 && "pb-[18px]"]}>
+                    <span class="text-[13px] font-semibold text-ink">{step.title}</span>
+                    <code class="rounded bg-card px-[9px] py-[5px] font-mono text-[11px] text-ink">{step.command}</code>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+          {specimen.kind === "cards" && (
+            <div class="grid grid-cols-2 gap-2.5">
+              {specimen.render.map((card) => (
+                <div class="flex flex-col gap-2 rounded-md border border-rule p-3.5">
+                  <Icon name={card.icon} size={18} class="text-accent-ink" />
+                  <span class="text-[13px] font-semibold text-ink">{card.title}</span>
+                  <span class="text-[11px] leading-normal text-muted">{card.body}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {specimen.kind === "accordion" && (
+            <details open class="group overflow-hidden rounded-md border border-rule">
+              <summary class:list={[summary, "gap-2 bg-paper px-3 py-2.5 text-[13px] font-semibold text-ink hover:text-accent-ink"]}><Icon name="chevron-down" size={14} class="-rotate-90 transition-transform group-open:rotate-0 motion-reduce:transition-none" />{specimen.render.title}</summary>
+              <p class="border-t border-rule p-3 text-xs leading-normal text-muted">{specimen.render.body}</p>
+            </details>
+          )}
+          {specimen.kind === "tree" && (
+            <div class="rounded-md border border-rule px-3 py-2 font-mono text-xs text-ink">
+              <details open class="group/root">
+                <summary class:list={[summary, row, "hover:text-accent-ink"]}><Icon name="folder-open" size={14} class="hidden text-accent-ink group-open/root:block" /><Icon name="folder" size={14} class="text-accent-ink group-open/root:hidden" />{specimen.render.root}</summary>
+                <div class="pl-4">
+                  <details open class="group/src">
+                    <summary class:list={[summary, row, "hover:text-accent-ink"]}><Icon name="folder-open" size={14} class="hidden text-accent-ink group-open/src:block" /><Icon name="folder" size={14} class="text-accent-ink group-open/src:hidden" />{specimen.render.folder}</summary>
+                    <p class:list={[row, "pl-4"]}><Icon name="file-text" size={14} class="text-muted" />{specimen.render.nested}</p>
+                  </details>
+                  {specimen.render.files.map((file) => <p class={row}><Icon name="file-text" size={14} class="text-muted" />{file}</p>)}
+                </div>
+              </details>
+            </div>
+          )}
+        </div>
+      </div>
+    </article>
+  ))}
+</Container>

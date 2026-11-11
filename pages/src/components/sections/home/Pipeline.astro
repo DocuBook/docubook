@@ -28,7 +28,6 @@ const stages = ["markdown", "compile", "html", "publish"];
               <i class="guide guide-a"></i><i class="guide guide-b"></i><i class="guide guide-c"></i><i class="guide guide-d"></i>
               <div class="face">
                 <span class="face-icon"><Icon name={layer.icon} size={32} /></span>
-                <span class="face-label">{layer.artifact}</span>
                 {layer.kind === "source" && <span class="face-lines"><i></i><i></i><i></i></span>}
                 {layer.kind === "compiler" && <span class="face-glow"></span>}
                 {layer.kind === "host" && <span class="face-dots">{Array.from({ length: 12 }, () => <i></i>)}</span>}
@@ -40,6 +39,9 @@ const stages = ["markdown", "compile", "html", "publish"];
           </div>
         ))}
       </div>
+      {layers.map((layer, i) => (
+        <span class:list={["plate-label", `plate-label-${layer.kind}`]} style={`--i:${i}`}><span>{layer.artifact}</span></span>
+      ))}
       <div class="tags">
         {stages.map((label, i) => (
           <div class:list={["tag", i % 2 ? "tag-r" : "tag-l"]} style={`--i:${i}`}>
@@ -100,7 +102,18 @@ const stages = ["markdown", "compile", "html", "publish"];
   .layer-host { --face: var(--color-card); --line: var(--color-rule); --edge: #cfcfc4; }
   .layer-site { --face: #fffefa; --line: var(--color-rule); --edge: #d5d4c8; }
 
-  .face-label { position: absolute; right: 14px; bottom: 14px; font: 500 14px/1 var(--font-mono); }
+  /* How far down the stage plate --i's centre sits: its side corners are level with it, and each plate is
+     gap*sin(62deg) below the one above. The labels and the tags are both placed from it. */
+  .plate-label, .tag { --plate-y: calc(var(--s) / 2 + var(--gap) * (0.883 * var(--i) - 0.099)); }
+
+  /* Each plate's label lies on its face, 14px in from the right and front edges, but is drawn outside the 3D
+     scene: a face is rasterized flat and then squashed to under half its height, which breaks small text on a
+     1x screen. 18px is what stays legible there once tilted; it still fits the small plate. Here the same projection is a 2D matrix (cos 45deg, -sin 45deg * cos 62deg, ...) on the inner span,
+     so the glyphs are drawn in their final shape. The outer span only places and animates it: it may move and
+     fade, but a skew or scale on it would have the text rasterized flat again. */
+  .plate-label { position: absolute; right: calc(50% - (var(--s) - 28px) * 0.7071); bottom: calc(100% - var(--plate-y)); font: 500 18px/1 var(--font-mono); white-space: nowrap; }
+  .plate-label span { display: block; transform-origin: 100% 100%; transform: matrix(0.7071, -0.332, 0.7071, 0.332, 0, 0); }
+  .plate-label-compiler { color: var(--color-dark-code); }
   .face-icon { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; }
   .layer-compiler .face-icon { color: var(--color-accent); }
   .face-lines, .face-page { position: absolute; left: 18px; top: 18px; display: flex; flex-direction: column; gap: 9px; }
@@ -124,7 +137,7 @@ const stages = ["markdown", "compile", "html", "publish"];
   .tag-line { display: none; flex: 1; border-top: 1px dashed color-mix(in srgb, var(--color-muted) 55%, transparent); }
   @media (min-width: 640px) {
     .tags { display: contents; }
-    .tag { --corner: calc(50% + var(--s) * 0.707 + 4px); position: absolute; top: calc(var(--s) / 2 + var(--gap) * (0.883 * var(--i) - 0.099)); display: flex; align-items: center; width: min(150px, 100% - var(--corner)); translate: 0 -50%; }
+    .tag { --corner: calc(50% + var(--s) * 0.7071 + 4px); position: absolute; top: var(--plate-y); display: flex; align-items: center; width: min(150px, 100% - var(--corner)); translate: 0 -50%; }
     .tag-l { right: var(--corner); }
     .tag-r { left: var(--corner); flex-direction: row-reverse; }
     .tag-line { display: block; }
@@ -134,11 +147,13 @@ const stages = ["markdown", "compile", "html", "publish"];
 
   /* One 8s cycle after a 1s build-up: the stack opens from a single block, then each layer takes a 2s turn. */
   [data-playing] .layer { animation: stack-open 1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-  [data-playing] :is(.plate, .guide, .cover, .ring, .step-bar, .step, .tag, .tag-on), [data-playing] .wall::after { animation-duration: 8s; animation-iteration-count: infinite; animation-delay: calc(1s + var(--i) * 2s); }
+  [data-playing] :is(.plate, .guide, .cover, .ring, .step-bar, .step, .tag, .tag-on, .plate-label), [data-playing] .wall::after { animation-duration: 8s; animation-iteration-count: infinite; animation-delay: calc(1s + var(--i) * 2s); }
   [data-playing] .plate { animation-name: plate-lift; animation-timing-function: ease-in-out; }
   [data-playing] .guide { animation-name: guide-follow; animation-timing-function: ease-in-out; }
   [data-playing] .ring, [data-playing] .step-bar, [data-playing] .tag-on { animation-name: layer-on; }
   [data-playing] .step { animation-name: step-on; }
+  /* A label shows only on its own turn (the blank skin covers its plate otherwise) and rises with the plate. */
+  [data-playing] .plate-label { opacity: 0; animation-name: label-turn; animation-timing-function: ease-in-out; }
   [data-playing] .cover, [data-playing] .wall::after { animation-name: cover-off; opacity: 1; }
   [data-playing] .step-bar { transform-origin: top; scale: 1 0; }
   [data-playing] .step { opacity: 0.5; }
@@ -151,8 +166,9 @@ const stages = ["markdown", "compile", "html", "publish"];
   /* Follows plate-lift on screen: 14px along the plate normal is 14 * sin(62deg) up. */
   @keyframes tag-lift { 0%, 25% { translate: 0 -50%; } 4%, 21% { translate: 0 calc(-50% - 12px); } }
   @keyframes layer-on { 0%, 25%, 100% { opacity: 0; scale: 1 0; } 4%, 21% { opacity: 1; scale: 1 1; } }
+  @keyframes label-turn { 0%, 25%, 100% { opacity: 0; translate: 0 0; } 4%, 21% { opacity: 1; translate: 0 -12px; } }
   @keyframes cover-off { 0%, 25%, 100% { opacity: 1; } 4%, 21% { opacity: 0; } }
   @keyframes step-on { 0%, 25%, 100% { opacity: 0.5; } 4%, 21% { opacity: 1; } }
 
-  @media (prefers-reduced-motion: reduce) { .pipeline *, .pipeline .wall::after { animation: none !important; } .pipeline .step { opacity: 1; } .pipeline .cover, .pipeline .wall::after { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .pipeline *, .pipeline .wall::after { animation: none !important; } .pipeline :is(.step, .plate-label) { opacity: 1; } .pipeline .cover, .pipeline .wall::after { opacity: 0; } }
 </style>

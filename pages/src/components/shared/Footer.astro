@@ -21,6 +21,11 @@ const year = new Date().getFullYear();
           A modern toolkit for documentation: write Markdown, ship static files, keep your own stack.
         </p>
       </div>
+      {/* The same links as the navbar's Resources menu, which needs its script: here they are plain anchors. */}
+      <nav class="flex flex-col gap-[15px] text-[13px] text-dark-code md:ml-auto md:w-[220px]" aria-label="Resources">
+        <TechnicalLabel tone="dark-muted">Resources</TechnicalLabel>
+        {site.resources.map((item) => <a href={item.href} {...("external" in item ? { "data-astro-reload": true } : {})}>{item.label}</a>)}
+      </nav>
       <div class="flex w-[220px] flex-col gap-[15px] text-[13px] text-dark-code">
         <TechnicalLabel tone="dark-muted">Open source</TechnicalLabel>
         <a href={site.github} target="_blank" rel="noreferrer">GitHub ↗</a>

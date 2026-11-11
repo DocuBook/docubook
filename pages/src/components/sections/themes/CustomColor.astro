@@ -1,0 +1,94 @@
+---
+// "Bring one hex.": the docu.json that sets a custom primary, next to the palette Flame generates from it.
+// The first frame is computed at build time. The swatch is a color input: picking a color rewrites the hex in
+// the docu.json card and regenerates every swatch in the browser, through the same resolver.
+import { customPrimary } from "../../../content/themes";
+import { palette } from "../../../lib/themePalette";
+import Container from "../../ui/Container.astro";
+import Icon from "../../ui/Icon.astro";
+import JsonCode from "../../ui/JsonCode.astro";
+import TechnicalLabel from "../../ui/TechnicalLabel.astro";
+
+const generated = palette(customPrimary);
+const strips = [
+  { id: "light", label: "Light", swatches: generated.light },
+  { id: "dark", label: "Dark", swatches: generated.dark },
+];
+const config = `{
+  "themes": {
+    "colors": { "primary": "${customPrimary}" }
+  }
+}`;
+---
+
+<section class="bg-dark text-dark-ink">
+  <Container class="flex flex-col gap-12 py-[88px] lg:flex-row lg:items-center xl:gap-16">
+    <div class="flex flex-1 flex-col gap-[23px]">
+      <TechnicalLabel tone="dark-accent">02 / Your brand color</TechnicalLabel>
+      <h2 class="text-3xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-[58px]">Bring one hex.</h2>
+      <p class="text-[17px] leading-relaxed text-dark-muted">Set primary to any hex. The resolver turns it into the full palette: {generated.variables} CSS variables per mode, plus {generated.syntax.length} syntax tokens for code. Only primary is configurable.</p>
+      <div class="flex flex-col gap-3 rounded border border-dark-rule bg-dark-card p-[22px] font-mono" data-theme-config>
+        <div class="flex items-center justify-between text-xs font-medium text-dark-muted">
+          docu.json
+          <button type="button" data-copy-config class="text-dark-muted hover:text-dark-ink" aria-label="Copy docu.json"><Icon name="copy" size={16} class="[[data-copied]_&]:hidden" /><Icon name="check" size={16} class="hidden text-ok [[data-copied]_&]:block" /></button>
+        </div>
+        <JsonCode code={config} class="text-[13px]" />
+      </div>
+    </div>
+    <div class="flex w-full flex-col gap-6 rounded border border-dark-rule bg-dark-card p-[30px] lg:max-w-[480px] lg:shrink-0 xl:max-w-[620px]">
+      <div class="flex items-center gap-3.5">
+        {/* The swatch is the label of an invisible color input laid over it, so a click opens the system picker. */}
+        <label class="relative block size-11 shrink-0 cursor-pointer rounded outline-offset-2 outline-dark-accent has-focus-visible:outline-2" style={`background:${customPrimary}`} data-primary-swatch>
+          <input type="color" value={customPrimary.toLowerCase()} class="absolute inset-0 size-full cursor-pointer opacity-0" aria-label="Primary color" data-primary-input />
+        </label>
+        {/* A drawn arrow from the word to the swatch: the input itself carries the accessible name. */}
+        <span class="flex items-center gap-1.5 font-mono text-xs text-dark-accent" aria-hidden="true">
+          <svg class="h-6 w-10" viewBox="0 0 40 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M38 5C27 1 13 7 3 17" /><path d="M3 17l1.2-7.5M3 17l7.5.3" /></svg>
+          picker
+        </span>
+        <div class="ml-auto flex flex-col items-end gap-1"><TechnicalLabel tone="dark-muted">Primary</TechnicalLabel><span class="font-mono text-[17px] text-dark-code" data-primary-hex>{customPrimary}</span></div>
+      </div>
+      {strips.map((strip) => (
+        <div class="flex flex-col gap-2.5">
+          <div class="flex items-center justify-between"><TechnicalLabel tone="dark-muted">{strip.label}</TechnicalLabel><span class="font-mono text-[11px] uppercase text-dark-muted">{strip.swatches.length} colors + radius</span></div>
+          <ul class="grid grid-cols-12 gap-1.5" data-strip={strip.id}>
+            {strip.swatches.map((swatch) => <li class="aspect-square rounded-[3px] border border-dark-rule" style={`background:${swatch.color}`} title={swatch.name}><span class="sr-only">{swatch.name}</span></li>)}
+          </ul>
+        </div>
+      ))}
+      <div class="flex flex-col gap-2.5">
+        <div class="flex items-center justify-between"><TechnicalLabel tone="dark-muted">Syntax</TechnicalLabel><span class="font-mono text-[11px] uppercase text-dark-muted">{generated.syntax.length} tokens</span></div>
+        <ul class="grid grid-cols-12 gap-1.5" data-strip="syntax">
+          {generated.syntax.map((token) => <li class="h-[18px] rounded-[3px]" style={`background:${token.color}`} title={token.name}><span class="sr-only">{token.name}</span></li>)}
+        </ul>
+      </div>
+    </div>
+  </Container>
+</section>
+
+<script>
+  import { palette } from "../../../lib/themePalette";
+
+  const input = document.querySelector<HTMLInputElement>("[data-primary-input]")!;
+  const config = document.querySelector<HTMLElement>("[data-theme-config]")!;
+  // The snippet's one string value is the hex: its keys are a different class.
+  const value = config.querySelector<HTMLElement>(".str")!;
+  input.addEventListener("input", () => {
+    const hex = input.value.toUpperCase();
+    document.querySelector<HTMLElement>("[data-primary-swatch]")!.style.background = hex;
+    document.querySelector<HTMLElement>("[data-primary-hex]")!.textContent = hex;
+    value.textContent = `"${hex}"`;
+    const next = palette(hex);
+    for (const id of ["light", "dark", "syntax"] as const) {
+      const cells = document.querySelector(`[data-strip="${id}"]`)!.children;
+      next[id].forEach((swatch, i) => ((cells[i] as HTMLElement).style.background = swatch.color));
+    }
+  });
+
+  const copy = config.querySelector<HTMLButtonElement>("[data-copy-config]")!;
+  copy.addEventListener("click", async () => {
+    await navigator.clipboard.writeText(config.querySelector("pre")!.textContent!);
+    copy.toggleAttribute("data-copied", true);
+    setTimeout(() => copy.removeAttribute("data-copied"), 1500);
+  });
+</script>

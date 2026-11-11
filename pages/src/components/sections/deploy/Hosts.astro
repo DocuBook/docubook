@@ -1,0 +1,141 @@
+---
+// "Pick a host. Keep the folder.": the build output as one tile over a three-tier podium, a tier per host
+// group, with the groups' cards below. Motion follows "DocuBook — Deploy · Host podium motion" in docubook.pen:
+// the markup is the resting frame; while [data-playing] each tier takes a 2s turn (accent ring, filled tag,
+// its card lit and the other two dimmed) and the tile dips toward the podium. Transform and opacity only.
+import { hostGroups } from "../../../content/deploy";
+import Container from "../../ui/Container.astro";
+import TechnicalLabel from "../../ui/TechnicalLabel.astro";
+
+// True isometric: a square of side s is a rhombus s*cos(30deg) half-wide and s/2 half-tall, centred on (cx, cy).
+// Each slab is its top face plus the two walls that face the viewer, as flat polygons.
+type Pt = [number, number];
+const W = 560;
+const H = 380;
+const cx = 250;
+const f = (pts: Pt[]) => pts.map((p) => p.map((n) => +n.toFixed(1)).join(",")).join(" ");
+const slab = (side: number, cy: number, depth: number) => {
+  const hw = side * 0.866;
+  const corners: Pt[] = [[cx, cy - side / 2], [cx + hw, cy], [cx, cy + side / 2], [cx - hw, cy]];
+  const [, R, F, L] = corners;
+  const down = (p: Pt): Pt => [p[0], p[1] + depth];
+  return { cy, hw, top: f(corners), left: f([L, F, down(F), down(L)]), right: f([F, R, down(R), down(F)]) };
+};
+// Tiers step out and down by one slab height each, so every tier's rim shows under the one above.
+const tiers = hostGroups.map((group, i) => ({ ...group, i, ...slab(130 + i * 40, 127 + i * 44, 44) }));
+const tile = slab(84, 57, 12);
+const landing = slab(84, tiers[0].cy, 0).top;
+// The tile's "file lines", laid on its top face: (u, v) run along the face's two edges from its back corner.
+const onTile = (u: number, v: number): Pt => [cx + (u - v) * 0.866, tile.cy - 42 + (u + v) * 0.5];
+const fileLines = [[44, 14], [62, 24], [54, 34]].map(([end, v]) => f([onTile(14, v), onTile(end, v), onTile(end, v + 4), onTile(14, v + 4)]));
+// The guides drop from the tile's lower corners to the landing mark: all three are the same length.
+const guides: Pt[] = [[cx - tile.hw, tile.cy + 12], [cx + tile.hw, tile.cy + 12], [cx, tile.cy + 42 + 12]];
+const drop = tiers[0].cy - tile.cy - 12;
+// Tags are sized from their text: the mono face advances 0.6em per character at 11px.
+const pill = (text: string) => text.length * 6.6 + 16;
+const DIST = ".docu/dist";
+---
+
+<section class="bg-dark text-dark-ink">
+  <Container class="py-[88px]">
+  <div class="hosts flex flex-col gap-[42px]" data-animate>
+    <div class="flex flex-col gap-10 xl:flex-row xl:items-center">
+      <div class="flex flex-1 flex-col gap-[18px]">
+        <TechnicalLabel tone="dark-accent">02 / Pick a host</TechnicalLabel>
+        <h2 class="text-3xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-[58px]">Pick a host.<br />Keep the folder.</h2>
+        <TechnicalLabel tone="dark-muted">All of them serve .docu/dist as it is</TechnicalLabel>
+      </div>
+      <div class="stage mx-auto w-full max-w-[560px] overflow-hidden xl:mx-0 xl:shrink-0" aria-hidden="true">
+        <svg class="podium" viewBox={`0 0 ${W} ${H}`}>
+          {[...tiers].reverse().map((tier) => (
+            <g class:list={["tier", `tier-${tier.i}`]} style={`--i:${tier.i}`}>
+              <polygon class="wall-l" points={tier.left} /><polygon class="wall-r" points={tier.right} /><polygon class="face" points={tier.top} />
+              <polygon class="ring" points={tier.top} />
+            </g>
+          ))}
+          <polygon class="landing" points={landing} />
+          {guides.map(([x, y]) => <line class="guide" x1={x} y1={y} x2={x} y2={y + drop} />)}
+          <g class="tile">
+            <polygon class="wall-l" points={tile.left} /><polygon class="wall-r" points={tile.right} /><polygon class="face" points={tile.top} />
+            {fileLines.map((points, k) => <polygon class:list={["file-line", k === 0 && "file-line-first"]} points={points} />)}
+          </g>
+          <g class="tag tag-dist">
+            <line x1={pill(DIST)} y1={tile.cy} x2={cx - tile.hw - 4} y2={tile.cy} />
+            <rect x="0.5" y={tile.cy - 15} width={pill(DIST)} height="30" rx="4" /><text x="8.5" y={tile.cy + 4}>{DIST}</text>
+          </g>
+          {tiers.map((tier) => (
+            <g class="tag" style={`--i:${tier.i}`}>
+              <line x1={cx + tier.hw + 4} y1={tier.cy} x2={W - pill(tier.tag)} y2={tier.cy} />
+              <rect x={W - pill(tier.tag) - 0.5} y={tier.cy - 15} width={pill(tier.tag)} height="30" rx="4" /><text x={W - pill(tier.tag) + 7.5} y={tier.cy + 4}>{tier.tag}</text>
+              <g class="tag-on"><rect x={W - pill(tier.tag) - 0.5} y={tier.cy - 15} width={pill(tier.tag)} height="30" rx="4" /><text x={W - pill(tier.tag) + 7.5} y={tier.cy + 4}>{tier.tag}</text></g>
+            </g>
+          ))}
+        </svg>
+      </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-3">
+      {tiers.map((group) => (
+        <article class="host relative flex flex-col gap-[22px] rounded border border-dark-rule bg-dark-card p-[30px]" style={`--i:${group.i}`}>
+          <TechnicalLabel tone="dark-accent">{group.label}</TechnicalLabel>
+          <h3 class="text-[34px] font-semibold leading-[1.1]">{group.title}</h3>
+          <p class="text-[15px] leading-relaxed text-dark-muted">{group.description}</p>
+          <ul class="border-b border-dark-rule">
+            {group.hosts.map((host) => (
+              <li class="flex items-center justify-between gap-4 border-t border-dark-rule py-3"><span class="text-sm text-dark-code">{host.name}</span><span class="font-mono text-[11px] text-dark-muted">{host.config}</span></li>
+            ))}
+          </ul>
+          <ul class="mt-auto flex flex-wrap gap-2">
+            {group.chips.map((chip) => <li class="rounded border border-dark-rule px-2.5 py-1.5 font-mono text-[11px] font-medium uppercase text-dark-muted">{chip}</li>)}
+          </ul>
+        </article>
+      ))}
+    </div>
+    <TechnicalLabel tone="dark-muted">AWS S3 + CloudFront works too. The .html suffix stays visible without a CloudFront Function.</TechnicalLabel>
+  </div>
+  </Container>
+</section>
+
+<style>
+  .podium { display: block; width: 100%; height: auto; font: 500 11px var(--font-mono); text-transform: uppercase; }
+  /* Below sm the tags would be too small to read: they go, and the podium is scaled up and centred in their place. */
+  @media (max-width: 639px) { .podium { width: 140%; max-width: none; margin-left: -12.5%; } .tag { display: none; } }
+
+  /* Lighter means less to set up: paper for zero config, grey for one file, a dark block for Docker. */
+  .tier-0 { --face: var(--color-card); }
+  .tier-1 { --face: var(--color-dark-muted); }
+  .tier-2 { --face: var(--color-dark-rule); stroke: color-mix(in srgb, var(--color-dark-muted) 35%, transparent); }
+  .tier .face { fill: var(--face); }
+  .tier .wall-l { fill: color-mix(in srgb, var(--face) 80%, black); }
+  .tier .wall-r { fill: color-mix(in srgb, var(--face) 68%, black); }
+  .ring { fill: none; stroke: var(--color-accent); stroke-width: 2; stroke-linejoin: round; opacity: 0; }
+  .landing { fill: var(--color-rule); }
+  .guide { stroke: var(--color-muted); stroke-dasharray: 3 3; }
+  /* The tile takes the accent on its walls, like the tiles of the features board, so a theme preset recolors it. */
+  .tile .face { fill: #fffefa; }
+  .tile .wall-l { fill: var(--color-accent); }
+  .tile .wall-r { fill: color-mix(in srgb, var(--color-accent) 75%, black); }
+  .file-line { fill: var(--color-rule); }
+  .file-line-first { fill: var(--color-accent); }
+
+  .tag line { stroke: color-mix(in srgb, var(--color-dark-muted) 55%, transparent); stroke-dasharray: 3 3; }
+  .tag rect { fill: var(--color-dark-card); stroke: var(--color-dark-rule); }
+  .tag text { fill: var(--color-dark-muted); }
+  :is(.tag-dist, .tag-on) rect { fill: var(--color-dark-ink); stroke: var(--color-dark-ink); }
+  :is(.tag-dist, .tag-on) text { fill: var(--color-ink); }
+  .tag-on { opacity: 0; }
+
+  /* One 6s loop: each tier and its card take a 2s turn, top to bottom, while the tile dips once per turn. */
+  [data-playing] :is(.ring, .tag-on, .host) { animation: tier-on 6s infinite; animation-delay: calc(var(--i) * 2s); }
+  [data-playing] .host { opacity: 0.5; animation-name: host-on; }
+  [data-playing] .tile { animation: tile-dip 2s ease-in-out infinite; }
+  /* A guide keeps its foot on the podium and follows the tile down by shortening from the top. */
+  [data-playing] .guide { transform-box: fill-box; transform-origin: bottom; animation: guide-dip 2s ease-in-out infinite; }
+  @keyframes tier-on { 0%, 33.33%, 100% { opacity: 0; } 5%, 28% { opacity: 1; } }
+  @keyframes host-on { 0%, 33.33%, 100% { opacity: 0.5; } 5%, 28% { opacity: 1; } }
+  @keyframes tile-dip { 0%, 100% { translate: 0 0; } 15%, 70% { translate: 0 10px; } }
+  /* 10px off a 58px guide. */
+  @keyframes guide-dip { 0%, 100% { scale: 1 1; } 15%, 70% { scale: 1 0.828; } }
+
+  @media (prefers-reduced-motion: reduce) { .hosts * { animation: none !important; } .hosts .host { opacity: 1; } }
+</style>

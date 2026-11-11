@@ -1,0 +1,17 @@
+---
+import Site from "../layouts/Site.astro";
+import CustomColor from "../components/sections/themes/CustomColor.astro";
+import Presets from "../components/sections/themes/Presets.astro";
+import ClosingCta from "../components/shared/ClosingCta.astro";
+import PageIntro from "../components/shared/PageIntro.astro";
+import RuntimeCommands from "../components/shared/RuntimeCommands.astro";
+import { themeFlag } from "../content/themes";
+---
+
+<Site title="Themes" description="Pick a preset or set one brand color in docu.json. Flame generates every CSS variable and syntax token for light and dark from it.">
+  <PageIntro label="Themes / Config-driven" heading={"One color.\nA whole theme."} description="Pick a preset or set one brand color in docu.json. Flame generates every variable for light and dark from it, so there is no CSS to hand-craft." aside="Light and dark follow along." />
+  <Presets />
+  <CustomColor />
+  <RuntimeCommands label="03 / From the command line" heading={"Try a theme.\nKeep your config."} description="The --theme flag overrides docu.json for one run. It works the same on dev, build and preview." link={{ href: "/docs/getting-started/themes", label: "Read the theme guide" }} {...themeFlag} footnote="The flag wins over docu.json for that run." />
+  <ClosingCta />
+</Site>

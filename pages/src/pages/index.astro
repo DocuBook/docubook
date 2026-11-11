@@ -1,7 +1,9 @@
 ---
 import Site from "../layouts/Site.astro";
 import ClosingCta from "../components/shared/ClosingCta.astro";
+import RuntimeCommands from "../components/shared/RuntimeCommands.astro";
 import RuntimeStrip from "../components/shared/RuntimeStrip.astro";
+import { quickstart } from "../content/home";
 import Deployment from "../components/sections/home/Deployment.astro";
 import DevFeatures from "../components/sections/home/DevFeatures.astro";
 import Hero from "../components/sections/home/Hero.astro";
@@ -9,7 +11,6 @@ import MarkdownDemo from "../components/sections/home/MarkdownDemo.astro";
 import OpenSource from "../components/sections/home/OpenSource.astro";
 import Pipeline from "../components/sections/home/Pipeline.astro";
 import PluginsIntro from "../components/sections/home/PluginsIntro.astro";
-import Quickstart from "../components/sections/home/Quickstart.astro";
 ---
 
 <Site title="Home">
@@ -19,7 +20,7 @@ import Quickstart from "../components/sections/home/Quickstart.astro";
   <Pipeline />
   <PluginsIntro />
   <DevFeatures />
-  <Quickstart />
+  <RuntimeCommands label="06 / From zero to docs" heading={"Three commands.\nOne fresh start."} description="Install Flame, initialize your project, and start the development server. Your next page starts here." link={{ href: "/docs/getting-started/quick-start-guide", label: "Read the getting started guide" }} {...quickstart} footnote="Local development uses a runtime. Your published HTML doesn’t." />
   <Deployment />
   <OpenSource />
   <ClosingCta />
