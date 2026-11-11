@@ -1,17 +1,180 @@
 ---
 import { features } from "../../../content/features";
 import Container from "../../ui/Container.astro";
+import Icon from "../../ui/Icon.astro";
 import TechnicalLabel from "../../ui/TechnicalLabel.astro";
+
+// Puzzle board: an isometric slab with one slot per feature, filled by a tile that carries the feature's icon.
+// Geometry is computed here and rendered as static markup; tiles are HTML boxes so their motion stays composited.
+type Pt = [number, number];
+const COLS = 4;
+const ROWS = Math.ceil(features.length / COLS);
+const A = 50; // screen x per grid unit
+const B = A * Math.tan(Math.PI / 6); // screen y per grid unit (true isometric, 30°)
+const iso = (u: number, v: number): Pt => [(u - v) * A, (u + v) * B];
+const add = (p: Pt, q: Pt): Pt => [p[0] + q[0], p[1] + q[1]];
+const lerp = (p: Pt, q: Pt, t: number): Pt => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+const towards = (p: Pt, q: Pt, r: number): Pt => lerp(p, q, r / Math.hypot(q[0] - p[0], q[1] - p[1]));
+const f = (p: Pt) => `${+p[0].toFixed(2)} ${+p[1].toFixed(2)}`;
+
+/** Top face and visible front band of an extruded rhombus with rounded corners. Corners: back, right, front, left. */
+function slab(corners: Pt[], r: number, depth: number) {
+  const round = corners.map((c, k) => ({ c, a: towards(c, corners[(k + 3) % 4], r), b: towards(c, corners[(k + 1) % 4], r) }));
+  const top = round.map(({ c, a, b }, k) => `${k ? "L" : "M"}${f(a)} Q${f(c)} ${f(b)}`).join(" ") + " Z";
+  const [, R, F, L] = round;
+  // The band runs from the outermost point of the right corner, round the front, to the outermost point of the left one.
+  const mR = lerp(lerp(R.a, R.c, 0.5), lerp(R.c, R.b, 0.5), 0.5);
+  const mL = lerp(lerp(L.a, L.c, 0.5), lerp(L.c, L.b, 0.5), 0.5);
+  const d: Pt = [0, depth];
+  const front = (o: Pt) => `Q${f(add(lerp(R.c, R.b, 0.5), o))} ${f(add(R.b, o))} L${f(add(F.a, o))} Q${f(add(F.c, o))} ${f(add(F.b, o))} L${f(add(L.a, o))} Q${f(add(lerp(L.a, L.c, 0.5), o))} ${f(add(mL, o))}`;
+  const back = `Q${f(add(lerp(L.a, L.c, 0.5), d))} ${f(add(L.a, d))} L${f(add(F.b, d))} Q${f(add(F.c, d))} ${f(add(F.a, d))} L${f(add(R.b, d))} Q${f(add(lerp(R.c, R.b, 0.5), d))} ${f(add(mR, d))}`;
+  const band = `M${f(mR)} ${front([0, 0])} L${f(add(mL, d))} ${back} Z`;
+  // Hard split between the lit left face and the shaded right face, at the front corner.
+  return { top, band, split: { x1: mL[0], x2: mR[0], at: (F.c[0] - mL[0]) / (mR[0] - mL[0]) } };
+}
+
+const M = 0.32; // board margin around the slots, in grid units
+const GAP = 0.11; // gap around each slot
+const S = 1 - 2 * GAP; // slot / tile side
+const DEPTH = 26; // slab thickness
+const H = 9; // tile thickness
+const PAD = 2; // room around a tile's own svg box
+const board = slab([iso(-M, -M), iso(COLS + M, -M), iso(COLS + M, ROWS + M), iso(-M, ROWS + M)], 18, DEPTH);
+const tile = slab([iso(0, 0), iso(S, 0), iso(S, S), iso(0, S)], 5, H);
+
+const minX = iso(-M, ROWS + M)[0];
+const maxX = iso(COLS + M, -M)[0];
+const minY = iso(-M, -M)[1] - 40; // headroom for the label over a back tile
+const maxY = iso(COLS + M, ROWS + M)[1] + DEPTH + 10;
+const W = maxX - minX;
+const HT = maxY - minY;
+const pct = (n: number, total: number) => `${+((n / total) * 100).toFixed(3)}%`;
+
+const tileW = 2 * S * A + 2 * PAD;
+const tileH = 2 * S * B + H + 2 * PAD;
+const tileBox = `${f([-S * A - PAD, -PAD])} ${f([tileW, tileH])}`;
+const ICON = 0.5 * S; // icon side on the tile's top face, in grid units
+const slots = features.map((feature, n) => {
+  const u = n % COLS;
+  const v = Math.floor(n / COLS);
+  const [x, y] = iso(u + GAP, v + GAP);
+  const [cx, cy] = iso(u + 0.5, v + 0.5);
+  return {
+    feature, n, u, v,
+    slot: slab([iso(u + GAP, v + GAP), iso(u + GAP + S, v + GAP), iso(u + GAP + S, v + GAP + S), iso(u + GAP, v + GAP + S)], 5, 0).top,
+    // The top face sits H above the slot it covers.
+    box: { left: pct(x - S * A - PAD - minX, W), top: pct(y - H - PAD - minY, HT), width: pct(tileW, W), height: pct(tileH, HT) },
+    label: { left: pct(cx - minX, W), top: pct(cy - H - minY, HT) },
+  };
+});
+// Paint back to front.
+const paintOrder = [...slots].sort((p, q) => p.u + p.v - (q.u + q.v) || p.u - q.u);
+// Brand on the lit face, set in that face's plane: along the left-to-front edge, upright.
+const [lx, ly] = iso(-M, ROWS + M);
+const brand = `matrix(${Math.cos(Math.PI / 6).toFixed(4)} 0.5 0 1 ${(lx + 34).toFixed(2)} ${(ly + 34 * Math.tan(Math.PI / 6) + DEPTH * 0.66).toFixed(2)})`;
+
+// The stacking loop, one keyframe set per tile so the whole board clears at once and refills one tile at a time,
+// in feature order: held full (0–40%), every tile lifts off (40–48%), tile n drops into its slot from 52% + n·3.2%,
+// full again by 93%. 0% is the finished frame, so starting the loop moves nothing. The label rides with its tile.
+const LOOP = 14;
+const at = (x: number) => `${+x.toFixed(2)}%`;
+const stackCss = features.map((_, n) => {
+  const lift = 40 + n * 0.4;
+  const drop = 52 + n * 3.2;
+  return `@keyframes puzzle-stack-${n}{0%,${at(lift)}{translate:none;opacity:1;animation-timing-function:ease-in}${at(lift + 4)}{translate:0 -36px;opacity:0}${at(drop)}{translate:0 -90px;opacity:0;animation-timing-function:cubic-bezier(.55,0,1,.45)}${at(drop + 3.2)}{translate:0 3px;opacity:1;animation-timing-function:ease-out}${at(drop + 4.6)},100%{translate:none;opacity:1}}`
+    + `.puzzle[data-playing]:not([data-active]) [data-i="${n}"] :is(.tile-drop,.chip-drop){animation:puzzle-stack-${n} ${LOOP}s linear infinite}`;
+}).join("");
 ---
 
 <Container as="section" class="pb-24">
-  <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-    {features.map((f, i) => (
-      <li class:list={["flex min-h-[230px] flex-col gap-3.5 rounded border p-[30px]", f.highlight ? "border-dark bg-dark text-dark-ink" : "border-rule bg-card text-ink"]}>
-        <TechnicalLabel tone={f.highlight ? "dark-accent" : "muted"}>{String(i + 1).padStart(2, "0")} / {f.label}</TechnicalLabel>
-        <h2 class="text-[25px] font-semibold leading-tight">{f.title}</h2>
-        <p class:list={["text-[15px] leading-relaxed", f.highlight ? "text-dark-muted" : "text-muted"]}>{f.description}</p>
-      </li>
-    ))}
-  </ul>
+  <div class="grid gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-16">
+    <ol class="grid gap-x-10 sm:grid-cols-2 lg:order-first">
+      {features.map((feature, n) => (
+        <li data-feature={n} class="group flex flex-col gap-3 border-t border-rule pt-5 pb-8 transition-colors duration-300 hover:border-ink">
+          <span class="flex items-center gap-2.5">
+            <Icon name={feature.icon} size={16} class:list={["shrink-0 transition-colors duration-300 group-hover:text-accent-ink", feature.highlight ? "text-ink" : "text-muted"]} />
+            <TechnicalLabel tone={feature.highlight ? "ink" : "muted"} class="transition-colors duration-300 group-hover:text-accent-ink">{String(n + 1).padStart(2, "0")} / {feature.label}</TechnicalLabel>
+          </span>
+          <h2 class="text-[22px] font-semibold leading-tight">{feature.title}</h2>
+          <p class="text-[15px] leading-relaxed text-muted">{feature.description}</p>
+        </li>
+      ))}
+    </ol>
+
+    <div class="order-first lg:order-last">
+      <div class="puzzle relative mx-auto w-full max-w-[560px] lg:sticky lg:top-28" style={`aspect-ratio: ${W.toFixed(2)} / ${HT.toFixed(2)}`} data-puzzle data-animate aria-hidden="true">
+        <svg class="absolute inset-0 size-full overflow-visible" viewBox={`${f([minX, minY])} ${f([W, HT])}`}>
+          <defs>
+            <linearGradient id="puzzle-board-side" gradientUnits="userSpaceOnUse" x1={board.split.x1} x2={board.split.x2} y1="0" y2="0">
+              <stop offset={board.split.at} class="side-lit" /><stop offset={board.split.at} class="side-shade" />
+            </linearGradient>
+            <linearGradient id="puzzle-tile-side" gradientUnits="userSpaceOnUse" x1={tile.split.x1} x2={tile.split.x2} y1="0" y2="0">
+              <stop offset={tile.split.at} class="side-lit" /><stop offset={tile.split.at} class="side-shade" />
+            </linearGradient>
+            <filter id="puzzle-shadow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="7" /></filter>
+          </defs>
+          <path d={board.top} transform={`translate(0 ${DEPTH + 10})`} class="fill-ink/15" filter="url(#puzzle-shadow)" />
+          <path d={board.band} fill="url(#puzzle-board-side)" />
+          <text transform={brand} class="fill-white/85 font-mono text-[10px] font-medium tracking-[0.22em]">DOCUBOOK FLAME</text>
+          <path d={board.top} class="fill-[#fbfaf6] stroke-rule" stroke-width="1" />
+          {slots.map((s) => <path d={s.slot} class="fill-[#f1f0e9] stroke-[#e2e1d7]" stroke-width="1" />)}
+        </svg>
+
+        {paintOrder.map((s) => (
+          <div class="tile absolute" data-i={s.n} style={`left:${s.box.left};top:${s.box.top};width:${s.box.width};height:${s.box.height}`}>
+            <svg class="tile-drop block size-full overflow-visible" viewBox={tileBox}>
+              <path d={tile.band} fill="url(#puzzle-tile-side)" />
+              <path d={tile.top} class:list={["tile-top", s.feature.highlight ? "fill-ink stroke-ink" : "fill-white stroke-rule"]} stroke-width="1" />
+              <g transform={`matrix(${A} ${B.toFixed(4)} ${-A} ${B.toFixed(4)} 0 0)`} class={s.feature.highlight ? "text-dark-ink" : "text-muted"}>
+                <Icon name={s.feature.icon} size={ICON} x={(S - ICON) / 2} y={(S - ICON) / 2} strokeWidth={1.75} />
+              </g>
+            </svg>
+          </div>
+        ))}
+
+        {slots.map((s) => (
+          <div class:list={["chip absolute max-sm:hidden", s.feature.highlight && "chip-static"]} data-i={s.n} style={`left:${s.label.left};top:${s.label.top}`}>
+            <span class="chip-drop block whitespace-nowrap rounded-[3px] border border-accent bg-white px-2 py-1 font-mono text-[10px] font-medium uppercase text-ink shadow-sm">{s.feature.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
 </Container>
+
+<style is:inline set:html={stackCss}></style>
+
+<script>
+  // Pointing at a feature lifts its tile and shows its label. The board is decorative (aria-hidden): the list carries the content.
+  const board = document.querySelector<HTMLElement>("[data-puzzle]");
+  document.querySelectorAll<HTMLElement>("[data-feature]").forEach((item) => {
+    const mark = (on: boolean) => {
+      board?.toggleAttribute("data-active", on);
+      board?.querySelectorAll(`[data-i="${item.dataset.feature}"]`).forEach((el) => el.toggleAttribute("data-on", on));
+    };
+    item.addEventListener("pointerenter", () => mark(true));
+    item.addEventListener("pointerleave", () => mark(false));
+  });
+</script>
+
+<style>
+  .side-lit { stop-color: var(--color-accent); }
+  .side-shade { stop-color: color-mix(in srgb, var(--color-accent) 68%, black); }
+
+  /* Finished frame on load: every tile in its slot, the two highlighted features labelled. The stacking loop runs
+     only while [data-playing] (set by the layout near the viewport, after the first scroll); its keyframes are
+     generated per tile in the frontmatter (stackCss). Only translate and opacity move. */
+  .tile { transition: translate 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .chip { transform: translate(-50%, calc(-100% - 12px)); opacity: 0; transition: opacity 0.25s ease, translate 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .chip-static { opacity: 1; }
+
+  /* Pointing at a feature stops the loop (the board shows full), lifts that tile and shows only its label. */
+  .puzzle[data-active] .chip { opacity: 0; }
+  .puzzle .tile[data-on], .puzzle .chip[data-on] { translate: 0 -12px; }
+  .puzzle .chip[data-on] { opacity: 1; }
+  .tile[data-on] .tile-top { stroke: var(--color-accent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .puzzle, .puzzle * { animation: none !important; transition: none !important; }
+  }
+</style>
