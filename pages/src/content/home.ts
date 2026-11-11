@@ -1,3 +1,5 @@
+import { presetRegistry } from "@docubook/themes-colors";
+
 // Copy for the homepage sections, taken from the pen.dev design (docubook.pen).
 export type Step = {
   label: string;
@@ -123,9 +125,8 @@ export const hosts = [
 
 export const outputTree = ["├─ index.html", "├─ quickstart.html", "├─ guides.html", "└─ assets/"];
 
-// shortcut: mirrors root.primary in packages/themes-colors/themes/*.json, re-sync by hand when a preset changes
-export const themePresets = [
-  { name: "default", color: "hsl(210 81% 56%)" },
-  { name: "freshlime", color: "hsl(85 70% 45%)" },
-  { name: "coffee", color: "hsl(25 60% 40%)" },
-];
+// Each preset's primary color, read from the package so the swatches cannot drift from it.
+export const themePresets = Object.entries(presetRegistry).map(([name, { variables }]) => ({
+  name,
+  color: `hsl(${variables.root.primary})`,
+}));

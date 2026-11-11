@@ -1,0 +1,15 @@
+---
+// "At /docs, a prefix, or the root.": the two settings that place the site, next to the docu.json that sets them.
+import { subpathConfig } from "../../../content/deploy";
+import CodeCard from "../../shared/CodeCard.astro";
+import Button from "../../ui/Button.astro";
+import JsonCode from "../../ui/JsonCode.astro";
+---
+
+<CodeCard label="03 / Subpath ready" heading={"At /docs, a prefix,\nor the root."} description="meta.basePath sets the prefix inside the build output. meta.baseURL names where your host publishes it. Links, canonical URLs and the search index follow both." note={'/docs  ·  /handbook  ·  "" for the root'} file="docu.json" result="→  https://acme.github.io/handbook/docs/…">
+  <Fragment slot="actions">
+    <Button href="/docs/getting-started/base-path">Read the base path guide</Button>
+    <Button href="/docs/getting-started/deployment" variant="ghost">See all providers</Button>
+  </Fragment>
+  <JsonCode code={subpathConfig} class="text-[13px] lg:text-xs xl:text-[13px]" />
+</CodeCard>

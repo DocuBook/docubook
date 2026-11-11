@@ -1,0 +1,51 @@
+---
+// The three presets, each as a small docs page in its own light and dark palette. Every color is the preset's
+// real variable from @docubook/themes-colors, so a change to a preset shows here on the next build.
+import { presetRegistry } from "@docubook/themes-colors";
+import { presetCopy } from "../../../content/themes";
+import Container from "../../ui/Container.astro";
+
+// The variables the drawing uses, as CSS custom properties on each half.
+const used = ["background", "foreground", "primary", "primary-foreground", "border-color"];
+const vars = (mode: Record<string, string>) => used.map((key) => `--${key}:hsl(${mode[key]})`).join(";");
+const presets = Object.entries(presetRegistry).map(([name, { variables }]) => ({ name, hue: variables.root.primary.split(" ")[0], modes: [variables.root, variables.dark] }));
+const line = "block h-1 rounded-full";
+---
+
+<Container as="section" class="grid gap-6 pb-24 lg:grid-cols-3">
+  {presets.map((preset) => (
+    <article class="flex flex-col overflow-hidden rounded-lg border border-rule bg-[#fffefa]">
+      <div class="flex h-[200px]" aria-hidden="true">
+        {preset.modes.map((mode) => (
+          <div class="flex flex-1 flex-col gap-3.5 bg-[var(--background)] p-4" style={vars(mode)}>
+            <div class="flex items-center justify-between">
+              <span class="flex items-center gap-1.5"><i class="block size-[9px] rounded-full bg-[var(--primary)]" /><i class="block h-[5px] w-[34px] rounded-full bg-[var(--foreground)]" /></span>
+              <i class="block h-[5px] w-[22px] rounded-full bg-[var(--border-color)]" />
+            </div>
+            <div class="flex gap-3.5">
+              <div class="flex w-11 shrink-0 flex-col gap-2">
+                <i class:list={[line, "w-10 bg-[var(--border-color)]"]} /><i class:list={[line, "w-[30px] bg-[var(--primary)]"]} /><i class:list={[line, "w-9 bg-[var(--border-color)]"]} /><i class:list={[line, "w-[26px] bg-[var(--border-color)]"]} />
+              </div>
+              <div class="flex flex-1 flex-col items-start gap-[9px]">
+                <i class="block h-[9px] w-[84px] max-w-full rounded-full bg-[var(--foreground)]" />
+                <i class:list={[line, "w-full bg-[var(--border-color)]"]} /><i class:list={[line, "w-24 max-w-full bg-[var(--border-color)]"]} />
+                <div class="flex w-full flex-col gap-[5px] rounded-[5px] border-l-[3px] border-[var(--primary)] bg-[color-mix(in_srgb,var(--primary)_15%,transparent)] py-2 pr-2 pl-2.5">
+                  <i class:list={[line, "w-12 bg-[var(--primary)]"]} /><i class:list={[line, "w-full bg-[var(--border-color)]"]} />
+                </div>
+                <span class="rounded-[3px] bg-[var(--primary)] px-2.5 py-1.5"><i class:list={[line, "w-[26px] bg-[var(--primary-foreground)]"]} /></span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div class="flex flex-1 flex-col items-start gap-3 border-t border-rule p-5">
+        <div class="flex w-full items-center justify-between">
+          <h2 class="flex items-center gap-2 font-mono text-sm font-medium text-ink"><i class="block size-3.5 rounded-full" style={`background:hsl(${preset.modes[0].primary})`} />{preset.name}</h2>
+          <span class="font-mono text-[11px] uppercase text-muted">Hue {preset.hue}</span>
+        </div>
+        <p class="text-[15px] leading-relaxed text-muted">{presetCopy[preset.name]}</p>
+        <code class="mt-auto rounded bg-card px-2.5 py-1.5 font-mono text-[11px] text-ink">"colors": "{preset.name}"</code>
+      </div>
+    </article>
+  ))}
+</Container>

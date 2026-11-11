@@ -1,0 +1,15 @@
+---
+// A JSON snippet for dark surfaces, colored at build time.
+import { jsonHtml } from "../../lib/jsonHtml";
+interface Props { code: string; class?: string }
+const { code, class: className = "" } = Astro.props;
+---
+
+<pre class:list={["json overflow-x-auto font-mono leading-[1.7] text-dark-code", className]}><code set:html={jsonHtml(code)} /></pre>
+
+<style>
+  /* Shiki vitesse-dark palette, as in the plugin sample. */
+  .json :global(.str) { color: #c98a7d; }
+  .json :global(.prop) { color: #b8a965; }
+  .json :global(.pun) { color: #666666; }
+</style>

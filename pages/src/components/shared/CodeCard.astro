@@ -1,0 +1,27 @@
+---
+// A section in one card: copy and actions on the left, a code panel on the right with its file name on top and
+// one result line under a rule. The plugins page's "Build your own" and the deploy page's "Subpath" both use it.
+// Slots: `actions` for the buttons, the default slot for the code block.
+import Container from "../ui/Container.astro";
+import TechnicalLabel from "../ui/TechnicalLabel.astro";
+interface Props { label: string; heading: string; description: string; note: string; file: string; result: string }
+const { label, heading, description, note, file, result } = Astro.props;
+---
+
+<Container as="section" class="py-24">
+  <div class="flex flex-col gap-10 rounded border border-rule bg-card p-6 lg:flex-row lg:items-center lg:gap-8 lg:p-8 xl:gap-[60px] xl:p-10">
+    <div class="flex flex-1 flex-col gap-[23px]">
+      <TechnicalLabel tone="accent">{label}</TechnicalLabel>
+      <h2 class="text-3xl font-semibold leading-[1.1] tracking-tight whitespace-pre-line lg:text-[30px] xl:text-[50px]">{heading}</h2>
+      <p class="text-[17px] leading-relaxed text-muted">{description}</p>
+      <div class="flex flex-wrap gap-3"><slot name="actions" /></div>
+      <TechnicalLabel class="normal-case!">{note}</TechnicalLabel>
+    </div>
+    <div class="flex w-full flex-col gap-4 rounded bg-dark p-[26px] font-mono lg:max-w-[440px] lg:shrink-0 lg:p-5 xl:max-w-[560px] xl:p-[26px]">
+      <div class="text-xs font-medium text-dark-muted">{file}</div>
+      <slot />
+      <hr class="h-px border-0 bg-dark-rule" />
+      <span class="text-xs text-ok">{result}</span>
+    </div>
+  </div>
+</Container>

@@ -1,0 +1,17 @@
+---
+import Site from "../layouts/Site.astro";
+import Hosts from "../components/sections/deploy/Hosts.astro";
+import Subpath from "../components/sections/deploy/Subpath.astro";
+import ClosingCta from "../components/shared/ClosingCta.astro";
+import PageIntro from "../components/shared/PageIntro.astro";
+import RuntimeCommands from "../components/shared/RuntimeCommands.astro";
+import { buildSteps } from "../content/deploy";
+---
+
+<Site title="Deploy" description="Flame builds flat static HTML into one folder. Upload it to Cloudflare Pages, Vercel, Netlify, GitHub Pages or any static host, or ship it as a Docker image.">
+  <PageIntro label="Deploy / Hosting is your call" heading={"Just files.\nAny static host."} description="flame build writes flat .html files to one folder. There is no server runtime and no app to keep running: upload the folder, or let your host build it on every push." aside="No runtime. No server process." />
+  <RuntimeCommands class="pb-24" label="01 / What the build writes" heading={"One command.\nOne folder."} description="Every page is a flat .html file, and links carry the suffix, so navigation works on any host that serves files by path. Zero configuration." link={{ href: "/docs/getting-started/deployment", label: "Read the deployment guide" }} {...buildSteps} footnote="flame deploy adds .nojekyll and a GitHub Pages workflow." />
+  <Hosts />
+  <Subpath />
+  <ClosingCta />
+</Site>

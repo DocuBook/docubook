@@ -1,0 +1,26 @@
+---
+// The nine components without a specimen: a line each, their syntax, and a link to their docs page.
+import { moreComponents, specimens } from "../../../content/components";
+import SectionIntro from "../../shared/SectionIntro.astro";
+import Container from "../../ui/Container.astro";
+import TechnicalLabel from "../../ui/TechnicalLabel.astro";
+const first = specimens.length + 1;
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<section class="bg-dark text-dark-ink">
+  <Container class="flex flex-col gap-[42px] py-[88px]">
+    <SectionIntro tone="dark" label={`${pad(first)} – ${pad(first + moreComponents.length - 1)} / The same contract`} heading={"Nine more.\nStill plain Markdown."} aside="Every one has a docs page" />
+    <ul class="grid gap-x-[30px] gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+      {moreComponents.map((component, i) => (
+        <li>
+          <a href={`/docs/components/${component.slug}`} data-astro-reload class="flex h-full flex-col items-start gap-3 border-t border-dark-rule pt-5 hover:border-dark-accent">
+            <TechnicalLabel tone="dark-muted">{pad(first + i)} / {component.name}</TechnicalLabel>
+            <span class="text-[15px] leading-relaxed text-dark-code">{component.description}</span>
+            <code class="rounded border border-dark-rule bg-dark-card px-2.5 py-1.5 font-mono text-[11px] text-dark-accent">{component.syntax}</code>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </Container>
+</section>

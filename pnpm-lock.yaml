@@ -520,6 +520,9 @@ importers:
       '@docubook/flame':
         specifier: workspace:*
         version: link:../packages/flame
+      '@docubook/themes-colors':
+        specifier: workspace:*
+        version: link:../packages/themes-colors
       '@types/react':
         specifier: 19.3.0
         version: 19.3.0

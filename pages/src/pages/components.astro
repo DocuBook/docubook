@@ -1,0 +1,14 @@
+---
+import Site from "../layouts/Site.astro";
+import MoreComponents from "../components/sections/components/MoreComponents.astro";
+import Specimens from "../components/sections/components/Specimens.astro";
+import ClosingCta from "../components/shared/ClosingCta.astro";
+import PageIntro from "../components/shared/PageIntro.astro";
+---
+
+<Site title="Components" description="Fifteen components written as Markdown directives: callouts, tabs, steps, cards, accordions, file trees and more. No JSX and no imports.">
+  <PageIntro label="Components / Written as Markdown" heading={"Fifteen components.\nNo imports."} description="Callouts, tabs, cards, steps and file trees are written as Markdown directives and resolved by Flame. No JSX and no import lines: the source stays readable in any editor." aside="Directives in. Static HTML out." />
+  <Specimens />
+  <MoreComponents />
+  <ClosingCta />
+</Site>

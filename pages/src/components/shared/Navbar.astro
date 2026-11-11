@@ -1,21 +1,36 @@
 ---
+// Home, Features, and a Resources menu. On desktop Resources is a mega menu whose panel waits in a <template>
+// (MegaMenu.astro): megaMenu.ts and megaMenu.css load on the first hover, focus or click of the trigger and stamp it then.
+// In the mobile drawer it is a native <details>, so it collapses and expands with no script, and its links
+// are in the page's HTML for crawlers and for the desktop menu's no-script case.
 import { site } from "../../content/site";
 import AskAiButton from "./AskAiButton.astro";
 import Brand from "./Brand.astro";
+import MegaMenu from "./MegaMenu.astro";
+import Icon from "../ui/Icon.astro";
 import GitHub from "../ui/icons/GitHub.astro";
 import TechnicalLabel from "../ui/TechnicalLabel.astro";
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
-const items = site.nav.map((item) => ({ ...item, active: item.href.replace(/\/$/, "") === path }));
+const withActive = <T extends { href: string }>(item: T) => ({ ...item, active: (item.href.replace(/\/$/, "") || "/") === path });
+const items = site.nav.map(withActive);
+const resources = site.resources.map(withActive);
+const resourcesActive = resources.some((item) => item.active);
+const reload = (item: object) => ("external" in item ? { "data-astro-reload": true } : {});
 ---
 
-<nav class="flex h-16 items-center justify-between" aria-label="Main">
+<nav class="relative flex h-16 items-center justify-between" aria-label="Main">
   <Brand collapsible />
   <ul class="hidden items-center gap-[34px] text-sm lg:flex">
     {items.map((item) => (
       <li>
-        <a href={item.href} class:list={[item.active ? "font-semibold text-accent-ink" : "text-ink"]} aria-current={item.active ? "page" : undefined} {...("external" in item ? { "data-astro-reload": true } : {})}>{item.label}</a>
+        <a href={item.href} class:list={[item.active ? "font-semibold text-accent-ink" : "text-ink"]} aria-current={item.active ? "page" : undefined}>{item.label}</a>
       </li>
     ))}
+    <li>
+      <button type="button" class:list={["flex items-center gap-1", resourcesActive ? "font-semibold text-accent-ink" : "text-ink"]} aria-expanded="false" aria-haspopup="true" data-mega-trigger>
+        Resources <Icon name="chevron-down" size={14} />
+      </button>
+    </li>
   </ul>
   <div class="hidden items-center gap-[26px] lg:flex">
     <a href={site.github} target="_blank" rel="noreferrer" class="flex items-center gap-2 text-sm text-ink"><GitHub class="size-[17px]" /> GitHub</a>
@@ -28,16 +43,35 @@ const items = site.nav.map((item) => ({ ...item, active: item.href.replace(/\/$/
   </button>
 </nav>
 
-<div id="mobile-menu" class="drawer fixed inset-0 z-40 flex flex-col bg-paper px-5 pb-6 lg:hidden" aria-hidden="true">
+<MegaMenu resources={resources} />
+
+<div id="mobile-menu" class="drawer fixed inset-0 z-40 flex flex-col overflow-y-auto bg-paper px-5 pb-6 lg:hidden" aria-hidden="true">
   <div class="flex h-16 shrink-0 items-center"><Brand /></div>
   <ul class="flex flex-col gap-2 border-t border-rule pt-8 text-4xl font-semibold tracking-tight">
     {items.map((item) => (
       <li>
-        <a href={item.href} class:list={["block py-3", item.active ? "text-accent-ink" : "text-ink"]} aria-current={item.active ? "page" : undefined} {...("external" in item ? { "data-astro-reload": true } : {})}>{item.label}</a>
+        <a href={item.href} class:list={["block py-3", item.active ? "text-accent-ink" : "text-ink"]} aria-current={item.active ? "page" : undefined}>{item.label}</a>
       </li>
     ))}
+    <li>
+      <details class="group" open={resourcesActive}>
+        <summary class:list={["flex cursor-pointer list-none items-center justify-between py-3 [&::-webkit-details-marker]:hidden", resourcesActive ? "text-accent-ink" : "text-ink"]}>
+          Resources <Icon name="chevron-down" size={28} class="transition-transform group-open:rotate-180 motion-reduce:transition-none" />
+        </summary>
+        <ul class="flex flex-col pb-2 text-lg font-medium tracking-normal">
+          {resources.map((item) => (
+            <li>
+              <a href={item.href} class:list={["flex items-center gap-3 py-2", item.active ? "text-accent-ink" : "text-ink"]} aria-current={item.active ? "page" : undefined} {...reload(item)}>
+                <span class="grid size-10 shrink-0 place-items-center rounded-md bg-card"><Icon name={item.icon} size={18} /></span>
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </details>
+    </li>
   </ul>
-  <div class="mt-auto flex flex-col gap-4">
+  <div class="mt-auto flex flex-col gap-4 pt-8">
     <TechnicalLabel>Open source. MIT licensed. Yours.</TechnicalLabel>
     <div class="flex gap-3">
       <a href={site.github} target="_blank" rel="noreferrer" class="flex h-[50px] flex-1 items-center justify-center gap-2.5 rounded border border-rule bg-paper text-sm font-semibold text-ink"><GitHub class="size-[17px]" /> GitHub</a>
@@ -73,4 +107,37 @@ const items = site.nav.map((item) => ({ ...item, active: item.href.replace(/\/$/
   menu.querySelectorAll("a, [data-ask-ai-trigger]").forEach((el) => el.addEventListener("click", () => set(false)));
   addEventListener("keydown", (e) => e.key === "Escape" && set(false));
   matchMedia("(min-width: 1024px)").addEventListener("change", (e) => e.matches && set(false));
+</script>
+
+<script>
+  // The navbar's lazy features share this one script file: Ask AI's loader and the Resources menu's.
+  import "./askAi";
+  // ?url keeps the menu's styles out of the page's inlined CSS; they are attached with its script.
+  import megaMenuCss from "./megaMenu.css?url";
+  import { stylesheet } from "../../lib/stylesheet";
+
+  // Resources menu: nothing of it loads until the trigger is hovered, focused or clicked. The last event before
+  // it arrives decides whether it opens: a click, or a hover that is still on the trigger.
+  const trigger = document.querySelector<HTMLButtonElement>("[data-mega-trigger]")!;
+  const events = ["mouseenter", "focus", "click"] as const;
+  let last = "";
+  let loading: Promise<void> | undefined;
+  const note = (e: Event) => {
+    last = e.type;
+    loading ??= Promise.all([import("./megaMenu"), stylesheet(megaMenuCss)]).then(
+      ([menu]) => {
+        events.forEach((type) => trigger.removeEventListener(type, note));
+        menu.mount(trigger, last);
+      },
+      () => {
+        // The browser remembers a module that failed to load and will not fetch it again, so there is no retry:
+        // from here on a click goes to the same links in the footer.
+        const toFooter = () => document.querySelector<HTMLElement>('footer [aria-label="Resources"] a')?.focus();
+        events.forEach((type) => trigger.removeEventListener(type, note));
+        trigger.addEventListener("click", toFooter);
+        if (last === "click") toFooter();
+      }
+    );
+  };
+  events.forEach((type) => trigger.addEventListener(type, note));
 </script>
