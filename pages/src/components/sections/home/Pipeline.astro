@@ -1,8 +1,10 @@
 ---
 // "A file. A compiler. The whole web." as an exploded layer stack: index.md on top, Flame, the static host,
-// the reader's site at the bottom. A file drops through each layer and changes at each: md, compile, html, publish,
-// while the matching step lights up in the list. The markup is the resting frame (every layer and step
-// readable); the loop runs only while [data-playing], on transform and opacity alone.
+// the reader's site at the bottom. Each layer takes a turn: its plate lifts and shows what it is, and its stage tag
+// (markdown, compile, html, publish) fills in, while the matching step lights up in the list. The layers waiting
+// their turn are blank outlined slabs. The tags sit beside the stack as flat labels on leader lines, because text
+// inside the tilted plane was unreadable. The markup is the resting frame (every layer, tag and step readable);
+// the loop runs only while [data-playing], on transform and opacity alone.
 import { pipeline } from "../../../content/home";
 import SectionIntro from "../../shared/SectionIntro.astro";
 import Container from "../../ui/Container.astro";
@@ -10,12 +12,13 @@ import Icon from "../../ui/Icon.astro";
 import TechnicalLabel from "../../ui/TechnicalLabel.astro";
 const kinds = ["source", "compiler", "host", "site"] as const;
 const layers = pipeline.map((step, i) => ({ ...step, kind: kinds[i], z: pipeline.length - 1 - i }));
+const stages = ["markdown", "compile", "html", "publish"];
 ---
 
 <Container as="section" class="flex flex-col gap-12 py-24">
   <SectionIntro label="02 / A shorter path to publish" heading={"A file. A compiler.\nThe whole web."} description="No platform between your words and your readers. Just a straightforward path from source to site." />
 
-  <div class="pipeline grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16" data-animate>
+  <div class="pipeline grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-10 xl:gap-16" data-animate>
     <div class="stage relative flex justify-center overflow-hidden" aria-hidden="true">
       <div class="iso">
         {layers.map((layer, i) => (
@@ -24,19 +27,29 @@ const layers = pipeline.map((step, i) => ({ ...step, kind: kinds[i], z: pipeline
               <i class="wall wall-x"></i><i class="wall wall-y"></i>
               <i class="guide guide-a"></i><i class="guide guide-b"></i><i class="guide guide-c"></i><i class="guide guide-d"></i>
               <div class="face">
-                <span class="face-label"><Icon name={layer.icon} size={18} />{layer.artifact}</span>
+                <span class="face-icon"><Icon name={layer.icon} size={32} /></span>
+                <span class="face-label">{layer.artifact}</span>
                 {layer.kind === "source" && <span class="face-lines"><i></i><i></i><i></i></span>}
                 {layer.kind === "compiler" && <span class="face-glow"></span>}
                 {layer.kind === "host" && <span class="face-dots">{Array.from({ length: 12 }, () => <i></i>)}</span>}
                 {layer.kind === "site" && <span class="face-page"><i></i><i></i><i></i></span>}
               </div>
+              <i class="cover"></i>
               <i class="ring"></i>
             </div>
           </div>
         ))}
-        <div class="packet">
-          {["md", "compile", "html", "publish"].map((label, k) => <span class:list={["packet-face", `packet-${k}`]}>{label}</span>)}
-        </div>
+      </div>
+      <div class="tags">
+        {stages.map((label, i) => (
+          <div class:list={["tag", i % 2 ? "tag-r" : "tag-l"]} style={`--i:${i}`}>
+            <span class="relative font-mono text-[11px] font-medium uppercase">
+              <span class="block rounded border border-rule bg-[#fffefa] px-2 py-1.5 text-muted">{label}</span>
+              <span class="tag-on absolute inset-0 rounded border border-ink bg-ink px-2 py-1.5 text-white">{label}</span>
+            </span>
+            <i class="tag-line"></i>
+          </div>
+        ))}
       </div>
     </div>
 
@@ -58,18 +71,26 @@ const layers = pipeline.map((step, i) => ({ ...step, kind: kinds[i], z: pipeline
 
 <style>
   /* Geometry: square plates tilted into an isometric view, one --gap apart along their normal.
-     --gap is wide enough that each plate's front half (label, packet) clears the plate above it. */
-  .stage { --s: 180px; --gap: 104px; --t: 12px; height: 430px; }
-  @media (min-width: 640px) { .stage { --s: 220px; --gap: 128px; height: 560px; } }
+     --gap is wide enough that each plate's front half (label) clears the plate above it. */
+  .stage { --s: 180px; --gap: 104px; --lift: 0.135; --t: 12px; height: 474px; }
+  /* Below sm the stage is 44px taller: the tags sit in a row under the stack there. */
+  @media (min-width: 640px) { .stage { height: 430px; } }
+  /* The two-column range below xl keeps the small stack: its column is too narrow for the big one plus a tag on each side. */
+  @media (min-width: 640px) and (max-width: 1023px), (min-width: 1280px) { .stage { --s: 220px; --gap: 128px; --lift: 0.109; height: 560px; } }
   .iso { position: relative; width: var(--s); height: var(--s); margin-top: calc(var(--gap) * 2.55); transform: rotateX(62deg) rotateZ(-45deg); transform-style: preserve-3d; }
   .layer { position: absolute; inset: 0; transform-style: preserve-3d; transform: translateZ(calc(var(--z) * var(--gap))); }
   .plate { position: absolute; inset: 0; transform-style: preserve-3d; }
   .face { position: absolute; inset: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 2px; background: var(--face); }
   /* The two walls that face the viewer give each plate its thickness. */
   .wall { position: absolute; background: var(--edge); }
+  /* A layer waiting its turn is a blank outlined slab: this skin lies over the face and the walls, and fades out for the active one. */
+  .cover, .wall::after { content: ""; position: absolute; inset: 0; border: 1px solid var(--color-muted); background: #fffefa; opacity: 0; }
+  /* Raised a hair so it sorts above the face it shares a plane with, icon included. */
+  .cover { border-radius: 2px; transform: translateZ(0.5px); }
   .wall-x { left: 0; right: 0; top: 100%; height: var(--t); transform-origin: top; transform: rotateX(-90deg); }
   .wall-y { top: 0; bottom: 0; right: 100%; width: var(--t); transform-origin: right; transform: rotateY(-90deg); filter: brightness(0.94); }
-  /* Dashed guides drop from each plate's corners to the plate below, like an exploded drawing. */
+  /* Dashed guides drop from each plate's corners to the plate below, like an exploded drawing.
+     --lift is plate-lift's 14px as a share of --gap: the guides stretch and shrink by it to stay joined at both ends. */
   .guide { position: absolute; width: 0; height: var(--gap); border-left: 1px dashed color-mix(in srgb, var(--color-muted) 55%, transparent); transform-origin: top; transform: rotateX(-90deg); }
   .guide-a { left: 0; top: 0; } .guide-b { left: 100%; top: 0; } .guide-c { left: 100%; top: 100%; } .guide-d { left: 0; top: 100%; }
   .layer-site .guide { display: none; }
@@ -79,8 +100,9 @@ const layers = pipeline.map((step, i) => ({ ...step, kind: kinds[i], z: pipeline
   .layer-host { --face: var(--color-card); --line: var(--color-rule); --edge: #cfcfc4; }
   .layer-site { --face: #fffefa; --line: var(--color-rule); --edge: #d5d4c8; }
 
-  .face-label { position: absolute; right: 14px; bottom: 14px; display: flex; align-items: center; gap: 8px; font: 500 14px/1 var(--font-mono); }
-  .layer-compiler .face-label :global(svg) { color: var(--color-accent); }
+  .face-label { position: absolute; right: 14px; bottom: 14px; font: 500 14px/1 var(--font-mono); }
+  .face-icon { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; }
+  .layer-compiler .face-icon { color: var(--color-accent); }
   .face-lines, .face-page { position: absolute; left: 18px; top: 18px; display: flex; flex-direction: column; gap: 9px; }
   .face-lines i, .face-page i { display: block; height: 6px; width: 92px; border-radius: 3px; background: var(--color-rule); }
   .face-lines i:first-child { width: 54px; background: var(--color-accent); opacity: 0.7; }
@@ -95,49 +117,42 @@ const layers = pipeline.map((step, i) => ({ ...step, kind: kinds[i], z: pipeline
   /* Accent outline for the active layer, faded in and out with opacity only. */
   .ring { position: absolute; inset: -1px; border: 2px solid var(--color-accent); border-radius: 3px; opacity: 0; }
 
-  /* The file changes what it is at each layer: md on the source, compile in Flame, html on the host, publish on the site. */
-  .packet { position: absolute; left: calc(50% - 34px); top: calc(50% - 17px); width: 68px; height: 34px; opacity: 0; transform: translateZ(calc(3 * var(--gap) + 18px)); }
-  .packet-face { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 6px; font: 600 11px/1 var(--font-mono); box-shadow: 0 0 18px color-mix(in srgb, var(--color-accent) 55%, transparent); opacity: 0; }
-  .packet-0 { background: #fffefa; color: var(--color-ink); border: 1px solid var(--color-rule); opacity: 1; }
-  .packet-1 { background: var(--color-dark); color: var(--color-accent); border: 1px solid var(--color-accent); }
-  .packet-2 { background: var(--color-accent); color: white; }
-  /* CI-pass green: cooler and brighter than the site's muted --color-ok, so "publish" reads as a green build. */
-  .packet-3 { background: #22c55e; color: #052e16; border: 1px solid #16a34a; box-shadow: 0 0 0 1px color-mix(in srgb, #22c55e 35%, transparent), 0 0 22px color-mix(in srgb, #22c55e 80%, transparent); }
+  /* Stage tags: flat, outside the 3D plane. Below sm there is no room beside the stack, so they line up under it
+     as a row of steps. From sm up each sits on a leader line to its plate's side corner: the corners are at
+     50% -/+ s*cos(45deg) across and level with the plate's centre, which is gap*sin(62deg) below the plate above. */
+  .tags { position: absolute; inset: auto 0 0; display: flex; justify-content: center; gap: 6px; }
+  .tag-line { display: none; flex: 1; border-top: 1px dashed color-mix(in srgb, var(--color-muted) 55%, transparent); }
+  @media (min-width: 640px) {
+    .tags { display: contents; }
+    .tag { --corner: calc(50% + var(--s) * 0.707 + 4px); position: absolute; top: calc(var(--s) / 2 + var(--gap) * (0.883 * var(--i) - 0.099)); display: flex; align-items: center; width: min(150px, 100% - var(--corner)); translate: 0 -50%; }
+    .tag-l { right: var(--corner); }
+    .tag-r { left: var(--corner); flex-direction: row-reverse; }
+    .tag-line { display: block; }
+    [data-playing] .tag { animation-name: tag-lift; animation-timing-function: ease-in-out; }
+  }
+  .tag-on { opacity: 0; }
 
   /* One 8s cycle after a 1s build-up: the stack opens from a single block, then each layer takes a 2s turn. */
   [data-playing] .layer { animation: stack-open 1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-  [data-playing] .plate, [data-playing] .ring, [data-playing] .step-bar, [data-playing] .step { animation-duration: 8s; animation-iteration-count: infinite; animation-delay: calc(1s + var(--i) * 2s); }
+  [data-playing] :is(.plate, .guide, .cover, .ring, .step-bar, .step, .tag, .tag-on), [data-playing] .wall::after { animation-duration: 8s; animation-iteration-count: infinite; animation-delay: calc(1s + var(--i) * 2s); }
   [data-playing] .plate { animation-name: plate-lift; animation-timing-function: ease-in-out; }
-  [data-playing] .ring, [data-playing] .step-bar { animation-name: layer-on; }
+  [data-playing] .guide { animation-name: guide-follow; animation-timing-function: ease-in-out; }
+  [data-playing] .ring, [data-playing] .step-bar, [data-playing] .tag-on { animation-name: layer-on; }
   [data-playing] .step { animation-name: step-on; }
+  [data-playing] .cover, [data-playing] .wall::after { animation-name: cover-off; opacity: 1; }
   [data-playing] .step-bar { transform-origin: top; scale: 1 0; }
   [data-playing] .step { opacity: 0.5; }
-  [data-playing] .packet { animation: packet-drop 8s 1s infinite; }
-  [data-playing] .packet-face { animation-duration: 8s; animation-delay: 1s; animation-iteration-count: infinite; }
-  [data-playing] .packet-0 { animation-name: packet-0; }
-  [data-playing] .packet-1 { animation-name: packet-1; }
-  [data-playing] .packet-2 { animation-name: packet-2; }
-  [data-playing] .packet-3 { animation-name: packet-3; }
   .step-bar { scale: 1 0; }
 
   @keyframes stack-open { from { transform: translateZ(calc(var(--z) * var(--t))); } }
   @keyframes plate-lift { 0%, 25% { translate: 0 0 0; } 4%, 21% { translate: 0 0 14px; } }
+  /* A guide hangs from its own plate and ends on the next one: longer while its plate is up (0-25%), shorter while the next is (25-50%). */
+  @keyframes guide-follow { 0%, 25%, 50% { scale: 1 1 1; } 4%, 21% { scale: 1 1 calc(1 + var(--lift)); } 29%, 46% { scale: 1 1 calc(1 - var(--lift)); } }
+  /* Follows plate-lift on screen: 14px along the plate normal is 14 * sin(62deg) up. */
+  @keyframes tag-lift { 0%, 25% { translate: 0 -50%; } 4%, 21% { translate: 0 calc(-50% - 12px); } }
   @keyframes layer-on { 0%, 25%, 100% { opacity: 0; scale: 1 0; } 4%, 21% { opacity: 1; scale: 1 1; } }
+  @keyframes cover-off { 0%, 25%, 100% { opacity: 1; } 4%, 21% { opacity: 0; } }
   @keyframes step-on { 0%, 25%, 100% { opacity: 0.5; } 4%, 21% { opacity: 1; } }
-  @keyframes packet-drop {
-    0% { opacity: 0; transform: translateZ(calc(3 * var(--gap) + 90px)); }
-    5% { opacity: 1; transform: translateZ(calc(3 * var(--gap) + 18px)); }
-    22% { transform: translateZ(calc(3 * var(--gap) + 18px)); }
-    28%, 47% { transform: translateZ(calc(2 * var(--gap) + 18px)); }
-    53%, 72% { transform: translateZ(calc(var(--gap) + 18px)); }
-    78%, 94% { opacity: 1; transform: translateZ(18px); }
-    100% { opacity: 0; transform: translateZ(18px); }
-  }
-  /* Each face takes over as the file lands on the next layer (28%, 53%, 78% in packet-drop). */
-  @keyframes packet-0 { 0%, 25% { opacity: 1; } 28%, 100% { opacity: 0; } }
-  @keyframes packet-1 { 0%, 25% { opacity: 0; } 28%, 50% { opacity: 1; } 53%, 100% { opacity: 0; } }
-  @keyframes packet-2 { 0%, 50% { opacity: 0; } 53%, 75% { opacity: 1; } 78%, 100% { opacity: 0; } }
-  @keyframes packet-3 { 0%, 75% { opacity: 0; } 78%, 100% { opacity: 1; } }
 
-  @media (prefers-reduced-motion: reduce) { .pipeline * { animation: none !important; } .pipeline .step { opacity: 1; } .pipeline .packet { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .pipeline *, .pipeline .wall::after { animation: none !important; } .pipeline .step { opacity: 1; } .pipeline .cover, .pipeline .wall::after { opacity: 0; } }
 </style>
