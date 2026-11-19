@@ -63,6 +63,19 @@ describe("Callout", () => {
     expect(container.textContent).toContain("Warn");
   });
 
+  it("draws the header alone when there is no body (leaf `::tip`)", () => {
+    const { container } = render(<Callout type="tip" title="Heads up" />);
+    expect(container.textContent).toBe("Heads up");
+    expect(container.querySelector(".mdx-callout-content")).toBeNull();
+    // No gap is kept under the header for a body that is not there.
+    const header = container.querySelector("aside > div");
+    expect(header?.getAttribute("style")).toContain("margin-bottom: 0");
+    for (const empty of [null, false, undefined]) {
+      const other = render(<Callout type="tip">{empty}</Callout>);
+      expect(other.container.querySelector(".mdx-callout-content")).toBeNull();
+    }
+  });
+
   it("renders a custom title", () => {
     const { container } = render(
       <Callout type="tip" title="Heads up">

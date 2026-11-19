@@ -88,6 +88,17 @@ describe("directives → MDX components (explicit-close contract)", () => {
     expect(src).toContain("localhost:3000");
   });
 
+  it("leaf callout never gets children, even with a [label]", async () => {
+    const result = await serialize('::tip[Not a body]{title="Heads up"}', {
+      outputFormat: "program",
+      parseFrontmatter: false,
+      mdxOptions: { remarkPlugins: createDefaultRemarkPlugins() },
+    });
+    const src = result.compiledSource;
+    expect(src).toMatch(/_jsx\(Tip, \{\s*title: "Heads up"\s*\}\)/);
+    expect(src).not.toContain("Not a body");
+  });
+
   it("self-closing leaves render without children (file, youtube)", async () => {
     const result = await serialize('::youtube{videoId="x"}\n\n::file{name="a.ts"}', {
       outputFormat: "program",
