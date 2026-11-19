@@ -70,7 +70,10 @@ Report security problems or private-data exposure privately, as described in
 
 ### Requirements
 
-- **Node.js** `^22.22.2 || ^24.15.0 || >=26` (root `engines` range)
+- **Node.js** `^22.22.2 || ^24.15.0 || >=26` (root `engines` range). The
+  root `.node-version` pins development to Node 22, the line CI runs, so
+  version managers that read it (vite-plus, fnm, nodenv, asdf) run
+  `pnpm exec` and scripts on Node 22 instead of the newest allowed major
 - **pnpm** `12.x` (the root `packageManager` field pins the exact version)
 - **Bun** `>=1.4.0` for flame's default `dev`, `build`, `preview`, and
   `deploy` scripts; a full-workspace `pnpm build` also requires Bun
