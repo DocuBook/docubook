@@ -1,5 +1,11 @@
 # @docubook/mdx-content
 
+## 2.8.3
+
+### Patch Changes
+
+- [#532](https://github.com/DocuBook/docubook/pull/532) [`bb0a8b7`](https://github.com/DocuBook/docubook/commit/bb0a8b779515923c8f9cc412fabd65bb767cab61) Thanks [@gitfromwildan](https://github.com/gitfromwildan)! - Stop drawing an empty body under a callout that has no content. A callout written as a leaf directive (`::tip{title="Heads up"}`) never takes children, but it still rendered an empty content box and kept the gap under its header. It now draws the header alone. A callout with content (`:::tip … :::`, or a GFM alert) is unchanged.
+
 ## 2.8.2
 
 ### Patch Changes
