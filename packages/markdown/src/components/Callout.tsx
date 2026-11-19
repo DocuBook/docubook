@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties, HTMLAttributes, ReactNode } from "react";
+import { Children, type CSSProperties, type HTMLAttributes, type ReactNode } from "react";
 import { type IconName, resolveLucideIcon } from "../utils/Icon";
 
 export type CalloutType = "tip" | "info" | "danger" | "warning" | "success" | "important";
@@ -91,6 +91,8 @@ export function Callout({ type, title, children, style, className, ...props }: C
   const resolvedIcon = resolveLucideIcon(token.defaultIcon);
   const normalizedTitle = typeof title === "string" ? title.trim() : title;
   const fallbackTitle = normalizedTitle || LABEL[type];
+  // A leaf callout (`::tip{title="…"}`) has no body: draw the header alone, not an empty content box.
+  const hasContent = Children.toArray(children).length > 0;
 
   return (
     <aside
@@ -116,7 +118,7 @@ export function Callout({ type, title, children, style, className, ...props }: C
             alignItems: "center",
             gap: "0.5rem",
             fontWeight: 700,
-            marginBottom: "0.35rem",
+            marginBottom: hasContent ? "0.35rem" : 0,
             color: token.header,
           }}
         >
@@ -139,9 +141,11 @@ export function Callout({ type, title, children, style, className, ...props }: C
         </div>
       ) : null}
       {/* The class lets styles.css keep **bold** in the callout colour (see .mdx-callout-content). */}
-      <div className="mdx-callout-content" style={{ color: token.content, lineHeight: 1.5 }}>
-        {children}
-      </div>
+      {hasContent ? (
+        <div className="mdx-callout-content" style={{ color: token.content, lineHeight: 1.5 }}>
+          {children}
+        </div>
+      ) : null}
     </aside>
   );
 }
